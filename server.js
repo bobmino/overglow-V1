@@ -24,11 +24,22 @@ import withdrawalRoutes from './backend/routes/withdrawalRoutes.js';
 import approvalRequestRoutes from './backend/routes/approvalRequestRoutes.js';
 import onboardingRoutes from './backend/routes/onboardingRoutes.js';
 
-connectDB();
+// Connect to database (non-blocking for Vercel)
+connectDB().catch(err => {
+  console.error('Database connection error:', err);
+  // Don't exit on Vercel, let it retry
+  if (process.env.VERCEL !== '1') {
+    process.exit(1);
+  }
+});
 
 const app = express();
 
-app.use(cors());
+// CORS configuration - Allow all origins for now (you can restrict later)
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -62,8 +73,13 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+// Export handler for Vercel serverless functions
+export default app;
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// Only start server if not in Vercel environment (local development)
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
