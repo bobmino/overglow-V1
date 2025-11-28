@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import {
   Building2,
   User,
@@ -106,7 +106,7 @@ const OperatorOnboardingPage = () => {
 
   const fetchOnboarding = async () => {
     try {
-      const { data } = await axios.get('/api/operator/onboarding');
+      const { data } = await api.get('/api/operator/onboarding');
       setOnboarding(data);
       
       // Populate form data from existing onboarding
@@ -212,7 +212,7 @@ const OperatorOnboardingPage = () => {
         },
       };
 
-      const { data } = await axios.post('/api/upload', formDataUpload, config);
+      const { data } = await api.post('/api/upload', formDataUpload, config);
       
       if (isDocument) {
         setFormData(prev => ({
@@ -379,7 +379,7 @@ const OperatorOnboardingPage = () => {
           break;
       }
 
-      const { data } = await axios.put(endpoint, payload);
+      const { data } = await api.put(endpoint, payload);
       setOnboarding(data);
       setSuccess('Étape enregistrée avec succès');
       setSaving(false);
@@ -446,7 +446,7 @@ const OperatorOnboardingPage = () => {
     setSuccess('');
 
     try {
-      const { data } = await axios.post('/api/operator/onboarding/submit');
+      const { data } = await api.post('/api/operator/onboarding/submit');
       setOnboarding(data.onboarding);
       setSuccess('Votre demande a été soumise avec succès. En attente d\'approbation.');
     } catch (error) {

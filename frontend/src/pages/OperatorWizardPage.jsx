@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
 
 const STEPS = [
@@ -38,7 +38,7 @@ const OperatorWizardPage = () => {
   useEffect(() => {
     const fetchWizardData = async () => {
       try {
-        const { data } = await axios.get('/api/operator/wizard/data');
+        const { data } = await api.get('/api/operator/wizard/data');
         setWizardData(data);
         
         // Populate form with existing data
@@ -84,35 +84,35 @@ const OperatorWizardPage = () => {
 
       switch (stepId) {
         case 'providerType':
-          response = await axios.put('/api/operator/wizard/provider-type', {
+          response = await api.put('/api/operator/wizard/provider-type', {
             providerType: formData.providerType,
           });
           break;
         case 'publicInfo':
-          response = await axios.put('/api/operator/wizard/public-info', {
+          response = await api.put('/api/operator/wizard/public-info', {
             publicName: formData.publicName,
             description: formData.description,
             location: formData.location,
           });
           break;
         case 'photos':
-          response = await axios.put('/api/operator/wizard/photos', {
+          response = await api.put('/api/operator/wizard/photos', {
             logo: formData.logo,
             gallery: formData.gallery,
           });
           break;
         case 'address':
-          response = await axios.put('/api/operator/wizard/address', {
+          response = await api.put('/api/operator/wizard/address', {
             companyAddress: formData.companyAddress,
           });
           break;
         case 'experiences':
-          response = await axios.put('/api/operator/wizard/experiences', {
+          response = await api.put('/api/operator/wizard/experiences', {
             experiences: formData.experiences,
           });
           break;
         case 'privateInfo':
-          response = await axios.put('/api/operator/wizard/private-info', {
+          response = await api.put('/api/operator/wizard/private-info', {
             companyInfo: formData.companyInfo,
             individualWithStatusInfo: formData.individualWithStatusInfo,
             individualWithoutStatusInfo: formData.individualWithoutStatusInfo,
@@ -135,7 +135,7 @@ const OperatorWizardPage = () => {
     setSaving(true);
 
     try {
-      await axios.post('/api/operator/wizard/submit');
+      await api.post('/api/operator/wizard/submit');
       alert('Votre demande a été soumise avec succès. Elle est en cours d\'examen par notre équipe.');
       navigate('/operator/dashboard');
     } catch (err) {

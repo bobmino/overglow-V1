@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,10 +28,11 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const { data } = await axios.post('/api/auth/login', formData);
+      const { data } = await api.post('/api/auth/login', formData);
       login(data);
       navigate('/');
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       setLoading(false);
     }

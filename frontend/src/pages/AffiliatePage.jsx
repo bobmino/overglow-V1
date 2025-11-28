@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { 
   User, Mail, Lock, AlertCircle, Briefcase, 
   CheckCircle, TrendingUp, Globe, Shield, DollarSign,
@@ -52,7 +52,7 @@ const AffiliatePage = () => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post('/api/auth/register', {
+      const { data } = await api.post('/api/auth/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -63,6 +63,7 @@ const AffiliatePage = () => {
       // Redirect to onboarding after registration
       navigate('/operator/onboarding');
     } catch (err) {
+      console.error('Registration error:', err);
       setError(err.response?.data?.message || 'L\'inscription a échoué. Veuillez réessayer.');
       setLoading(false);
     }
