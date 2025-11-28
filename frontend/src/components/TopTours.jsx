@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import TourCard from './TourCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -10,10 +10,13 @@ const TopTours = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get('/api/products');
-        setProducts(data.slice(0, 8)); // Limit to 8 products
+        const { data } = await api.get('/api/products');
+        // Ensure data is an array before using .slice()
+        const productsArray = Array.isArray(data) ? data : [];
+        setProducts(productsArray.slice(0, 8)); // Limit to 8 products
       } catch (error) {
         console.error('Failed to fetch products:', error);
+        setProducts([]); // Set empty array on error
       }
     };
     fetchProducts();
