@@ -1,0 +1,18 @@
+{
+  "header": {
+    "discover": "Discover",
+    "login": "Sign In / Register",
+    "dashboard": "My Bookings",
+    "operatorDashboard": "Operator Dashboard",
+    "analytics": "Analytics",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "Do more with Overglow-Trip",
+    "subtitle": "Plan better with thousands of travel experiences.",
+    "where": "Where to?",
+    "when": "When",
+    "searchPlaceholder": "Search for a place or activity",
+    "search": "Search"
+  }
+}

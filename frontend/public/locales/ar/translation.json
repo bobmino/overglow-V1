@@ -1,0 +1,18 @@
+{
+  "header": {
+    "discover": "اكتشف",
+    "login": "تسجيل الدخول / التسجيل",
+    "dashboard": "حجوزاتي",
+    "operatorDashboard": "لوحة تحكم المشغل",
+    "analytics": "التحليلات",
+    "logout": "تسجيل الخروج"
+  },
+  "hero": {
+    "title": "افعل المزيد مع Overglow-Trip",
+    "subtitle": "خطط بشكل أفضل مع آلاف تجارب السفر.",
+    "where": "إلى أين؟",
+    "when": "متى",
+    "searchPlaceholder": "ابحث عن مكان أو نشاط",
+    "search": "بحث"
+  }
+}
