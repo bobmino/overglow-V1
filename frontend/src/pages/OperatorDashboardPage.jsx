@@ -31,12 +31,12 @@ const OperatorDashboardPage = () => {
       try {
         // Fetch operator products
         const { data: products } = await axios.get('/api/products/my-products');
-        
+
         // Fetch operator bookings
         const { data: bookings } = await axios.get('/api/operator/bookings');
-        
+
         const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        
+
         setStats({
           totalProducts: products.length,
           totalBookings: bookings.length,
@@ -114,7 +114,7 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={DollarSign}
           label="Total Revenue"
-          value={`€${stats.totalRevenue.toFixed(2)}`}
+          value={`€${(stats.totalRevenue || 0).toFixed(2)}`}
           color="bg-yellow-600"
         />
       </div>

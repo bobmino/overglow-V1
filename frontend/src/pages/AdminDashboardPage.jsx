@@ -6,7 +6,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
-  <div 
+  <div
     className={`bg-white rounded-xl border border-gray-200 p-6 ${onClick ? 'cursor-pointer hover:border-primary-600 hover:shadow-lg transition' : ''}`}
     onClick={onClick}
   >
@@ -169,7 +169,7 @@ const AdminDashboardPage = () => {
             </div>
           </div>
           <p className="text-gray-600 text-sm mb-1">Revenus totaux</p>
-          <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-gray-900">€{(stats.totalRevenue || 0).toFixed(2)}</p>
         </div>
       </div>
 
