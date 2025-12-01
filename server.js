@@ -25,12 +25,10 @@ import approvalRequestRoutes from './backend/routes/approvalRequestRoutes.js';
 import onboardingRoutes from './backend/routes/onboardingRoutes.js';
 
 // Connect to database (non-blocking for Vercel)
+// This is async and won't block serverless function startup
 connectDB().catch(err => {
-  console.error('Database connection error:', err);
-  // Don't exit on Vercel, let it retry
-  if (process.env.VERCEL !== '1') {
-    process.exit(1);
-  }
+  console.error('Database connection initialization error:', err.message);
+  // Never exit on Vercel - allow function to start and retry on first request
 });
 
 const app = express();
@@ -120,6 +118,8 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Export handler for Vercel serverless functions
+// For Vercel, we need to export the app directly
+// The CORS middleware is already set up above
 export default app;
 
 // Only start server if not in Vercel environment (local development)

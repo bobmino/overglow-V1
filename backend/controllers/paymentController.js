@@ -2,14 +2,35 @@ import Stripe from 'stripe';
 import paypal from '@paypal/checkout-server-sdk';
 import Booking from '../models/bookingModel.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Lazy initialization to prevent crashes if keys are not set
+let stripe = null;
+let paypalClient = null;
 
-// PayPal Configuration
-const environment = new paypal.core.SandboxEnvironment(
-  process.env.PAYPAL_CLIENT_ID,
-  process.env.PAYPAL_CLIENT_SECRET
-);
-const paypalClient = new paypal.core.PayPalHttpClient(environment);
+const getStripe = () => {
+  if (!stripe && process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
+    try {
+      stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    } catch (error) {
+      console.error('Failed to initialize Stripe:', error.message);
+    }
+  }
+  return stripe;
+};
+
+const getPaypalClient = () => {
+  if (!paypalClient && process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
+    try {
+      const environment = new paypal.core.SandboxEnvironment(
+        process.env.PAYPAL_CLIENT_ID,
+        process.env.PAYPAL_CLIENT_SECRET
+      );
+      paypalClient = new paypal.core.PayPalHttpClient(environment);
+    } catch (error) {
+      console.error('Failed to initialize PayPal:', error.message);
+    }
+  }
+  return paypalClient;
+};
 
 // @desc    Create Stripe Payment Intent
 // @route   POST /api/payments/create-stripe-intent
@@ -26,7 +47,15 @@ const createStripeIntent = async (req, res) => {
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
+    const stripeInstance = getStripe();
+    if (!stripeInstance) {
+      // Return mock if Stripe is not configured
+      return res.json({
+        clientSecret: 'mock_secret_for_testing',
+      });
+    }
+
+    const paymentIntent = await stripeInstance.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe expects amount in cents
       currency: currency || 'eur',
       automatic_payment_methods: {
@@ -49,6 +78,11 @@ const createStripeIntent = async (req, res) => {
 const createPaypalOrder = async (req, res) => {
   const { amount } = req.body;
 
+  const client = getPaypalClient();
+  if (!client) {
+    return res.status(503).json({ message: 'PayPal is not configured' });
+  }
+
   const request = new paypal.orders.OrdersCreateRequest();
   request.prefer("return=representation");
   request.requestBody({
@@ -62,7 +96,7 @@ const createPaypalOrder = async (req, res) => {
   });
 
   try {
-    const order = await paypalClient.execute(request);
+    const order = await client.execute(request);
     res.json({ id: order.result.id });
   } catch (error) {
     console.error('PayPal error:', error);
