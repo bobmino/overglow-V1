@@ -35,49 +35,37 @@ connectDB().catch(err => {
 
 const app = express();
 
-// CORS configuration - Allow Vercel frontend and local development
-const allowedOrigins = [
-  'https://overglow-v1-3jqp.vercel.app',
-  'https://overglow-v1.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5000'
-];
-
-// CORS middleware - MUST be before all routes for Vercel serverless functions
+// CORS configuration - CRITICAL: Must be FIRST middleware
+// This handles CORS for Vercel serverless functions
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Determine allowed origin
-  let allowedOrigin = '*';
-  if (origin) {
-    // Allow if it's in our list or is a Vercel domain
-    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
-      allowedOrigin = origin;
-    }
+  // Log for debugging (only in production to see what's happening)
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    console.log(`[CORS] ${req.method} ${req.path} from origin: ${origin || 'none'}`);
   }
   
-  // Set CORS headers for ALL requests (including OPTIONS)
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  // Allow all Vercel domains and localhost - be permissive for now
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
-  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  res.setHeader('Access-Control-Max-Age', '86400');
   
-  // Handle preflight OPTIONS requests - MUST return immediately
+  // CRITICAL: Handle OPTIONS preflight requests immediately
   if (req.method === 'OPTIONS') {
-    return res.status(200).end(); // Use 200 instead of 204 for better compatibility
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.log(`[CORS] Handling OPTIONS preflight for ${req.path}`);
+    }
+    return res.status(200).json({ message: 'OK' });
   }
   
   next();
 });
 
-// Additional CORS using cors package as backup
+// Use cors package as additional layer
 app.use(cors({
-  origin: function (origin, callback) {
-    // Always allow (we handle restrictions in the middleware above)
-    callback(null, true);
-  },
+  origin: true, // Allow all origins
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
