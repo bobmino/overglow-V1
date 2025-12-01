@@ -90,15 +90,21 @@ const createBooking = async (req, res) => {
 // @route   GET /api/bookings/my-bookings
 // @access  Private
 const getMyBookings = async (req, res) => {
-  const bookings = await Booking.find({ user: req.user._id })
-    .populate({
-      path: 'schedule',
-      populate: {
-        path: 'product',
-        select: 'title images city',
-      },
-    });
-  res.json(bookings);
+  try {
+    const bookings = await Booking.find({ user: req.user._id })
+      .populate({
+        path: 'schedule',
+        populate: {
+          path: 'product',
+          select: 'title images city',
+        },
+      });
+    // Ensure we always return an array
+    res.json(Array.isArray(bookings) ? bookings : []);
+  } catch (error) {
+    console.error('Get my bookings error:', error);
+    res.status(500).json([]); // Return empty array on error
+  }
 };
 
 // @desc    Cancel a booking

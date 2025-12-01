@@ -331,22 +331,28 @@ const deleteProduct = async (req, res) => {
 // @route   GET /api/products
 // @access  Public
 const getPublishedProducts = async (req, res) => {
-  const { city, category, date } = req.query;
-  let query = { status: 'Published' };
+  try {
+    const { city, category, date } = req.query;
+    let query = { status: 'Published' };
 
-  if (city) {
-    query.city = { $regex: city, $options: 'i' };
+    if (city) {
+      query.city = { $regex: city, $options: 'i' };
+    }
+    if (category) {
+      query.category = category;
+    }
+
+    // Date filtering would typically involve checking schedules, which is more complex.
+    // For simplicity, we'll filter products first, and if date is present, we might need aggregation or separate logic.
+    // Here we just return products matching basic criteria.
+
+    const products = await Product.find(query);
+    // Ensure we always return an array
+    res.json(Array.isArray(products) ? products : []);
+  } catch (error) {
+    console.error('Get published products error:', error);
+    res.status(500).json([]); // Return empty array on error
   }
-  if (category) {
-    query.category = category;
-  }
-
-  // Date filtering would typically involve checking schedules, which is more complex.
-  // For simplicity, we'll filter products first, and if date is present, we might need aggregation or separate logic.
-  // Here we just return products matching basic criteria.
-
-  const products = await Product.find(query);
-  res.json(products);
 };
 
 // @desc    Get product by ID
