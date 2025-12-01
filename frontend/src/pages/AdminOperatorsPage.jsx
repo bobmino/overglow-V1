@@ -17,13 +17,10 @@ const AdminOperatorsPage = () => {
     try {
       const url = filter === 'all' ? '/api/admin/operators' : `/api/admin/operators?status=${filter}`;
       const { data } = await api.get(url);
-      // Ensure data is an array
-      const operatorsArray = Array.isArray(data) ? data : [];
-      setOperators(operatorsArray);
+      setOperators(data);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch operators:', error);
-      setOperators([]); // Set empty array on error
       setLoading(false);
     }
   };

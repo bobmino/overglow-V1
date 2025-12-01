@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
 
@@ -47,15 +46,6 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-app.get('/api/health', async (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
-  res.json({
-    status: 'ok',
-    database: dbStatus,
-    timestamp: new Date().toISOString()
-  });
-});
-
 // Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -87,7 +77,7 @@ app.use(errorHandler);
 export default app;
 
 // Only start server if not in Vercel environment (local development)
-if (process.env.VERCEL !== '1') {
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

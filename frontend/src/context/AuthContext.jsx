@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -21,8 +20,6 @@ export const AuthProvider = ({ children }) => {
     if (userInfo) {
       const parsedUser = JSON.parse(userInfo);
       setUser(parsedUser);
-      // Set default auth header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.token}`;
     }
     setLoading(false);
   }, []);
@@ -30,13 +27,11 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     localStorage.setItem('userInfo', JSON.stringify(userData));
     setUser(userData);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
   };
 
   const logout = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateUser = (updatedData) => {

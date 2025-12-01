@@ -29,9 +29,7 @@ const ReviewItem = ({ review }) => {
 };
 
 const ReviewsList = ({ reviews }) => {
-  const reviewsArray = Array.isArray(reviews) ? reviews : [];
-  
-  if (reviewsArray.length === 0) {
+  if (!reviews || reviews.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
         <p className="text-gray-600">No reviews yet. Be the first to review!</p>
@@ -39,7 +37,7 @@ const ReviewsList = ({ reviews }) => {
     );
   }
 
-  const averageRating = (reviewsArray.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsArray.length).toFixed(1);
+  const averageRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
 
   return (
     <div>
@@ -53,8 +51,8 @@ const ReviewsList = ({ reviews }) => {
       </div>
 
       <div className="space-y-0">
-        {reviewsArray.map((review) => (
-          <ReviewItem key={review._id || Math.random()} review={review} />
+        {reviews.map((review) => (
+          <ReviewItem key={review._id} review={review} />
         ))}
       </div>
     </div>

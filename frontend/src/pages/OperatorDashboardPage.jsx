@@ -30,23 +30,13 @@ const OperatorDashboardPage = () => {
     const fetchStats = async () => {
       try {
         // Fetch operator products
-<<<<<<< Updated upstream
-        const { data: products } = await axios.get('/api/products/my-products');
-
-        // Fetch operator bookings
-        const { data: bookings } = await axios.get('/api/operator/bookings');
-
-=======
-        const { data: productsData } = await api.get('/api/products/my-products');
-        const products = Array.isArray(productsData) ? productsData : [];
+        const { data: products } = await api.get('/api/products/my-products');
         
         // Fetch operator bookings
-        const { data: bookingsData } = await api.get('/api/operator/bookings');
-        const bookings = Array.isArray(bookingsData) ? bookingsData : [];
+        const { data: bookings } = await api.get('/api/operator/bookings');
         
->>>>>>> Stashed changes
         const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-
+        
         setStats({
           totalProducts: products.length,
           totalBookings: bookings.length,
@@ -56,12 +46,6 @@ const OperatorDashboardPage = () => {
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch stats:', error);
-        setStats({
-          totalProducts: 0,
-          totalBookings: 0,
-          totalRevenue: 0,
-          activeSchedules: 0
-        });
         setLoading(false);
       }
     };
@@ -130,7 +114,7 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={DollarSign}
           label="Total Revenue"
-          value={`€${(stats.totalRevenue || 0).toFixed(2)}`}
+          value={`€${stats.totalRevenue.toFixed(2)}`}
           color="bg-yellow-600"
         />
       </div>

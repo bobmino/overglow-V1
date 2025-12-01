@@ -234,4 +234,3 @@ const ApprovalRequestsPage = () => {
 };
 
 export default ApprovalRequestsPage;
-

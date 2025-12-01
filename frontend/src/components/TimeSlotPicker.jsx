@@ -88,4 +88,3 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
 };
 
 export default TimeSlotPicker;
-

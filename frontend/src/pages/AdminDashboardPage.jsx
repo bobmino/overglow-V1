@@ -6,7 +6,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
-  <div
+  <div 
     className={`bg-white rounded-xl border border-gray-200 p-6 ${onClick ? 'cursor-pointer hover:border-primary-600 hover:shadow-lg transition' : ''}`}
     onClick={onClick}
   >
@@ -37,17 +37,7 @@ const AdminDashboardPage = () => {
     const fetchStats = async () => {
       try {
         const { data } = await api.get('/api/admin/stats');
-        // Validate and set stats with defaults
-        setStats({
-          totalUsers: data?.totalUsers || 0,
-          totalOperators: data?.totalOperators || 0,
-          totalProducts: data?.totalProducts || 0,
-          totalBookings: data?.totalBookings || 0,
-          pendingProducts: data?.pendingProducts || 0,
-          publishedProducts: data?.publishedProducts || 0,
-          totalRevenue: data?.totalRevenue || 0,
-          operatorsByStatus: data?.operatorsByStatus || {},
-        });
+        setStats(data);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch admin stats:', error);
@@ -179,7 +169,7 @@ const AdminDashboardPage = () => {
             </div>
           </div>
           <p className="text-gray-600 text-sm mb-1">Revenus totaux</p>
-          <p className="text-3xl font-bold text-gray-900">€{(stats.totalRevenue || 0).toFixed(2)}</p>
+          <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(2)}</p>
         </div>
       </div>
 

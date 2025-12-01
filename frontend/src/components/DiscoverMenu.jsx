@@ -24,9 +24,9 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
         api.get('/api/search/destinations')
       ]);
       
-      setCategories(Array.isArray(categoriesRes.data?.categories) ? categoriesRes.data.categories : []);
-      setPopularActivities(Array.isArray(categoriesRes.data?.popularActivities) ? categoriesRes.data.popularActivities : []);
-      setDestinations(destinationsRes.data?.byRegion ? destinationsRes.data : { byRegion: {} });
+      setCategories(categoriesRes.data.categories || []);
+      setPopularActivities(categoriesRes.data.popularActivities || []);
+      setDestinations(destinationsRes.data);
     } catch (error) {
       console.error('Failed to fetch discover data:', error);
     }
@@ -47,7 +47,7 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Top Categories
           </h3>
           <div className="space-y-1">
-            {Array.isArray(categories) && categories.slice(0, 6).map((category) => (
+            {categories.slice(0, 6).map((category) => (
               <Link
                 key={category.slug}
                 to={`/search?category=${encodeURIComponent(category.slug)}&sort=rating&view=category&filter=active`}
@@ -72,7 +72,7 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Popular Activities
           </h3>
           <div className="space-y-1">
-            {Array.isArray(popularActivities) && popularActivities.slice(0, 8).map((activity, index) => (
+            {popularActivities.slice(0, 8).map((activity, index) => (
               <Link
                 key={index}
                 to={`/search?q=${encodeURIComponent(activity)}&sort=price-low&view=activity&filter=popular`}
@@ -92,11 +92,11 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Top Destinations
           </h3>
           <div className="space-y-3">
-            {destinations?.byRegion && typeof destinations.byRegion === 'object' && Object.entries(destinations.byRegion).slice(0, 3).map(([region, cities]) => (
+            {Object.entries(destinations.byRegion).slice(0, 3).map(([region, cities]) => (
               <div key={region}>
                 <div className="text-xs font-bold text-slate-500 mb-1">{region}</div>
                 <div className="space-y-1">
-                  {Array.isArray(cities) && cities.slice(0, 3).map((dest) => (
+                  {cities.slice(0, 3).map((dest) => (
                     <Link
                       key={dest.city}
                       to={`/search?city=${encodeURIComponent(dest.city)}&sort=recommended&view=destination&filter=top`}

@@ -202,4 +202,3 @@ const InquiriesPage = () => {
 };
 
 export default InquiriesPage;
-

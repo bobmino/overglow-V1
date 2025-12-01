@@ -17,13 +17,10 @@ const OperatorProductsPage = () => {
   const fetchProducts = async () => {
     try {
       const { data } = await api.get('/api/products/my-products');
-      // Ensure data is an array
-      const productsArray = Array.isArray(data) ? data : [];
-      setProducts(productsArray);
+      setProducts(data);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      setProducts([]); // Set empty array on error
       setLoading(false);
     }
   };

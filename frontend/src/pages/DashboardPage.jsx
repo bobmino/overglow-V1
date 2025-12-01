@@ -22,7 +22,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
             <X size={24} />
           </button>
         </div>
-
+        
         <p className="text-gray-600 mb-6">
           Are you sure you want to cancel your booking for <strong>{booking.schedule?.product?.title}</strong>?
           This action cannot be undone.
@@ -38,8 +38,9 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
           <button
             onClick={handleCancel}
             disabled={loading}
-            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white transition ${loading ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
-              }`}
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white transition ${
+              loading ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
+            }`}
           >
             {loading ? 'Cancelling...' : 'Cancel Booking'}
           </button>
@@ -99,11 +100,11 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-gray-700">
             <Calendar size={16} className="mr-2 text-gray-400" />
-            {new Date(booking.schedule?.date).toLocaleDateString('fr-FR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
+            {new Date(booking.schedule?.date).toLocaleDateString('fr-FR', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
             })}
           </div>
           <div className="flex items-center text-gray-700">
@@ -119,12 +120,12 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
         <div className="border-t pt-4 flex justify-between items-center">
           <div>
             <span className="text-sm text-gray-600">Total</span>
-            <p className="text-xl font-bold text-gray-900">€{(booking.totalAmount || 0).toFixed(2)}</p>
+            <p className="text-xl font-bold text-gray-900">€{booking.totalAmount.toFixed(2)}</p>
           </div>
           <div className="flex gap-2">
             {booking.status === 'Confirmed' && !isPastBooking() && (
               <>
-                <Link
+                <Link 
                   to={`/products/${booking.schedule?.product?._id}`}
                   className="text-green-700 font-semibold hover:underline"
                 >
@@ -179,14 +180,11 @@ const DashboardPage = () => {
   const fetchBookings = async () => {
     try {
       const { data } = await api.get('/api/bookings/my-bookings');
-      // Ensure data is an array
-      const bookingsArray = Array.isArray(data) ? data : [];
-      setBookings(bookingsArray);
+      setBookings(data);
       setLoading(false);
     } catch (err) {
       console.error('Booking fetch error:', err);
       setError('Failed to load bookings');
-      setBookings([]); // Set empty array on error
       setLoading(false);
     }
   };
@@ -230,8 +228,8 @@ const DashboardPage = () => {
           <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">No bookings yet</h2>
           <p className="text-gray-600 mb-6">Start exploring and book your next adventure!</p>
-          <Link
-            to="/search"
+          <Link 
+            to="/search" 
             className="inline-block bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
           >
             Explore Experiences

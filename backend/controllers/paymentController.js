@@ -2,24 +2,14 @@ import Stripe from 'stripe';
 import paypal from '@paypal/checkout-server-sdk';
 import Booking from '../models/bookingModel.js';
 
-// Lazy initialization to avoid crashes when API keys are not defined
-const getStripe = () => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return null;
-  }
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-};
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const getPayPalClient = () => {
-  if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
-    return null;
-  }
-  const environment = new paypal.core.SandboxEnvironment(
-    process.env.PAYPAL_CLIENT_ID,
-    process.env.PAYPAL_CLIENT_SECRET
-  );
-  return new paypal.core.PayPalHttpClient(environment);
-};
+// PayPal Configuration
+const environment = new paypal.core.SandboxEnvironment(
+  process.env.PAYPAL_CLIENT_ID,
+  process.env.PAYPAL_CLIENT_SECRET
+);
+const paypalClient = new paypal.core.PayPalHttpClient(environment);
 
 // @desc    Create Stripe Payment Intent
 // @route   POST /api/payments/create-stripe-intent
@@ -36,11 +26,6 @@ const createStripeIntent = async (req, res) => {
   }
 
   try {
-    const stripe = getStripe();
-    if (!stripe) {
-      return res.status(500).json({ message: 'Stripe not configured' });
-    }
-
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe expects amount in cents
       currency: currency || 'eur',
@@ -63,11 +48,6 @@ const createStripeIntent = async (req, res) => {
 // @access  Private
 const createPaypalOrder = async (req, res) => {
   const { amount } = req.body;
-
-  const paypalClient = getPayPalClient();
-  if (!paypalClient) {
-    return res.status(500).json({ message: 'PayPal not configured' });
-  }
 
   const request = new paypal.orders.OrdersCreateRequest();
   request.prefer("return=representation");

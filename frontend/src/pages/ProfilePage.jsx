@@ -39,14 +39,14 @@ const ProfilePage = () => {
       const { data } = await api.get('/api/auth/me');
       setProfile(data);
       setFormData({
-        name: data?.name || '',
-        email: data?.email || '',
-        phone: data?.phone || '',
-        bio: data?.bio || '',
-        location: data?.location || '',
-        dateOfBirth: data?.dateOfBirth || '',
-        website: data?.website || '',
-        socialLinks: data?.socialLinks || {
+        name: data.name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        bio: data.bio || '',
+        location: data.location || '',
+        dateOfBirth: data.dateOfBirth || '',
+        website: data.website || '',
+        socialLinks: data.socialLinks || {
           facebook: '',
           instagram: '',
           twitter: '',

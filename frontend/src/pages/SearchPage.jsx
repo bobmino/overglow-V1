@@ -135,7 +135,7 @@ const SearchPage = () => {
     setSearchParams({});
   };
 
-  const activeFiltersCount = selectedCategories.length + (selectedCity ? 1 : 0) + (priceRange.min || priceRange.max ? 1 : 0);
+  const activeFiltersCount = (Array.isArray(selectedCategories) ? selectedCategories.length : 0) + (selectedCity ? 1 : 0) + (priceRange.min || priceRange.max ? 1 : 0);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-20 md:pt-24">

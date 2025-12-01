@@ -63,7 +63,6 @@ const AffiliatePage = () => {
       // Redirect to onboarding after registration
       navigate('/operator/onboarding');
     } catch (err) {
-      console.error('Registration error:', err);
       setError(err.response?.data?.message || 'L\'inscription a échoué. Veuillez réessayer.');
       setLoading(false);
     }

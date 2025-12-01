@@ -163,29 +163,6 @@
    - Désactivation ETag
    - Gestion défensive côté client
 
-7. ✅ **TypeError: e.map is not a function** (Production Vercel)
-   - Protection complète avec `Array.isArray()` avant tous les `.map()`
-   - Fichiers corrigés :
-     - `TopTours.jsx`, `TourCard.jsx`, `ProductCard.jsx`
-     - `SearchPage.jsx` (categories, cities, selectedCategories, filteredProducts)
-     - `DiscoverMenu.jsx`, `SearchAutocomplete.jsx`
-     - `ReviewsList.jsx`, `ImageGallery.jsx`
-     - `ProductDetailPage.jsx` (schedules, relatedProducts)
-     - `OperatorProductFormPage.jsx` (formData arrays)
-   - Protection des valeurs numériques (totalAmount, totalRevenue)
-   - Fallbacks pour toutes les données API
-
-8. ✅ **Configuration Axios centralisée**
-   - Fichier `frontend/src/config/axios.js` pour configuration unique
-   - Intercepteurs pour JWT et gestion d'erreurs 401
-   - BaseURL dynamique selon environnement (VITE_API_URL)
-
-9. ✅ **Déploiement Vercel**
-   - Configuration backend (`vercel.json`)
-   - Configuration frontend (`frontend/vercel.json`)
-   - Initialisation paresseuse Stripe/PayPal pour éviter crashes
-   - Export Express app pour serverless functions
-
 ---
 
 ## 📁 Structure des Fichiers Créés/Modifiés

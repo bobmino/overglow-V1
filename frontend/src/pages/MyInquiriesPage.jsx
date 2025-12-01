@@ -77,12 +77,10 @@ const MyInquiriesPage = () => {
     const fetchInquiries = async () => {
       try {
         const { data } = await api.get('/api/inquiries/my-inquiries');
-        const inquiriesArray = Array.isArray(data) ? data : [];
-        setInquiries(inquiriesArray);
+        setInquiries(data);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch inquiries:', error);
-        setInquiries([]);
         setLoading(false);
       }
     };

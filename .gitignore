@@ -36,3 +36,7 @@ uploads/*
 
 # Vercel
 .vercel
+
+# Duplicate folder (to be removed)
+overglow-V1/
+

@@ -14,12 +14,10 @@ const AdminProductsPage = () => {
     try {
       const url = filter === 'all' ? '/api/admin/products' : `/api/admin/products?status=${filter}`;
       const { data } = await api.get(url);
-      const productsArray = Array.isArray(data) ? data : [];
-      setProducts(productsArray);
+      setProducts(data);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      setProducts([]);
       setLoading(false);
     }
   };
