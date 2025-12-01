@@ -52,13 +52,15 @@ const TopTours = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex space-x-4">
-              {products.map((product, index) => (
+              {Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
                 <TourCard 
-                  key={product._id} 
+                  key={product?._id || index} 
                   product={product}
                   isLikelyToSellOut={index % 3 === 0}
                 />
-              ))}
+              )) : (
+                <div className="text-center text-gray-500 py-8">No tours available</div>
+              )}
             </div>
           </div>
           

@@ -343,7 +343,7 @@ const OperatorProductFormPage = () => {
           {['highlights', 'included', 'requirements'].map((field) => (
             <div key={field}>
               <label className="block text-sm font-bold text-gray-700 mb-2 capitalize">{field}</label>
-              {formData[field].map((item, index) => (
+              {Array.isArray(formData[field]) && formData[field].map((item, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <input
                     type="text"

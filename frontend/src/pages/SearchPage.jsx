@@ -164,11 +164,11 @@ const SearchPage = () => {
             <div className="mb-6">
               <h3 className="font-semibold mb-3 text-slate-900">Category</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {categories.map((cat) => (
+                {Array.isArray(categories) && categories.map((cat) => (
                   <label key={cat} className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
                     <input 
                       type="checkbox" 
-                      checked={selectedCategories.includes(cat)}
+                      checked={Array.isArray(selectedCategories) && selectedCategories.includes(cat)}
                       onChange={() => handleCategoryToggle(cat)}
                       className="rounded text-primary-600 focus:ring-primary-500" 
                     />
@@ -187,7 +187,7 @@ const SearchPage = () => {
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">All Cities</option>
-                {cities.map(city => (
+                {Array.isArray(cities) && cities.map(city => (
                   <option key={city} value={city}>{city}</option>
                 ))}
               </select>
@@ -222,7 +222,7 @@ const SearchPage = () => {
           {/* Active Filters Display */}
           {activeFiltersCount > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {selectedCategories.map(cat => (
+              {Array.isArray(selectedCategories) && selectedCategories.map(cat => (
                 <span key={cat} className="inline-flex items-center gap-1 bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
                   {cat}
                   <button onClick={() => handleCategoryToggle(cat)} className="hover:bg-primary-200 rounded-full p-0.5">
@@ -251,7 +251,7 @@ const SearchPage = () => {
 
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-slate-900">
-              {loading ? 'Searching...' : `${filteredProducts.length} experiences found`}
+              {loading ? 'Searching...' : `${Array.isArray(filteredProducts) ? filteredProducts.length : 0} experiences found`}
             </h1>
             <div className="flex items-center space-x-2 text-sm text-slate-600">
               <span className="font-medium">Sort by:</span>
@@ -278,7 +278,7 @@ const SearchPage = () => {
             <div className="bg-red-50 text-red-700 p-4 rounded-lg">
               {error}
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : !Array.isArray(filteredProducts) || filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-slate-600 text-lg mb-4">No experiences found matching your filters</p>
               <button 
@@ -291,7 +291,7 @@ const SearchPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard key={product?._id || Math.random()} product={product} />
               ))}
             </div>
           )}

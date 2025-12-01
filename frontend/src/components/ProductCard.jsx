@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { Star, MapPin } from 'lucide-react';
 
 const ProductCard = ({ product }) => {
+  if (!product) return null;
+  
   // Use first image or placeholder
-  const image = product.images && product.images.length > 0 
+  const image = Array.isArray(product.images) && product.images.length > 0 
     ? product.images[0] 
     : 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
 

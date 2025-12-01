@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { Star, MapPin, Heart } from 'lucide-react';
 
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
-  const image = product.images && product.images.length > 0 
+  if (!product) return null;
+  
+  const image = Array.isArray(product.images) && product.images.length > 0 
     ? product.images[0] 
     : 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
 
