@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Package, Calendar, DollarSign, Users, TrendingUp, MessageSquare } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -30,11 +30,21 @@ const OperatorDashboardPage = () => {
     const fetchStats = async () => {
       try {
         // Fetch operator products
+<<<<<<< Updated upstream
         const { data: products } = await axios.get('/api/products/my-products');
 
         // Fetch operator bookings
         const { data: bookings } = await axios.get('/api/operator/bookings');
 
+=======
+        const { data: productsData } = await api.get('/api/products/my-products');
+        const products = Array.isArray(productsData) ? productsData : [];
+        
+        // Fetch operator bookings
+        const { data: bookingsData } = await api.get('/api/operator/bookings');
+        const bookings = Array.isArray(bookingsData) ? bookingsData : [];
+        
+>>>>>>> Stashed changes
         const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
         setStats({
@@ -46,6 +56,12 @@ const OperatorDashboardPage = () => {
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch stats:', error);
+        setStats({
+          totalProducts: 0,
+          totalBookings: 0,
+          totalRevenue: 0,
+          activeSchedules: 0
+        });
         setLoading(false);
       }
     };

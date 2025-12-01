@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Settings, Save, CheckCircle, XCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -19,7 +19,7 @@ const AdminSettingsPage = () => {
 
   const fetchSettings = async () => {
     try {
-      const { data } = await axios.get('/api/settings');
+      const { data } = await api.get('/api/settings');
       setSettings(data);
       setLoading(false);
     } catch (error) {
@@ -40,11 +40,11 @@ const AdminSettingsPage = () => {
     setMessage('');
     try {
       await Promise.all([
-        axios.put(`/api/settings/autoApproveProducts`, { 
+        api.put(`/api/settings/autoApproveProducts`, { 
           value: settings.autoApproveProducts,
           description: 'Auto-approve products from approved operators'
         }),
-        axios.put(`/api/settings/autoApproveReviews`, { 
+        api.put(`/api/settings/autoApproveReviews`, { 
           value: settings.autoApproveReviews,
           description: 'Auto-approve reviews from approved users'
         }),

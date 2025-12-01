@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { Link } from 'react-router-dom';
@@ -76,11 +76,13 @@ const MyInquiriesPage = () => {
   useEffect(() => {
     const fetchInquiries = async () => {
       try {
-        const { data } = await axios.get('/api/inquiries/my-inquiries');
-        setInquiries(data);
+        const { data } = await api.get('/api/inquiries/my-inquiries');
+        const inquiriesArray = Array.isArray(data) ? data : [];
+        setInquiries(inquiriesArray);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch inquiries:', error);
+        setInquiries([]);
         setLoading(false);
       }
     };

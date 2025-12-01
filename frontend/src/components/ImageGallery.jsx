@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const ImageGallery = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  const displayImages = images && images.length > 0 
+  const displayImages = Array.isArray(images) && images.length > 0 
     ? images 
     : ['https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200'];
 

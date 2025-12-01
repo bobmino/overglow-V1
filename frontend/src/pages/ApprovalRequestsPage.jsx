@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { AlertCircle, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -19,18 +19,20 @@ const ApprovalRequestsPage = () => {
       const url = filter === 'all' 
         ? '/api/approval-requests'
         : `/api/approval-requests?status=${filter}`;
-      const { data } = await axios.get(url);
-      setRequests(data);
+      const { data } = await api.get(url);
+      const requestsArray = Array.isArray(data) ? data : [];
+      setRequests(requestsArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch approval requests:', error);
+      setRequests([]);
       setLoading(false);
     }
   };
 
   const handleApprove = async (requestId) => {
     try {
-      await axios.put(`/api/approval-requests/${requestId}/approve`);
+      await api.put(`/api/approval-requests/${requestId}/approve`);
       fetchRequests();
     } catch (error) {
       alert('Failed to approve request');
@@ -40,7 +42,7 @@ const ApprovalRequestsPage = () => {
   const handleReject = async (requestId) => {
     const reason = prompt('Raison du rejet (optionnel):');
     try {
-      await axios.put(`/api/approval-requests/${requestId}/reject`, { reason });
+      await api.put(`/api/approval-requests/${requestId}/reject`, { reason });
       fetchRequests();
     } catch (error) {
       alert('Failed to reject request');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { MessageSquare, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -12,7 +12,7 @@ const InquiryCard = ({ inquiry, onUpdate }) => {
     if (!answer.trim()) return;
     setLoading(true);
     try {
-      await axios.put(`/api/inquiries/${inquiry._id}/answer`, { answer });
+      await api.put(`/api/inquiries/${inquiry._id}/answer`, { answer });
       onUpdate();
     } catch (error) {
       alert('Failed to send answer');
@@ -24,7 +24,7 @@ const InquiryCard = ({ inquiry, onUpdate }) => {
   const handleApprove = async () => {
     setLoading(true);
     try {
-      await axios.put(`/api/inquiries/${inquiry._id}/approve`);
+      await api.put(`/api/inquiries/${inquiry._id}/approve`);
       onUpdate();
     } catch (error) {
       alert('Failed to approve inquiry');
@@ -38,7 +38,7 @@ const InquiryCard = ({ inquiry, onUpdate }) => {
     if (!reason) return;
     setLoading(true);
     try {
-      await axios.put(`/api/inquiries/${inquiry._id}/reject`, { reason });
+      await api.put(`/api/inquiries/${inquiry._id}/reject`, { reason });
       onUpdate();
     } catch (error) {
       alert('Failed to reject inquiry');
@@ -147,11 +147,14 @@ const InquiriesPage = () => {
 
   const fetchInquiries = async () => {
     try {
-      const { data } = await axios.get('/api/inquiries/operator');
-      setInquiries(data);
+      const { data } = await api.get('/api/inquiries/operator');
+      // Ensure data is an array
+      const inquiriesArray = Array.isArray(data) ? data : [];
+      setInquiries(inquiriesArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch inquiries:', error);
+      setInquiries([]); // Set empty array on error
       setLoading(false);
     }
   };

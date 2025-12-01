@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Package, MapPin, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -13,11 +13,13 @@ const AdminProductsPage = () => {
   const fetchProducts = async () => {
     try {
       const url = filter === 'all' ? '/api/admin/products' : `/api/admin/products?status=${filter}`;
-      const { data } = await axios.get(url);
-      setProducts(data);
+      const { data } = await api.get(url);
+      const productsArray = Array.isArray(data) ? data : [];
+      setProducts(productsArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]);
       setLoading(false);
     }
   };
@@ -28,7 +30,7 @@ const AdminProductsPage = () => {
 
   const handleStatusChange = async (productId, newStatus) => {
     try {
-      await axios.put(`/api/admin/products/${productId}/status`, { status: newStatus });
+      await api.put(`/api/admin/products/${productId}/status`, { status: newStatus });
       fetchProducts();
     } catch (error) {
       alert('Failed to update product status');

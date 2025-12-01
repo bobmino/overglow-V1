@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send, MessageSquare } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
   const [question, setQuestion] = useState('');
@@ -14,7 +14,7 @@ const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
     setError('');
 
     try {
-      await axios.post('/api/inquiries', {
+      await api.post('/api/inquiries', {
         productId: product._id,
         question: type === 'manual' ? question : undefined,
         type,

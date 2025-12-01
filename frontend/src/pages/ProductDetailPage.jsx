@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { 
   MapPin, Clock, Star, CheckCircle, Users, Calendar as CalendarIcon, 
   X, ChevronDown, ChevronRight, Award, TrendingUp, Shield, Camera
@@ -29,18 +29,20 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data } = await axios.get(`/api/products/${id}`);
+        const { data } = await api.get(`/api/products/${id}`);
         setProduct(data);
-        setAvailableSchedules(data.schedules || []);
+        setAvailableSchedules(Array.isArray(data?.schedules) ? data.schedules : []);
         setLoading(false);
         
         // Fetch related products
-        const { data: allProducts } = await axios.get('/api/products');
+        const { data: allProductsData } = await api.get('/api/products');
+        const allProducts = Array.isArray(allProductsData) ? allProductsData : [];
         const related = allProducts
-          .filter(p => p._id !== id && (p.city === data.city || p.category === data.category))
+          .filter(p => p._id !== id && (p.city === data?.city || p.category === data?.category))
           .slice(0, 4);
         setRelatedProducts(related);
       } catch (err) {
+        console.error('Failed to load product:', err);
         setError('Failed to load product');
         setLoading(false);
       }
@@ -338,7 +340,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Related Products */}
-            {relatedProducts.length > 0 && (
+            {Array.isArray(relatedProducts) && relatedProducts.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">You might also like</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

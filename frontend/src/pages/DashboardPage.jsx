@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReviewModal from '../components/ReviewModal';
@@ -64,7 +64,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
 
   const handleCancelBooking = async (bookingId) => {
     try {
-      await axios.put(`/api/bookings/${bookingId}/cancel`);
+      await api.put(`/api/bookings/${bookingId}/cancel`);
       setShowCancelModal(false);
       onBookingCancelled();
     } catch (error) {
@@ -178,12 +178,15 @@ const DashboardPage = () => {
 
   const fetchBookings = async () => {
     try {
-      const { data } = await axios.get('/api/bookings/my-bookings');
-      setBookings(data);
+      const { data } = await api.get('/api/bookings/my-bookings');
+      // Ensure data is an array
+      const bookingsArray = Array.isArray(data) ? data : [];
+      setBookings(bookingsArray);
       setLoading(false);
     } catch (err) {
       console.error('Booking fetch error:', err);
       setError('Failed to load bookings');
+      setBookings([]); // Set empty array on error
       setLoading(false);
     }
   };

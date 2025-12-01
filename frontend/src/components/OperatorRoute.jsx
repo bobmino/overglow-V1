@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/axios';
 
 const OperatorRoute = ({ children }) => {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -16,7 +16,7 @@ const OperatorRoute = ({ children }) => {
       }
 
       try {
-        const { data } = await axios.get('/api/operator/onboarding');
+        const { data } = await api.get('/api/operator/onboarding');
         setOnboardingStatus(data);
       } catch (error) {
         // If error, assume onboarding needs to be completed

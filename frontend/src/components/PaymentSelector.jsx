@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CreditCard, Building, Wallet } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
+import api from '../config/axios';
 
 // Initialize Stripe (replace with your publishable key)
 const stripePromise = loadStripe('pk_test_placeholder');
@@ -20,7 +20,7 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
 
     try {
       // Create PaymentIntent
-      const { data: { clientSecret } } = await axios.post('/api/payments/create-stripe-intent', {
+      const { data: { clientSecret } } = await api.post('/api/payments/create-stripe-intent', {
         amount,
         currency: 'eur'
       });

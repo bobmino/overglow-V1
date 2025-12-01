@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PaymentSelector from '../components/PaymentSelector';
@@ -30,7 +30,7 @@ const CheckoutPage = () => {
     setError('');
 
     try {
-      const { data } = await axios.post('/api/bookings', {
+      const { data } = await api.post('/api/bookings', {
         scheduleId: schedule._id,
         numberOfTickets: numberOfTickets,
         paymentMethod: paymentDetails.type,

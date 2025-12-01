@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const InternalNoteModal = ({ booking, isOpen, onClose, onSaved }) => {
   const [note, setNote] = useState('');
@@ -19,7 +19,7 @@ const InternalNoteModal = ({ booking, isOpen, onClose, onSaved }) => {
     setError('');
     
     try {
-      await axios.put(`/api/bookings/${booking._id}/note`, { note });
+      await api.put(`/api/bookings/${booking._id}/note`, { note });
       onSaved();
       onClose();
     } catch (err) {

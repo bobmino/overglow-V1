@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { DollarSign, Plus, Clock, CheckCircle, XCircle, CheckCheck } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -31,7 +31,7 @@ const WithdrawalsPage = () => {
 
   const fetchBalance = async () => {
     try {
-      const { data } = await axios.get('/api/withdrawals/balance');
+      const { data } = await api.get('/api/withdrawals/balance');
       setBalance(data);
     } catch (error) {
       console.error('Failed to fetch balance:', error);
@@ -40,7 +40,7 @@ const WithdrawalsPage = () => {
 
   const fetchWithdrawals = async () => {
     try {
-      const { data } = await axios.get('/api/withdrawals/my-withdrawals');
+      const { data } = await api.get('/api/withdrawals/my-withdrawals');
       setWithdrawals(data);
       setLoading(false);
     } catch (error) {
@@ -61,7 +61,7 @@ const WithdrawalsPage = () => {
         paypalEmail: formData.paypalEmail,
       };
 
-      await axios.post('/api/withdrawals', {
+      await api.post('/api/withdrawals', {
         amount: parseFloat(formData.amount),
         type: 'operator_payout',
         paymentMethod: formData.paymentMethod,

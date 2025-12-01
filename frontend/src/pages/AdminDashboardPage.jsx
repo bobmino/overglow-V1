@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Users, Building2, Package, Calendar, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -36,8 +36,18 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await axios.get('/api/admin/stats');
-        setStats(data);
+        const { data } = await api.get('/api/admin/stats');
+        // Validate and set stats with defaults
+        setStats({
+          totalUsers: data?.totalUsers || 0,
+          totalOperators: data?.totalOperators || 0,
+          totalProducts: data?.totalProducts || 0,
+          totalBookings: data?.totalBookings || 0,
+          pendingProducts: data?.pendingProducts || 0,
+          publishedProducts: data?.publishedProducts || 0,
+          totalRevenue: data?.totalRevenue || 0,
+          operatorsByStatus: data?.operatorsByStatus || {},
+        });
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch admin stats:', error);

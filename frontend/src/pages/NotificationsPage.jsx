@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Bell, Check, CheckCheck, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -20,7 +20,7 @@ const NotificationsPage = () => {
       const url = filter === 'unread' 
         ? '/api/notifications?unreadOnly=true'
         : '/api/notifications';
-      const { data } = await axios.get(url);
+      const { data } = await api.get(url);
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
       setLoading(false);
@@ -32,7 +32,7 @@ const NotificationsPage = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      await axios.put(`/api/notifications/${notificationId}/read`);
+      await api.put(`/api/notifications/${notificationId}/read`);
       setNotifications(prev => 
         prev.map(n => n._id === notificationId ? { ...n, isRead: true, readAt: new Date() } : n)
       );
@@ -44,7 +44,7 @@ const NotificationsPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.put('/api/notifications/read-all');
+      await api.put('/api/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
       setUnreadCount(0);
     } catch (error) {
@@ -54,7 +54,7 @@ const NotificationsPage = () => {
 
   const deleteNotification = async (notificationId) => {
     try {
-      await axios.delete(`/api/notifications/${notificationId}`);
+      await api.delete(`/api/notifications/${notificationId}`);
       setNotifications(prev => {
         const notif = prev.find(n => n._id === notificationId);
         if (notif && !notif.isRead) {

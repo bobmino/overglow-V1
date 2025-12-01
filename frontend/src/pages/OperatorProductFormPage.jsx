@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -39,7 +39,7 @@ const OperatorProductFormPage = () => {
 
   const fetchProduct = async () => {
     try {
-      const { data } = await axios.get(`/api/products/${id}`);
+      const { data } = await api.get(`/api/products/${id}`);
       
       setFormData(prev => ({
         ...prev,
@@ -107,7 +107,7 @@ const OperatorProductFormPage = () => {
         },
       };
 
-      const { data } = await axios.post('/api/upload', formData, config);
+      const { data } = await api.post('/api/upload', formData, config);
       setFormData(prev => ({ ...prev, images: [...prev.images, data] }));
       setUploading(false);
     } catch (error) {
@@ -162,9 +162,9 @@ const OperatorProductFormPage = () => {
 
       let response;
       if (isEditMode) {
-        response = await axios.put(`/api/products/${id}`, payload);
+        response = await api.put(`/api/products/${id}`, payload);
       } else {
-        response = await axios.post('/api/products', payload);
+        response = await api.post('/api/products', payload);
       }
       
       // Clear error on success

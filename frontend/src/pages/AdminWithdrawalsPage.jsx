@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { DollarSign, CheckCircle, XCircle, CheckCheck, Clock, Filter } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -20,7 +20,7 @@ const AdminWithdrawalsPage = () => {
       if (filter !== 'all') params.append('status', filter);
       if (typeFilter !== 'all') params.append('type', typeFilter);
       
-      const { data } = await axios.get(`/api/withdrawals?${params.toString()}`);
+      const { data } = await api.get(`/api/withdrawals?${params.toString()}`);
       setWithdrawals(data);
       setLoading(false);
     } catch (error) {
@@ -31,7 +31,7 @@ const AdminWithdrawalsPage = () => {
 
   const handleApprove = async (withdrawalId) => {
     try {
-      await axios.put(`/api/withdrawals/${withdrawalId}/approve`);
+      await api.put(`/api/withdrawals/${withdrawalId}/approve`);
       fetchWithdrawals();
     } catch (error) {
       alert('Failed to approve withdrawal');
@@ -44,7 +44,7 @@ const AdminWithdrawalsPage = () => {
       return;
     }
     try {
-      await axios.put(`/api/withdrawals/${withdrawalId}/reject`, { reason });
+      await api.put(`/api/withdrawals/${withdrawalId}/reject`, { reason });
       fetchWithdrawals();
     } catch (error) {
       alert('Failed to reject withdrawal');
@@ -53,7 +53,7 @@ const AdminWithdrawalsPage = () => {
 
   const handleProcess = async (withdrawalId) => {
     try {
-      await axios.put(`/api/withdrawals/${withdrawalId}/process`);
+      await api.put(`/api/withdrawals/${withdrawalId}/process`);
       fetchWithdrawals();
     } catch (error) {
       alert('Failed to process withdrawal');

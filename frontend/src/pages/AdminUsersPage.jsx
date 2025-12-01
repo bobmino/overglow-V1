@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Users, Mail, Shield, Trash2, AlertCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -11,11 +11,13 @@ const AdminUsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get('/api/admin/users');
-      setUsers(data);
+      const { data } = await api.get('/api/admin/users');
+      const usersArray = Array.isArray(data) ? data : [];
+      setUsers(usersArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      setUsers([]);
       setLoading(false);
     }
   };
@@ -30,7 +32,7 @@ const AdminUsersPage = () => {
     }
 
     try {
-      await axios.delete(`/api/admin/users/${userId}`);
+      await api.delete(`/api/admin/users/${userId}`);
       fetchUsers();
     } catch (error) {
       alert('Failed to delete user');

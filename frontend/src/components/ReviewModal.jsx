@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Star, X } from 'lucide-react';
 
 const ReviewModal = ({ booking, onClose, onSubmitted }) => {
@@ -14,7 +14,7 @@ const ReviewModal = ({ booking, onClose, onSubmitted }) => {
     setError('');
 
     try {
-      await axios.post(`/api/products/${booking.schedule.product._id}/reviews`, {
+      await api.post(`/api/products/${booking.schedule.product._id}/reviews`, {
         rating,
         comment
       });

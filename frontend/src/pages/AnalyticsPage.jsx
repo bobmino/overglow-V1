@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, Users, TrendingUp, Package } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -28,7 +28,7 @@ const AnalyticsPage = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const { data } = await axios.get('/api/operator/analytics');
+        const { data } = await api.get('/api/operator/analytics');
         setData(data);
         setLoading(false);
       } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Search as SearchIcon } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place or activity" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,12 +30,17 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
       setLoading(true);
       debounceTimer.current = setTimeout(async () => {
         try {
-          const { data } = await axios.get(`/api/search/autocomplete?q=${value}`);
-          setSuggestions(data);
+          const { data } = await api.get(`/api/search/autocomplete?q=${value}`);
+          setSuggestions({
+            cities: Array.isArray(data?.cities) ? data.cities : [],
+            activities: Array.isArray(data?.activities) ? data.activities : [],
+            showNearby: data?.showNearby || false
+          });
           setIsOpen(true);
           setLoading(false);
         } catch (error) {
           console.error('Autocomplete error:', error);
+          setSuggestions({ cities: [], activities: [], showNearby: false });
           setLoading(false);
         }
       }, 300);
@@ -61,7 +66,7 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
     setIsOpen(false);
   };
 
-  const hasSuggestions = suggestions.cities.length > 0 || suggestions.activities.length > 0;
+  const hasSuggestions = (Array.isArray(suggestions.cities) && suggestions.cities.length > 0) || (Array.isArray(suggestions.activities) && suggestions.activities.length > 0);
 
   return (
     <div className="relative w-full" ref={autocompleteRef}>
@@ -103,7 +108,7 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
           )}
 
           {/* Cities */}
-          {suggestions.cities.length > 0 && (
+          {Array.isArray(suggestions.cities) && suggestions.cities.length > 0 && (
             <div>
               <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Destinations
@@ -125,9 +130,9 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
           )}
 
           {/* Activities */}
-          {suggestions.activities.length > 0 && (
+          {Array.isArray(suggestions.activities) && suggestions.activities.length > 0 && (
             <div>
-              {suggestions.cities.length > 0 && <div className="border-t border-slate-100 my-2"></div>}
+              {Array.isArray(suggestions.cities) && suggestions.cities.length > 0 && <div className="border-t border-slate-100 my-2"></div>}
               <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Activities
               </div>

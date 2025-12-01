@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { Filter, X } from 'lucide-react';
 
@@ -23,12 +23,16 @@ const SearchPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get('/api/products');
-        setProducts(data);
-        setFilteredProducts(data);
+        const { data } = await api.get('/api/products');
+        const productsArray = Array.isArray(data) ? data : [];
+        setProducts(productsArray);
+        setFilteredProducts(productsArray);
         setLoading(false);
       } catch (err) {
+        console.error('Failed to load products:', err);
         setError('Failed to load products');
+        setProducts([]);
+        setFilteredProducts([]);
         setLoading(false);
       }
     };
@@ -71,7 +75,7 @@ const SearchPage = () => {
 
   // Apply filters whenever filter states change
   useEffect(() => {
-    let filtered = [...products];
+    let filtered = Array.isArray(products) ? [...products] : [];
 
     // Category filter
     if (selectedCategories.length > 0) {

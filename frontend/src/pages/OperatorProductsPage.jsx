@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axios';
 import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -16,11 +16,14 @@ const OperatorProductsPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('/api/products/my-products');
-      setProducts(data);
+      const { data } = await api.get('/api/products/my-products');
+      // Ensure data is an array
+      const productsArray = Array.isArray(data) ? data : [];
+      setProducts(productsArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]); // Set empty array on error
       setLoading(false);
     }
   };
@@ -29,7 +32,7 @@ const OperatorProductsPage = () => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      await axios.delete(`/api/products/${id}`);
+      await api.delete(`/api/products/${id}`);
       fetchProducts();
     } catch (error) {
       alert('Failed to delete product');
@@ -53,7 +56,7 @@ const OperatorProductsPage = () => {
         requirements: product.requirements,
         status: nextStatus,
       };
-      await axios.put(`/api/products/${product._id}`, payload);
+      await api.put(`/api/products/${product._id}`, payload);
       fetchProducts();
     } catch (error) {
       alert('Failed to update product status');

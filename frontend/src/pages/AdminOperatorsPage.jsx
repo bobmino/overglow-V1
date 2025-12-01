@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Building2, Mail, CheckCircle, XCircle, Clock, AlertCircle, Eye, FileText, User as UserIcon } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -16,11 +16,14 @@ const AdminOperatorsPage = () => {
   const fetchOperators = async () => {
     try {
       const url = filter === 'all' ? '/api/admin/operators' : `/api/admin/operators?status=${filter}`;
-      const { data } = await axios.get(url);
-      setOperators(data);
+      const { data } = await api.get(url);
+      // Ensure data is an array
+      const operatorsArray = Array.isArray(data) ? data : [];
+      setOperators(operatorsArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch operators:', error);
+      setOperators([]); // Set empty array on error
       setLoading(false);
     }
   };
@@ -31,7 +34,7 @@ const AdminOperatorsPage = () => {
 
   const handleStatusChange = async (operatorId, newStatus, reason = '', notes = '', autoApproveProducts = undefined) => {
     try {
-      await axios.put(`/api/admin/operators/${operatorId}/status`, { 
+      await api.put(`/api/admin/operators/${operatorId}/status`, { 
         status: newStatus,
         rejectionReason: reason,
         approvalNotes: notes,
@@ -54,7 +57,7 @@ const AdminOperatorsPage = () => {
       const operator = operators.find(op => op._id === operatorId);
       if (!operator) return;
       
-      await axios.put(`/api/admin/operators/${operatorId}/status`, { 
+      await api.put(`/api/admin/operators/${operatorId}/status`, { 
         status: operator.status, // Keep current status
         autoApproveProducts: !currentValue,
       });

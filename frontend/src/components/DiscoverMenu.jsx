@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Compass } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const DiscoverMenu = ({ isOpen, onClose }) => {
   const [categories, setCategories] = useState([]);
@@ -20,13 +20,13 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
   const fetchData = async () => {
     try {
       const [categoriesRes, destinationsRes] = await Promise.all([
-        axios.get('/api/search/categories'),
-        axios.get('/api/search/destinations')
+        api.get('/api/search/categories'),
+        api.get('/api/search/destinations')
       ]);
       
-      setCategories(categoriesRes.data.categories || []);
-      setPopularActivities(categoriesRes.data.popularActivities || []);
-      setDestinations(destinationsRes.data);
+      setCategories(Array.isArray(categoriesRes.data?.categories) ? categoriesRes.data.categories : []);
+      setPopularActivities(Array.isArray(categoriesRes.data?.popularActivities) ? categoriesRes.data.popularActivities : []);
+      setDestinations(destinationsRes.data?.byRegion ? destinationsRes.data : { byRegion: {} });
     } catch (error) {
       console.error('Failed to fetch discover data:', error);
     }
@@ -47,7 +47,7 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Top Categories
           </h3>
           <div className="space-y-1">
-            {categories.slice(0, 6).map((category) => (
+            {Array.isArray(categories) && categories.slice(0, 6).map((category) => (
               <Link
                 key={category.slug}
                 to={`/search?category=${encodeURIComponent(category.slug)}&sort=rating&view=category&filter=active`}
@@ -72,7 +72,7 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Popular Activities
           </h3>
           <div className="space-y-1">
-            {popularActivities.slice(0, 8).map((activity, index) => (
+            {Array.isArray(popularActivities) && popularActivities.slice(0, 8).map((activity, index) => (
               <Link
                 key={index}
                 to={`/search?q=${encodeURIComponent(activity)}&sort=price-low&view=activity&filter=popular`}
@@ -92,11 +92,11 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Top Destinations
           </h3>
           <div className="space-y-3">
-            {Object.entries(destinations.byRegion).slice(0, 3).map(([region, cities]) => (
+            {destinations?.byRegion && typeof destinations.byRegion === 'object' && Object.entries(destinations.byRegion).slice(0, 3).map(([region, cities]) => (
               <div key={region}>
                 <div className="text-xs font-bold text-slate-500 mb-1">{region}</div>
                 <div className="space-y-1">
-                  {cities.slice(0, 3).map((dest) => (
+                  {Array.isArray(cities) && cities.slice(0, 3).map((dest) => (
                     <Link
                       key={dest.city}
                       to={`/search?city=${encodeURIComponent(dest.city)}&sort=recommended&view=destination&filter=top`}

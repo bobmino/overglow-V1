@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -13,11 +13,13 @@ const OperatorBookingsPage = () => {
 
   const fetchBookings = async () => {
     try {
-      const { data } = await axios.get('/api/operator/bookings');
-      setBookings(data);
+      const { data } = await api.get('/api/operator/bookings');
+      const bookingsArray = Array.isArray(data) ? data : [];
+      setBookings(bookingsArray);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
+      setBookings([]);
       setLoading(false);
     }
   };
@@ -28,7 +30,7 @@ const OperatorBookingsPage = () => {
 
   const handleMarkHandled = async (bookingId) => {
     try {
-      await axios.put(`/api/bookings/${bookingId}/handle`);
+      await api.put(`/api/bookings/${bookingId}/handle`);
       fetchBookings();
     } catch (error) {
       console.error('Failed to mark booking as handled:', error);

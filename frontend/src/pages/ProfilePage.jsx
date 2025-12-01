@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/axios';
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, X, AlertCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -36,17 +36,17 @@ const ProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data } = await axios.get('/api/auth/me');
+      const { data } = await api.get('/api/auth/me');
       setProfile(data);
       setFormData({
-        name: data.name || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        bio: data.bio || '',
-        location: data.location || '',
-        dateOfBirth: data.dateOfBirth || '',
-        website: data.website || '',
-        socialLinks: data.socialLinks || {
+        name: data?.name || '',
+        email: data?.email || '',
+        phone: data?.phone || '',
+        bio: data?.bio || '',
+        location: data?.location || '',
+        dateOfBirth: data?.dateOfBirth || '',
+        website: data?.website || '',
+        socialLinks: data?.socialLinks || {
           facebook: '',
           instagram: '',
           twitter: '',
@@ -87,7 +87,7 @@ const ProfilePage = () => {
     setSuccess('');
 
     try {
-      const { data } = await axios.put('/api/auth/profile', formData);
+      const { data } = await api.put('/api/auth/profile', formData);
       setProfile(data);
       setIsEditing(false);
       setSuccess('Profil mis à jour avec succès');

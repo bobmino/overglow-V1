@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
 
 const Header = () => {
@@ -25,7 +25,7 @@ const Header = () => {
     if (isAuthenticated) {
       const fetchUnreadCount = async () => {
         try {
-          const { data } = await axios.get('/api/notifications/unread-count');
+          const { data } = await api.get('/api/notifications/unread-count');
           setUnreadCount(data.unreadCount || 0);
         } catch (error) {
           // Silently fail - notifications are optional

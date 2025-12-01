@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/axios';
 
 const BookingPage = () => {
   const location = useLocation();
@@ -72,7 +72,7 @@ const BookingPage = () => {
     if (selectedSlot._id && selectedSlot._id.startsWith('virtual_')) {
       try {
         // Create schedule on backend
-        const { data: newSchedule } = await axios.post(`/api/products/${product._id}/schedules`, {
+        const { data: newSchedule } = await api.post(`/api/products/${product._id}/schedules`, {
           date: date,
           time: timeSlot.startTime,
           endTime: timeSlot.endTime,
