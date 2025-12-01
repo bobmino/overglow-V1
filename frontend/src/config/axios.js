@@ -1,9 +1,31 @@
 import axios from 'axios';
 
 // Configuration de l'URL de base pour les requêtes API
-// En développement, utilise le proxy de Vite
-// En production, utilise VITE_API_URL depuis les variables d'environnement
-const API_URL = import.meta.env.VITE_API_URL || '';
+// En développement, utilise le proxy de Vite (vide = utilise le proxy)
+// En production, utilise VITE_API_URL ou l'URL du backend par défaut
+const getApiUrl = () => {
+  // Si VITE_API_URL est défini, l'utiliser
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // En production (Vercel), utiliser l'URL du backend par défaut
+  if (import.meta.env.PROD || window.location.hostname.includes('vercel.app')) {
+    return 'https://overglow-backend.vercel.app';
+  }
+  
+  // En développement, retourner vide pour utiliser le proxy Vite
+  return '';
+};
+
+const API_URL = getApiUrl();
+
+// Log pour debug (toujours, pour voir en production aussi)
+console.log('🔧 API Configuration:', {
+  baseURL: API_URL || 'Using Vite proxy',
+  isProduction: import.meta.env.PROD,
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'N/A'
+});
 
 // Créer une instance axios avec l'URL de base
 const api = axios.create({
@@ -11,6 +33,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 secondes timeout
   // Note: withCredentials n'est pas nécessaire car on utilise JWT dans Authorization header
 });
 
@@ -39,11 +62,34 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Log des erreurs pour debug
+    if (error.response) {
+      // Le serveur a répondu avec un code d'erreur
+      console.error('API Error Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL
+      });
+    } else if (error.request) {
+      // La requête a été faite mais aucune réponse n'a été reçue
+      console.error('API Error Request:', {
+        message: error.message,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: error.config?.baseURL + error.config?.url
+      });
+    } else {
+      // Erreur lors de la configuration de la requête
+      console.error('API Error Config:', error.message);
+    }
+    
     // Si erreur 401 (non autorisé), déconnecter l'utilisateur
     if (error.response?.status === 401) {
       localStorage.removeItem('userInfo');
       window.location.href = '/login';
     }
+    
     return Promise.reject(error);
   }
 );
