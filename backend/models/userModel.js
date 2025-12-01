@@ -49,6 +49,31 @@ const userSchema = mongoose.Schema({
     twitter: { type: String },
     linkedin: { type: String },
   },
+  
+  // Loyalty Program
+  loyaltyPoints: {
+    type: Number,
+    default: 0,
+  },
+  loyaltyLevel: {
+    type: String,
+    enum: ['Bronze', 'Silver', 'Gold', 'Platinum'],
+    default: 'Bronze',
+  },
+  totalSpent: {
+    type: Number,
+    default: 0,
+  },
+  totalBookings: {
+    type: Number,
+    default: 0,
+  },
+  loyaltyPointsHistory: [{
+    points: { type: Number, required: true },
+    reason: { type: String, required: true },
+    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
+    createdAt: { type: Date, default: Date.now },
+  }],
 }, {
   timestamps: true,
 });

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CreditCard, Building, Wallet } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, Building, Wallet, Banknote, Truck } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../config/axios';
@@ -82,9 +82,25 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
   );
 };
 
-const PaymentSelector = ({ amount, onPaymentComplete }) => {
+const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
   const [method, setMethod] = useState('stripe');
   const [error, setError] = useState('');
+  const [madAmount, setMadAmount] = useState(null);
+  const [showMad, setShowMad] = useState(true);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+
+  useEffect(() => {
+    // Fetch MAD conversion
+    const fetchMadConversion = async () => {
+      try {
+        const { data } = await api.get(`/api/payments/convert-to-mad?amount=${amount}&from=EUR`);
+        setMadAmount(data.madAmount);
+      } catch (error) {
+        console.error('Failed to convert to MAD:', error);
+      }
+    };
+    fetchMadConversion();
+  }, [amount]);
 
   const handleSuccess = (paymentDetails) => {
     onPaymentComplete(paymentDetails);
@@ -94,11 +110,64 @@ const PaymentSelector = ({ amount, onPaymentComplete }) => {
     setError(msg);
   };
 
+  const handleCashPickup = async () => {
+    try {
+      const { data } = await api.post('/api/payments/cash-pickup', {
+        bookingId,
+        amount: madAmount || amount
+      });
+      handleSuccess({ type: 'cash_pickup', ...data });
+    } catch (err) {
+      handleError(err.response?.data?.message || 'Failed to process cash pickup payment');
+    }
+  };
+
+  const handleCashDelivery = async () => {
+    if (!deliveryAddress.trim()) {
+      handleError('Please provide a delivery address');
+      return;
+    }
+    try {
+      const { data } = await api.post('/api/payments/cash-delivery', {
+        bookingId,
+        amount: madAmount || amount,
+        deliveryAddress
+      });
+      handleSuccess({ type: 'cash_delivery', ...data });
+    } catch (err) {
+      handleError(err.response?.data?.message || 'Failed to process cash delivery payment');
+    }
+  };
+
+  const handleCMI = async () => {
+    try {
+      const { data } = await api.post('/api/payments/cmi-init', {
+        amount: madAmount || amount,
+        bookingId,
+        currency: 'MAD'
+      });
+      // In production, redirect to CMI gateway
+      // For now, simulate success
+      handleSuccess({ type: 'cmi', ...data });
+    } catch (err) {
+      handleError(err.response?.data?.message || 'Failed to initialize CMI payment');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-bold text-gray-900">Select Payment Method</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-gray-900">Méthode de Paiement</h3>
+        {madAmount && (
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Prix en MAD</p>
+            <p className="text-lg font-bold text-primary-600">{madAmount.toFixed(2)} MAD</p>
+            <p className="text-xs text-gray-500">≈ {amount.toFixed(2)} €</p>
+          </div>
+        )}
+      </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <button
           onClick={() => setMethod('stripe')}
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
@@ -122,11 +191,34 @@ const PaymentSelector = ({ amount, onPaymentComplete }) => {
         <button
           onClick={() => setMethod('cmi')}
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'cmi' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+            method === 'cmi' ? 'border-orange-600 bg-orange-50' : 'border-gray-200 hover:border-orange-300'
           }`}
         >
           <CreditCard size={32} className="mb-2 text-orange-600" />
-          <span className="font-semibold">CMI</span>
+          <span className="font-semibold text-sm">CMI</span>
+          <span className="text-xs text-gray-600 mt-1">Cartes Marocaines</span>
+        </button>
+
+        <button
+          onClick={() => setMethod('cash_pickup')}
+          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
+            method === 'cash_pickup' ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:border-green-300'
+          }`}
+        >
+          <Banknote size={32} className="mb-2 text-green-600" />
+          <span className="font-semibold text-sm">Espèces</span>
+          <span className="text-xs text-gray-600 mt-1">Sur place</span>
+        </button>
+
+        <button
+          onClick={() => setMethod('cash_delivery')}
+          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
+            method === 'cash_delivery' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+          }`}
+        >
+          <Truck size={32} className="mb-2 text-purple-600" />
+          <span className="font-semibold text-sm">À la livraison</span>
+          <span className="text-xs text-gray-600 mt-1">Paiement à la livraison</span>
         </button>
 
         <button
@@ -136,7 +228,8 @@ const PaymentSelector = ({ amount, onPaymentComplete }) => {
           }`}
         >
           <Building size={32} className="mb-2 text-gray-600" />
-          <span className="font-semibold">Bank Transfer</span>
+          <span className="font-semibold text-sm">Virement</span>
+          <span className="text-xs text-gray-600 mt-1">Bancaire</span>
         </button>
       </div>
 
@@ -166,13 +259,96 @@ const PaymentSelector = ({ amount, onPaymentComplete }) => {
         )}
 
         {method === 'cmi' && (
-          <div className="text-center p-6 bg-gray-50 rounded-xl">
-            <p className="mb-4 text-gray-600">You will be redirected to the CMI secure payment gateway.</p>
+          <div className="text-center p-6 bg-orange-50 rounded-xl border border-orange-200">
+            <div className="mb-4">
+              <p className="text-gray-700 font-semibold mb-2">Paiement sécurisé CMI</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Vous serez redirigé vers la passerelle de paiement sécurisée CMI pour finaliser votre paiement.
+              </p>
+              {madAmount && (
+                <p className="text-lg font-bold text-orange-700">
+                  Montant: {madAmount.toFixed(2)} MAD
+                </p>
+              )}
+            </div>
             <button
-              onClick={() => handleSuccess({ type: 'cmi', id: 'mock_cmi_id' })}
-              className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700"
+              onClick={handleCMI}
+              className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition"
             >
-              Pay with CMI
+              Payer avec CMI
+            </button>
+            <p className="text-xs text-gray-500 mt-3">
+              Accepte toutes les cartes bancaires marocaines (Visa, Mastercard, CMI)
+            </p>
+          </div>
+        )}
+
+        {method === 'cash_pickup' && (
+          <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+            <div className="mb-4">
+              <h4 className="font-bold text-gray-900 mb-2">Paiement en Espèces sur Place</h4>
+              <p className="text-sm text-gray-700 mb-3">
+                Vous paierez en espèces directement à l'arrivée au point de rendez-vous.
+              </p>
+              {madAmount && (
+                <div className="bg-white p-4 rounded-lg border border-green-200">
+                  <p className="text-sm text-gray-600">Montant à payer:</p>
+                  <p className="text-2xl font-bold text-green-700">{madAmount.toFixed(2)} MAD</p>
+                </div>
+              )}
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-yellow-800">
+                ⚠️ Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous.
+              </p>
+            </div>
+            <button
+              onClick={handleCashPickup}
+              className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
+            >
+              Confirmer - Paiement sur Place
+            </button>
+          </div>
+        )}
+
+        {method === 'cash_delivery' && (
+          <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+            <div className="mb-4">
+              <h4 className="font-bold text-gray-900 mb-2">Paiement à la Livraison</h4>
+              <p className="text-sm text-gray-700 mb-3">
+                Le paiement sera collecté lors de la livraison de votre confirmation de réservation.
+              </p>
+              {madAmount && (
+                <div className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
+                  <p className="text-sm text-gray-600">Montant à payer:</p>
+                  <p className="text-2xl font-bold text-purple-700">{madAmount.toFixed(2)} MAD</p>
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Adresse de livraison *
+              </label>
+              <textarea
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                placeholder="Entrez votre adresse complète..."
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                required
+              />
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-yellow-800">
+                ⚠️ Un agent de livraison viendra à votre adresse pour collecter le paiement et remettre votre confirmation.
+              </p>
+            </div>
+            <button
+              onClick={handleCashDelivery}
+              disabled={!deliveryAddress.trim()}
+              className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              Confirmer - Paiement à la Livraison
             </button>
           </div>
         )}

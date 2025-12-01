@@ -6,6 +6,7 @@ import Settings from '../models/settingsModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyProductPending, notifyProductApproved } from '../utils/notificationService.js';
+import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 
 const normalizePrice = (value) => {
   if (value === undefined || value === null || value === '') {
@@ -280,6 +281,12 @@ const updateProduct = async (req, res) => {
 
       // Validate before saving
       const updatedProduct = await product.save();
+      
+      // Update product metrics and badges (async, don't wait)
+      updateProductMetrics(product._id).catch(err => console.error('Error updating product metrics:', err));
+      if (operator) {
+        updateOperatorMetrics(operator._id).catch(err => console.error('Error updating operator metrics:', err));
+      }
       res.json(updatedProduct);
   } catch (error) {
     console.error('Update product error:', error);
@@ -346,7 +353,11 @@ const getPublishedProducts = async (req, res) => {
     // For simplicity, we'll filter products first, and if date is present, we might need aggregation or separate logic.
     // Here we just return products matching basic criteria.
 
-    const products = await Product.find(query);
+    const products = await Product.find(query)
+      .populate('operator', 'companyName status')
+      .populate('badges.badgeId')
+      .lean();
+    
     // Ensure we always return an array
     res.json(Array.isArray(products) ? products : []);
   } catch (error) {
@@ -360,11 +371,17 @@ const getPublishedProducts = async (req, res) => {
 // @access  Public
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('operator', 'companyName');
-
+    const product = await Product.findById(req.params.id)
+      .populate('operator', 'companyName status')
+      .populate('badges.badgeId');
+    
     if (product) {
       const schedules = await Schedule.find({ product: product._id });
       const reviews = await Review.find({ product: product._id }).populate('user', 'name');
+      
+      // Update product badges if needed (async, don't wait)
+      const { updateProductBadges } = await import('../utils/badgeService.js');
+      updateProductBadges(product._id).catch(err => console.error('Badge update error:', err));
       
       res.json({ ...product.toObject(), schedules, reviews });
     } else {

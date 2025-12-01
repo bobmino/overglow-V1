@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle } from 'lucide-react';
+import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock } from 'lucide-react';
+import LanguageSelector from './LanguageSelector';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
@@ -103,18 +104,7 @@ const Header = () => {
             )}
           </div>
           
-          <div className="flex items-center space-x-2 bg-slate-100/50 px-3 py-1.5 rounded-full border border-slate-200">
-            <Globe size={16} className="text-slate-500" />
-            <select 
-              onChange={(e) => changeLanguage(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm font-medium text-slate-700 cursor-pointer focus:ring-0"
-              defaultValue={i18n.language}
-            >
-              <option value="en">EN</option>
-              <option value="fr">FR</option>
-              <option value="ar">AR</option>
-            </select>
-          </div>
+          <LanguageSelector />
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
@@ -244,6 +234,30 @@ const Header = () => {
                           {t('header.dashboard')}
                         </Link>
                         <Link 
+                          to="/favorites" 
+                          className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Heart size={18} className="mr-3" />
+                          Mes Favoris
+                        </Link>
+                        <Link 
+                          to="/view-history" 
+                          className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Clock size={18} className="mr-3" />
+                          Historique
+                        </Link>
+                        <Link 
+                          to="/loyalty" 
+                          className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-yellow-50 hover:text-yellow-700 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Award size={18} className="mr-3" />
+                          Programme de Fidélité
+                        </Link>
+                        <Link 
                           to="/profile" 
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                           onClick={() => setShowUserMenu(false)}
@@ -304,21 +318,7 @@ const Header = () => {
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
             <span className="text-slate-600 font-medium">Language</span>
-            <div className="flex gap-2">
-              {['en', 'fr', 'ar'].map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => changeLanguage(lang)}
-                  className={`px-3 py-1 rounded-md text-sm font-bold uppercase ${
-                    i18n.language === lang 
-                      ? 'bg-white text-primary-600 shadow-sm' 
-                      : 'text-slate-400 hover:text-slate-600'
-                  }`}
-                >
-                  {lang}
-                </button>
-              ))}
-            </div>
+            <LanguageSelector />
           </div>
 
           {isAuthenticated ? (

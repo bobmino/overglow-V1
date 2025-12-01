@@ -39,6 +39,7 @@ const Footer = () => {
             <h3 className="font-bold text-sm mb-4">À propos</h3>
             <ul className="space-y-2 text-sm text-slate-300">
               <li><Link to="/about" className="hover:text-white transition">Qui sommes-nous</Link></li>
+              <li><Link to="/culture" className="hover:text-white transition">Découvrir le Maroc</Link></li>
               <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
               <li><Link to="/careers" className="hover:text-white transition">Carrières</Link></li>
               <li><Link to="/press" className="hover:text-white transition">Presse</Link></li>

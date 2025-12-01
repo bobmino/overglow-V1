@@ -104,18 +104,114 @@ const createPaypalOrder = async (req, res) => {
   }
 };
 
-// @desc    Handle CMI Payment (Mock)
+// @desc    Handle CMI Payment
 // @route   POST /api/payments/cmi-init
 // @access  Private
 const initCmiPayment = async (req, res) => {
-  // In a real implementation, this would generate a hash and redirect URL
-  // for the CMI gateway.
-  const { amount, bookingId } = req.body;
+  const { amount, bookingId, currency = 'MAD' } = req.body;
   
-  // Mock response
+  // CMI Configuration (should be in env variables)
+  const CMI_STORE_KEY = process.env.CMI_STORE_KEY || 'your_cmi_store_key';
+  const CMI_URL = process.env.CMI_URL || 'https://payment.cmi.co.ma/payment/init';
+  
+  // Convert amount to cents (CMI expects amount in smallest currency unit)
+  const amountInCents = Math.round(amount * 100);
+  
+  // Generate hash for CMI
+  const crypto = await import('crypto');
+  const hashString = `${CMI_STORE_KEY}${amountInCents}${currency}${bookingId}`;
+  const hash = crypto.createHash('sha256').update(hashString).digest('hex');
+  
+  // In production, this would redirect to CMI gateway
+  // For now, return payment details for frontend to handle
   res.json({
-    redirectUrl: `/payment/cmi-mock?amount=${amount}&bookingId=${bookingId}`,
-    message: 'Redirecting to CMI gateway...'
+    redirectUrl: `${CMI_URL}?amount=${amountInCents}&currency=${currency}&orderId=${bookingId}&hash=${hash}`,
+    amount: amount,
+    currency: currency,
+    bookingId: bookingId,
+    hash: hash,
+    message: 'Redirecting to CMI secure payment gateway...'
+  });
+};
+
+// @desc    Handle Cash on Pickup payment
+// @route   POST /api/payments/cash-pickup
+// @access  Private
+const createCashPickupPayment = async (req, res) => {
+  const { bookingId, amount } = req.body;
+  
+  // Mark booking as pending payment (cash on pickup)
+  const Booking = (await import('../models/bookingModel.js')).default;
+  const booking = await Booking.findById(bookingId);
+  
+  if (!booking) {
+    return res.status(404).json({ message: 'Booking not found' });
+  }
+  
+  // Booking status remains 'Pending' until cash is collected
+  res.json({
+    type: 'cash_pickup',
+    bookingId: bookingId,
+    amount: amount,
+    status: 'pending',
+    message: 'Booking confirmed. Please pay in cash when you arrive.',
+    instructions: 'Please bring the exact amount in cash. Payment will be collected at the meeting point.'
+  });
+};
+
+// @desc    Handle Cash on Delivery payment
+// @route   POST /api/payments/cash-delivery
+// @access  Private
+const createCashDeliveryPayment = async (req, res) => {
+  const { bookingId, amount, deliveryAddress } = req.body;
+  
+  const Booking = (await import('../models/bookingModel.js')).default;
+  const booking = await Booking.findById(bookingId);
+  
+  if (!booking) {
+    return res.status(404).json({ message: 'Booking not found' });
+  }
+  
+  // Store delivery address in booking
+  booking.deliveryAddress = deliveryAddress;
+  booking.paymentMethod = 'cash_delivery';
+  await booking.save();
+  
+  res.json({
+    type: 'cash_delivery',
+    bookingId: bookingId,
+    amount: amount,
+    status: 'pending',
+    deliveryAddress: deliveryAddress,
+    message: 'Booking confirmed. Payment will be collected upon delivery.',
+    instructions: 'Our delivery agent will collect payment when delivering your booking confirmation.'
+  });
+};
+
+// @desc    Convert currency to MAD
+// @route   GET /api/payments/convert-to-mad?amount=100&from=EUR
+// @access  Public
+const convertToMAD = async (req, res) => {
+  const { amount, from = 'EUR' } = req.query;
+  
+  // Exchange rates (in production, fetch from API)
+  const exchangeRates = {
+    EUR: 10.8, // 1 EUR = 10.8 MAD (approximate)
+    USD: 10.0, // 1 USD = 10.0 MAD (approximate)
+    GBP: 13.5, // 1 GBP = 13.5 MAD (approximate)
+    MAD: 1.0,
+  };
+  
+  const rate = exchangeRates[from.toUpperCase()] || 1.0;
+  const madAmount = parseFloat(amount) * rate;
+  
+  res.json({
+    originalAmount: parseFloat(amount),
+    originalCurrency: from.toUpperCase(),
+    madAmount: Math.round(madAmount * 100) / 100, // Round to 2 decimals
+    currency: 'MAD',
+    exchangeRate: rate,
+    lastUpdated: new Date().toISOString()
   });
 };
 
@@ -136,5 +232,8 @@ export {
   createStripeIntent,
   createPaypalOrder,
   initCmiPayment,
-  getBankDetails
+  getBankDetails,
+  createCashPickupPayment,
+  createCashDeliveryPayment,
+  convertToMAD
 };

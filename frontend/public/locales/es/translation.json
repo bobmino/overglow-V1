@@ -1,0 +1,72 @@
+{
+  "header": {
+    "discover": "Descubrir",
+    "login": "Iniciar sesión / Registrarse",
+    "dashboard": "Mis reservas",
+    "operatorDashboard": "Panel del operador",
+    "analytics": "Analíticas",
+    "logout": "Cerrar sesión",
+    "favorites": "Favoritos",
+    "loyalty": "Programa de fidelidad",
+    "notifications": "Notificaciones",
+    "profile": "Perfil"
+  },
+  "hero": {
+    "title": "Haz más con Overglow-Trip",
+    "subtitle": "Planifica mejor con miles de experiencias de viaje.",
+    "where": "¿A dónde?",
+    "when": "¿Cuándo?",
+    "searchPlaceholder": "Buscar un lugar o actividad",
+    "search": "Buscar"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "price": "Precio",
+    "rating": "Calificación",
+    "duration": "Duración",
+    "book": "Reservar",
+    "bookNow": "Reservar ahora",
+    "viewDetails": "Ver detalles"
+  },
+  "product": {
+    "title": "Título",
+    "description": "Descripción",
+    "highlights": "Puntos destacados",
+    "included": "Incluido",
+    "requirements": "Requisitos",
+    "reviews": "Reseñas",
+    "similarProducts": "Productos similares",
+    "othersBooked": "Otros clientes también reservaron"
+  },
+  "booking": {
+    "title": "Reserva",
+    "selectDate": "Seleccionar fecha",
+    "selectTime": "Seleccionar hora",
+    "numberOfTickets": "Número de entradas",
+    "totalPrice": "Precio total",
+    "confirm": "Confirmar reserva",
+    "cancel": "Cancelar reserva",
+    "status": "Estado"
+  },
+  "culture": {
+    "title": "Descubrir Marruecos",
+    "subtitle": "Sumérgete en la riqueza cultural y las tradiciones auténticas de Marruecos",
+    "traditions": "Tradiciones",
+    "festivals": "Festivales",
+    "crafts": "Artesanía",
+    "cuisine": "Cocina",
+    "music": "Música",
+    "regions": "Regiones"
+  }
+}
+

@@ -23,6 +23,12 @@ import notificationRoutes from './backend/routes/notificationRoutes.js';
 import withdrawalRoutes from './backend/routes/withdrawalRoutes.js';
 import approvalRequestRoutes from './backend/routes/approvalRequestRoutes.js';
 import onboardingRoutes from './backend/routes/onboardingRoutes.js';
+import badgeRoutes from './backend/routes/badgeRoutes.js';
+import favoriteRoutes from './backend/routes/favoriteRoutes.js';
+import recommendationRoutes from './backend/routes/recommendationRoutes.js';
+import loyaltyRoutes from './backend/routes/loyaltyRoutes.js';
+import badgeRoutes from './backend/routes/badgeRoutes.js';
+import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
 
 // Connect to database (non-blocking for Vercel)
 // This is async and won't block serverless function startup
@@ -108,6 +114,12 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/approval-requests', approvalRequestRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/view-history', viewHistoryRoutes);
 
 // Serve static files
 const __filename = fileURLToPath(import.meta.url);

@@ -44,7 +44,7 @@ const NotificationsPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      await api.put('/api/notifications/read-all');
+      await api.put('/api/notifications/mark-all-read');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
       setUnreadCount(0);
     } catch (error) {

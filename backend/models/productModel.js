@@ -82,6 +82,51 @@ const productSchema = mongoose.Schema({
     enum: ['Draft', 'Pending Review', 'Published'],
     default: 'Draft',
   },
+  
+  // Badges produits
+  badges: [{
+    badgeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Badge',
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
+  
+  // Métriques pour badges produits
+  metrics: {
+    viewCount: { type: Number, default: 0 },
+    bookingCount: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+    reviewCount: { type: Number, default: 0 },
+    isPopular: { type: Boolean, default: false },
+    isBestValue: { type: Boolean, default: false },
+    isNew: { type: Boolean, default: true },
+    isLastMinute: { type: Boolean, default: false },
+  },
+  
+  // Politique d'annulation
+  cancellationPolicy: {
+    type: {
+      type: String,
+      enum: ['free', 'moderate', 'strict', 'non_refundable'],
+      default: 'moderate',
+    },
+    freeCancellationHours: {
+      type: Number,
+      default: 24, // Heures avant le début pour annulation gratuite
+    },
+    refundPercentage: {
+      type: Number,
+      default: 100, // Pourcentage de remboursement si annulation gratuite
+    },
+    description: {
+      type: String,
+      default: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+    },
+  },
 }, {
   timestamps: true,
 });

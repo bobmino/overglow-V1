@@ -6,6 +6,8 @@ import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
 import { sendBookingConfirmation, sendCancellationEmail } from '../utils/emailService.js';
 import { notifyNewBooking } from '../utils/notificationService.js';
+import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
+import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
 
 // @desc    Create payment intent (Placeholder)
 // @route   POST /api/bookings/create-payment-intent
@@ -81,7 +83,13 @@ const createBooking = async (req, res) => {
   // Notify operator of new booking
   if (createdBooking.operator) {
     await notifyNewBooking(createdBooking, createdBooking.operator);
+    // Update metrics (async, don't wait)
+    updateProductMetrics(schedule.product._id).catch(err => console.error('Error updating product metrics:', err));
+    updateOperatorMetrics(createdBooking.operator).catch(err => console.error('Error updating operator metrics:', err));
   }
+
+  // Update user loyalty stats (async, don't wait)
+  updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err => console.error('Error updating user loyalty stats:', err));
 
   res.status(201).json(bookingObject);
 };
@@ -107,41 +115,8 @@ const getMyBookings = async (req, res) => {
   }
 };
 
-// @desc    Cancel a booking
-// @route   PUT /api/bookings/:id/cancel
-// @access  Private
-const cancelBooking = async (req, res) => {
-  const booking = await Booking.findById(req.params.id)
-    .populate({
-      path: 'schedule',
-      populate: { path: 'product' }
-    });
-
-  if (!booking) {
-    res.status(404);
-    throw new Error('Booking not found');
-  }
-
-  // Check if user owns this booking
-  if (booking.user.toString() !== req.user._id.toString()) {
-    res.status(403);
-    throw new Error('Not authorized to cancel this booking');
-  }
-
-  // Check if booking can be cancelled
-  if (booking.status === 'Cancelled') {
-    res.status(400);
-    throw new Error('Booking is already cancelled');
-  }
-
-  booking.status = 'Cancelled';
-  const updatedBooking = await booking.save();
-
-  // Send cancellation email
-  sendCancellationEmail(booking, req.user);
-
-  res.json(updatedBooking);
-};
+// Note: cancelBooking has been moved to cancellationController.js
+// This function is kept for backward compatibility but should use the new cancellation service
 
 // @desc    Update booking internal note
 // @route   PUT /api/bookings/:id/note
@@ -208,4 +183,4 @@ const markBookingHandled = async (req, res) => {
   }
 };
 
-export { createPaymentIntent, createBooking, getMyBookings, cancelBooking, updateBookingNote, markBookingHandled };
+export { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled };

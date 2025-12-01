@@ -11,6 +11,10 @@ import TimeSlotPicker from '../components/TimeSlotPicker';
 import ReviewsList from '../components/ReviewsList';
 import ProductCard from '../components/ProductCard';
 import InquiryModal from '../components/InquiryModal';
+import BadgeDisplay from '../components/BadgeDisplay';
+import CancellationPolicy from '../components/CancellationPolicy';
+import FavoriteButton from '../components/FavoriteButton';
+import OthersAlsoBooked from '../components/OthersAlsoBooked';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -25,6 +29,8 @@ const ProductDetailPage = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [productBadges, setProductBadges] = useState([]);
+  const [operatorBadges, setOperatorBadges] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,15 +38,103 @@ const ProductDetailPage = () => {
         const { data } = await api.get(`/api/products/${id}`);
         setProduct(data);
         setAvailableSchedules(Array.isArray(data?.schedules) ? data.schedules : []);
+        
+        // Record view in history (if user is authenticated)
+        const userInfo = localStorage.getItem('userInfo');
+        if (userInfo && data?._id) {
+          try {
+            await api.post('/api/view-history', { productId: data._id });
+          } catch (err) {
+            // Silently fail - view history is optional
+            console.log('Could not record view:', err);
+          }
+        }
+        
+        // Fetch product badges
+        if (data?._id) {
+          try {
+            const { data: badgesData } = await api.get(`/api/badges/product/${data._id}`);
+            setProductBadges(Array.isArray(badgesData) ? badgesData : []);
+          } catch (err) {
+            console.error('Failed to load product badges:', err);
+          }
+          
+          // Fetch operator badges if operator exists
+          if (data?.operator?._id) {
+            try {
+              const { data: operatorBadgesData } = await api.get(`/api/badges/operator/${data.operator._id}`);
+              setOperatorBadges(Array.isArray(operatorBadgesData) ? operatorBadgesData : []);
+            } catch (err) {
+              console.error('Failed to load operator badges:', err);
+            }
+          }
+        }
+        
         setLoading(false);
         
-        // Fetch related products
-        const { data: allProductsData } = await api.get('/api/products');
-        const allProducts = Array.isArray(allProductsData) ? allProductsData : [];
-        const related = allProducts
-          .filter(p => p._id !== id && (p.city === data?.city || p.category === data?.category))
-          .slice(0, 4);
-        setRelatedProducts(related);
+        // Fetch related products with improved similarity logic
+        try {
+          const { data: allProductsData } = await api.get('/api/products');
+          const allProducts = Array.isArray(allProductsData) ? allProductsData : [];
+          
+          // Filter out current product and unpublished products
+          const availableProducts = allProducts.filter(p => 
+            p._id !== id && 
+            p.status === 'published' &&
+            p.price && 
+            Number(p.price) > 0
+          );
+          
+          if (availableProducts.length > 0) {
+            // Score products based on similarity
+            const scoredProducts = availableProducts.map(p => {
+              let score = 0;
+              
+              // Higher priority: same city AND same category (score: 10)
+              if (p.city === data?.city && p.category === data?.category) {
+                score += 10;
+              }
+              // Medium priority: same category (score: 5)
+              else if (p.category === data?.category) {
+                score += 5;
+              }
+              // Lower priority: same city (score: 3)
+              else if (p.city === data?.city) {
+                score += 3;
+              }
+              
+              // Bonus for similar price range (within 30% of current product price)
+              const currentPrice = parsePrice(data?.price) || 0;
+              const productPrice = parsePrice(p.price) || 0;
+              if (currentPrice > 0 && productPrice > 0) {
+                const priceDiff = Math.abs(currentPrice - productPrice) / currentPrice;
+                if (priceDiff <= 0.3) {
+                  score += 2;
+                }
+              }
+              
+              // Bonus if operator is the same
+              if (p.operator?._id === data?.operator?._id) {
+                score += 1;
+              }
+              
+              return { product: p, score };
+            });
+            
+            // Sort by score (descending) and take top 4
+            const related = scoredProducts
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 4)
+              .map(item => item.product);
+            
+            setRelatedProducts(related);
+          } else {
+            setRelatedProducts([]);
+          }
+        } catch (err) {
+          console.error('Failed to load related products:', err);
+          setRelatedProducts([]);
+        }
       } catch (err) {
         console.error('Failed to load product:', err);
         setError('Failed to load product');
@@ -198,15 +292,12 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               {/* Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold flex items-center gap-1">
-                  <Award size={14} /> Bestseller
-                </span>
-                <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold flex items-center gap-1">
-                  <TrendingUp size={14} /> Likely to sell out
-                </span>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold flex items-center gap-1">
-                  <Shield size={14} /> Verified Operator
-                </span>
+                {Array.isArray(productBadges) && productBadges.length > 0 && (
+                  <BadgeDisplay badges={productBadges} size="md" showLabel={true} />
+                )}
+                {Array.isArray(operatorBadges) && operatorBadges.length > 0 && (
+                  <BadgeDisplay badges={operatorBadges} size="md" showLabel={true} />
+                )}
               </div>
 
               <div className="flex items-center text-slate-600 text-sm mb-2">
@@ -214,9 +305,12 @@ const ProductDetailPage = () => {
                 {product.city} • {product.category}
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                {product.title}
-              </h1>
+              <div className="flex items-start justify-between mb-4">
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex-1">
+                  {product.title}
+                </h1>
+                <FavoriteButton productId={product._id} size={28} />
+              </div>
 
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
@@ -300,6 +394,49 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
+            {/* Trust & Guarantees */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h2 className="text-2xl font-bold mb-4">Garanties et Certifications</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <Shield size={24} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-bold text-green-900 mb-1">Garantie Prix Bas</h3>
+                    <p className="text-sm text-green-700">Meilleur prix garanti ou remboursement de la différence</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <CheckCircle size={24} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-bold text-blue-900 mb-1">Annulation Gratuite</h3>
+                    <p className="text-sm text-blue-700">Annulez jusqu'à 24h avant pour un remboursement complet</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <Award size={24} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-bold text-purple-900 mb-1">Opérateur Vérifié</h3>
+                    <p className="text-sm text-purple-700">Tous nos opérateurs sont vérifiés et certifiés</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <TrendingUp size={24} className="text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-bold text-orange-900 mb-1">Support 24/7</h3>
+                    <p className="text-sm text-orange-700">Assistance client disponible à tout moment</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h2 className="text-2xl font-bold mb-4">Politique d'Annulation</h2>
+              <CancellationPolicy 
+                policy={product.cancellationPolicy}
+              />
+            </div>
+
             {/* FAQ */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
@@ -344,13 +481,13 @@ const ProductDetailPage = () => {
 
             {/* Reviews */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <ReviewsList reviews={product.reviews} />
+              <ReviewsList reviews={product.reviews || []} productId={product._id} />
             </div>
 
             {/* Related Products */}
             {Array.isArray(relatedProducts) && relatedProducts.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6">You might also like</h2>
+                <h2 className="text-2xl font-bold mb-6">Produits similaires</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {relatedProducts.map(relatedProduct => (
                     <ProductCard key={relatedProduct._id} product={relatedProduct} />
@@ -358,6 +495,9 @@ const ProductDetailPage = () => {
                 </div>
               </div>
             )}
+            
+            {/* Others Also Booked */}
+            <OthersAlsoBooked productId={product._id} />
           </div>
 
           {/* Booking Widget (Sidebar) - Desktop */}

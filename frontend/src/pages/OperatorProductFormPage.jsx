@@ -25,7 +25,13 @@ const OperatorProductFormPage = () => {
     requiresInquiry: false,
     inquiryType: 'none',
     timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
-    status: 'Draft'
+    status: 'Draft',
+    cancellationPolicy: {
+      type: 'moderate',
+      freeCancellationHours: 24,
+      refundPercentage: 100,
+      description: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+    },
   });
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,7 +63,13 @@ const OperatorProductFormPage = () => {
         requiresInquiry: data.requiresInquiry || false,
         inquiryType: data.inquiryType || 'none',
         timeSlots: Array.isArray(data.timeSlots) && data.timeSlots.length ? data.timeSlots : [{ startTime: '09:00', endTime: '17:00' }],
-        status: data.status || 'Draft'
+        status: data.status || 'Draft',
+        cancellationPolicy: data.cancellationPolicy || {
+          type: 'moderate',
+          freeCancellationHours: 24,
+          refundPercentage: 100,
+          description: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+        },
       }));
 
       setError('');
@@ -402,6 +414,133 @@ const OperatorProductFormPage = () => {
                   </select>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Cancellation Policy */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Politique d'Annulation</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Type de politique</label>
+                <select
+                  value={formData.cancellationPolicy?.type || 'moderate'}
+                  onChange={(e) => {
+                    const policyType = e.target.value;
+                    let defaultPolicy = {
+                      type: policyType,
+                      freeCancellationHours: 24,
+                      refundPercentage: 100,
+                      description: '',
+                    };
+
+                    switch (policyType) {
+                      case 'free':
+                        defaultPolicy.freeCancellationHours = 24;
+                        defaultPolicy.refundPercentage = 100;
+                        defaultPolicy.description = 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience';
+                        break;
+                      case 'moderate':
+                        defaultPolicy.freeCancellationHours = 48;
+                        defaultPolicy.refundPercentage = 100;
+                        defaultPolicy.description = 'Annulation possible jusqu\'à 48h avant. Remboursement partiel après ce délai.';
+                        break;
+                      case 'strict':
+                        defaultPolicy.freeCancellationHours = 168; // 7 days
+                        defaultPolicy.refundPercentage = 100;
+                        defaultPolicy.description = 'Annulation possible jusqu\'à 7 jours avant. Remboursement partiel après ce délai.';
+                        break;
+                      case 'non_refundable':
+                        defaultPolicy.freeCancellationHours = 0;
+                        defaultPolicy.refundPercentage = 0;
+                        defaultPolicy.description = 'Cette réservation n\'est pas remboursable. Aucun remboursement ne sera effectué en cas d\'annulation.';
+                        break;
+                    }
+
+                    setFormData(prev => ({
+                      ...prev,
+                      cancellationPolicy: {
+                        ...prev.cancellationPolicy,
+                        ...defaultPolicy,
+                      }
+                    }));
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="free">Annulation Gratuite</option>
+                  <option value="moderate">Annulation Modérée</option>
+                  <option value="strict">Annulation Stricte</option>
+                  <option value="non_refundable">Non Remboursable</option>
+                </select>
+              </div>
+
+              {formData.cancellationPolicy?.type !== 'non_refundable' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Heures avant le début pour annulation gratuite
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.cancellationPolicy?.freeCancellationHours || 24}
+                      onChange={(e) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          cancellationPolicy: {
+                            ...prev.cancellationPolicy,
+                            freeCancellationHours: parseInt(e.target.value) || 0,
+                          }
+                        }));
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Pourcentage de remboursement (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.cancellationPolicy?.refundPercentage || 100}
+                      onChange={(e) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          cancellationPolicy: {
+                            ...prev.cancellationPolicy,
+                            refundPercentage: parseInt(e.target.value) || 0,
+                          }
+                        }));
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Description de la politique (optionnel)
+                </label>
+                <textarea
+                  value={formData.cancellationPolicy?.description || ''}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      cancellationPolicy: {
+                        ...prev.cancellationPolicy,
+                        description: e.target.value,
+                      }
+                    }));
+                  }}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  placeholder="Décrivez votre politique d'annulation..."
+                />
+              </div>
             </div>
           </div>
 

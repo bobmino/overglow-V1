@@ -50,6 +50,23 @@ const bookingSchema = mongoose.Schema({
   handledAt: {
     type: Date,
   },
+  
+  // Cancellation fields
+  cancelledAt: {
+    type: Date,
+  },
+  cancellationReason: {
+    type: String,
+  },
+  refundAmount: {
+    type: Number,
+    default: 0,
+  },
+  refundStatus: {
+    type: String,
+    enum: ['Not Applicable', 'Pending', 'Processed', 'Rejected'],
+    default: 'Not Applicable',
+  },
 }, {
   timestamps: true,
 });

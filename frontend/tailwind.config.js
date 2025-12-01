@@ -27,7 +27,15 @@ export default {
           500: '#fbbf24', // Amber 400
           600: '#f59e0b', // Amber 500
         }
-      }
+      },
+      screens: {
+        'xs': '475px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+      },
     },
   },
   plugins: [],

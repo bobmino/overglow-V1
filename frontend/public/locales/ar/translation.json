@@ -5,7 +5,11 @@
     "dashboard": "حجوزاتي",
     "operatorDashboard": "لوحة تحكم المشغل",
     "analytics": "التحليلات",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "favorites": "المفضلة",
+    "loyalty": "برنامج الولاء",
+    "notifications": "الإشعارات",
+    "profile": "الملف الشخصي"
   },
   "hero": {
     "title": "افعل المزيد مع Overglow-Trip",
@@ -14,5 +18,54 @@
     "when": "متى",
     "searchPlaceholder": "ابحث عن مكان أو نشاط",
     "search": "بحث"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "price": "السعر",
+    "rating": "التقييم",
+    "duration": "المدة",
+    "book": "احجز",
+    "bookNow": "احجز الآن",
+    "viewDetails": "عرض التفاصيل"
+  },
+  "product": {
+    "title": "العنوان",
+    "description": "الوصف",
+    "highlights": "النقاط البارزة",
+    "included": "يشمل",
+    "requirements": "المتطلبات",
+    "reviews": "التقييمات",
+    "similarProducts": "منتجات مشابهة",
+    "othersBooked": "اشترى العملاء الآخرون أيضاً"
+  },
+  "booking": {
+    "title": "الحجز",
+    "selectDate": "اختر التاريخ",
+    "selectTime": "اختر الوقت",
+    "numberOfTickets": "عدد التذاكر",
+    "totalPrice": "السعر الإجمالي",
+    "confirm": "تأكيد الحجز",
+    "cancel": "إلغاء الحجز",
+    "status": "الحالة"
+  },
+  "culture": {
+    "title": "اكتشف المغرب",
+    "subtitle": "انغمس في الثراء الثقافي والتقاليد الأصيلة للمغرب",
+    "traditions": "التقاليد",
+    "festivals": "المهرجانات",
+    "crafts": "الحرف اليدوية",
+    "cuisine": "المطبخ",
+    "music": "الموسيقى",
+    "regions": "المناطق"
   }
 }

@@ -12,8 +12,14 @@ const withdrawalSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['operator_payout', 'client_refund'],
+    enum: ['operator_payout', 'client_refund', 'refund'],
     required: true,
+  },
+  
+  // Related booking for refunds
+  relatedBooking: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
   },
   amount: {
     type: Number,

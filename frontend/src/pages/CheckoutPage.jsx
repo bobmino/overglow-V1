@@ -25,19 +25,32 @@ const CheckoutPage = () => {
 
   const totalPrice = schedule?.price * numberOfTickets;
 
+  const [bookingId, setBookingId] = useState(null);
+
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);
     setError('');
 
     try {
-      const { data } = await api.post('/api/bookings', {
-        scheduleId: schedule._id,
-        numberOfTickets: numberOfTickets,
-        paymentMethod: paymentDetails.type,
-        paymentId: paymentDetails.id
-      });
-
-      navigate('/booking-success', { state: { booking: data } });
+      // If booking was already created (for cash payments), update it
+      if (bookingId) {
+        const { data } = await api.put(`/api/bookings/${bookingId}`, {
+          paymentMethod: paymentDetails.type,
+          paymentId: paymentDetails.id,
+          ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
+        });
+        navigate('/booking-success', { state: { booking: data } });
+      } else {
+        // Create booking first
+        const { data } = await api.post('/api/bookings', {
+          scheduleId: schedule._id,
+          numberOfTickets: numberOfTickets,
+          paymentMethod: paymentDetails.type,
+          paymentId: paymentDetails.id,
+          ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
+        });
+        navigate('/booking-success', { state: { booking: data } });
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
       setLoading(false);
@@ -110,7 +123,8 @@ const CheckoutPage = () => {
 
                 <PaymentSelector 
                   amount={totalPrice} 
-                  onPaymentComplete={handlePaymentComplete} 
+                  onPaymentComplete={handlePaymentComplete}
+                  bookingId={bookingId}
                 />
               </div>
             </div>

@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ImageGallery = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const galleryRef = useRef(null);
   
   const displayImages = images && images.length > 0 
     ? images 
     : ['https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200'];
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
@@ -16,15 +22,47 @@ const ImageGallery = ({ images }) => {
     setCurrentIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1));
   };
 
+  // Touch gesture handlers
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      goToNext();
+    }
+    if (isRightSwipe) {
+      goToPrevious();
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative h-96 rounded-xl overflow-hidden bg-gray-100">
+      <div 
+        ref={galleryRef}
+        className="relative h-96 rounded-xl overflow-hidden bg-gray-100 touch-pan-y"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <img 
           src={displayImages[currentIndex]} 
           alt={`Product image ${currentIndex + 1}`}
           loading="lazy"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover select-none"
+          draggable={false}
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200';
           }}

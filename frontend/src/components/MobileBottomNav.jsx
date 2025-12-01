@@ -44,14 +44,14 @@ const MobileBottomNav = () => {
         </Link>
 
         <Link
-          to="/dashboard"
+          to="/favorites"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
-            isActive('/dashboard')
+            isActive('/favorites')
               ? 'text-primary-600'
               : 'text-slate-500 hover:text-primary-600'
           }`}
         >
-          <Heart size={24} className={isActive('/dashboard') ? 'fill-current' : ''} />
+          <Heart size={24} className={isActive('/favorites') ? 'fill-current' : ''} />
           <span className="text-xs mt-1 font-medium">Favoris</span>
         </Link>
 

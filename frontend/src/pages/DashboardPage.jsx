@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
+import api from '../config/axios';
 import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReviewModal from '../components/ReviewModal';
 
 const CancelModal = ({ booking, onClose, onConfirm }) => {
   const [loading, setLoading] = useState(false);
+  const [refundInfo, setRefundInfo] = useState(null);
+  const [reason, setReason] = useState('');
+  const [loadingRefund, setLoadingRefund] = useState(true);
+
+  useEffect(() => {
+    const fetchRefundInfo = async () => {
+      try {
+        const { data } = await api.get(`/api/bookings/${booking._id}/refund-calculation`);
+        setRefundInfo(data);
+      } catch (error) {
+        console.error('Failed to fetch refund info:', error);
+      } finally {
+        setLoadingRefund(false);
+      }
+    };
+    fetchRefundInfo();
+  }, [booking._id]);
 
   const handleCancel = async () => {
     setLoading(true);
-    await onConfirm(booking._id);
+    await onConfirm(booking._id, reason);
     setLoading(false);
   };
 
@@ -23,10 +41,57 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
           </button>
         </div>
         
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to cancel your booking for <strong>{booking.schedule?.product?.title}</strong>?
-          This action cannot be undone.
+        <p className="text-gray-600 mb-4">
+          Êtes-vous sûr de vouloir annuler votre réservation pour <strong>{booking.schedule?.product?.title}</strong>?
         </p>
+        
+        {loadingRefund ? (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600">Calcul du remboursement...</p>
+          </div>
+        ) : refundInfo && (
+          <div className={`mb-4 p-4 rounded-lg border-2 ${
+            refundInfo.refundAmount > 0
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-red-50 border-red-200'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-gray-900">Remboursement estimé:</span>
+              <span className={`text-lg font-bold ${
+                refundInfo.refundAmount > 0 ? 'text-green-700' : 'text-red-700'
+              }`}>
+                €{refundInfo.refundAmount.toFixed(2)}
+              </span>
+            </div>
+            <p className="text-sm text-gray-700 mb-1">
+              {refundInfo.refundAmount > 0 
+                ? `Remboursement de ${refundInfo.refundPercentage}% selon la politique "${refundInfo.policyType === 'free' ? 'Annulation Gratuite' : refundInfo.policyType === 'moderate' ? 'Annulation Modérée' : refundInfo.policyType === 'strict' ? 'Annulation Stricte' : 'Non Remboursable'}"`
+                : 'Aucun remboursement applicable selon la politique d\'annulation'
+              }
+            </p>
+            {refundInfo.hoursUntilStart !== undefined && (
+              <p className="text-xs text-gray-600 mt-1">
+                Temps restant avant le début: {refundInfo.hoursUntilStart.toFixed(1)}h
+                {refundInfo.isFreeCancellation && (
+                  <span className="ml-2 text-green-600 font-semibold">✓ Annulation gratuite</span>
+                )}
+              </p>
+            )}
+          </div>
+        )}
+        
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Raison de l'annulation (optionnel)
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            placeholder="Expliquez pourquoi vous annulez..."
+          />
+        </div>
 
         <div className="flex gap-3">
           <button
@@ -37,12 +102,12 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
           </button>
           <button
             onClick={handleCancel}
-            disabled={loading}
+            disabled={loading || loadingRefund}
             className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white transition ${
-              loading ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
+              loading || loadingRefund ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
             }`}
           >
-            {loading ? 'Cancelling...' : 'Cancel Booking'}
+            {loading ? 'Annulation...' : 'Confirmer l\'annulation'}
           </button>
         </div>
       </div>
@@ -63,14 +128,19 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
     }
   };
 
-  const handleCancelBooking = async (bookingId) => {
+  const handleCancelBooking = async (bookingId, reason) => {
     try {
-      await api.put(`/api/bookings/${bookingId}/cancel`);
+      const { data } = await api.post(`/api/bookings/${bookingId}/cancel`, { reason });
       setShowCancelModal(false);
+      if (data.refundInfo && data.refundInfo.refundAmount > 0) {
+        alert(`Réservation annulée. Remboursement de €${data.refundInfo.refundAmount.toFixed(2)} sera traité.`);
+      } else {
+        alert(data.message || 'Réservation annulée.');
+      }
       onBookingCancelled();
     } catch (error) {
       console.error('Cancel error:', error);
-      alert('Failed to cancel booking');
+      alert(error.response?.data?.message || 'Échec de l\'annulation');
     }
   };
 
@@ -207,14 +277,23 @@ const DashboardPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Mes réservations</h1>
-        <Link
-          to="/dashboard/inquiries"
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
-        >
-          Mes Inquiries
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/loyalty"
+            className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition flex items-center gap-2"
+          >
+            <Award size={18} />
+            Programme de Fidélité
+          </Link>
+          <Link
+            to="/dashboard/inquiries"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
+          >
+            Mes Inquiries
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -236,11 +315,22 @@ const DashboardPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {bookings.map((booking) => (
-            <BookingCard key={booking._id} booking={booking} onBookingCancelled={fetchBookings} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            {bookings.map((booking) => (
+              <BookingCard key={booking._id} booking={booking} onBookingCancelled={fetchBookings} />
+            ))}
+          </div>
+
+          {/* Recommendations Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <RecommendationsSection
+              type="personalized"
+              title="Recommandations pour vous"
+              limit={6}
+            />
+          </div>
+        </>
       )}
     </div>
   );

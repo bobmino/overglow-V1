@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, MapPin } from 'lucide-react';
+import BadgeDisplay from './BadgeDisplay';
+import FavoriteButton from './FavoriteButton';
 
 const ProductCard = ({ product }) => {
   if (!product) return null;
@@ -42,10 +44,15 @@ const ProductCard = ({ product }) => {
         />
         <div className="absolute top-0 inset-x-0 h-1/3 bg-gradient-to-b from-black/50 to-transparent opacity-60"></div>
         
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center space-x-1">
-          <Star size={14} className="text-secondary-500 fill-secondary-500" />
-          <span className="text-sm font-bold text-slate-800">{rating}</span>
-          <span className="text-xs text-slate-500">({reviewCount})</span>
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center space-x-1">
+            <Star size={14} className="text-secondary-500 fill-secondary-500" />
+            <span className="text-sm font-bold text-slate-800">{rating}</span>
+            <span className="text-xs text-slate-500">({reviewCount})</span>
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm">
+            <FavoriteButton productId={product._id} size={18} />
+          </div>
         </div>
 
         <div className="absolute bottom-4 left-4">
@@ -54,6 +61,13 @@ const ProductCard = ({ product }) => {
             {product.city}
           </div>
         </div>
+        
+        {/* Product Badges */}
+        {product.badges && Array.isArray(product.badges) && product.badges.length > 0 && (
+          <div className="absolute top-4 left-4 flex flex-wrap gap-1 max-w-[60%]">
+            <BadgeDisplay badges={product.badges} size="sm" />
+          </div>
+        )}
       </div>
       
       <div className="p-5">

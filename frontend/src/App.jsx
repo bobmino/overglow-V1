@@ -43,6 +43,10 @@ import NotificationsPage from './pages/NotificationsPage';
 import WithdrawalsPage from './pages/WithdrawalsPage';
 import AdminWithdrawalsPage from './pages/AdminWithdrawalsPage';
 import ApprovalRequestsPage from './pages/ApprovalRequestsPage';
+import FavoritesPage from './pages/FavoritesPage';
+import LoyaltyPage from './pages/LoyaltyPage';
+import ViewHistoryPage from './pages/ViewHistoryPage';
+import RecommendedProducts from './components/RecommendedProducts';
 import PrivateRoute from './components/PrivateRoute';
 import OperatorRoute from './components/OperatorRoute';
 
@@ -60,6 +64,7 @@ function App() {
               <FlexibilityBanner />
               <TopAttractions />
               <TopTours />
+              <RecommendedProducts title="Pour vous" type="personalized" limit={8} />
               <WarmDestinations />
               <AuthCTA />
             </>
@@ -75,6 +80,21 @@ function App() {
           <Route path="profile" element={
             <PrivateRoute>
               <ProfilePage />
+            </PrivateRoute>
+          } />
+          <Route path="favorites" element={
+            <PrivateRoute>
+              <FavoritesPage />
+            </PrivateRoute>
+          } />
+          <Route path="loyalty" element={
+            <PrivateRoute>
+              <LoyaltyPage />
+            </PrivateRoute>
+          } />
+          <Route path="view-history" element={
+            <PrivateRoute>
+              <ViewHistoryPage />
             </PrivateRoute>
           } />
           <Route path="dashboard/inquiries" element={

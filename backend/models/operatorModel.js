@@ -123,6 +123,36 @@ const operatorSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  
+  // Badges et certifications
+  badges: [{
+    badgeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Badge',
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
+  
+  // Système de points
+  points: {
+    type: Number,
+    default: 0,
+  },
+  
+  // Métriques pour badges
+  metrics: {
+    totalBookings: { type: Number, default: 0 },
+    totalRevenue: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 },
+    responseTime: { type: Number, default: null }, // Average response time in hours
+    completionRate: { type: Number, default: 100 }, // Percentage of completed bookings
+    isVerified: { type: Boolean, default: false },
+    isLocal: { type: Boolean, default: true }, // Moroccan operator
+  },
 }, {
   timestamps: true,
 });
