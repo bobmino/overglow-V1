@@ -48,16 +48,25 @@ const allowedOrigins = [
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Allow if origin is in allowed list or is a Vercel domain
+  // Always set CORS headers - allow all Vercel domains and localhost
   if (!origin || allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
-    // Set the exact origin (required for credentials, but we use JWT so '*' is fine)
+    // Set the exact origin for better security
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
     
-    // Handle preflight requests
+    // Handle preflight requests immediately
+    if (req.method === 'OPTIONS') {
+      return res.status(204).end();
+    }
+  } else {
+    // Even for unknown origins, set basic CORS to avoid blocking
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    
     if (req.method === 'OPTIONS') {
       return res.status(204).end();
     }
@@ -65,6 +74,25 @@ app.use((req, res, next) => {
   
   next();
 });
+
+// Fallback CORS using cors package for additional compatibility
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow all Vercel domains and localhost
+    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app') || origin.includes('localhost')) {
+      callback(null, true);
+    } else {
+      // Allow all origins for development (can be restricted in production)
+      callback(null, true);
+    }
+  },
+  credentials: false, // Not needed with JWT
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 
 app.use(express.json());
 
