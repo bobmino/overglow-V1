@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
 @layer base {
   body {
     font-family: 'Inter', sans-serif;

@@ -5,13 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
+import NotificationBadge from './NotificationBadge';
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const userMenuRef = React.useRef(null);
   const discoverMenuRef = React.useRef(null);
   const mobileMenuRef = React.useRef(null);
@@ -19,24 +19,6 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith('/operator');
-
-  // Fetch unread notifications count
-  useEffect(() => {
-    if (isAuthenticated) {
-      const fetchUnreadCount = async () => {
-        try {
-          const { data } = await api.get('/api/notifications/unread-count');
-          setUnreadCount(data.unreadCount || 0);
-        } catch (error) {
-          // Silently fail - notifications are optional
-        }
-      };
-      fetchUnreadCount();
-      // Refresh every 30 seconds
-      const interval = setInterval(fetchUnreadCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated]);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -137,18 +119,7 @@ const Header = () => {
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <Link
-                to="/notifications"
-                className="relative p-2 text-slate-700 hover:text-primary-600 transition"
-                title="Notifications"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Link>
+              <NotificationBadge />
               
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>

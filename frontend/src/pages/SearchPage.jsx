@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
-import { Filter, X } from 'lucide-react';
+import AdvancedFilters from '../components/AdvancedFilters';
+import { Filter, X, Search, Heart, MapPin } from 'lucide-react';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,17 +17,117 @@ const SearchPage = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [selectedCity, setSelectedCity] = useState('');
   const [sortBy, setSortBy] = useState('recommended');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [advancedFilters, setAdvancedFilters] = useState({
+    minPrice: null,
+    maxPrice: null,
+    minRating: null,
+    durations: [],
+    selectedDate: null,
+    location: null,
+    locationName: '',
+    radius: null
+  });
+  const [savedSearches, setSavedSearches] = useState([]);
+  const [showSavedSearches, setShowSavedSearches] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const categories = ['Tours', 'Attractions', 'Food & Drink', 'Day Trips', 'Outdoor Activities', 'Shows & Performances', 'Activities'];
-  const cities = ['Paris', 'Rome', 'Barcelona', 'London', 'Dubai', 'New York'];
+  const [cities, setCities] = useState(['Marrakech', 'Casablanca', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Meknès', 'Ouarzazate']);
+  
+  // Fetch cities from API
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const { data } = await api.get('/api/search/categories');
+        if (data && Array.isArray(data.categories)) {
+          // Extract unique cities from products
+          const { data: productsData } = await api.get('/api/products');
+          if (Array.isArray(productsData)) {
+            const uniqueCities = [...new Set(productsData.map(p => p.city).filter(Boolean))];
+            if (uniqueCities.length > 0) {
+              setCities(prev => [...new Set([...prev, ...uniqueCities])]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch cities:', err);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  // Load saved searches from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('savedSearches');
+    if (saved) {
+      try {
+        setSavedSearches(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse saved searches:', e);
+      }
+    }
+  }, []);
+
+  // Get search query from URL params
+  useEffect(() => {
+    const cityParam = searchParams.get('city');
+    const queryParam = searchParams.get('q');
+    if (cityParam) setSelectedCity(cityParam);
+    if (queryParam) setSearchQuery(queryParam);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        const { data } = await api.get('/api/products');
-        const productsArray = Array.isArray(data) ? data : [];
-        setProducts(productsArray);
-        setFilteredProducts(productsArray);
+        // Use advanced search if filters are active
+        const hasAdvancedFilters = 
+          advancedFilters.minPrice || 
+          advancedFilters.maxPrice || 
+          advancedFilters.minRating ||
+          (advancedFilters.durations && advancedFilters.durations.length > 0) ||
+          advancedFilters.selectedDate ||
+          advancedFilters.location ||
+          searchQuery;
+
+        if (hasAdvancedFilters) {
+          const params = new URLSearchParams();
+          if (searchQuery) params.append('q', searchQuery);
+          if (selectedCity) params.append('city', selectedCity);
+          if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
+          if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
+          if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
+          if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
+          if (advancedFilters.durations.length > 0) {
+            advancedFilters.durations.forEach(d => params.append('durations', d));
+          }
+          if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
+          if (advancedFilters.location?.lat) {
+            params.append('locationLat', advancedFilters.location.lat);
+            params.append('locationLng', advancedFilters.location.lng);
+          }
+          if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
+          params.append('sortBy', sortBy);
+          params.append('page', page);
+          params.append('limit', 20);
+
+          const { data } = await api.get(`/api/search/advanced?${params.toString()}`);
+          const productsArray = Array.isArray(data.products) ? data.products : [];
+          setProducts(productsArray);
+          setFilteredProducts(productsArray);
+          setTotalPages(data.totalPages || 1);
+        } else {
+          // Use simple product list
+          const params = new URLSearchParams();
+          if (selectedCity) params.append('city', selectedCity);
+          const { data } = await api.get(`/api/products?${params.toString()}`);
+          const productsArray = Array.isArray(data) ? data : [];
+          setProducts(productsArray);
+          setFilteredProducts(productsArray);
+          setTotalPages(1);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Failed to load products:', err);
@@ -38,7 +139,7 @@ const SearchPage = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [selectedCity, selectedCategories, advancedFilters, searchQuery, sortBy, page]);
 
   const getProductBasePrice = (product) => {
     const schedulePrices = Array.isArray(product.schedules)
@@ -131,14 +232,123 @@ const SearchPage = () => {
     setSelectedCategories([]);
     setPriceRange({ min: '', max: '' });
     setSelectedCity('');
+    setSearchQuery('');
     setSortBy('recommended');
+    setAdvancedFilters({
+      minPrice: null,
+      maxPrice: null,
+      minRating: null,
+      durations: [],
+      selectedDate: null,
+      location: null,
+      locationName: '',
+      radius: null
+    });
+    setPage(1);
     setSearchParams({});
+  };
+
+  const handleSaveSearch = () => {
+    const searchConfig = {
+      id: Date.now(),
+      name: searchQuery || selectedCity || 'Recherche sauvegardée',
+      query: searchQuery,
+      city: selectedCity,
+      categories: selectedCategories,
+      filters: advancedFilters,
+      sortBy,
+      createdAt: new Date().toISOString()
+    };
+
+    const updated = [...savedSearches, searchConfig];
+    setSavedSearches(updated);
+    localStorage.setItem('savedSearches', JSON.stringify(updated));
+    alert('Recherche sauvegardée !');
+  };
+
+  const handleLoadSavedSearch = (savedSearch) => {
+    setSearchQuery(savedSearch.query || '');
+    setSelectedCity(savedSearch.city || '');
+    setSelectedCategories(savedSearch.categories || []);
+    setAdvancedFilters(savedSearch.filters || advancedFilters);
+    setSortBy(savedSearch.sortBy || 'recommended');
+    setPage(1);
+    setShowSavedSearches(false);
+  };
+
+  const handleDeleteSavedSearch = (id) => {
+    const updated = savedSearches.filter(s => s.id !== id);
+    setSavedSearches(updated);
+    localStorage.setItem('savedSearches', JSON.stringify(updated));
   };
 
   const activeFiltersCount = (Array.isArray(selectedCategories) ? selectedCategories.length : 0) + (selectedCity ? 1 : 0) + (priceRange.min || priceRange.max ? 1 : 0);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-20 md:pt-24">
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Rechercher des expériences, destinations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <button
+            onClick={handleSaveSearch}
+            className="px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center space-x-2"
+            title="Sauvegarder cette recherche"
+          >
+            <Heart size={20} />
+            <span className="hidden md:inline">Sauvegarder</span>
+          </button>
+          {savedSearches.length > 0 && (
+            <button
+              onClick={() => setShowSavedSearches(!showSavedSearches)}
+              className="px-4 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center space-x-2"
+            >
+              <span className="hidden md:inline">Recherches ({savedSearches.length})</span>
+              <span className="md:hidden">{savedSearches.length}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Saved Searches Dropdown */}
+        {showSavedSearches && savedSearches.length > 0 && (
+          <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-4 mb-4">
+            <h3 className="font-semibold mb-3">Recherches sauvegardées</h3>
+            <div className="space-y-2">
+              {savedSearches.map((saved) => (
+                <div key={saved.id} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
+                  <button
+                    onClick={() => handleLoadSavedSearch(saved)}
+                    className="flex-1 text-left"
+                  >
+                    <div className="font-medium">{saved.name}</div>
+                    <div className="text-sm text-slate-500">
+                      {saved.query && `${saved.query} `}
+                      {saved.city && `${saved.city} `}
+                      {new Date(saved.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSavedSearch(saved.id)}
+                    className="text-red-600 hover:text-red-700 p-1"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Filters */}
         <div className="w-full md:w-64 flex-shrink-0">
@@ -195,7 +405,7 @@ const SearchPage = () => {
 
             {/* Price Filter */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-slate-900">Price Range (€)</h3>
+              <h3 className="font-semibold mb-3 text-slate-900">Price Range (MAD)</h3>
               <div className="flex items-center space-x-2">
                 <input 
                   type="number" 
@@ -214,6 +424,26 @@ const SearchPage = () => {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Advanced Filters Component */}
+          <div className="mt-6">
+            <AdvancedFilters
+              filters={advancedFilters}
+              onFiltersChange={setAdvancedFilters}
+              onReset={() => setAdvancedFilters({
+                minPrice: null,
+                maxPrice: null,
+                minRating: null,
+                durations: [],
+                selectedDate: null,
+                location: null,
+                locationName: '',
+                radius: null
+              })}
+              cities={cities}
+              categories={categories}
+            />
           </div>
         </div>
 
@@ -260,10 +490,11 @@ const SearchPage = () => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="border-none bg-transparent font-semibold text-slate-900 focus:ring-0 cursor-pointer"
               >
-                <option value="recommended">Recommended</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Rating</option>
+                <option value="recommended">Recommandé</option>
+                <option value="price-low">Prix: Croissant</option>
+                <option value="price-high">Prix: Décroissant</option>
+                <option value="rating">Note</option>
+                <option value="popularity">Popularité</option>
               </select>
             </div>
           </div>
@@ -293,6 +524,29 @@ const SearchPage = () => {
               {filteredProducts.map((product) => (
                 <ProductCard key={product?._id || Math.random()} product={product} />
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2 mt-8">
+              <button
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                Précédent
+              </button>
+              <span className="px-4 py-2 text-slate-700">
+                Page {page} sur {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                Suivant
+              </button>
             </div>
           )}
         </div>

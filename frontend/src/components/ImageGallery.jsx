@@ -23,7 +23,11 @@ const ImageGallery = ({ images }) => {
         <img 
           src={displayImages[currentIndex]} 
           alt={`Product image ${currentIndex + 1}`}
+          loading="lazy"
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200';
+          }}
         />
         
         {displayImages.length > 1 && (
@@ -74,7 +78,11 @@ const ImageGallery = ({ images }) => {
               <img 
                 src={image} 
                 alt={`Thumbnail ${index + 1}`}
+                loading="lazy"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200';
+                }}
               />
             </button>
           ))}
