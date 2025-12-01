@@ -10,6 +10,8 @@ Fix: Comprehensive array validation and error handling for production stability
 - Protect TopTours, TourCard, ProductCard components with null checks
 - Validate SearchPage arrays (categories, cities, selectedCategories, filteredProducts)
 - Protect OperatorProductFormPage formData arrays
+- Protect TimeSlotPicker, ScheduleSelector, DateRangePicker timeSlots arrays
+- Protect InquiriesPage, ApprovalRequestsPage, OperatorBookingsPage data arrays
 - Add fallbacks for all API responses to prevent crashes
 - Protect numeric values (totalAmount, totalRevenue) with toFixed() guards
 - Improve error handling with proper console logging and user feedback
@@ -23,8 +25,14 @@ Files modified:
 - frontend/src/components/TopTours.jsx
 - frontend/src/components/TourCard.jsx
 - frontend/src/components/ProductCard.jsx
+- frontend/src/components/TimeSlotPicker.jsx
+- frontend/src/components/ScheduleSelector.jsx
+- frontend/src/components/DateRangePicker.jsx
 - frontend/src/pages/SearchPage.jsx
 - frontend/src/pages/OperatorProductFormPage.jsx
+- frontend/src/pages/InquiriesPage.jsx
+- frontend/src/pages/ApprovalRequestsPage.jsx
+- frontend/src/pages/OperatorBookingsPage.jsx
 
 This ensures the application works reliably in production on Vercel
 with proper error handling and data validation.
@@ -36,8 +44,14 @@ with proper error handling and data validation.
 - `frontend/src/components/TopTours.jsx`
 - `frontend/src/components/TourCard.jsx`
 - `frontend/src/components/ProductCard.jsx`
+- `frontend/src/components/TimeSlotPicker.jsx`
+- `frontend/src/components/ScheduleSelector.jsx`
+- `frontend/src/components/DateRangePicker.jsx`
 - `frontend/src/pages/SearchPage.jsx`
 - `frontend/src/pages/OperatorProductFormPage.jsx`
+- `frontend/src/pages/InquiriesPage.jsx`
+- `frontend/src/pages/ApprovalRequestsPage.jsx`
+- `frontend/src/pages/OperatorBookingsPage.jsx`
 
 ### Documentation
 - `PROJECT_STATUS.md` (mis à jour)

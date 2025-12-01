@@ -182,7 +182,7 @@ const InquiriesPage = () => {
         <DashboardNavBar />
       </div>
 
-      {inquiries.length === 0 ? (
+      {!Array.isArray(inquiries) || inquiries.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <MessageSquare size={48} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">No inquiries yet</h2>
@@ -191,7 +191,7 @@ const InquiriesPage = () => {
       ) : (
         <div className="space-y-4">
           {inquiries.map((inquiry) => (
-            <InquiryCard key={inquiry._id} inquiry={inquiry} onUpdate={fetchInquiries} />
+            <InquiryCard key={inquiry?._id || Math.random()} inquiry={inquiry} onUpdate={fetchInquiries} />
           ))}
         </div>
       )}

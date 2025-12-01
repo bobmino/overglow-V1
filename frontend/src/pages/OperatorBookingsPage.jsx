@@ -71,7 +71,7 @@ const OperatorBookingsPage = () => {
         <DashboardNavBar />
       </div>
 
-      {bookings.length === 0 ? (
+      {!Array.isArray(bookings) || bookings.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">No bookings yet</h2>

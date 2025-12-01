@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, Users } from 'lucide-react';
 
 const ScheduleSelector = ({ schedules, selectedSchedule, onSelectSchedule }) => {
-  if (!schedules || schedules.length === 0) {
+  if (!Array.isArray(schedules) || schedules.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <p className="text-gray-600">No schedules available at the moment.</p>

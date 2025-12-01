@@ -174,13 +174,13 @@ const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) =
   };
 
   const getAvailableTimeSlots = () => {
-    if (!product || !product.timeSlots || product.timeSlots.length === 0) {
+    if (!product || !Array.isArray(product.timeSlots) || product.timeSlots.length === 0) {
       return [{ startTime: '09:00', endTime: '17:00' }];
     }
     return product.timeSlots;
   };
 
-  const timeSlots = getAvailableTimeSlots();
+  const timeSlots = Array.isArray(getAvailableTimeSlots()) ? getAvailableTimeSlots() : [{ startTime: '09:00', endTime: '17:00' }];
   
   // Initialize selected time slot if not set
   useEffect(() => {
@@ -201,7 +201,7 @@ const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) =
           <span className={`text-base font-medium ${startDate ? 'text-slate-800' : 'text-slate-400'}`}>
             {formatDisplayDate()}
           </span>
-          {timeSlots.length > 0 && (
+          {Array.isArray(timeSlots) && timeSlots.length > 0 && (
             <div className="mt-2 text-xs text-slate-500">
               Horaires: {timeSlots.map(slot => `${slot.startTime}-${slot.endTime}`).join(', ')}
             </div>
@@ -248,7 +248,7 @@ const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) =
           </div>
 
           {/* Time Slots Selection */}
-          {timeSlots.length > 0 && startDate && (
+          {Array.isArray(timeSlots) && timeSlots.length > 0 && startDate && (
             <div className="mb-4 pt-4 border-t border-slate-100">
               <label className="block text-sm font-bold text-slate-700 mb-3">
                 Sélectionner une plage horaire:

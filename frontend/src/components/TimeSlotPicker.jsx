@@ -17,13 +17,13 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
   }, []);
 
   const getAvailableTimeSlots = () => {
-    if (!product || !product.timeSlots || product.timeSlots.length === 0) {
+    if (!product || !Array.isArray(product.timeSlots) || product.timeSlots.length === 0) {
       return [{ startTime: '09:00', endTime: '17:00' }];
     }
     return product.timeSlots;
   };
 
-  const timeSlots = getAvailableTimeSlots();
+  const timeSlots = Array.isArray(getAvailableTimeSlots()) ? getAvailableTimeSlots() : [{ startTime: '09:00', endTime: '17:00' }];
 
   const formatTimeSlot = (slot) => {
     return `${slot.startTime} - ${slot.endTime}`;
