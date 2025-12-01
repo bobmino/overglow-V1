@@ -35,11 +35,37 @@ connectDB().catch(err => {
 
 const app = express();
 
-// CORS configuration - Allow all origins for now (you can restrict later)
-app.use(cors({
-  origin: true, // Allow all origins
-  credentials: true
-}));
+// CORS configuration - Allow Vercel frontend and local development
+const allowedOrigins = [
+  'https://overglow-v1-3jqp.vercel.app',
+  'https://overglow-v1.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000'
+];
+
+// CORS middleware with explicit configuration for Vercel
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow if origin is in allowed list or is a Vercel domain
+  if (!origin || allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+    // Set the exact origin (required for credentials, but we use JWT so '*' is fine)
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(204).end();
+    }
+  }
+  
+  next();
+});
+
 app.use(express.json());
 
 app.get('/', (req, res) => {

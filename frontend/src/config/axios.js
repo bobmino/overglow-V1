@@ -11,6 +11,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Note: withCredentials n'est pas nécessaire car on utilise JWT dans Authorization header
 });
 
 // Intercepteur pour ajouter le token d'authentification automatiquement
