@@ -44,54 +44,45 @@ const allowedOrigins = [
   'http://localhost:5000'
 ];
 
-// CORS middleware with explicit configuration for Vercel
+// CORS middleware - MUST be before all routes for Vercel serverless functions
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Always set CORS headers - allow all Vercel domains and localhost
-  if (!origin || allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
-    // Set the exact origin for better security
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
-    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-    
-    // Handle preflight requests immediately
-    if (req.method === 'OPTIONS') {
-      return res.status(204).end();
+  // Determine allowed origin
+  let allowedOrigin = '*';
+  if (origin) {
+    // Allow if it's in our list or is a Vercel domain
+    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+      allowedOrigin = origin;
     }
-  } else {
-    // Even for unknown origins, set basic CORS to avoid blocking
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    
-    if (req.method === 'OPTIONS') {
-      return res.status(204).end();
-    }
+  }
+  
+  // Set CORS headers for ALL requests (including OPTIONS)
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  // Handle preflight OPTIONS requests - MUST return immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end(); // Use 200 instead of 204 for better compatibility
   }
   
   next();
 });
 
-// Fallback CORS using cors package for additional compatibility
+// Additional CORS using cors package as backup
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    
-    // Allow all Vercel domains and localhost
-    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app') || origin.includes('localhost')) {
-      callback(null, true);
-    } else {
-      // Allow all origins for development (can be restricted in production)
-      callback(null, true);
-    }
+    // Always allow (we handle restrictions in the middleware above)
+    callback(null, true);
   },
-  credentials: false, // Not needed with JWT
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
