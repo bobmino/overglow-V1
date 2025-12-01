@@ -12,6 +12,9 @@ Fix: Comprehensive array validation and error handling for production stability
 - Protect OperatorProductFormPage formData arrays
 - Protect TimeSlotPicker, ScheduleSelector, DateRangePicker timeSlots arrays
 - Protect InquiriesPage, ApprovalRequestsPage, OperatorBookingsPage data arrays
+- Protect ProductDetailPage: highlights, included, itinerary, faqs arrays (CRITIQUE)
+- Protect OperatorProductFormPage: images and timeSlots arrays
+- Use product data if available, fallback to defaults with Array.isArray() checks
 - Add fallbacks for all API responses to prevent crashes
 - Protect numeric values (totalAmount, totalRevenue) with toFixed() guards
 - Improve error handling with proper console logging and user feedback
@@ -29,7 +32,8 @@ Files modified:
 - frontend/src/components/ScheduleSelector.jsx
 - frontend/src/components/DateRangePicker.jsx
 - frontend/src/pages/SearchPage.jsx
-- frontend/src/pages/OperatorProductFormPage.jsx
+- frontend/src/pages/ProductDetailPage.jsx (CRITIQUE - 5 arrays protégés)
+- frontend/src/pages/OperatorProductFormPage.jsx (images + timeSlots)
 - frontend/src/pages/InquiriesPage.jsx
 - frontend/src/pages/ApprovalRequestsPage.jsx
 - frontend/src/pages/OperatorBookingsPage.jsx
@@ -48,6 +52,7 @@ with proper error handling and data validation.
 - `frontend/src/components/ScheduleSelector.jsx`
 - `frontend/src/components/DateRangePicker.jsx`
 - `frontend/src/pages/SearchPage.jsx`
+- `frontend/src/pages/ProductDetailPage.jsx` ⚠️ CRITIQUE
 - `frontend/src/pages/OperatorProductFormPage.jsx`
 - `frontend/src/pages/InquiriesPage.jsx`
 - `frontend/src/pages/ApprovalRequestsPage.jsx`

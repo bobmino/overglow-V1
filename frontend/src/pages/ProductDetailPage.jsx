@@ -109,58 +109,66 @@ const ProductDetailPage = () => {
     );
   }
 
-  const highlights = [
-    "Skip-the-line access",
-    "Expert local guide",
-    "Small group experience",
-    "Free cancellation up to 24 hours"
-  ];
+  const highlights = Array.isArray(product?.highlights) && product.highlights.length > 0
+    ? product.highlights
+    : [
+        "Skip-the-line access",
+        "Expert local guide",
+        "Small group experience",
+        "Free cancellation up to 24 hours"
+      ];
 
-  const included = [
-    { item: "Hotel pickup and drop-off", included: true },
-    { item: "Professional tour guide", included: true },
-    { item: "Entrance tickets", included: true },
-    { item: "Audio headset", included: true },
-    { item: "Food and drinks", included: false },
-    { item: "Gratuities", included: false }
-  ];
+  const included = Array.isArray(product?.included) && product.included.length > 0
+    ? product.included
+    : [
+        { item: "Hotel pickup and drop-off", included: true },
+        { item: "Professional tour guide", included: true },
+        { item: "Entrance tickets", included: true },
+        { item: "Audio headset", included: true },
+        { item: "Food and drinks", included: false },
+        { item: "Gratuities", included: false }
+      ];
 
-  const itinerary = [
-    { 
-      stop: "Eiffel Tower", 
-      duration: "30 min", 
-      description: "Start your tour with stunning views of Paris's most iconic landmark. Perfect photo opportunity!" 
-    },
-    { 
-      stop: "Louvre Museum", 
-      duration: "45 min", 
-      description: "Explore the world's largest art museum and see the Mona Lisa up close." 
-    },
-    { 
-      stop: "Notre-Dame Cathedral", 
-      duration: "20 min", 
-      description: "Visit the famous Gothic cathedral and learn about its rich history." 
-    }
-  ];
+  const itinerary = Array.isArray(product?.itinerary) && product.itinerary.length > 0
+    ? product.itinerary
+    : [
+        { 
+          stop: "Eiffel Tower", 
+          duration: "30 min", 
+          description: "Start your tour with stunning views of Paris's most iconic landmark. Perfect photo opportunity!" 
+        },
+        { 
+          stop: "Louvre Museum", 
+          duration: "45 min", 
+          description: "Explore the world's largest art museum and see the Mona Lisa up close." 
+        },
+        { 
+          stop: "Notre-Dame Cathedral", 
+          duration: "20 min", 
+          description: "Visit the famous Gothic cathedral and learn about its rich history." 
+        }
+      ];
 
-  const faqs = [
-    { 
-      q: "What should I bring?", 
-      a: "We recommend comfortable walking shoes, a water bottle, sunscreen, and a camera. Don't forget your confirmation voucher!" 
-    },
-    { 
-      q: "Is this tour wheelchair accessible?", 
-      a: "Yes, this tour is wheelchair accessible. Please inform us in advance so we can make necessary arrangements." 
-    },
-    { 
-      q: "What's the cancellation policy?", 
-      a: "Free cancellation up to 24 hours before the experience starts. Cancel at least 24 hours before the start time for a full refund." 
-    },
-    { 
-      q: "What languages are available?", 
-      a: "This tour is available in English, French, Spanish, German, and Italian. Please select your preferred language when booking." 
-    }
-  ];
+  const faqs = Array.isArray(product?.faqs) && product.faqs.length > 0
+    ? product.faqs
+    : [
+        { 
+          q: "What should I bring?", 
+          a: "We recommend comfortable walking shoes, a water bottle, sunscreen, and a camera. Don't forget your confirmation voucher!" 
+        },
+        { 
+          q: "Is this tour wheelchair accessible?", 
+          a: "Yes, this tour is wheelchair accessible. Please inform us in advance so we can make necessary arrangements." 
+        },
+        { 
+          q: "What's the cancellation policy?", 
+          a: "Free cancellation up to 24 hours before the experience starts. Cancel at least 24 hours before the start time for a full refund." 
+        },
+        { 
+          q: "What languages are available?", 
+          a: "This tour is available in English, French, Spanish, German, and Italian. Please select your preferred language when booking." 
+        }
+      ];
 
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
@@ -242,7 +250,7 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">What's Included</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {included.map((item, idx) => (
+                {Array.isArray(included) && included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
                     {item.included ? (
                       <CheckCircle className="text-green-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
@@ -261,7 +269,7 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Highlights</h2>
               <ul className="space-y-3">
-                {highlights.map((highlight, index) => (
+                {Array.isArray(highlights) && highlights.map((highlight, index) => (
                   <li key={index} className="flex items-start">
                     <CheckCircle size={20} className="text-primary-600 mr-3 mt-0.5 flex-shrink-0" />
                     <span className="text-slate-700">{highlight}</span>
@@ -274,7 +282,7 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Itinerary</h2>
               <div className="space-y-4">
-                {itinerary.map((stop, idx) => (
+                {Array.isArray(itinerary) && itinerary.map((stop, idx) => (
                   <div key={idx} className="flex gap-4 pb-4 border-b border-slate-200 last:border-0">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-lg">
                       {idx + 1}
@@ -296,7 +304,7 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
               <div className="space-y-3">
-                {faqs.map((faq, idx) => (
+                {Array.isArray(faqs) && faqs.map((faq, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
                     <button
                       onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}

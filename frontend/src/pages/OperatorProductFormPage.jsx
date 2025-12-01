@@ -316,7 +316,7 @@ const OperatorProductFormPage = () => {
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Images</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              {formData.images.map((img, index) => (
+              {Array.isArray(formData.images) && formData.images.map((img, index) => (
                 <div key={index} className="relative group">
                   <img src={img} alt={`Product ${index}`} className="w-full h-24 object-cover rounded-lg" />
                   <button
@@ -409,7 +409,7 @@ const OperatorProductFormPage = () => {
           <div className="border-t pt-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Plages horaires</h3>
             <div className="space-y-3">
-              {formData.timeSlots.map((slot, index) => (
+              {Array.isArray(formData.timeSlots) && formData.timeSlots.map((slot, index) => (
                 <div key={index} className="flex gap-3 items-center">
                   <div className="flex-1">
                     <label className="block text-xs text-gray-600 mb-1">Début</label>
