@@ -34,6 +34,7 @@ import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
 connectDB().catch(err => {
   console.error('Database connection initialization error:', err.message);
   // Never exit on Vercel - allow function to start and retry on first request
+  // Don't throw - let the function start even if DB connection fails
 });
 
 const app = express();
