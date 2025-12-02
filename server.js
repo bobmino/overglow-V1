@@ -40,7 +40,42 @@ connectDB().catch(err => {
 
 const app = express();
 
-// CORS configuration - CRITICAL: Must be FIRST middleware
+// CRITICAL: Handle OPTIONS preflight requests FIRST, before ANY other middleware
+// This MUST be the absolute first middleware - even before express.json() or anything else
+// Use a try-catch to ensure it never fails
+app.use((req, res, next) => {
+  try {
+    if (req.method === 'OPTIONS') {
+      const origin = req.headers.origin || '*';
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      return res.status(200).end();
+    }
+    next();
+  } catch (err) {
+    // If anything fails, still try to send OPTIONS response
+    console.error('OPTIONS handler error:', err);
+    try {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+      if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+      }
+    } catch (e) {
+      // Last resort - just send 200
+      if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+      }
+    }
+    next();
+  }
+});
+
+// CORS configuration - Must be after OPTIONS handler
 // This handles CORS for Vercel serverless functions
 const allowedOrigins = [
   'https://overglow-v1-3jqp.vercel.app',
@@ -50,27 +85,6 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5174',
 ];
-
-// CRITICAL: Handle OPTIONS preflight requests FIRST, before any other middleware
-// This MUST be the very first middleware to handle OPTIONS
-app.use((req, res, next) => {
-  // Handle OPTIONS preflight requests immediately - BEFORE anything else
-  if (req.method === 'OPTIONS') {
-    const origin = req.headers.origin || '*';
-    
-    // Set CORS headers for preflight - be permissive for now
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '86400');
-    
-    // CRITICAL: Return 200 OK immediately - use .end() for fastest response
-    return res.status(200).end();
-  }
-  
-  next();
-});
 
 // Custom CORS middleware for all requests (non-OPTIONS)
 app.use((req, res, next) => {
