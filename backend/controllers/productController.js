@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Product from '../models/productModel.js';
 import Operator from '../models/operatorModel.js';
 import Schedule from '../models/scheduleModel.js';
