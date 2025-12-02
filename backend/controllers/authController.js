@@ -80,6 +80,15 @@ const loginUser = async (req, res) => {
 
     const { email, password } = req.body;
 
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('Login error: JWT_SECRET is not defined in environment variables');
+      return res.status(500).json({ 
+        message: 'Server configuration error. Please contact support.',
+        error: 'JWT_SECRET missing'
+      });
+    }
+
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
@@ -94,8 +103,26 @@ const loginUser = async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+    // Log full error details for debugging
+    console.error('Login error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      email: req.body?.email || 'N/A'
+    });
+    
+    // Return appropriate error message
+    if (error.message.includes('JWT_SECRET')) {
+      res.status(500).json({ 
+        message: 'Server configuration error. Please contact support.',
+        error: 'JWT_SECRET missing'
+      });
+    } else {
+      res.status(500).json({ 
+        message: 'Server error during login',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
   }
 };
 
