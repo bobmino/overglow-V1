@@ -128,12 +128,12 @@ export const updateProductMetrics = async (productId) => {
     const isBestValue = product.price < avgCategoryPrice * 0.9; // 10% below average
 
     // Check if product has last minute availability
-    const schedules = await Schedule.find({ 
+    const lastMinuteSchedules = await Schedule.find({ 
       product: productId,
       date: { $gte: new Date(), $lte: new Date(Date.now() + 24 * 60 * 60 * 1000) },
       capacity: { $gt: 0 }
     });
-    const isLastMinute = schedules.length > 0;
+    const isLastMinute = lastMinuteSchedules.length > 0;
 
     // Update product metrics
     product.metrics = {

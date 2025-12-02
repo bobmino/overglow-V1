@@ -30,6 +30,20 @@ import recommendationRoutes from './backend/routes/recommendationRoutes.js';
 import loyaltyRoutes from './backend/routes/loyaltyRoutes.js';
 import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
 
+const app = express();
+
+// CRITICAL: Handle OPTIONS IMMEDIATELY - before ANY other code execution
+// This must be the absolute first thing after creating the app
+app.options('*', (req, res) => {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  return res.status(200).end();
+});
+
 // Connect to database (non-blocking for Vercel)
 // This is async and won't block serverless function startup
 connectDB().catch(err => {
@@ -37,8 +51,6 @@ connectDB().catch(err => {
   // Never exit on Vercel - allow function to start and retry on first request
   // Don't throw - let the function start even if DB connection fails
 });
-
-const app = express();
 
 // CRITICAL: Handle OPTIONS preflight requests FIRST, before ANY other middleware
 // This MUST be the absolute first middleware - even before express.json() or anything else
