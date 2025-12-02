@@ -53,34 +53,22 @@ const allowedOrigins = [
 // CRITICAL: Handle OPTIONS preflight requests FIRST, before any other middleware
 // This MUST be the very first middleware to handle OPTIONS
 app.use((req, res, next) => {
-  try {
-    // Handle OPTIONS preflight requests immediately - BEFORE anything else
-    if (req.method === 'OPTIONS') {
-      const origin = req.headers.origin || '*';
-      
-      // Set CORS headers for preflight - be permissive for now
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Max-Age', '86400');
-      
-      // CRITICAL: Return 200 OK immediately - use .end() for fastest response
-      return res.status(200).end();
-    }
+  // Handle OPTIONS preflight requests immediately - BEFORE anything else
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.origin || '*';
     
-    next();
-  } catch (error) {
-    // If there's any error, still try to send CORS headers and 200
-    console.error('CORS OPTIONS error:', error);
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Set CORS headers for preflight - be permissive for now
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    next();
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    
+    // CRITICAL: Return 200 OK immediately - use .end() for fastest response
+    return res.status(200).end();
   }
+  
+  next();
 });
 
 // Custom CORS middleware for all requests (non-OPTIONS)
