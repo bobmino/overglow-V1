@@ -177,9 +177,35 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Export handler for Vercel serverless functions
-// For Vercel, we need to export the app directly
-// The CORS middleware is already set up above
-export default app;
+// Wrap in a handler to catch any initialization errors
+const handler = async (req, res) => {
+  try {
+    // Ensure database connection before handling request
+    if (mongoose.connection.readyState === 0) {
+      await connectDB().catch(() => {
+        // Continue even if DB connection fails
+      });
+    }
+    return app(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    // Set CORS headers even on error
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+export default handler;
 
 // Only start server if not in Vercel environment (local development)
 if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
