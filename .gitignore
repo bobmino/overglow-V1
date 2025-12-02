@@ -40,3 +40,4 @@ uploads/*
 # Duplicate folder (to be removed)
 overglow-V1/
 
+DEPLOYMENT_FRONTEND_CONFIG.md
