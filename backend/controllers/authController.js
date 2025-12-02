@@ -3,6 +3,7 @@ import Operator from '../models/operatorModel.js';
 import generateToken from '../../utils/generateToken.js';
 import { validationResult } from 'express-validator';
 import { notifyOperatorRegistered } from '../utils/notificationService.js';
+import mongoose from 'mongoose';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -92,6 +93,24 @@ const loginUser = async (req, res) => {
         message: 'Server configuration error. Please contact support.',
         error: 'JWT_SECRET missing'
       });
+    }
+
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.error('Login error: Database not connected', { readyState: mongoose.connection.readyState });
+      // Try to reconnect
+      try {
+        const connectDB = (await import('../../config/db.js')).default;
+        await connectDB();
+        // Wait a bit for connection to establish
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (dbError) {
+        console.error('Database reconnection failed:', dbError.message);
+        return res.status(500).json({ 
+          message: 'Database connection error. Please try again later.',
+          error: 'Database unavailable'
+        });
+      }
     }
 
     // Find user
