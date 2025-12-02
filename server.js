@@ -52,26 +52,38 @@ const allowedOrigins = [
 
 // CRITICAL: Handle OPTIONS preflight requests FIRST, before any other middleware
 // This route must be registered before app.use() middleware
-app.options('*', (req, res) => {
-  const origin = req.headers.origin;
-  
-  // Set CORS headers for preflight
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+// Handle all OPTIONS requests explicitly
+app.use((req, res, next) => {
+  // Handle OPTIONS preflight requests immediately
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.origin;
+    
+    // Set CORS headers for preflight
+    if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    
+    // Return 200 OK for preflight
+    return res.status(200).json({ message: 'OK' });
   }
   
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
-  
-  return res.status(200).end();
+  next();
 });
 
-// Custom CORS middleware for all requests
+// Custom CORS middleware for all requests (non-OPTIONS)
 app.use((req, res, next) => {
+  // Skip if already handled OPTIONS above
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   const origin = req.headers.origin;
   
   // Check if origin is allowed

@@ -37,6 +37,17 @@ i18n
       order: ['localStorage', 'navigator', 'geolocation'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
+      // Normalize language codes (e.g., 'fr-FR' -> 'fr', 'en-US' -> 'en')
+      convertDetectedLanguage: (lng) => {
+        // Extract base language code (e.g., 'fr' from 'fr-FR')
+        const baseLang = lng.split('-')[0];
+        // Check if base language is supported
+        if (['fr', 'ar', 'en', 'es'].includes(baseLang)) {
+          return baseLang;
+        }
+        // Default to French if not supported
+        return 'fr';
+      },
     },
   });
 
