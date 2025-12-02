@@ -51,18 +51,19 @@ const allowedOrigins = [
 ];
 
 // CRITICAL: Handle OPTIONS preflight requests FIRST, before any other middleware
-// This route must be registered before app.use() middleware
-// Handle all OPTIONS requests explicitly
+// This MUST be the very first middleware to handle OPTIONS
 app.use((req, res, next) => {
-  // Handle OPTIONS preflight requests immediately
+  // Handle OPTIONS preflight requests immediately - BEFORE anything else
   if (req.method === 'OPTIONS') {
     const origin = req.headers.origin;
     
     // Set CORS headers for preflight
     if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
       res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
-      res.setHeader('Access-Control-Allow-Origin', origin || '*');
+      res.setHeader('Access-Control-Allow-Origin', '*');
     }
     
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
@@ -70,8 +71,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
     
-    // Return 200 OK for preflight
-    return res.status(200).json({ message: 'OK' });
+    // CRITICAL: Return 200 OK immediately - don't use .json(), use .end() for faster response
+    return res.status(200).end();
   }
   
   next();
