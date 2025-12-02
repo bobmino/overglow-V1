@@ -27,7 +27,6 @@ import badgeRoutes from './backend/routes/badgeRoutes.js';
 import favoriteRoutes from './backend/routes/favoriteRoutes.js';
 import recommendationRoutes from './backend/routes/recommendationRoutes.js';
 import loyaltyRoutes from './backend/routes/loyaltyRoutes.js';
-import badgeRoutes from './backend/routes/badgeRoutes.js';
 import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
 
 // Connect to database (non-blocking for Vercel)
@@ -178,7 +177,6 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
-app.use('/api/badges', badgeRoutes);
 app.use('/api/view-history', viewHistoryRoutes);
 
 // Serve static files
