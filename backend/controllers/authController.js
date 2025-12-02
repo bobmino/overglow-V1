@@ -80,6 +80,11 @@ const loginUser = async (req, res) => {
 
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     // Check if JWT_SECRET is configured
     if (!process.env.JWT_SECRET) {
       console.error('Login error: JWT_SECRET is not defined in environment variables');
@@ -89,15 +94,63 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Find user
     const user = await User.findOne({ email });
 
-    if (user && (await user.matchPassword(password))) {
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if user has a password (should always be true, but safety check)
+    if (!user.password) {
+      console.error('Login error: User found but password is missing', { userId: user._id, email });
+      return res.status(500).json({ 
+        message: 'Server error: User account configuration issue',
+        error: 'Password missing'
+      });
+    }
+
+    // Verify password
+    let passwordMatch = false;
+    try {
+      passwordMatch = await user.matchPassword(password);
+    } catch (matchError) {
+      console.error('Password match error:', {
+        message: matchError.message,
+        stack: matchError.stack,
+        name: matchError.name,
+        email: email
+      });
+      return res.status(500).json({ 
+        message: 'Server error during password verification',
+        error: process.env.NODE_ENV === 'development' ? matchError.message : undefined
+      });
+    }
+
+    if (passwordMatch) {
+      // Generate token
+      let token;
+      try {
+        token = generateToken(user._id, user.role);
+      } catch (tokenError) {
+        console.error('Token generation error:', {
+          message: tokenError.message,
+          stack: tokenError.stack,
+          name: tokenError.name,
+          email: email
+        });
+        return res.status(500).json({ 
+          message: 'Server error during token generation',
+          error: process.env.NODE_ENV === 'development' ? tokenError.message : undefined
+        });
+      }
+
       res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id, user.role),
+        token: token,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -112,10 +165,15 @@ const loginUser = async (req, res) => {
     });
     
     // Return appropriate error message
-    if (error.message.includes('JWT_SECRET')) {
+    if (error.message && error.message.includes('JWT_SECRET')) {
       res.status(500).json({ 
         message: 'Server configuration error. Please contact support.',
         error: 'JWT_SECRET missing'
+      });
+    } else if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      res.status(500).json({ 
+        message: 'Database connection error. Please try again later.',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     } else {
       res.status(500).json({ 
