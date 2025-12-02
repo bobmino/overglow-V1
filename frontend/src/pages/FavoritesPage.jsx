@@ -196,12 +196,16 @@ const FavoritesPage = () => {
           </button>
         ) : (
           <div className="flex gap-2">
+            <label htmlFor="new-list-name" className="sr-only">Nom de la nouvelle liste</label>
             <input
               type="text"
+              id="new-list-name"
+              name="new-list-name"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
               placeholder="Nom de la liste"
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              aria-label="Nom de la nouvelle liste"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleCreateList();
