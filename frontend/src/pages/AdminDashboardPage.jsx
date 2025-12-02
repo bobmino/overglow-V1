@@ -8,7 +8,7 @@ import DashboardNavBar from '../components/DashboardNavBar';
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
   <div 
     className={`bg-white rounded-xl border border-gray-200 p-6 ${onClick ? 'cursor-pointer hover:border-primary-600 hover:shadow-lg transition' : ''}`}
-    onClick={onClick}
+    onClick={onClick && typeof onClick === 'function' ? onClick : undefined}
   >
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
