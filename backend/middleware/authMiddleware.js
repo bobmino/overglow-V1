@@ -2,6 +2,13 @@ import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 
 const protect = async (req, res, next) => {
+  // Check if JWT_SECRET is configured
+  if (!process.env.JWT_SECRET) {
+    console.error('Protect middleware error: JWT_SECRET is not defined in environment variables');
+    res.status(500);
+    return next(new Error('Server configuration error. JWT_SECRET missing'));
+  }
+
   let token;
 
   if (
@@ -22,7 +29,11 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error('Protect middleware error:', error);
+      console.error('Protect middleware error:', {
+        message: error.message,
+        name: error.name,
+        path: req.path
+      });
       res.status(401);
       return next(new Error('Not authorized, token failed'));
     }
