@@ -333,37 +333,41 @@ const AffiliatePage = () => {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="affiliate-name" className="block text-sm font-semibold text-gray-700 mb-2">
                     Nom complet *
                   </label>
                   <div className="relative">
                     <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
+                      id="affiliate-name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       placeholder="Jean Dupont"
+                      autoComplete="name"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="affiliate-email" className="block text-sm font-semibold text-gray-700 mb-2">
                     Adresse email *
                   </label>
                   <div className="relative">
                     <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="email"
+                      id="affiliate-email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       placeholder="contact@votre-entreprise.com"
+                      autoComplete="email"
                     />
                   </div>
                 </div>

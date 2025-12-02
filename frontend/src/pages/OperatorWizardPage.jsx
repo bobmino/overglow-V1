@@ -626,9 +626,11 @@ const OperatorWizardPage = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
+                    <label htmlFor="wizard-first-name" className="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
                     <input
                       type="text"
+                      id="wizard-first-name"
+                      name="wizard-first-name"
                       value={formData.individualWithoutStatusInfo.firstName || ''}
                       onChange={(e) => setFormData({ 
                         ...formData, 
@@ -636,12 +638,15 @@ const OperatorWizardPage = () => {
                       })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
+                      autoComplete="given-name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
+                    <label htmlFor="wizard-last-name" className="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
                     <input
                       type="text"
+                      id="wizard-last-name"
+                      name="wizard-last-name"
                       value={formData.individualWithoutStatusInfo.lastName || ''}
                       onChange={(e) => setFormData({ 
                         ...formData, 
@@ -649,13 +654,16 @@ const OperatorWizardPage = () => {
                       })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
+                      autoComplete="family-name"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro de pièce d'identité *</label>
+                  <label htmlFor="wizard-id-number" className="block text-sm font-semibold text-gray-700 mb-2">Numéro de pièce d'identité *</label>
                   <input
                     type="text"
+                    id="wizard-id-number"
+                    name="wizard-id-number"
                     value={formData.individualWithoutStatusInfo.idNumber || ''}
                     onChange={(e) => setFormData({ 
                       ...formData, 

@@ -799,52 +799,64 @@ const OperatorOnboardingPage = () => {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label htmlFor="company-address-street" className="block text-sm font-bold text-gray-700 mb-2">
                         Rue
                       </label>
                       <input
                         type="text"
+                        id="company-address-street"
+                        name="company-address-street"
                         value={formData.companyAddress?.street || ''}
                         onChange={(e) => handleNestedInputChange('companyAddress', 'street', e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        autoComplete="street-address"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                        <label htmlFor="company-address-city" className="block text-sm font-bold text-gray-700 mb-2">
                           Ville *
                         </label>
                         <input
                           type="text"
+                          id="company-address-city"
+                          name="company-address-city"
                           value={formData.companyAddress?.city || ''}
                           onChange={(e) => handleNestedInputChange('companyAddress', 'city', e.target.value)}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          autoComplete="address-level2"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                        <label htmlFor="company-address-postal" className="block text-sm font-bold text-gray-700 mb-2">
                           Code postal
                         </label>
                         <input
                           type="text"
+                          id="company-address-postal"
+                          name="company-address-postal"
                           value={formData.companyAddress?.postalCode || ''}
                           onChange={(e) => handleNestedInputChange('companyAddress', 'postalCode', e.target.value)}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          autoComplete="postal-code"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label htmlFor="company-address-country" className="block text-sm font-bold text-gray-700 mb-2">
                         Pays
                       </label>
                       <input
                         type="text"
+                        id="company-address-country"
+                        name="company-address-country"
                         value={formData.companyAddress?.country || 'France'}
                         onChange={(e) => handleNestedInputChange('companyAddress', 'country', e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        autoComplete="country"
                       />
                     </div>
                   </div>
@@ -1036,11 +1048,13 @@ const OperatorOnboardingPage = () => {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="tax-id" className="block text-sm font-bold text-gray-700 mb-2">
                               Numéro TVA
                             </label>
                             <input
                               type="text"
+                              id="tax-id"
+                              name="tax-id"
                               value={formData.individualWithStatusInfo?.taxId || ''}
                               onChange={(e) => handleNestedInputChange('individualWithStatusInfo', 'taxId', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -1055,10 +1069,12 @@ const OperatorOnboardingPage = () => {
                       <div className="border-t pt-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Informations complémentaires</h2>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="individual-notes" className="block text-sm font-bold text-gray-700 mb-2">
                             Notes (optionnel)
                           </label>
                           <textarea
+                            id="individual-notes"
+                            name="individual-notes"
                             value={formData.individualWithoutStatusInfo?.notes || ''}
                             onChange={(e) => handleNestedInputChange('individualWithoutStatusInfo', 'notes', e.target.value)}
                             rows={4}

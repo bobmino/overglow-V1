@@ -209,17 +209,19 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="profile-email" className="block text-sm font-semibold text-gray-700 mb-2">
                     Email *
                   </label>
                   {isEditing ? (
                     <input
                       type="email"
+                      id="profile-email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       required
+                      autoComplete="email"
                     />
                   ) : (
                     <p className="text-gray-900">{formData.email || 'Non renseigné'}</p>
@@ -227,7 +229,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="profile-phone" className="block text-sm font-semibold text-gray-700 mb-2">
                     Téléphone
                   </label>
                   {isEditing ? (
@@ -235,11 +237,13 @@ const ProfilePage = () => {
                       <Phone size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="tel"
+                        id="profile-phone"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="+33 6 12 34 56 78"
+                        autoComplete="tel"
                       />
                     </div>
                   ) : (
@@ -248,16 +252,18 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="profile-date-of-birth" className="block text-sm font-semibold text-gray-700 mb-2">
                     Date de naissance
                   </label>
                   {isEditing ? (
                     <input
                       type="date"
+                      id="profile-date-of-birth"
                       name="dateOfBirth"
                       value={formData.dateOfBirth}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      autoComplete="bday"
                     />
                   ) : (
                     <p className="text-gray-900">
