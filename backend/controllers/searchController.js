@@ -3,6 +3,52 @@ import Review from '../models/reviewModel.js';
 import Schedule from '../models/scheduleModel.js';
 import { popularDestinations, activityCategories, popularActivities } from '../data/popularDestinations.js';
 
+// Category normalization mapping
+const categoryNormalization = {
+  // Slug variations -> Standard name
+  'tours': 'Tours',
+  'day-trips': 'Day Trips',
+  'day trips': 'Day Trips',
+  'daytrips': 'Day Trips',
+  'outdoor': 'Outdoor Activities',
+  'outdoor activities': 'Outdoor Activities',
+  'outdooractivities': 'Outdoor Activities',
+  'shows': 'Shows & Performances',
+  'shows & performances': 'Shows & Performances',
+  'showsandperformances': 'Shows & Performances',
+  'food-drink': 'Food & Drink',
+  'food & drink': 'Food & Drink',
+  'foodanddrink': 'Food & Drink',
+  'workshops': 'Classes & Workshops',
+  'classes & workshops': 'Classes & Workshops',
+  'classesandworkshops': 'Classes & Workshops',
+  'activities': 'Activities',
+  'attractions': 'Attractions',
+};
+
+// Normalize category name (handle variations and case-insensitive)
+const normalizeCategory = (category) => {
+  if (!category) return null;
+  
+  const lowerCategory = category.toLowerCase().trim();
+  
+  // Check exact match in normalization map
+  if (categoryNormalization[lowerCategory]) {
+    return categoryNormalization[lowerCategory];
+  }
+  
+  // Check if it's already a standard name (case-insensitive)
+  const standardNames = Object.values(categoryNormalization);
+  for (const standardName of standardNames) {
+    if (standardName.toLowerCase() === lowerCategory) {
+      return standardName;
+    }
+  }
+  
+  // Return as-is if no normalization found
+  return category;
+};
+
 // @desc    Get autocomplete suggestions
 // @route   GET /api/search/autocomplete?q=query
 // @access  Public
@@ -210,9 +256,11 @@ export const advancedSearch = async (req, res) => {
       query.city = { $regex: city, $options: 'i' };
     }
 
-    // Category filter
+    // Category filter - normalize category name
     if (category) {
-      query.category = category;
+      const normalizedCategory = normalizeCategory(category);
+      // Use case-insensitive regex to match variations
+      query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
     }
 
     // Price filter - we'll filter after getting products with schedules

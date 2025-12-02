@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Compass } from 'lucide-react';
 import api from '../config/axios';
+import { getCategoryName } from '../utils/categoryMapping';
 
 const DiscoverMenu = ({ isOpen, onClose }) => {
   const [categories, setCategories] = useState([]);
@@ -47,22 +48,28 @@ const DiscoverMenu = ({ isOpen, onClose }) => {
             Top Categories
           </h3>
           <div className="space-y-1">
-            {categories.slice(0, 6).map((category) => (
-              <Link
-                key={category.slug}
-                to={`/search?category=${encodeURIComponent(category.slug)}&sort=rating&view=category&filter=active`}
-                onClick={onClose}
-                className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition group"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{category.icon}</span>
-                  <span className="text-sm font-medium text-slate-700 group-hover:text-primary-600">
-                    {category.name}
-                  </span>
-                </div>
-                <ChevronRight size={14} className="text-slate-400 group-hover:text-primary-600" />
-              </Link>
-            ))}
+            {categories.slice(0, 6).map((category) => {
+              const categorySlug = category.slug || category;
+              const categoryName = category.name || getCategoryName(categorySlug);
+              const categoryIcon = category.icon || '📍';
+              
+              return (
+                <Link
+                  key={categorySlug}
+                  to={`/search?category=${encodeURIComponent(categoryName)}&sort=rating&view=category&filter=active`}
+                  onClick={onClose}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{categoryIcon}</span>
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-primary-600">
+                      {categoryName}
+                    </span>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-400 group-hover:text-primary-600" />
+                </Link>
+              );
+            })}
           </div>
         </div>
 

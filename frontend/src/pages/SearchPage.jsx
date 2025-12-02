@@ -33,29 +33,40 @@ const SearchPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const categories = ['Tours', 'Attractions', 'Food & Drink', 'Day Trips', 'Outdoor Activities', 'Shows & Performances', 'Activities'];
+  const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState(['Marrakech', 'Casablanca', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Meknès', 'Ouarzazate']);
   
-  // Fetch cities from API
+  // Fetch categories and cities from API
   useEffect(() => {
-    const fetchCities = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await api.get('/api/search/categories');
-        if (data && Array.isArray(data.categories)) {
-          // Extract unique cities from products
-          const { data: productsData } = await api.get('/api/products');
-          if (Array.isArray(productsData)) {
-            const uniqueCities = [...new Set(productsData.map(p => p.city).filter(Boolean))];
-            if (uniqueCities.length > 0) {
-              setCities(prev => [...new Set([...prev, ...uniqueCities])]);
-            }
+        const [categoriesRes, productsRes] = await Promise.all([
+          api.get('/api/search/categories'),
+          api.get('/api/products')
+        ]);
+        
+        // Extract categories from API response
+        if (categoriesRes.data && Array.isArray(categoriesRes.data.categories)) {
+          const categoryNames = categoriesRes.data.categories.map(cat => 
+            typeof cat === 'string' ? cat : (cat.name || cat.slug)
+          );
+          setCategories(categoryNames);
+        }
+        
+        // Extract unique cities from products
+        if (Array.isArray(productsRes.data)) {
+          const uniqueCities = [...new Set(productsRes.data.map(p => p.city).filter(Boolean))];
+          if (uniqueCities.length > 0) {
+            setCities(prev => [...new Set([...prev, ...uniqueCities])]);
           }
         }
       } catch (err) {
-        console.error('Failed to fetch cities:', err);
+        console.error('Failed to fetch data:', err);
+        // Fallback to default categories if API fails
+        setCategories(['Tours', 'Attractions', 'Food & Drink', 'Day Trips', 'Outdoor Activities', 'Shows & Performances', 'Activities']);
       }
     };
-    fetchCities();
+    fetchData();
   }, []);
 
   // Load saved searches from localStorage
@@ -74,8 +85,21 @@ const SearchPage = () => {
   useEffect(() => {
     const cityParam = searchParams.get('city');
     const queryParam = searchParams.get('q');
+    const categoryParam = searchParams.get('category');
+    
     if (cityParam) setSelectedCity(cityParam);
     if (queryParam) setSearchQuery(queryParam);
+    
+    // Handle category from URL (convert slug to display name)
+    if (categoryParam) {
+      // Import category mapping utility
+      import('../utils/categoryMapping.js').then(({ normalizeCategory }) => {
+        const normalizedCategory = normalizeCategory(categoryParam);
+        if (normalizedCategory && !selectedCategories.includes(normalizedCategory)) {
+          setSelectedCategories([normalizedCategory]);
+        }
+      });
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -293,10 +317,13 @@ const SearchPage = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
+              id="search-query"
+              name="search-query"
               placeholder="Rechercher des expériences, destinations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              aria-label="Rechercher des expériences, destinations"
             />
           </div>
           <button
@@ -374,27 +401,37 @@ const SearchPage = () => {
             <div className="mb-6">
               <h3 className="font-semibold mb-3 text-slate-900">Category</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {Array.isArray(categories) && categories.map((cat) => (
-                  <label key={cat} className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                    <input 
-                      type="checkbox" 
-                      checked={Array.isArray(selectedCategories) && selectedCategories.includes(cat)}
-                      onChange={() => handleCategoryToggle(cat)}
-                      className="rounded text-primary-600 focus:ring-primary-500" 
-                    />
-                    <span className="text-slate-700 text-sm">{cat}</span>
-                  </label>
-                ))}
+                {Array.isArray(categories) && categories.map((cat) => {
+                  const categoryName = typeof cat === 'object' ? (cat.name || cat.slug) : cat;
+                  const categoryId = `category-${categoryName.toLowerCase().replace(/\s+/g, '-')}`;
+                  return (
+                    <label key={categoryName} htmlFor={categoryId} className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                      <input 
+                        type="checkbox"
+                        id={categoryId}
+                        name={categoryId}
+                        checked={Array.isArray(selectedCategories) && selectedCategories.includes(categoryName)}
+                        onChange={() => handleCategoryToggle(categoryName)}
+                        className="rounded text-primary-600 focus:ring-primary-500" 
+                        aria-label={`Filtrer par catégorie ${categoryName}`}
+                      />
+                      <span className="text-slate-700 text-sm">{categoryName}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
             {/* City Filter */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-slate-900">Destination</h3>
+              <label htmlFor="city-filter" className="font-semibold mb-3 text-slate-900 block">Destination</label>
               <select
+                id="city-filter"
+                name="city-filter"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                aria-label="Filtrer par destination"
               >
                 <option value="">All Cities</option>
                 {Array.isArray(cities) && cities.map(city => (
@@ -405,22 +442,32 @@ const SearchPage = () => {
 
             {/* Price Filter */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-slate-900">Price Range (MAD)</h3>
+              <label className="font-semibold mb-3 text-slate-900 block">Price Range (MAD)</label>
               <div className="flex items-center space-x-2">
+                <label htmlFor="price-min" className="sr-only">Prix minimum</label>
                 <input 
-                  type="number" 
+                  type="number"
+                  id="price-min"
+                  name="price-min"
                   placeholder="Min" 
                   value={priceRange.min}
                   onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  aria-label="Prix minimum en dirhams marocains"
+                  min="0"
                 />
-                <span className="text-slate-500">-</span>
+                <span className="text-slate-500" aria-hidden="true">-</span>
+                <label htmlFor="price-max" className="sr-only">Prix maximum</label>
                 <input 
-                  type="number" 
+                  type="number"
+                  id="price-max"
+                  name="price-max"
                   placeholder="Max" 
                   value={priceRange.max}
                   onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  aria-label="Prix maximum en dirhams marocains"
+                  min="0"
                 />
               </div>
             </div>
@@ -485,10 +532,14 @@ const SearchPage = () => {
             </h1>
             <div className="flex items-center space-x-2 text-sm text-slate-600">
               <span className="font-medium">Sort by:</span>
+              <label htmlFor="sort-by" className="sr-only">Trier par</label>
               <select 
+                id="sort-by"
+                name="sort-by"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="border-none bg-transparent font-semibold text-slate-900 focus:ring-0 cursor-pointer"
+                aria-label="Trier les résultats"
               >
                 <option value="recommended">Recommandé</option>
                 <option value="price-low">Prix: Croissant</option>

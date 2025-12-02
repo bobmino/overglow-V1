@@ -347,7 +347,9 @@ const getPublishedProducts = async (req, res) => {
       query.city = { $regex: city, $options: 'i' };
     }
     if (category) {
-      query.category = category;
+      // Normalize category for case-insensitive matching
+      const normalizedCategory = category.trim();
+      query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
     }
 
     // Date filtering would typically involve checking schedules, which is more complex.

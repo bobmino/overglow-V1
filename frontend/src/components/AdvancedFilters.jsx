@@ -71,26 +71,34 @@ const AdvancedFilters = ({
         <div className="space-y-6">
           {/* Price Range */}
           <div>
-            <h3 className="font-semibold mb-3 text-slate-900 flex items-center">
+            <label className="font-semibold mb-3 text-slate-900 flex items-center block">
               <span className="mr-2">Prix (MAD)</span>
-            </h3>
+            </label>
             <div className="flex items-center space-x-2">
+              <label htmlFor="advanced-price-min" className="sr-only">Prix minimum</label>
               <input
                 type="number"
+                id="advanced-price-min"
+                name="advanced-price-min"
                 placeholder="Min"
                 value={filters.minPrice || ''}
                 onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : null)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 min="0"
+                aria-label="Prix minimum en dirhams marocains"
               />
-              <span className="text-slate-500">-</span>
+              <span className="text-slate-500" aria-hidden="true">-</span>
+              <label htmlFor="advanced-price-max" className="sr-only">Prix maximum</label>
               <input
                 type="number"
+                id="advanced-price-max"
+                name="advanced-price-max"
                 placeholder="Max"
                 value={filters.maxPrice || ''}
                 onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : null)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 min="0"
+                aria-label="Prix maximum en dirhams marocains"
               />
             </div>
           </div>
@@ -102,29 +110,38 @@ const AdvancedFilters = ({
               Durée
             </h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {durationOptions.map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={filters.durations?.includes(option.value) || false}
-                    onChange={() => handleDurationChange(option.value)}
-                    className="rounded text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-slate-700 text-sm">{option.label}</span>
-                </label>
-              ))}
+              {durationOptions.map((option) => {
+                const durationId = `duration-${option.value}`;
+                return (
+                  <label key={option.value} htmlFor={durationId} className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                    <input
+                      type="checkbox"
+                      id={durationId}
+                      name={durationId}
+                      checked={filters.durations?.includes(option.value) || false}
+                      onChange={() => handleDurationChange(option.value)}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                      aria-label={`Filtrer par durée ${option.label}`}
+                    />
+                    <span className="text-slate-700 text-sm">{option.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           {/* Rating Filter */}
           <div>
-            <h3 className="font-semibold mb-3 text-slate-900 flex items-center">
+            <label className="font-semibold mb-3 text-slate-900 flex items-center block">
               <Star size={16} className="mr-2" />
               Note Minimale
-            </h3>
+            </label>
             <div className="flex items-center space-x-2">
+              <label htmlFor="min-rating" className="sr-only">Note minimale</label>
               <input
                 type="number"
+                id="min-rating"
+                name="min-rating"
                 placeholder="Note min"
                 value={filters.minRating || ''}
                 onChange={(e) => handleFilterChange('minRating', e.target.value ? Number(e.target.value) : null)}
@@ -132,23 +149,27 @@ const AdvancedFilters = ({
                 min="0"
                 max="5"
                 step="0.1"
+                aria-label="Note minimale en étoiles"
               />
-              <span className="text-slate-500 text-sm">étoiles</span>
+              <span className="text-slate-500 text-sm" aria-hidden="true">étoiles</span>
             </div>
           </div>
 
           {/* Date Filter */}
           <div>
-            <h3 className="font-semibold mb-3 text-slate-900 flex items-center">
+            <label htmlFor="selected-date" className="font-semibold mb-3 text-slate-900 flex items-center block">
               <Calendar size={16} className="mr-2" />
               Date
-            </h3>
+            </label>
             <input
               type="date"
+              id="selected-date"
+              name="selected-date"
               value={filters.selectedDate || ''}
               onChange={(e) => handleFilterChange('selectedDate', e.target.value || null)}
               min={new Date().toISOString().split('T')[0]}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              aria-label="Sélectionner une date"
             />
           </div>
 
@@ -160,12 +181,16 @@ const AdvancedFilters = ({
             </h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
+                <label htmlFor="location-name" className="sr-only">Ville ou adresse</label>
                 <input
                   type="text"
+                  id="location-name"
+                  name="location-name"
                   placeholder="Ville ou adresse"
                   value={filters.locationName || ''}
                   onChange={(e) => handleFilterChange('locationName', e.target.value)}
                   className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  aria-label="Rechercher par ville ou adresse"
                 />
                 <button
                   onClick={() => {
@@ -193,14 +218,18 @@ const AdvancedFilters = ({
               </div>
               {filters.location?.lat && (
                 <div className="flex items-center space-x-2">
+                  <label htmlFor="radius" className="sr-only">Rayon de recherche en kilomètres</label>
                   <input
                     type="number"
+                    id="radius"
+                    name="radius"
                     placeholder="Rayon (km)"
                     value={filters.radius || ''}
                     onChange={(e) => handleFilterChange('radius', e.target.value ? Number(e.target.value) : null)}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     min="1"
                     max="100"
+                    aria-label="Rayon de recherche en kilomètres"
                   />
                   <button
                     onClick={() => {
