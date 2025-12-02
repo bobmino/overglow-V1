@@ -371,25 +371,71 @@ const getPublishedProducts = async (req, res) => {
 // @access  Public
 const getProductById = async (req, res) => {
   try {
+    // Validate MongoDB ObjectId format
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+
     const product = await Product.findById(req.params.id)
       .populate('operator', 'companyName status')
-      .populate('badges.badgeId');
+      .populate('badges.badgeId')
+      .lean();
     
-    if (product) {
-      const schedules = await Schedule.find({ product: product._id });
-      const reviews = await Review.find({ product: product._id }).populate('user', 'name');
-      
-      // Update product badges if needed (async, don't wait)
-      const { updateProductBadges } = await import('../utils/badgeService.js');
-      updateProductBadges(product._id).catch(err => console.error('Badge update error:', err));
-      
-      res.json({ ...product.toObject(), schedules, reviews });
-    } else {
-      res.status(404).json({ message: 'Product not found' });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
     }
+
+    // Fetch schedules and reviews in parallel
+    const [schedules, reviews] = await Promise.all([
+      Schedule.find({ product: product._id }).lean().catch(err => {
+        console.error('Error fetching schedules:', err);
+        return [];
+      }),
+      Review.find({ product: product._id })
+        .populate('user', 'name')
+        .lean()
+        .catch(err => {
+          console.error('Error fetching reviews:', err);
+          return [];
+        })
+    ]);
+    
+    // Update product badges if needed (async, don't wait)
+    import('../utils/badgeService.js')
+      .then(({ updateProductBadges }) => {
+        updateProductBadges(product._id).catch(err => 
+          console.error('Badge update error:', err)
+        );
+      })
+      .catch(err => {
+        // Silently fail if badgeService can't be imported
+        console.error('Error importing badgeService:', err);
+      });
+    
+    res.json({ 
+      ...product, 
+      schedules: Array.isArray(schedules) ? schedules : [], 
+      reviews: Array.isArray(reviews) ? reviews : [] 
+    });
   } catch (error) {
-    console.error('Get product error:', error);
-    res.status(500).json({ message: 'Failed to fetch product' });
+    // Log detailed error information
+    console.error('Get product error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      productId: req.params.id,
+      path: req.path
+    });
+    
+    // Handle specific error types
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+    
+    res.status(500).json({ 
+      message: 'Failed to fetch product',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
