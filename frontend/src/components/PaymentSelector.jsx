@@ -326,16 +326,20 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="delivery-address" className="block text-sm font-semibold text-gray-700 mb-2">
                 Adresse de livraison *
               </label>
               <textarea
+                id="delivery-address"
+                name="delivery-address"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
                 placeholder="Entrez votre adresse complète..."
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 required
+                autoComplete="street-address"
+                aria-label="Adresse de livraison"
               />
             </div>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">

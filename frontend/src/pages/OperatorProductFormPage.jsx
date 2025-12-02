@@ -355,14 +355,20 @@ const OperatorProductFormPage = () => {
           {['highlights', 'included', 'requirements'].map((field) => (
             <div key={field}>
               <label className="block text-sm font-bold text-gray-700 mb-2 capitalize">{field}</label>
-              {Array.isArray(formData[field]) && formData[field].map((item, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) => handleArrayChange(index, e.target.value, field)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  />
+              {Array.isArray(formData[field]) && formData[field].map((item, index) => {
+                const inputId = `${field}-${index}`;
+                return (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <label htmlFor={inputId} className="sr-only">{field} item {index + 1}</label>
+                    <input
+                      type="text"
+                      id={inputId}
+                      name={inputId}
+                      value={item}
+                      onChange={(e) => handleArrayChange(index, e.target.value, field)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      aria-label={`${field} item ${index + 1}`}
+                    />
                   <button
                     type="button"
                     onClick={() => removeArrayItem(index, field)}

@@ -227,19 +227,27 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
 
         {/* Filters and Sort */}
         <div className="flex flex-wrap gap-2">
+          <label htmlFor="review-filter" className="sr-only">Filtrer les avis</label>
           <select
+            id="review-filter"
+            name="review-filter"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+            aria-label="Filtrer les avis"
           >
             <option value="all">Tous les avis</option>
             <option value="with-photos">Avec photos ({withPhotosCount})</option>
             <option value="verified">Vérifiés ({verifiedCount})</option>
           </select>
+          <label htmlFor="review-sort" className="sr-only">Trier les avis</label>
           <select
+            id="review-sort"
+            name="review-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+            aria-label="Trier les avis"
           >
             <option value="helpful">Plus utiles</option>
             <option value="recent">Plus récents</option>

@@ -178,39 +178,51 @@ const BookingPage = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                    <label htmlFor="traveler-first-name" className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
                     <input
                       type="text"
+                      id="traveler-first-name"
+                      name="traveler-first-name"
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       value={travelerDetails.firstName}
                       onChange={e => setTravelerDetails({...travelerDetails, firstName: e.target.value})}
+                      autoComplete="given-name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                    <label htmlFor="traveler-last-name" className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
                     <input
                       type="text"
+                      id="traveler-last-name"
+                      name="traveler-last-name"
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       value={travelerDetails.lastName}
                       onChange={e => setTravelerDetails({...travelerDetails, lastName: e.target.value})}
+                      autoComplete="family-name"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <label htmlFor="traveler-email" className="block text-sm font-medium text-slate-700 mb-1">Email</label>
                     <input
                       type="email"
+                      id="traveler-email"
+                      name="traveler-email"
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       value={travelerDetails.email}
                       onChange={e => setTravelerDetails({...travelerDetails, email: e.target.value})}
+                      autoComplete="email"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                    <label htmlFor="traveler-phone" className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
                     <input
                       type="tel"
+                      id="traveler-phone"
+                      name="traveler-phone"
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       value={travelerDetails.phone}
                       onChange={e => setTravelerDetails({...travelerDetails, phone: e.target.value})}
+                      autoComplete="tel"
                     />
                   </div>
                 </div>

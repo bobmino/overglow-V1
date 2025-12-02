@@ -53,14 +53,17 @@ const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="inquiry-type" className="block text-sm font-semibold text-gray-700 mb-2">
               Type d'inquiry
             </label>
             <select
+              id="inquiry-type"
+              name="inquiry-type"
               value={type}
               onChange={(e) => setType(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600"
               disabled={loading}
+              aria-label="Type d'inquiry"
             >
               <option value="manual">Manuelle (Poser une question)</option>
               <option value="automatic">Automatique (Demander validation)</option>
@@ -69,10 +72,12 @@ const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
 
           {type === 'manual' && (
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="inquiry-question" className="block text-sm font-semibold text-gray-700 mb-2">
                 Votre question
               </label>
               <textarea
+                id="inquiry-question"
+                name="inquiry-question"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 rows={4}
@@ -80,6 +85,7 @@ const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
                 placeholder="Posez votre question sur ce produit..."
                 required
                 disabled={loading}
+                aria-label="Votre question"
               />
             </div>
           )}

@@ -66,13 +66,18 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
   return (
     <div className="relative w-full" ref={autocompleteRef}>
       <div className="relative">
+        <label htmlFor="search-autocomplete" className="sr-only">Rechercher des expériences ou destinations</label>
         <input
           type="text"
+          id="search-autocomplete"
+          name="search-autocomplete"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => value.length >= 2 && setIsOpen(true)}
           placeholder={placeholder}
           className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium text-lg pr-8"
+          autoComplete="off"
+          aria-label="Rechercher des expériences ou destinations"
         />
         {loading && (
           <div className="absolute right-0 top-1/2 -translate-y-1/2">

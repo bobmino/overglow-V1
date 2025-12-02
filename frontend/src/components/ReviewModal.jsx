@@ -113,16 +113,19 @@ const ReviewModal = ({ booking, onClose, onSubmitted }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="review-comment" className="block text-sm font-semibold text-gray-700 mb-2">
               Your Review
             </label>
             <textarea
+              id="review-comment"
+              name="review-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               required
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
               placeholder="Share your experience..."
+              aria-label="Votre avis"
             />
           </div>
 

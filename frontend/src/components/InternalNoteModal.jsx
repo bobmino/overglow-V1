@@ -52,16 +52,19 @@ const InternalNoteModal = ({ booking, isOpen, onClose, onSaved }) => {
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="internal-note" className="block text-sm font-semibold text-gray-700 mb-2">
             Note pour la réservation: {booking.schedule?.product?.title}
           </label>
           <textarea
+            id="internal-note"
+            name="internal-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={6}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
             placeholder="Ajoutez une note interne pour cette réservation..."
             disabled={loading}
+            aria-label="Note interne pour la réservation"
           />
         </div>
 
