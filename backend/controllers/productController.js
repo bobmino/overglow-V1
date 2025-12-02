@@ -377,13 +377,51 @@ const getProductById = async (req, res) => {
       return res.status(400).json({ message: 'Invalid product ID format' });
     }
 
-    const product = await Product.findById(req.params.id)
-      .populate('operator', 'companyName status')
-      .populate('badges.badgeId')
-      .lean();
+    // Fetch product without populate first to avoid populate errors
+    let product = await Product.findById(req.params.id).lean();
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Populate operator separately with error handling
+    try {
+      const operator = await Operator.findById(product.operator)
+        .select('companyName status')
+        .lean();
+      product.operator = operator || null;
+    } catch (err) {
+      console.error('Error populating operator:', err);
+      product.operator = null;
+    }
+
+    // Populate badges separately with error handling
+    if (product.badges && Array.isArray(product.badges) && product.badges.length > 0) {
+      try {
+        const Badge = (await import('../models/badgeModel.js')).default;
+        const badgeIds = product.badges
+          .map(b => b.badgeId)
+          .filter(id => id && mongoose.Types.ObjectId.isValid(id));
+        
+        if (badgeIds.length > 0) {
+          const badges = await Badge.find({ _id: { $in: badgeIds } }).lean();
+          const badgeMap = new Map(badges.map(b => [b._id.toString(), b]));
+          
+          product.badges = product.badges.map(badge => ({
+            ...badge,
+            badgeId: badge.badgeId && badgeMap.has(badge.badgeId.toString()) 
+              ? badgeMap.get(badge.badgeId.toString())
+              : null
+          }));
+        }
+      } catch (err) {
+        console.error('Error populating badges:', err);
+        // Keep badges array but with null badgeId
+        product.badges = product.badges.map(badge => ({
+          ...badge,
+          badgeId: null
+        }));
+      }
     }
 
     // Fetch schedules and reviews in parallel
@@ -402,16 +440,15 @@ const getProductById = async (req, res) => {
     ]);
     
     // Update product badges if needed (async, don't wait)
-    import('../utils/badgeService.js')
-      .then(({ updateProductBadges }) => {
-        updateProductBadges(product._id).catch(err => 
-          console.error('Badge update error:', err)
-        );
-      })
-      .catch(err => {
-        // Silently fail if badgeService can't be imported
-        console.error('Error importing badgeService:', err);
-      });
+    try {
+      const { updateProductBadges } = await import('../utils/badgeService.js');
+      updateProductBadges(product._id).catch(err => 
+        console.error('Badge update error:', err)
+      );
+    } catch (err) {
+      // Silently fail if badgeService can't be imported
+      console.error('Error importing badgeService:', err);
+    }
     
     res.json({ 
       ...product, 
