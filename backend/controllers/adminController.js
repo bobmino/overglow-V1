@@ -456,13 +456,32 @@ const createBadge = async (req, res) => {
     }
 
     const Badge = (await import('../models/badgeModel.js')).default;
+    
+    // Clean criteria object - remove null/undefined/empty values
+    let cleanCriteria = {};
+    if (criteria && typeof criteria === 'object') {
+      Object.keys(criteria).forEach(key => {
+        const value = criteria[key];
+        if (value !== null && value !== undefined && value !== '') {
+          // Convert string numbers to actual numbers
+          if (['minRating', 'minReviews', 'minBookings', 'minRevenue', 'minViewCount', 'minBookingCount', 'maxResponseTime', 'minCompletionRate'].includes(key)) {
+            cleanCriteria[key] = Number(value);
+          } else if (['isVerified', 'isLocal', 'isLocal100', 'isArtisan', 'isAuthenticLocal', 'isEcoFriendly', 'isTraditional', 'isNew', 'isBestValue', 'isLastMinute'].includes(key)) {
+            cleanCriteria[key] = value === true || value === 'true';
+          } else {
+            cleanCriteria[key] = value;
+          }
+        }
+      });
+    }
+
     const badge = await Badge.create({
       name,
       type,
       icon: icon || '🏆',
       color: color || '#059669',
       description,
-      criteria: criteria || {},
+      criteria: cleanCriteria,
       isAutomatic: isAutomatic !== undefined ? isAutomatic : true,
       isActive: true,
     });
@@ -679,7 +698,24 @@ const updateBadge = async (req, res) => {
     if (icon) badge.icon = icon;
     if (color) badge.color = color;
     if (description) badge.description = description;
-    if (criteria) badge.criteria = { ...badge.criteria, ...criteria };
+    
+    // Update criteria - merge with existing or replace
+    if (criteria !== undefined) {
+      if (typeof criteria === 'object' && criteria !== null) {
+        // Merge criteria, but allow clearing by passing null values
+        badge.criteria = { ...badge.criteria };
+        Object.keys(criteria).forEach(key => {
+          if (criteria[key] === null || criteria[key] === undefined || criteria[key] === '') {
+            delete badge.criteria[key];
+          } else {
+            badge.criteria[key] = criteria[key];
+          }
+        });
+      } else {
+        badge.criteria = {};
+      }
+    }
+    
     if (isAutomatic !== undefined) badge.isAutomatic = isAutomatic;
     if (isActive !== undefined) badge.isActive = isActive;
 

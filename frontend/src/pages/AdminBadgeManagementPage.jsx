@@ -1,8 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
-import { Award, Plus, Edit, Trash2, Package, Building2, Save, X } from 'lucide-react';
+import { Award, Plus, Edit, Trash2, Package, Building2, Save, X, Info } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+
+// Fonction pour formater les critères d'un badge de manière lisible
+const formatCriteria = (criteria) => {
+  if (!criteria || Object.keys(criteria).length === 0) {
+    return 'Aucun critère défini';
+  }
+
+  const criteriaList = [];
+
+  // Critères numériques
+  if (criteria.minRating) {
+    criteriaList.push(`Note moyenne ≥ ${criteria.minRating}/5`);
+  }
+  if (criteria.minReviews) {
+    criteriaList.push(`≥ ${criteria.minReviews} avis`);
+  }
+  if (criteria.minBookings) {
+    criteriaList.push(`≥ ${criteria.minBookings} réservations`);
+  }
+  if (criteria.minRevenue) {
+    criteriaList.push(`Revenus ≥ ${criteria.minRevenue.toLocaleString()} MAD`);
+  }
+  if (criteria.minViewCount) {
+    criteriaList.push(`≥ ${criteria.minViewCount} vues`);
+  }
+  if (criteria.minBookingCount) {
+    criteriaList.push(`≥ ${criteria.minBookingCount} réservations`);
+  }
+  if (criteria.maxResponseTime) {
+    criteriaList.push(`Temps de réponse ≤ ${criteria.maxResponseTime}h`);
+  }
+  if (criteria.minCompletionRate) {
+    criteriaList.push(`Taux de complétion ≥ ${criteria.minCompletionRate}%`);
+  }
+
+  // Critères booléens
+  if (criteria.isVerified === true) {
+    criteriaList.push('Opérateur vérifié');
+  }
+  if (criteria.isLocal === true) {
+    criteriaList.push('Local');
+  }
+  if (criteria.isLocal100 === true) {
+    criteriaList.push('100% local');
+  }
+  if (criteria.isArtisan === true) {
+    criteriaList.push('Artisan');
+  }
+  if (criteria.isAuthenticLocal === true) {
+    criteriaList.push('Authentique local');
+  }
+  if (criteria.isEcoFriendly === true) {
+    criteriaList.push('Éco-responsable');
+  }
+  if (criteria.isTraditional === true) {
+    criteriaList.push('Traditionnel');
+  }
+  if (criteria.isNew === true) {
+    criteriaList.push('Nouveau (créé < 30 jours)');
+  }
+  if (criteria.isBestValue === true) {
+    criteriaList.push('Meilleure valeur');
+  }
+  if (criteria.isLastMinute === true) {
+    criteriaList.push('Dernières places (< 24h)');
+  }
+
+  return criteriaList.length > 0 ? criteriaList.join(' • ') : 'Aucun critère défini';
+};
 
 const AdminBadgeManagementPage = () => {
   const [badges, setBadges] = useState([]);
@@ -28,7 +97,10 @@ const AdminBadgeManagementPage = () => {
     color: '#059669',
     description: '',
     isAutomatic: false,
+    criteria: {},
   });
+
+  const [showCriteriaForm, setShowCriteriaForm] = useState(false);
 
   useEffect(() => {
     fetchBadges();
@@ -125,12 +197,35 @@ const AdminBadgeManagementPage = () => {
         color: '#059669',
         description: '',
         isAutomatic: false,
+        criteria: {},
       });
+      setShowCriteriaForm(false);
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage(error.response?.data?.message || 'Erreur lors de la création du badge');
     }
+  };
+
+  const updateCriteria = (key, value) => {
+    setNewBadge(prev => ({
+      ...prev,
+      criteria: {
+        ...prev.criteria,
+        [key]: value === '' || value === null ? undefined : value
+      }
+    }));
+  };
+
+  const removeCriteria = (key) => {
+    setNewBadge(prev => {
+      const newCriteria = { ...prev.criteria };
+      delete newCriteria[key];
+      return {
+        ...prev,
+        criteria: newCriteria
+      };
+    });
   };
 
   const handleAssignToProducts = async () => {
@@ -201,7 +296,16 @@ const AdminBadgeManagementPage = () => {
     if (!selectedBadge) return;
 
     try {
-      await api.put(`/api/admin/badges/${selectedBadge._id}`, newBadge);
+      const payload = {
+        name: newBadge.name,
+        icon: newBadge.icon,
+        color: newBadge.color,
+        description: newBadge.description,
+        isAutomatic: newBadge.isAutomatic,
+        criteria: newBadge.criteria || {},
+      };
+      
+      await api.put(`/api/admin/badges/${selectedBadge._id}`, payload);
       setMessage('Badge modifié avec succès!');
       setShowEditModal(false);
       setSelectedBadge(null);
@@ -212,7 +316,9 @@ const AdminBadgeManagementPage = () => {
         color: '#059669',
         description: '',
         isAutomatic: false,
+        criteria: {},
       });
+      setShowCriteriaForm(false);
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -352,6 +458,19 @@ const AdminBadgeManagementPage = () => {
                   ></span>
                   <span>{badge.isAutomatic ? 'Automatique' : 'Manuel'}</span>
                 </div>
+                {badge.isAutomatic && badge.criteria && (
+                  <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-2">
+                      <Info size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-blue-900 mb-1">Critères d'attribution :</p>
+                        <p className="text-xs text-blue-700 leading-relaxed">
+                          {formatCriteria(badge.criteria)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditBadge(badge)}
@@ -627,7 +746,9 @@ const AdminBadgeManagementPage = () => {
                     color: '#059669',
                     description: '',
                     isAutomatic: false,
+                    criteria: {},
                   });
+                  setShowCriteriaForm(false);
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -717,6 +838,166 @@ const AdminBadgeManagementPage = () => {
                   Badge automatique (attribué automatiquement selon les critères)
                 </label>
               </div>
+
+              {/* Criteria Form */}
+              {newBadge.isAutomatic && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-bold text-gray-700">
+                      Critères d'attribution
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowCriteriaForm(!showCriteriaForm)}
+                      className="text-sm text-primary-600 hover:text-primary-700 font-bold"
+                    >
+                      {showCriteriaForm ? 'Masquer' : 'Afficher/Modifier'}
+                    </button>
+                  </div>
+
+                  {showCriteriaForm && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                      <p className="text-xs text-gray-600 mb-3">
+                        Définissez les critères pour l'attribution automatique de ce badge. Laissez vide pour ignorer un critère.
+                      </p>
+
+                      {/* Numerical Criteria */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Note min. (0-5)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.1"
+                            value={newBadge.criteria?.minRating || ''}
+                            onChange={(e) => updateCriteria('minRating', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 4.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Avis min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minReviews || ''}
+                            onChange={(e) => updateCriteria('minReviews', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 10"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Réservations min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minBookings || ''}
+                            onChange={(e) => updateCriteria('minBookings', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Revenus min. (MAD)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minRevenue || ''}
+                            onChange={(e) => updateCriteria('minRevenue', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 10000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Vues min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minViewCount || ''}
+                            onChange={(e) => updateCriteria('minViewCount', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Temps réponse max. (h)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.maxResponseTime || ''}
+                            onChange={(e) => updateCriteria('maxResponseTime', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 2"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Taux complétion min. (%)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newBadge.criteria?.minCompletionRate || ''}
+                            onChange={(e) => updateCriteria('minCompletionRate', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 95"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Boolean Criteria */}
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-300">
+                        {[
+                          { key: 'isVerified', label: 'Vérifié' },
+                          { key: 'isLocal', label: 'Local' },
+                          { key: 'isLocal100', label: '100% Local' },
+                          { key: 'isArtisan', label: 'Artisan' },
+                          { key: 'isAuthenticLocal', label: 'Authentique Local' },
+                          { key: 'isEcoFriendly', label: 'Éco-responsable' },
+                          { key: 'isTraditional', label: 'Traditionnel' },
+                          { key: 'isNew', label: 'Nouveau (< 30j)' },
+                          { key: 'isBestValue', label: 'Meilleure Valeur' },
+                          { key: 'isLastMinute', label: 'Dernières Places' },
+                        ].map(({ key, label }) => (
+                          <label key={key} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={newBadge.criteria?.[key] === true}
+                              onChange={(e) => updateCriteria(key, e.target.checked ? true : undefined)}
+                              className="w-4 h-4 text-primary-600 rounded"
+                            />
+                            <span className="text-xs text-gray-700">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Display current criteria summary */}
+                      {Object.keys(newBadge.criteria || {}).filter(k => newBadge.criteria[k] !== undefined && newBadge.criteria[k] !== '').length > 0 && (
+                        <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                          <p className="text-xs font-bold text-blue-900 mb-1">Aperçu des critères :</p>
+                          <p className="text-xs text-blue-700">
+                            {formatCriteria(newBadge.criteria)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button
@@ -843,6 +1124,166 @@ const AdminBadgeManagementPage = () => {
                   Badge automatique (attribué automatiquement selon les critères)
                 </label>
               </div>
+
+              {/* Criteria Form for Create */}
+              {newBadge.isAutomatic && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-bold text-gray-700">
+                      Critères d'attribution
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowCriteriaForm(!showCriteriaForm)}
+                      className="text-sm text-primary-600 hover:text-primary-700 font-bold"
+                    >
+                      {showCriteriaForm ? 'Masquer' : 'Afficher/Définir'}
+                    </button>
+                  </div>
+
+                  {showCriteriaForm && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                      <p className="text-xs text-gray-600 mb-3">
+                        Définissez les critères pour l'attribution automatique de ce badge. Laissez vide pour ignorer un critère.
+                      </p>
+
+                      {/* Numerical Criteria */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Note min. (0-5)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.1"
+                            value={newBadge.criteria?.minRating || ''}
+                            onChange={(e) => updateCriteria('minRating', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 4.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Avis min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minReviews || ''}
+                            onChange={(e) => updateCriteria('minReviews', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 10"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Réservations min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minBookings || ''}
+                            onChange={(e) => updateCriteria('minBookings', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Revenus min. (MAD)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minRevenue || ''}
+                            onChange={(e) => updateCriteria('minRevenue', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 10000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Vues min.
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.minViewCount || ''}
+                            onChange={(e) => updateCriteria('minViewCount', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Temps réponse max. (h)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={newBadge.criteria?.maxResponseTime || ''}
+                            onChange={(e) => updateCriteria('maxResponseTime', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 2"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Taux complétion min. (%)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newBadge.criteria?.minCompletionRate || ''}
+                            onChange={(e) => updateCriteria('minCompletionRate', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                            placeholder="Ex: 95"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Boolean Criteria */}
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-300">
+                        {[
+                          { key: 'isVerified', label: 'Vérifié' },
+                          { key: 'isLocal', label: 'Local' },
+                          { key: 'isLocal100', label: '100% Local' },
+                          { key: 'isArtisan', label: 'Artisan' },
+                          { key: 'isAuthenticLocal', label: 'Authentique Local' },
+                          { key: 'isEcoFriendly', label: 'Éco-responsable' },
+                          { key: 'isTraditional', label: 'Traditionnel' },
+                          { key: 'isNew', label: 'Nouveau (< 30j)' },
+                          { key: 'isBestValue', label: 'Meilleure Valeur' },
+                          { key: 'isLastMinute', label: 'Dernières Places' },
+                        ].map(({ key, label }) => (
+                          <label key={key} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={newBadge.criteria?.[key] === true}
+                              onChange={(e) => updateCriteria(key, e.target.checked ? true : undefined)}
+                              className="w-4 h-4 text-primary-600 rounded"
+                            />
+                            <span className="text-xs text-gray-700">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Display current criteria summary */}
+                      {Object.keys(newBadge.criteria || {}).filter(k => newBadge.criteria[k] !== undefined && newBadge.criteria[k] !== '').length > 0 && (
+                        <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                          <p className="text-xs font-bold text-blue-900 mb-1">Aperçu des critères :</p>
+                          <p className="text-xs text-blue-700">
+                            {formatCriteria(newBadge.criteria)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button
