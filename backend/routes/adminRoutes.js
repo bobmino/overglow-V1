@@ -7,6 +7,7 @@ import {
   updateProductStatus,
   getUsers,
   deleteUser,
+  initializeBadgesAndFlags,
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -19,5 +20,6 @@ router.get('/products', protect, authorize('Admin'), getProducts);
 router.put('/products/:id/status', protect, authorize('Admin'), updateProductStatus);
 router.get('/users', protect, authorize('Admin'), getUsers);
 router.delete('/users/:id', protect, authorize('Admin'), deleteUser);
+router.post('/initialize-badges', protect, authorize('Admin'), initializeBadgesAndFlags);
 
 export default router;

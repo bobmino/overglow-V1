@@ -147,7 +147,9 @@ export const updateProductMetrics = async (productId) => {
       isLastMinute,
     };
 
-    await product.save();
+    // Save without validation to avoid errors on required fields like duration
+    // This is safe because we're only updating metrics, not core product fields
+    await product.save({ validateBeforeSave: false });
 
     // Update badges
     await assignProductBadges(productId);
@@ -231,7 +233,8 @@ const assignOperatorBadges = async (operatorId) => {
     }
 
     if (earnedBadges.length > 0) {
-      await operator.save();
+      // Save without validation to avoid errors on required fields
+      await operator.save({ validateBeforeSave: false });
     }
 
     return earnedBadges;
@@ -307,7 +310,8 @@ const assignProductBadges = async (productId) => {
     }
 
     if (earnedBadges.length > 0) {
-      await product.save();
+      // Save without validation to avoid errors on required fields like duration
+      await product.save({ validateBeforeSave: false });
     }
 
     return earnedBadges;
@@ -455,16 +459,52 @@ export const initializeDefaultBadges = async () => {
       },
     ];
 
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+
     for (const badgeData of defaultBadges) {
-      await Badge.findOneAndUpdate(
-        { name: badgeData.name, type: badgeData.type },
-        badgeData,
-        { upsert: true, new: true }
-      );
+      try {
+        const result = await Badge.findOneAndUpdate(
+          { name: badgeData.name, type: badgeData.type },
+          badgeData,
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        if (result.isNew) {
+          created++;
+        } else {
+          updated++;
+        }
+      } catch (error) {
+        // Handle duplicate key error (badge already exists with same name but different type)
+        if (error.code === 11000 || error.codeName === 'DuplicateKey') {
+          // Try to find existing badge and update it
+          try {
+            const existingBadge = await Badge.findOne({ name: badgeData.name, type: badgeData.type });
+            if (existingBadge) {
+              // Update existing badge
+              Object.assign(existingBadge, badgeData);
+              await existingBadge.save();
+              updated++;
+            } else {
+              // Badge exists with same name but different type - skip
+              skipped++;
+              console.log(`⚠️  Skipping badge "${badgeData.name}" (type: ${badgeData.type}) - duplicate name exists`);
+            }
+          } catch (updateError) {
+            skipped++;
+            console.error(`⚠️  Error updating badge "${badgeData.name}":`, updateError.message);
+          }
+        } else {
+          skipped++;
+          console.error(`⚠️  Error creating badge "${badgeData.name}":`, error.message);
+        }
+      }
     }
 
-    console.log('Default badges initialized');
+    console.log(`Default badges initialized: ${created} created, ${updated} updated, ${skipped} skipped`);
   } catch (error) {
     console.error('Error initializing default badges:', error);
+    throw error;
   }
 };

@@ -443,8 +443,8 @@ const getProductById = async (req, res) => {
     
     // Update product badges if needed (async, don't wait)
     try {
-      const { updateProductBadges } = await import('../utils/badgeService.js');
-      updateProductBadges(product._id).catch(err => 
+      const { updateProductMetrics } = await import('../utils/badgeService.js');
+      updateProductMetrics(product._id).catch(err => 
         console.error('Badge update error:', err)
       );
     } catch (err) {

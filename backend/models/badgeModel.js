@@ -4,7 +4,6 @@ const badgeSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
   },
   type: {
     type: String,
@@ -56,6 +55,14 @@ const badgeSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Create compound unique index on name + type to allow same name for different types
+badgeSchema.index({ name: 1, type: 1 }, { unique: true });
+
 const Badge = mongoose.model('Badge', badgeSchema);
+
+// Remove old unique index on name only if it exists (migration helper)
+Badge.collection.dropIndex('name_1').catch(() => {
+  // Index doesn't exist, ignore error
+});
 
 export default Badge;

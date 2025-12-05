@@ -8,6 +8,11 @@ import {
   notifyOnboardingApproved,
   notifyOnboardingRejected,
 } from '../utils/notificationService.js';
+import { 
+  initializeDefaultBadges, 
+  updateProductMetrics, 
+  updateOperatorMetrics 
+} from '../utils/badgeService.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -338,6 +343,107 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// @desc    Initialize badges and set authenticity flags for all products/operators
+// @route   POST /api/admin/initialize-badges
+// @access  Private/Admin
+const initializeBadgesAndFlags = async (req, res) => {
+  try {
+    // Step 1: Initialize default badges
+    await initializeDefaultBadges();
+    
+    // Step 2: Get all products and operators
+    const products = await Product.find({});
+    const operators = await Operator.find({});
+    
+    // Step 3: Mark products with default authenticity flags
+    let productsUpdated = 0;
+    for (const product of products) {
+      const needsUpdate = !product.authenticity || 
+        product.authenticity.isArtisan === undefined ||
+        product.authenticity.isAuthenticLocal === undefined;
+      
+      if (needsUpdate) {
+        product.authenticity = {
+          isArtisan: false,
+          isAuthenticLocal: true, // Default: assume local products are authentic
+          isEcoFriendly: false,
+          isTraditional: true, // Default: assume traditional
+          isLocal100: true, // Default: assume 100% local
+        };
+        await product.save();
+        productsUpdated++;
+      }
+    }
+    
+    // Step 4: Mark operators with default authenticity flags
+    let operatorsUpdated = 0;
+    for (const operator of operators) {
+      const needsUpdate = !operator.authenticity || 
+        operator.authenticity.isArtisan === undefined ||
+        operator.authenticity.isAuthenticLocal === undefined;
+      
+      if (needsUpdate) {
+        operator.authenticity = {
+          isArtisan: false,
+          isAuthenticLocal: true, // Default: assume local operators are authentic
+          isEcoFriendly: false,
+          isLocal100: true, // Default: assume 100% local
+          isTraditional: true, // Default: assume traditional
+        };
+        await operator.save();
+        operatorsUpdated++;
+      }
+    }
+    
+    // Step 5: Calculate and assign badges for all products
+    let productsWithBadges = 0;
+    let productsWithErrors = 0;
+    for (const product of products) {
+      try {
+        await updateProductMetrics(product._id);
+        productsWithBadges++;
+      } catch (error) {
+        console.error(`Error updating badges for product ${product._id}:`, error.message);
+        productsWithErrors++;
+      }
+    }
+    
+    // Step 6: Calculate and assign badges for all operators
+    let operatorsWithBadges = 0;
+    let operatorsWithErrors = 0;
+    for (const operator of operators) {
+      try {
+        await updateOperatorMetrics(operator._id);
+        operatorsWithBadges++;
+      } catch (error) {
+        console.error(`Error updating badges for operator ${operator._id}:`, error.message);
+        operatorsWithErrors++;
+      }
+    }
+    
+    res.json({
+      message: 'Badges initialized successfully',
+      summary: {
+        badgesInitialized: true,
+        productsUpdated,
+        operatorsUpdated,
+        productsWithBadges,
+        operatorsWithBadges,
+        productsWithErrors,
+        operatorsWithErrors,
+        totalProducts: products.length,
+        totalOperators: operators.length,
+      },
+    });
+  } catch (error) {
+    console.error('Initialize badges error:', error);
+    res.status(500).json({ 
+      message: 'Failed to initialize badges',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 export { 
   getAdminStats,
   getOperators, 
@@ -345,5 +451,6 @@ export {
   getProducts,
   updateProductStatus, 
   getUsers, 
-  deleteUser 
+  deleteUser,
+  initializeBadgesAndFlags,
 };
