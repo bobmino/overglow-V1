@@ -21,7 +21,10 @@ const loadApp = async () => {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        code: error.code
+        code: error.code,
+        cause: error.cause,
+        // Log the full error for debugging
+        fullError: error
       });
       throw error;
     }
@@ -78,13 +81,20 @@ export default async (req, res) => {
     console.error('Failed to load Express app:', {
       message: loadError.message,
       stack: loadError.stack,
-      name: loadError.name
+      name: loadError.name,
+      code: loadError.code,
+      cause: loadError.cause
     });
     
     // CORS headers already set above
+    // Return detailed error for debugging (even in production for now)
     return res.status(500).json({ 
       message: 'Server initialization error',
-      error: process.env.NODE_ENV === 'development' ? loadError.message : undefined
+      error: loadError.message,
+      errorType: loadError.name,
+      errorCode: loadError.code,
+      // Include stack in response for debugging
+      stack: loadError.stack
     });
   }
   
