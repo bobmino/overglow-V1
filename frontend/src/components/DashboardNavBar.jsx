@@ -88,15 +88,7 @@ const DashboardNavBar = ({ className = '' }) => {
         </>
       )}
       
-      {isOperatorRoute ? (
-        <Link
-          to="/operator/dashboard"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
-        >
-          <Home size={16} />
-          Dashboard
-        </Link>
-      ) : location.pathname.startsWith('/admin') ? (
+      {!isOperatorRoute && location.pathname.startsWith('/admin') && (
         <Link
           to="/admin/dashboard"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
@@ -104,7 +96,9 @@ const DashboardNavBar = ({ className = '' }) => {
           <Home size={16} />
           Dashboard
         </Link>
-      ) : (
+      )}
+      
+      {!isOperatorRoute && !location.pathname.startsWith('/admin') && (
         <Link
           to="/dashboard"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
