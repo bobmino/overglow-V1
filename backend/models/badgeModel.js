@@ -33,6 +33,11 @@ const badgeSchema = mongoose.Schema({
     minCompletionRate: { type: Number, min: 0, max: 100 },
     isVerified: { type: Boolean },
     isLocal: { type: Boolean },
+    isLocal100: { type: Boolean },
+    isArtisan: { type: Boolean },
+    isAuthenticLocal: { type: Boolean },
+    isEcoFriendly: { type: Boolean },
+    isTraditional: { type: Boolean },
     minViewCount: { type: Number, default: 0 },
     minBookingCount: { type: Number, default: 0 },
     isNew: { type: Boolean }, // Product created in last 30 days

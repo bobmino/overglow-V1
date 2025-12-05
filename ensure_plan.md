@@ -2,33 +2,28 @@
 
 ## 📊 Statut d'Avancement
 
-**Dernière mise à jour :** 2025-01-27
+**Dernière mise à jour :** 2025-02-XX (révision réaliste)
 
-### ✅ Phases Complétées
+### Phases et statut réalistes
+- Phase 1 : Fondations essentielles — partiel (recherche/filtres en place, mobile/a11y à consolider, notifications à revalider en prod)
+- Phase 2 : Différenciation & confiance — partiel (badges/logique serveur présents mais non visibles, reviews OK à re-tester, annulation à confirmer)
+- Phase 3 : Personnalisation & engagement — partiel (favoris/listes à revalider, reco à vérifier, fidélité non confirmée côté UI/UX)
+- Phase 4 : Authenticité locale — partiel (segments/tags non visibles, paiements locaux/CMI et conversion MAD à reconfirmer)
+- Phase 5 : Communication & support — non démarrée (chat/FAQ)
+- Phase 6 : Analytics & optimisation — non démarrée
 
-- **✅ Phase 1 : Fondations Essentielles** - TERMINÉE
-  - ✅ 1.1 Système de Recherche Avancée
-  - ✅ 1.2 Amélioration Mobile-First
-  - ✅ 1.3 Système de Notifications Complet
+### Focus immédiats (réalistes)
+1) Badges visibles et actifs (produit/opérateur), avec segments artisan/typique/éco/100% marocain
+2) Multi-devise MAD/€/USD via API FX externe (affichage + cohérence paiement)
+3) Segments authentiques exposés dans recherche + SEO destinations/catégories
+4) Fiabilisation prod : CORS/OPTIONS, ENV (JWT_SECRET, DB, FX_API), tests E2E login → search → détail → booking
 
-- **✅ Phase 2 : Différenciation et Confiance** - TERMINÉE
-  - ✅ 2.1 Système de Badges et Certifications
-  - ✅ 2.2 Amélioration du Système de Reviews (photos, votes, vérification, signalement)
-  - ✅ 2.3 Politique d'Annulation Transparente
-
-- **✅ Phase 3 : Personnalisation et Engagement** - TERMINÉE
-  - ✅ 3.1 Système de Favoris et Listes (avec partage et alertes prix)
-  - ✅ 3.2 Recommandations Personnalisées (section "Pour vous", produits similaires, "Autres clients ont aussi réservé")
-  - ✅ 3.3 Programme de Fidélité
-
-- **✅ Phase 4 : Authenticité Locale** - TERMINÉE
-  - ✅ 4.1 Contenu Culturel et Authentique (page Culture, tags d'authenticité)
-  - ✅ 4.2 Support Multilingue Complet (FR, AR, EN, ES avec détection automatique)
-  - ✅ 4.3 Paiements Locaux Renforcés (CMI, espèces, livraison, conversion MAD)
-
-### 🚀 Prochaine Phase
-
-**Phase 5 : Communication et Support (2 semaines)** - À COMMENCER
+### Phasage révisé (proposé)
+- Phase A (1 semaine) — Confiance immédiate : badges visibles, segments authentiques, correction CORS/ENV, test E2E prod
+- Phase B (1 semaine) — Multi-devise : sélecteur MAD/€/USD, conversions affichées, cohérence PSP/CMI/Stripe
+- Phase C (1-2 semaines) — Découverte & SEO : filtres enrichis (horaires, annulation, accessibilité), pages destinations/catégories SEO, collections éditoriales
+- Phase D (1 semaine) — Support : FAQ dynamique + chat MVP
+- Phase E (1-2 semaines) — Perf/analytics/a11y : audit A11y, monitoring 500/uptime, optimisation images/bundle, premiers dashboards
 
 ---
 

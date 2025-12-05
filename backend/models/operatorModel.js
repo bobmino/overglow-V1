@@ -123,6 +123,15 @@ const operatorSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+
+  // Tags/segments d'authenticité opérateur
+  authenticity: {
+    isArtisan: { type: Boolean, default: false },
+    isAuthenticLocal: { type: Boolean, default: false },
+    isEcoFriendly: { type: Boolean, default: false },
+    isTraditional: { type: Boolean, default: false },
+    isLocal100: { type: Boolean, default: false },
+  },
   
   // Badges et certifications
   badges: [{

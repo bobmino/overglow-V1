@@ -201,6 +201,21 @@ const assignOperatorBadges = async (operatorId) => {
       if (criteria.isLocal !== undefined && operator.metrics.isLocal !== criteria.isLocal) {
         meetsCriteria = false;
       }
+      if (criteria.isLocal100 !== undefined && operator.authenticity?.isLocal100 !== criteria.isLocal100) {
+        meetsCriteria = false;
+      }
+      if (criteria.isArtisan !== undefined && operator.authenticity?.isArtisan !== criteria.isArtisan) {
+        meetsCriteria = false;
+      }
+      if (criteria.isAuthenticLocal !== undefined && operator.authenticity?.isAuthenticLocal !== criteria.isAuthenticLocal) {
+        meetsCriteria = false;
+      }
+      if (criteria.isEcoFriendly !== undefined && operator.authenticity?.isEcoFriendly !== criteria.isEcoFriendly) {
+        meetsCriteria = false;
+      }
+      if (criteria.isTraditional !== undefined && operator.authenticity?.isTraditional !== criteria.isTraditional) {
+        meetsCriteria = false;
+      }
 
       if (meetsCriteria) {
         // Check if operator already has this badge
@@ -268,6 +283,15 @@ const assignProductBadges = async (productId) => {
       if (criteria.isLastMinute !== undefined && product.metrics.isLastMinute !== criteria.isLastMinute) {
         meetsCriteria = false;
       }
+      if (criteria.isArtisan !== undefined && product.authenticity?.isArtisan !== criteria.isArtisan) {
+        meetsCriteria = false;
+      }
+      if (criteria.isAuthenticLocal !== undefined && product.authenticity?.isAuthenticLocal !== criteria.isAuthenticLocal) {
+        meetsCriteria = false;
+      }
+      if (criteria.isEcoFriendly !== undefined && product.authenticity?.isEcoFriendly !== criteria.isEcoFriendly) {
+        meetsCriteria = false;
+      }
 
       if (meetsCriteria) {
         // Check if product already has this badge
@@ -309,12 +333,36 @@ export const initializeDefaultBadges = async () => {
         criteria: { isVerified: true },
       },
       {
+        name: 'Artisan',
+        type: 'operator',
+        icon: '🧵',
+        color: '#7C3AED',
+        description: 'Opérateur artisanal ou métier de tradition',
+        criteria: { isArtisan: true },
+      },
+      {
+        name: 'Éco-responsable',
+        type: 'operator',
+        icon: '🌱',
+        color: '#16A34A',
+        description: 'Opérateur engagé dans des pratiques durables',
+        criteria: { isEcoFriendly: true },
+      },
+      {
+        name: '100% Marocain',
+        type: 'operator',
+        icon: '🕌',
+        color: '#B91C1C',
+        description: 'Opérateur purement local et authentique',
+        criteria: { isLocal: true, isLocal100: true },
+      },
+      {
         name: 'Local Authentique',
         type: 'operator',
         icon: '🇲🇦',
         color: '#C8102E',
         description: 'Opérateur marocain authentique',
-        criteria: { isLocal: true },
+        criteria: { isLocal: true, isAuthenticLocal: true },
       },
       {
         name: 'Meilleur Opérateur',
@@ -356,6 +404,30 @@ export const initializeDefaultBadges = async () => {
         color: '#10B981',
         description: 'Excellent rapport qualité/prix',
         criteria: { isBestValue: true },
+      },
+      {
+        name: 'Artisan',
+        type: 'product',
+        icon: '🧵',
+        color: '#7C3AED',
+        description: 'Expérience ou produit artisanal',
+        criteria: { isArtisan: true },
+      },
+      {
+        name: 'Authentique locale',
+        type: 'product',
+        icon: '🏡',
+        color: '#C2410C',
+        description: 'Expérience ancrée dans la tradition locale',
+        criteria: { isAuthenticLocal: true },
+      },
+      {
+        name: 'Éco-responsable',
+        type: 'product',
+        icon: '🌱',
+        color: '#16A34A',
+        description: 'Expérience respectueuse de l’environnement',
+        criteria: { isEcoFriendly: true },
       },
       {
         name: 'Nouveau',
