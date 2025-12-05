@@ -354,7 +354,9 @@ const OperatorProductFormPage = () => {
           {/* Dynamic Lists */}
           {['highlights', 'included', 'requirements'].map((field) => (
             <div key={field}>
-              <label className="block text-sm font-bold text-gray-700 mb-2 capitalize">{field}</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2 capitalize">
+                {field}
+              </label>
               {Array.isArray(formData[field]) && formData[field].map((item, index) => {
                 const inputId = `${field}-${index}`;
                 return (
@@ -377,7 +379,8 @@ const OperatorProductFormPage = () => {
                     <X size={20} />
                   </button>
                 </div>
-              ))}
+                );
+              })}
               <button
                 type="button"
                 onClick={() => addArrayItem(field)}
