@@ -2,7 +2,33 @@
 // This file handles requests BEFORE importing the Express app
 // This ensures CORS headers are ALWAYS set, even on errors
 
-import app from '../server.js';
+// Try to import server.js, but handle failures gracefully
+let app = null;
+let appPromise = null;
+
+// Lazy load the app to avoid blocking module initialization
+const loadApp = async () => {
+  if (app) return app;
+  if (appPromise) return appPromise;
+  
+  appPromise = (async () => {
+    try {
+      const module = await import('../server.js');
+      app = module.default;
+      return app;
+    } catch (error) {
+      console.error('Failed to load server.js:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        code: error.code
+      });
+      throw error;
+    }
+  })();
+  
+  return appPromise;
+};
 
 const allowedOrigins = [
   'https://overglow-v1-3jqp.vercel.app',
@@ -32,6 +58,7 @@ const setCORSHeaders = (req, res) => {
 
 export default async (req, res) => {
   // CRITICAL: Set CORS headers FIRST, before ANYTHING else
+  // This MUST happen before any async operations
   setCORSHeaders(req, res);
   
   // Handle OPTIONS preflight immediately
@@ -39,18 +66,34 @@ export default async (req, res) => {
     return res.status(200).end();
   }
   
-  // Check if app is loaded
-  if (!app) {
-    console.error('Express app not loaded');
+  // Load the app (lazy loading)
+  let expressApp;
+  try {
+    expressApp = await loadApp();
+    
+    if (!expressApp) {
+      throw new Error('Express app not loaded');
+    }
+  } catch (loadError) {
+    console.error('Failed to load Express app:', {
+      message: loadError.message,
+      stack: loadError.stack,
+      name: loadError.name
+    });
+    
+    // CORS headers already set above
     return res.status(500).json({ 
       message: 'Server initialization error',
-      error: process.env.NODE_ENV === 'development' ? 'App not loaded' : undefined
+      error: process.env.NODE_ENV === 'development' ? loadError.message : undefined
     });
   }
   
   // Call the Express app handler
+  // Express app may not return a promise, so we call it directly
+  // The CORS headers are already set above, so they'll be included in the response
   try {
-    return await app(req, res);
+    // Call the Express app - it handles the request/response
+    expressApp(req, res);
   } catch (appError) {
     console.error('Express app error:', {
       message: appError.message,
@@ -58,10 +101,14 @@ export default async (req, res) => {
       name: appError.name
     });
     
-    // CORS headers already set above
-    return res.status(500).json({ 
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? appError.message : undefined
-    });
+    // Only send error if headers haven't been sent yet
+    if (!res.headersSent) {
+      // Ensure CORS headers are set (they should already be, but double-check)
+      setCORSHeaders(req, res);
+      return res.status(500).json({ 
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? appError.message : undefined
+      });
+    }
   }
 };
