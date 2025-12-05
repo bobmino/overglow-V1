@@ -46,10 +46,41 @@ export default async (req, res) => {
     
     // Now import and use the Express app for non-OPTIONS requests
     // Dynamic import to ensure it only happens after OPTIONS is handled
-    const { default: app } = await import('../server.js');
+    let app;
+    try {
+      const module = await import('../server.js');
+      app = module.default;
+      
+      if (!app) {
+        throw new Error('Express app not exported from server.js');
+      }
+    } catch (importError) {
+      console.error('Failed to import server.js:', {
+        message: importError.message,
+        stack: importError.stack,
+        name: importError.name,
+        path: req.path,
+        method: req.method
+      });
+      
+      setCORSHeaders(req, res);
+      return res.status(500).json({ 
+        message: 'Server initialization error',
+        error: process.env.NODE_ENV === 'development' ? importError.message : undefined
+      });
+    }
+    
+    // Call the Express app handler
     return app(req, res);
   } catch (error) {
-    console.error('API handler error:', error);
+    console.error('API handler error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      path: req.path,
+      method: req.method,
+      url: req.url
+    });
     
     // Always set CORS headers, even on error
     setCORSHeaders(req, res);
