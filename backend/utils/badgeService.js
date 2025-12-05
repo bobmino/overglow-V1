@@ -434,7 +434,7 @@ export const initializeDefaultBadges = async () => {
         type: 'product',
         icon: '🌱',
         color: '#16A34A',
-        description: 'Expérience respectueuse de l'environnement',
+        description: 'Expérience respectueuse de l\'environnement',
         criteria: { isEcoFriendly: true },
         isAutomatic: false, // Nécessite validation admin
       },
