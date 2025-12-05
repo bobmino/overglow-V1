@@ -43,6 +43,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import WithdrawalsPage from './pages/WithdrawalsPage';
 import AdminWithdrawalsPage from './pages/AdminWithdrawalsPage';
 import ApprovalRequestsPage from './pages/ApprovalRequestsPage';
+import AdminBadgeRequestsPage from './pages/AdminBadgeRequestsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import LoyaltyPage from './pages/LoyaltyPage';
 import ViewHistoryPage from './pages/ViewHistoryPage';
@@ -190,6 +191,11 @@ function App() {
           <Route path="admin/approval-requests" element={
             <PrivateRoute>
               <ApprovalRequestsPage />
+            </PrivateRoute>
+          } />
+          <Route path="admin/badge-requests" element={
+            <PrivateRoute>
+              <AdminBadgeRequestsPage />
             </PrivateRoute>
           } />
         </Route>

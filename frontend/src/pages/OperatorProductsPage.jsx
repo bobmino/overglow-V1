@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
-import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import BadgeRequestModal from '../components/BadgeRequestModal';
 
 const OperatorProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestingApproval, setRequestingApproval] = useState({});
+  const [badgeRequestModal, setBadgeRequestModal] = useState({ isOpen: false, productId: null, productTitle: '' });
 
   useEffect(() => {
     fetchProducts();
@@ -174,6 +176,14 @@ const OperatorProductsPage = () => {
                       </button>
                     )}
                     <button
+                      onClick={() => setBadgeRequestModal({ isOpen: true, productId: product._id, productTitle: product.title })}
+                      className="flex items-center text-purple-600 hover:text-purple-700 transition"
+                      title="Demander un badge (Artisan, Éco-responsable, Traditionnel)"
+                    >
+                      <Award size={16} className="mr-1" />
+                      Demander badge
+                    </button>
+                    <button
                       onClick={() => handleDelete(product._id)}
                       className="flex items-center text-red-600 hover:text-red-700 transition"
                     >
@@ -187,6 +197,14 @@ const OperatorProductsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Badge Request Modal */}
+      <BadgeRequestModal
+        isOpen={badgeRequestModal.isOpen}
+        onClose={() => setBadgeRequestModal({ isOpen: false, productId: null, productTitle: '' })}
+        productId={badgeRequestModal.productId}
+        productTitle={badgeRequestModal.productTitle}
+      />
 
       <ScrollToTopButton />
     </div>

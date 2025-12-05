@@ -343,6 +343,7 @@ export const initializeDefaultBadges = async () => {
         color: '#7C3AED',
         description: 'Opérateur artisanal ou métier de tradition',
         criteria: { isArtisan: true },
+        isAutomatic: false, // Nécessite validation admin
       },
       {
         name: 'Éco-responsable',
@@ -351,6 +352,7 @@ export const initializeDefaultBadges = async () => {
         color: '#16A34A',
         description: 'Opérateur engagé dans des pratiques durables',
         criteria: { isEcoFriendly: true },
+        isAutomatic: false, // Nécessite validation admin
       },
       {
         name: '100% Marocain',
@@ -416,6 +418,7 @@ export const initializeDefaultBadges = async () => {
         color: '#7C3AED',
         description: 'Expérience ou produit artisanal',
         criteria: { isArtisan: true },
+        isAutomatic: false, // Nécessite validation admin
       },
       {
         name: 'Authentique locale',
@@ -424,14 +427,25 @@ export const initializeDefaultBadges = async () => {
         color: '#C2410C',
         description: 'Expérience ancrée dans la tradition locale',
         criteria: { isAuthenticLocal: true },
+        isAutomatic: true, // Automatique si isAuthenticLocal est true
       },
       {
         name: 'Éco-responsable',
         type: 'product',
         icon: '🌱',
         color: '#16A34A',
-        description: 'Expérience respectueuse de l’environnement',
+        description: 'Expérience respectueuse de l'environnement',
         criteria: { isEcoFriendly: true },
+        isAutomatic: false, // Nécessite validation admin
+      },
+      {
+        name: 'Traditionnel',
+        type: 'product',
+        icon: '🕌',
+        color: '#92400E',
+        description: 'Expérience traditionnelle marocaine',
+        criteria: { isTraditional: true },
+        isAutomatic: false, // Nécessite validation admin
       },
       {
         name: 'Nouveau',

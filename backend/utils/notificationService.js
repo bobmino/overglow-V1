@@ -254,6 +254,72 @@ export const notifyRefundProcessed = async (withdrawal, userId) => {
 /**
  * Create notification for new operator registration (to admins)
  */
+/**
+ * Notify admins of new badge request
+ */
+export const notifyBadgeRequestSubmitted = async (badgeRequest, product, badge) => {
+  try {
+    const User = (await import('../models/userModel.js')).default;
+    const adminUsers = await User.find({ role: 'Admin' });
+    const adminIds = adminUsers.map(admin => admin._id);
+
+    for (const adminId of adminIds) {
+      await createNotification({
+        userId: adminId,
+        type: 'badge_request_submitted',
+        title: 'Nouvelle demande de badge',
+        message: `Demande de badge "${badge.name}" pour le produit "${product.title}"`,
+        relatedEntity: {
+          type: 'BadgeRequest',
+          id: badgeRequest._id,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Error notifying badge request submitted:', error);
+  }
+};
+
+/**
+ * Notify operator of badge request approval
+ */
+export const notifyBadgeRequestApproved = async (badgeRequest, operatorUserId) => {
+  try {
+    await createNotification({
+      userId: operatorUserId,
+      type: 'badge_request_approved',
+      title: 'Demande de badge approuvée',
+      message: `Votre demande de badge "${badgeRequest.badge?.name || 'badge'}" a été approuvée`,
+      relatedEntity: {
+        type: 'BadgeRequest',
+        id: badgeRequest._id,
+      },
+    });
+  } catch (error) {
+    console.error('Error notifying badge request approved:', error);
+  }
+};
+
+/**
+ * Notify operator of badge request rejection
+ */
+export const notifyBadgeRequestRejected = async (badgeRequest, operatorUserId, rejectionReason) => {
+  try {
+    await createNotification({
+      userId: operatorUserId,
+      type: 'badge_request_rejected',
+      title: 'Demande de badge rejetée',
+      message: `Votre demande de badge "${badgeRequest.badge?.name || 'badge'}" a été rejetée. Raison: ${rejectionReason}`,
+      relatedEntity: {
+        type: 'BadgeRequest',
+        id: badgeRequest._id,
+      },
+    });
+  } catch (error) {
+    console.error('Error notifying badge request rejected:', error);
+  }
+};
+
 export const notifyOperatorRegistered = async (operator, adminIds) => {
   const notifications = [];
   for (const adminId of adminIds) {

@@ -102,6 +102,12 @@ const AdminDashboardPage = () => {
         >
           Demandes d'approbation
         </Link>
+        <Link
+          to="/admin/badge-requests"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition"
+        >
+          Demandes de badges
+        </Link>
       </div>
 
       {/* Stats Grid */}
