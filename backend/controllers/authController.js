@@ -5,10 +5,38 @@ import { validationResult } from 'express-validator';
 import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 
+// Helper to set CORS headers
+const setCORSHeaders = (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://overglow-v1-3jqp.vercel.app',
+    'https://overglow-v1.vercel.app',
+    'https://overglow-frontend.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5174',
+  ];
+  
+  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
+  // Always set CORS headers first
+  setCORSHeaders(req, res);
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -73,6 +101,9 @@ const registerUser = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
+  // Always set CORS headers first
+  setCORSHeaders(req, res);
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -97,15 +128,38 @@ const loginUser = async (req, res) => {
 
     // Check database connection
     if (mongoose.connection.readyState !== 1) {
-      console.error('Login error: Database not connected', { readyState: mongoose.connection.readyState });
+      console.error('Login error: Database not connected', { 
+        readyState: mongoose.connection.readyState,
+        states: {
+          0: 'disconnected',
+          1: 'connected',
+          2: 'connecting',
+          3: 'disconnecting'
+        }
+      });
       // Try to reconnect
       try {
         const connectDB = (await import('../../config/db.js')).default;
         await connectDB();
         // Wait a bit for connection to establish
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Check again after waiting
+        if (mongoose.connection.readyState !== 1) {
+          console.error('Login error: Database still not connected after retry', { 
+            readyState: mongoose.connection.readyState 
+          });
+          return res.status(500).json({ 
+            message: 'Database connection error. Please try again later.',
+            error: 'Database unavailable'
+          });
+        }
       } catch (dbError) {
-        console.error('Database reconnection failed:', dbError.message);
+        console.error('Database reconnection failed:', {
+          message: dbError.message,
+          stack: dbError.stack,
+          name: dbError.name
+        });
         return res.status(500).json({ 
           message: 'Database connection error. Please try again later.',
           error: 'Database unavailable'
@@ -114,7 +168,21 @@ const loginUser = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    let user;
+    try {
+      user = await User.findOne({ email });
+    } catch (findError) {
+      console.error('User find error:', {
+        message: findError.message,
+        stack: findError.stack,
+        name: findError.name,
+        email: email
+      });
+      return res.status(500).json({ 
+        message: 'Server error during user lookup',
+        error: process.env.NODE_ENV === 'development' ? findError.message : undefined
+      });
+    }
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -175,27 +243,31 @@ const loginUser = async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
+    // Ensure CORS headers are set even on error
+    setCORSHeaders(req, res);
+    
     // Log full error details for debugging
     console.error('Login error:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
-      email: req.body?.email || 'N/A'
+      email: req.body?.email || 'N/A',
+      readyState: mongoose.connection?.readyState
     });
     
     // Return appropriate error message
     if (error.message && error.message.includes('JWT_SECRET')) {
-      res.status(500).json({ 
+      return res.status(500).json({ 
         message: 'Server configuration error. Please contact support.',
         error: 'JWT_SECRET missing'
       });
-    } else if (error.name === 'MongoError' || error.name === 'MongooseError') {
-      res.status(500).json({ 
+    } else if (error.name === 'MongoError' || error.name === 'MongooseError' || error.name === 'MongoServerError') {
+      return res.status(500).json({ 
         message: 'Database connection error. Please try again later.',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     } else {
-      res.status(500).json({ 
+      return res.status(500).json({ 
         message: 'Server error during login',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
@@ -207,6 +279,9 @@ const loginUser = async (req, res) => {
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res) => {
+  // Always set CORS headers first
+  setCORSHeaders(req, res);
+  
   const user = await User.findById(req.user._id);
 
   if (user) {
@@ -235,6 +310,9 @@ const getMe = async (req, res) => {
 // @route   PUT /api/auth/profile
 // @access  Private
 const updateProfile = async (req, res) => {
+  // Always set CORS headers first
+  setCORSHeaders(req, res);
+  
   try {
     const { name, email, phone, bio, location, dateOfBirth, website, socialLinks } = req.body;
 
