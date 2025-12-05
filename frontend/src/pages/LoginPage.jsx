@@ -32,7 +32,28 @@ const LoginPage = () => {
       login(data);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login error details:', {
+        response: err.response,
+        data: err.response?.data,
+        status: err.response?.status,
+        message: err.message
+      });
+      
+      // Try to get detailed error message
+      const errorData = err.response?.data;
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (errorData) {
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+      }
+      
+      setError(errorMessage);
       setLoading(false);
     }
   };
