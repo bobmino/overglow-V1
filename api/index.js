@@ -1,6 +1,6 @@
 // Vercel serverless function entry point
 // This file handles requests BEFORE importing the Express app
-// This ensures OPTIONS requests are handled even if app initialization fails
+// This ensures CORS headers are ALWAYS set, even on errors
 
 const allowedOrigins = [
   'https://overglow-v1-3jqp.vercel.app',
@@ -14,15 +14,11 @@ const allowedOrigins = [
 const setCORSHeaders = (req, res) => {
   const origin = req.headers.origin;
   
-  // Check if origin is allowed
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
+  // Always set CORS headers - be permissive
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    // Allow requests without origin
-    res.setHeader('Access-Control-Allow-Origin', '*');
   } else {
-    // For other origins, still allow (permissive for now)
-    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
@@ -33,19 +29,16 @@ const setCORSHeaders = (req, res) => {
 };
 
 export default async (req, res) => {
+  // CRITICAL: Set CORS headers FIRST, before ANYTHING else
+  setCORSHeaders(req, res);
+  
+  // Handle OPTIONS preflight immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   try {
-    // CRITICAL: Handle OPTIONS FIRST, before ANY imports or initialization
-    // This must happen before we even try to import the Express app
-    if (req.method === 'OPTIONS') {
-      setCORSHeaders(req, res);
-      return res.status(200).end();
-    }
-    
-    // Set CORS headers for all requests
-    setCORSHeaders(req, res);
-    
-    // Now import and use the Express app for non-OPTIONS requests
-    // Dynamic import to ensure it only happens after OPTIONS is handled
+    // Import the Express app
     let app;
     try {
       const module = await import('../server.js');
@@ -58,12 +51,9 @@ export default async (req, res) => {
       console.error('Failed to import server.js:', {
         message: importError.message,
         stack: importError.stack,
-        name: importError.name,
-        path: req.path,
-        method: req.method
+        name: importError.name
       });
       
-      setCORSHeaders(req, res);
       return res.status(500).json({ 
         message: 'Server initialization error',
         error: process.env.NODE_ENV === 'development' ? importError.message : undefined
@@ -71,27 +61,31 @@ export default async (req, res) => {
     }
     
     // Call the Express app handler
-    return app(req, res);
+    // Wrap in try-catch to ensure CORS headers are always set on errors
+    try {
+      return await app(req, res);
+    } catch (appError) {
+      console.error('Express app error:', {
+        message: appError.message,
+        stack: appError.stack,
+        name: appError.name
+      });
+      
+      // CORS headers already set above
+      return res.status(500).json({ 
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? appError.message : undefined
+      });
+    }
   } catch (error) {
     console.error('API handler error:', {
       message: error.message,
       stack: error.stack,
-      name: error.name,
-      path: req.path,
-      method: req.method,
-      url: req.url
+      name: error.name
     });
     
-    // Always set CORS headers, even on error
-    setCORSHeaders(req, res);
-    
-    // Even on error, try to handle OPTIONS
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
-    // For non-OPTIONS errors, return 500 with CORS headers
-    res.status(500).json({ 
+    // CORS headers already set above
+    return res.status(500).json({ 
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
