@@ -32,12 +32,19 @@ const LoginPage = () => {
       login(data);
       navigate('/');
     } catch (err) {
+      // Log full error details for debugging
       console.error('Login error details:', {
         response: err.response,
         data: err.response?.data,
         status: err.response?.status,
-        message: err.message
+        message: err.message,
+        fullError: err
       });
+      
+      // Log the data object separately to see its full content
+      if (err.response?.data) {
+        console.error('Error response data:', JSON.stringify(err.response.data, null, 2));
+      }
       
       // Try to get detailed error message
       const errorData = err.response?.data;
@@ -50,6 +57,14 @@ const LoginPage = () => {
           errorMessage = errorData.error;
         } else if (typeof errorData === 'string') {
           errorMessage = errorData;
+        }
+        
+        // If we have error details, append them for debugging
+        if (errorData.errorType || errorData.errorCode) {
+          console.error('Error type:', errorData.errorType, 'Code:', errorData.errorCode);
+          if (errorData.stack) {
+            console.error('Error stack:', errorData.stack);
+          }
         }
       }
       
