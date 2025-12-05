@@ -444,6 +444,282 @@ const initializeBadgesAndFlags = async (req, res) => {
   }
 };
 
+// @desc    Create a new badge
+// @route   POST /api/admin/badges
+// @access  Private/Admin
+const createBadge = async (req, res) => {
+  try {
+    const { name, type, icon, color, description, criteria, isAutomatic } = req.body;
+
+    if (!name || !type || !description) {
+      return res.status(400).json({ message: 'Name, type, and description are required' });
+    }
+
+    const Badge = (await import('../models/badgeModel.js')).default;
+    const badge = await Badge.create({
+      name,
+      type,
+      icon: icon || '🏆',
+      color: color || '#059669',
+      description,
+      criteria: criteria || {},
+      isAutomatic: isAutomatic !== undefined ? isAutomatic : true,
+      isActive: true,
+    });
+
+    res.status(201).json(badge);
+  } catch (error) {
+    console.error('Create badge error:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Badge with this name and type already exists' });
+    }
+    res.status(500).json({ 
+      message: 'Failed to create badge',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Get all badges (admin view)
+// @route   GET /api/admin/badges
+// @access  Private/Admin
+const getAllBadges = async (req, res) => {
+  try {
+    const { type, isAutomatic } = req.query;
+    const Badge = (await import('../models/badgeModel.js')).default;
+    
+    const query = {};
+    if (type) query.type = type;
+    if (isAutomatic !== undefined) query.isAutomatic = isAutomatic === 'true';
+
+    const badges = await Badge.find(query).sort({ type: 1, name: 1 });
+    res.json(badges);
+  } catch (error) {
+    console.error('Get all badges error:', error);
+    res.status(500).json({ message: 'Failed to fetch badges' });
+  }
+};
+
+// @desc    Get badges available for request (manual badges)
+// @route   GET /api/admin/badges/requestable
+// @access  Private/Admin
+const getRequestableBadges = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const Badge = (await import('../models/badgeModel.js')).default;
+    
+    const query = { isAutomatic: false, isActive: true };
+    if (type) query.type = type;
+
+    const badges = await Badge.find(query).sort({ name: 1 });
+    res.json(badges);
+  } catch (error) {
+    console.error('Get requestable badges error:', error);
+    res.status(500).json({ message: 'Failed to fetch requestable badges' });
+  }
+};
+
+// @desc    Assign badge to multiple products
+// @route   POST /api/admin/badges/assign-products
+// @access  Private/Admin
+const assignBadgeToProducts = async (req, res) => {
+  try {
+    const { badgeId, productIds } = req.body;
+
+    if (!badgeId || !productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: 'Badge ID and product IDs array are required' });
+    }
+
+    const Badge = (await import('../models/badgeModel.js')).default;
+    const badge = await Badge.findById(badgeId);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    if (badge.type !== 'product') {
+      return res.status(400).json({ message: 'Badge is not a product badge' });
+    }
+
+    let assigned = 0;
+    let errors = 0;
+
+    for (const productId of productIds) {
+      try {
+        const product = await Product.findById(productId);
+        if (!product) {
+          errors++;
+          continue;
+        }
+
+        // Check if badge already assigned
+        const existingBadge = product.badges.find(
+          b => b.badgeId && b.badgeId.toString() === badgeId
+        );
+
+        if (!existingBadge) {
+          product.badges.push({
+            badgeId: badge._id,
+            assignedAt: new Date(),
+            assignedBy: req.user._id,
+          });
+          await product.save({ validateBeforeSave: false });
+          assigned++;
+        }
+
+        // Recalculate badges to ensure consistency
+        await updateProductMetrics(productId);
+      } catch (error) {
+        console.error(`Error assigning badge to product ${productId}:`, error.message);
+        errors++;
+      }
+    }
+
+    res.json({
+      message: 'Badge assignment completed',
+      assigned,
+      errors,
+      total: productIds.length,
+    });
+  } catch (error) {
+    console.error('Assign badge to products error:', error);
+    res.status(500).json({ 
+      message: 'Failed to assign badge to products',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Assign badge to multiple operators
+// @route   POST /api/admin/badges/assign-operators
+// @access  Private/Admin
+const assignBadgeToOperators = async (req, res) => {
+  try {
+    const { badgeId, operatorIds } = req.body;
+
+    if (!badgeId || !operatorIds || !Array.isArray(operatorIds) || operatorIds.length === 0) {
+      return res.status(400).json({ message: 'Badge ID and operator IDs array are required' });
+    }
+
+    const Badge = (await import('../models/badgeModel.js')).default;
+    const badge = await Badge.findById(badgeId);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    if (badge.type !== 'operator') {
+      return res.status(400).json({ message: 'Badge is not an operator badge' });
+    }
+
+    let assigned = 0;
+    let errors = 0;
+
+    for (const operatorId of operatorIds) {
+      try {
+        const operator = await Operator.findById(operatorId);
+        if (!operator) {
+          errors++;
+          continue;
+        }
+
+        // Check if badge already assigned
+        const existingBadge = operator.badges.find(
+          b => b.badgeId && b.badgeId.toString() === badgeId
+        );
+
+        if (!existingBadge) {
+          operator.badges.push({
+            badgeId: badge._id,
+            assignedAt: new Date(),
+            assignedBy: req.user._id,
+          });
+          await operator.save({ validateBeforeSave: false });
+          assigned++;
+        }
+
+        // Recalculate badges to ensure consistency
+        await updateOperatorMetrics(operatorId);
+      } catch (error) {
+        console.error(`Error assigning badge to operator ${operatorId}:`, error.message);
+        errors++;
+      }
+    }
+
+    res.json({
+      message: 'Badge assignment completed',
+      assigned,
+      errors,
+      total: operatorIds.length,
+    });
+  } catch (error) {
+    console.error('Assign badge to operators error:', error);
+    res.status(500).json({ 
+      message: 'Failed to assign badge to operators',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Update badge
+// @route   PUT /api/admin/badges/:id
+// @access  Private/Admin
+const updateBadge = async (req, res) => {
+  try {
+    const Badge = (await import('../models/badgeModel.js')).default;
+    const badge = await Badge.findById(req.params.id);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    const { name, icon, color, description, criteria, isAutomatic, isActive } = req.body;
+
+    if (name) badge.name = name;
+    if (icon) badge.icon = icon;
+    if (color) badge.color = color;
+    if (description) badge.description = description;
+    if (criteria) badge.criteria = { ...badge.criteria, ...criteria };
+    if (isAutomatic !== undefined) badge.isAutomatic = isAutomatic;
+    if (isActive !== undefined) badge.isActive = isActive;
+
+    await badge.save();
+    res.json(badge);
+  } catch (error) {
+    console.error('Update badge error:', error);
+    res.status(500).json({ 
+      message: 'Failed to update badge',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Delete badge
+// @route   DELETE /api/admin/badges/:id
+// @access  Private/Admin
+const deleteBadge = async (req, res) => {
+  try {
+    const Badge = (await import('../models/badgeModel.js')).default;
+    const badge = await Badge.findById(req.params.id);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    // Instead of deleting, mark as inactive
+    badge.isActive = false;
+    await badge.save();
+
+    res.json({ message: 'Badge deactivated successfully' });
+  } catch (error) {
+    console.error('Delete badge error:', error);
+    res.status(500).json({ 
+      message: 'Failed to delete badge',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 export { 
   getAdminStats,
   getOperators, 
@@ -453,4 +729,11 @@ export {
   getUsers, 
   deleteUser,
   initializeBadgesAndFlags,
+  createBadge,
+  getAllBadges,
+  getRequestableBadges,
+  assignBadgeToProducts,
+  assignBadgeToOperators,
+  updateBadge,
+  deleteBadge,
 };

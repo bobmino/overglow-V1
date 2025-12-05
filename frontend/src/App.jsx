@@ -39,6 +39,7 @@ import AdminOperatorsPage from './pages/AdminOperatorsPage';
 import AdminProductsPage from './pages/AdminProductsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
+import AdminBadgeManagementPage from './pages/AdminBadgeManagementPage';
 import NotificationsPage from './pages/NotificationsPage';
 import WithdrawalsPage from './pages/WithdrawalsPage';
 import AdminWithdrawalsPage from './pages/AdminWithdrawalsPage';
@@ -171,6 +172,11 @@ function App() {
           <Route path="admin/settings" element={
             <PrivateRoute>
               <AdminSettingsPage />
+            </PrivateRoute>
+          } />
+          <Route path="admin/badges" element={
+            <PrivateRoute>
+              <AdminBadgeManagementPage />
             </PrivateRoute>
           } />
           <Route path="notifications" element={

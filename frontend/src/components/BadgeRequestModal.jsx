@@ -26,10 +26,9 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
   const fetchManualBadges = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get('/api/badges?type=product');
-      // Filtrer seulement les badges manuels (non automatiques)
-      const manualBadges = data.filter(badge => !badge.isAutomatic);
-      setBadges(manualBadges);
+      // Use the requestable badges endpoint
+      const { data } = await api.get('/api/badges/requestable?type=product');
+      setBadges(data);
     } catch (error) {
       console.error('Failed to fetch badges:', error);
       setError('Impossible de charger les badges disponibles');

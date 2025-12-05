@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../config/axios';
-import { Settings, Save, CheckCircle, XCircle } from 'lucide-react';
+import { Settings, Save, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
@@ -85,6 +86,20 @@ const AdminSettingsPage = () => {
         <div className="flex items-center gap-3 mb-6">
           <Settings size={24} className="text-primary-600" />
           <h2 className="text-xl font-bold text-gray-900">Auto-Approval Settings</h2>
+        </div>
+
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="font-bold text-blue-900 mb-2">Gestion des Badges</h3>
+          <p className="text-sm text-blue-700 mb-4">
+            Créez et gérez les badges, attribuez-les en masse aux produits et opérateurs.
+          </p>
+          <Link
+            to="/admin/badges"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
+          >
+            <Award size={20} />
+            Gérer les Badges
+          </Link>
         </div>
 
         <div className="space-y-6">
