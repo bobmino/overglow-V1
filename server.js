@@ -8,6 +8,10 @@ import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
 import { apiLimiter, strictLimiter } from './backend/middleware/rateLimiter.js';
+import { initSentry } from './backend/utils/sentry.js';
+
+// Initialize Sentry BEFORE everything else
+initSentry();
 
 import authRoutes from './backend/routes/authRoutes.js';
 import productRoutes from './backend/routes/productRoutes.js';

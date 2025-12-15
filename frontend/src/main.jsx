@@ -6,6 +6,11 @@ import './i18n'; // Import i18n configuration
 import App from './App.jsx'
 import { CurrencyProvider } from './context/CurrencyContext.jsx'
 import { setupLazyImages } from './utils/performance.js'
+import { initSentry } from './utils/sentry.js'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
+
+// Initialize Sentry BEFORE everything else
+initSentry();
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
@@ -56,11 +61,13 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HelmetProvider>
-      <CurrencyProvider>
-        <App />
-      </CurrencyProvider>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <CurrencyProvider>
+          <App />
+        </CurrencyProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
 

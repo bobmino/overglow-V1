@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { setSentryUser, clearSentryUser } from '../utils/sentry.js';
 
 const AuthContext = createContext();
 
@@ -20,6 +21,8 @@ export const AuthProvider = ({ children }) => {
     if (userInfo) {
       const parsedUser = JSON.parse(userInfo);
       setUser(parsedUser);
+      // Set Sentry user context
+      setSentryUser(parsedUser);
     }
     setLoading(false);
   }, []);
@@ -27,6 +30,8 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     localStorage.setItem('userInfo', JSON.stringify(userData));
     setUser(userData);
+    // Set Sentry user context
+    setSentryUser(userData);
   };
 
   const logout = async () => {
@@ -57,6 +62,8 @@ export const AuthProvider = ({ children }) => {
     
     localStorage.removeItem('userInfo');
     setUser(null);
+    // Clear Sentry user context
+    clearSentryUser();
   };
 
   const updateUser = (updatedData) => {

@@ -1,3 +1,5 @@
+import { captureException } from '../utils/sentry.js';
+
 const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
   res.status(404);
@@ -40,6 +42,20 @@ const errorHandler = (err, req, res, next) => {
     path: req.path,
     method: req.method,
   });
+  
+  // Send to Sentry (only for non-404 errors and production)
+  if (statusCode !== 404 && process.env.NODE_ENV === 'production') {
+    captureException(err, {
+      req: {
+        url: req.url,
+        method: req.method,
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+      },
+      statusCode,
+    });
+  }
   
   res.json({
     message: err.message,
