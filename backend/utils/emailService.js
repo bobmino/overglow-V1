@@ -1,5 +1,11 @@
 import pkg from 'nodemailer';
 const { createTransport } = pkg;
+import {
+  getBookingConfirmationTemplate,
+  getCancellationTemplate,
+  getOperatorBookingNotificationTemplate,
+  getRefundProcessedTemplate,
+} from './emailTemplates.js';
 
 // Check if email is enabled
 const isEmailEnabled = () => {
@@ -49,33 +55,10 @@ if (isEmailEnabled()) {
 // Send booking confirmation email
 export const sendBookingConfirmation = async (booking, user) => {
   const mailOptions = {
-    from: `"Overglow-Trip" <${process.env.EMAIL_USER}>`,
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: 'Booking Confirmation - Overglow-Trip',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #15803d;">Booking Confirmed!</h1>
-        <p>Hi ${user.name},</p>
-        <p>Your booking has been confirmed. Here are the details:</p>
-        
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="margin-top: 0;">${booking.schedule?.product?.title}</h2>
-          <p><strong>Date:</strong> ${new Date(booking.schedule?.date).toLocaleDateString('fr-FR', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}</p>
-          <p><strong>Time:</strong> ${booking.schedule?.time}</p>
-          <p><strong>Tickets:</strong> ${booking.numberOfTickets}</p>
-          <p><strong>Total:</strong> €${booking.totalAmount}</p>
-          <p><strong>Booking Reference:</strong> #${booking._id.toString().slice(-8).toUpperCase()}</p>
-        </div>
-        
-        <p>We look forward to seeing you!</p>
-        <p>Best regards,<br>The Overglow-Trip Team</p>
-      </div>
-    `,
+    subject: '✅ Réservation confirmée - Overglow Trip',
+    html: getBookingConfirmationTemplate(booking, user),
   };
 
   // Skip if email is disabled or transporter not available
@@ -101,27 +84,12 @@ export const sendBookingConfirmation = async (booking, user) => {
 };
 
 // Send cancellation email
-export const sendCancellationEmail = async (booking, user) => {
+export const sendCancellationEmail = async (booking, user, refundInfo = null) => {
   const mailOptions = {
-    from: `"Overglow-Trip" <${process.env.EMAIL_USER}>`,
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: 'Booking Cancelled - Overglow-Trip',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #dc2626;">Booking Cancelled</h1>
-        <p>Hi ${user.name},</p>
-        <p>Your booking has been cancelled as requested.</p>
-        
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="margin-top: 0;">${booking.schedule?.product?.title}</h2>
-          <p><strong>Date:</strong> ${new Date(booking.schedule?.date).toLocaleDateString('fr-FR')}</p>
-          <p><strong>Booking Reference:</strong> #${booking._id.toString().slice(-8).toUpperCase()}</p>
-        </div>
-        
-        <p>If you have any questions, please don't hesitate to contact us.</p>
-        <p>Best regards,<br>The Overglow-Trip Team</p>
-      </div>
-    `,
+    subject: '❌ Réservation annulée - Overglow Trip',
+    html: getCancellationTemplate(booking, user, refundInfo),
   };
 
   // Skip if email is disabled or transporter not available
@@ -143,5 +111,67 @@ export const sendCancellationEmail = async (booking, user) => {
       console.error('💡 Tip: For Gmail, use an App Password instead of your regular password');
       console.error('💡 See: https://support.google.com/accounts/answer/185833');
     }
+  }
+};
+
+// Send operator booking notification email
+export const sendOperatorBookingNotification = async (booking, operator, user) => {
+  // Get operator user email
+  const User = (await import('../models/userModel.js')).default;
+  const operatorUser = await User.findById(operator.user || operator);
+  
+  if (!operatorUser || !operatorUser.email) {
+    console.warn('⚠️  Operator email not found, skipping email notification');
+    return;
+  }
+
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: operatorUser.email,
+    subject: '🎉 Nouvelle réservation reçue - Overglow Trip',
+    html: getOperatorBookingNotificationTemplate(booking, operator, user),
+  };
+
+  // Skip if email is disabled or transporter not available
+  if (!transporter || !isEmailEnabled()) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📧 [DEV] Email would be sent to operator:', operatorUser.email);
+      console.log('📧 [DEV] Subject:', mailOptions.subject);
+    }
+    return;
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Operator booking notification email sent to:', operatorUser.email);
+  } catch (error) {
+    // Don't throw error, just log it - email failure shouldn't break the booking
+    console.error('❌ Error sending operator booking notification email:', error.message);
+  }
+};
+
+// Send refund processed email
+export const sendRefundProcessedEmail = async (withdrawal, user) => {
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '✅ Remboursement effectué - Overglow Trip',
+    html: getRefundProcessedTemplate(withdrawal, user),
+  };
+
+  // Skip if email is disabled or transporter not available
+  if (!transporter || !isEmailEnabled()) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📧 [DEV] Email would be sent to:', user.email);
+      console.log('📧 [DEV] Subject:', mailOptions.subject);
+    }
+    return;
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Refund processed email sent to:', user.email);
+  } catch (error) {
+    console.error('❌ Error sending refund processed email:', error.message);
   }
 };

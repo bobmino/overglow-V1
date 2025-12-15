@@ -5,7 +5,7 @@ import Product from '../models/productModel.js';
 import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
-import { sendBookingConfirmation, sendCancellationEmail } from '../utils/emailService.js';
+import { sendBookingConfirmation, sendCancellationEmail, sendOperatorBookingNotification } from '../utils/emailService.js';
 import { notifyNewBooking } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
@@ -127,9 +127,20 @@ const createBooking = async (req, res) => {
     
     // Notify operator of new booking (async, don't wait)
     if (createdBooking.operator) {
+      // In-app notification
       notifyNewBooking(createdBooking, createdBooking.operator).catch(err => 
         console.error('Error notifying operator:', err)
       );
+      
+      // Email notification to operator
+      const Operator = (await import('../models/operatorModel.js')).default;
+      const operator = await Operator.findById(createdBooking.operator);
+      if (operator) {
+        sendOperatorBookingNotification(populatedBooking, operator, req.user).catch(err =>
+          console.error('Error sending operator email notification:', err)
+        );
+      }
+      
       // Update metrics (async, don't wait)
       updateProductMetrics(schedule.product._id).catch(err => 
         console.error('Error updating product metrics:', err)

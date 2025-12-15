@@ -3,6 +3,7 @@ import Product from '../models/productModel.js';
 import Schedule from '../models/scheduleModel.js';
 import Withdrawal from '../models/withdrawalModel.js';
 import { notifyRefundProcessed } from './notificationService.js';
+import { sendCancellationEmail } from './emailService.js';
 
 /**
  * Calculate refund amount based on cancellation policy and timing
@@ -177,6 +178,11 @@ export const cancelBooking = async (bookingId, reason = '', cancelledBy = 'user'
     const { releaseCapacity } = await import('./availabilityService.js');
     await releaseCapacity(booking.schedule._id, booking._id);
 
+    // Send cancellation email with refund info
+    sendCancellationEmail(booking, booking.user, refundInfo).catch(err =>
+      console.error('Error sending cancellation email:', err)
+    );
+
     return {
       booking,
       refundInfo,
@@ -243,11 +249,16 @@ export const processRefund = async (bookingId, paymentMethod, paymentDetails) =>
     booking.refundStatus = 'Processed';
     await booking.save();
 
-    // Notify user
+    // Notify user (in-app notification)
     const User = (await import('../models/userModel.js')).default;
     const user = await User.findById(booking.user);
     if (user) {
       await notifyRefundProcessed(withdrawal, booking.user);
+      
+      // Send refund processed email
+      sendRefundProcessedEmail(withdrawal, user).catch(err =>
+        console.error('Error sending refund processed email:', err)
+      );
     }
 
     return {
