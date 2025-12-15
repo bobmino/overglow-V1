@@ -143,10 +143,10 @@ const AdminBadgeManagementPage = () => {
   const fetchProducts = async () => {
     try {
       const { data } = await api.get('/api/admin/products');
-      const productsList = data.products || [];
+      // API renvoie un tableau brut; fallback sur data.products si jamais
+      const productsList = Array.isArray(data) ? data : (data.products || []);
       setProducts(productsList);
       
-      // Fetch badges for each product
       const badgesMap = {};
       for (const product of productsList) {
         try {
@@ -159,16 +159,17 @@ const AdminBadgeManagementPage = () => {
       setProductsWithBadges(badgesMap);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]);
+      setProductsWithBadges({});
     }
   };
 
   const fetchOperators = async () => {
     try {
       const { data } = await api.get('/api/admin/operators');
-      const operatorsList = data.operators || [];
+      const operatorsList = Array.isArray(data) ? data : (data.operators || []);
       setOperators(operatorsList);
       
-      // Fetch badges for each operator
       const badgesMap = {};
       for (const operator of operatorsList) {
         try {
@@ -181,6 +182,8 @@ const AdminBadgeManagementPage = () => {
       setOperatorsWithBadges(badgesMap);
     } catch (error) {
       console.error('Failed to fetch operators:', error);
+      setOperators([]);
+      setOperatorsWithBadges({});
     }
   };
 
