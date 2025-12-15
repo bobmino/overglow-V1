@@ -20,6 +20,24 @@ export default defineConfig({
         password: 'test123456',
       },
     },
+    // Test configurations for different browsers
+    browsers: [
+      {
+        name: 'chrome',
+        family: 'chromium',
+        channel: 'stable',
+      },
+      {
+        name: 'firefox',
+        family: 'firefox',
+        channel: 'stable',
+      },
+      {
+        name: 'edge',
+        family: 'chromium',
+        channel: 'stable',
+      },
+    ],
   },
   component: {
     devServer: {

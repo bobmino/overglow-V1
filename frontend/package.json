@@ -10,6 +10,10 @@
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
+    "cypress:run:chrome": "cypress run --browser chrome",
+    "cypress:run:firefox": "cypress run --browser firefox",
+    "cypress:run:edge": "cypress run --browser edge",
+    "cypress:run:mobile": "cypress run --config viewportWidth=375,viewportHeight=667",
     "test:e2e": "cypress run"
   },
   "dependencies": {
@@ -29,12 +33,14 @@
     "recharts": "^3.5.0"
   },
   "devDependencies": {
+    "@axe-core/cli": "^4.11.0",
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
     "cypress": "^15.7.1",
+    "cypress-axe": "^1.7.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
