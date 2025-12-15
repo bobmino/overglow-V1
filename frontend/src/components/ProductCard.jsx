@@ -4,6 +4,7 @@ import { Star, MapPin } from 'lucide-react';
 import BadgeDisplay from './BadgeDisplay';
 import { useCurrency } from '../context/CurrencyContext';
 import FavoriteButton from './FavoriteButton';
+import { trackProductClick } from '../utils/analytics';
 
 const ProductCard = ({ product }) => {
   if (!product) return null;
@@ -32,8 +33,16 @@ const ProductCard = ({ product }) => {
     ? resolvedPrice
     : 99;
 
+  const handleClick = () => {
+    trackProductClick(product, 'product_list');
+  };
+
   return (
-    <Link to={`/products/${product._id}`} className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1">
+    <Link 
+      to={`/products/${product._id}`} 
+      onClick={handleClick}
+      className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
+    >
       <div className="relative h-64 overflow-hidden bg-slate-200">
         <img 
           src={image} 
@@ -56,7 +65,7 @@ const ProductCard = ({ product }) => {
             <span className="text-xs text-slate-500">({reviewCount})</span>
           </div>
           <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm">
-            <FavoriteButton productId={product._id} size={18} />
+            <FavoriteButton productId={product._id} product={product} size={18} />
           </div>
         </div>
 

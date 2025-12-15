@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
-import { trackProductView } from '../utils/analytics';
+import { trackProductView, trackEvent } from '../utils/analytics';
 import { 
   MapPin, Clock, Star, CheckCircle, Users, Calendar as CalendarIcon, 
   X, ChevronDown, ChevronRight, Award, TrendingUp, Shield, Camera
@@ -191,6 +191,23 @@ const ProductDetailPage = () => {
     fetchProduct();
   }, [id]);
 
+  // Track product view when product is loaded
+  useEffect(() => {
+    if (product) {
+      trackProductView({
+        id: product._id,
+        _id: product._id,
+        title: product.title,
+        category: product.category,
+        city: product.city,
+        price: getMinPrice(),
+        minPrice: getMinPrice(),
+        rating: product.averageRating,
+        reviewCount: product.reviews?.length || 0,
+      });
+    }
+  }, [product]);
+
   const parsePrice = (value) => {
     const numericPrice = Number(value);
     return Number.isFinite(numericPrice) && numericPrice >= 0 ? numericPrice : null;
@@ -217,6 +234,20 @@ const ProductDetailPage = () => {
       alert('Veuillez sélectionner une plage horaire');
       return;
     }
+    
+    // Track add_to_cart equivalent (user starting booking process)
+    trackEvent('add_to_cart', {
+      currency: 'EUR',
+      value: getMinPrice() || product.price || 0,
+      items: [{
+        item_id: product._id,
+        item_name: product.title,
+        item_category: product.category,
+        price: getMinPrice() || product.price || 0,
+        quantity: numberOfTickets || 1,
+      }],
+    });
+    
     navigate('/booking', {
       state: {
         product,

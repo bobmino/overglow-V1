@@ -61,6 +61,8 @@ const RegisterPage = () => {
         refreshToken: data.refreshToken || null
       };
       login(userData);
+      // Track sign up
+      trackSignUp('email');
       navigate('/');
     } catch (err) {
       setSubmitError(err.response?.data?.message || 'Registration failed. Please try again.');

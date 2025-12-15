@@ -49,6 +49,8 @@ const LoginPage = () => {
         refreshToken: data.refreshToken || null
       };
       login(userData);
+      // Track login
+      trackLogin('email');
       navigate('/');
     } catch (err) {
       const errorData = err.response?.data;

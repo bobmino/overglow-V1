@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Share2, Facebook, Twitter, MessageCircle, Link as LinkIcon, Check } from 'lucide-react';
+import { trackShare } from '../utils/analytics';
 
-const ShareButtons = ({ product, url, title, description }) => {
+const ShareButtons = ({ product, url, title, description, contentType = 'product' }) => {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
@@ -13,6 +14,8 @@ const ShareButtons = ({ product, url, title, description }) => {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      // Track share
+      trackShare('copy_link', contentType, product?._id || product?.id);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -51,6 +54,8 @@ const ShareButtons = ({ product, url, title, description }) => {
 
     if (shareLink && typeof window !== 'undefined') {
       window.open(shareLink, '_blank', 'width=600,height=400');
+      // Track share
+      trackShare(platform, contentType, product?._id || product?.id);
     }
   };
 

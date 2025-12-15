@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { trackCurrencyChange } from '../utils/analytics';
 
 const CurrencyContext = createContext(null);
 
@@ -19,6 +20,12 @@ export const CurrencyProvider = ({ children }) => {
     // TODO: brancher une vraie API FX si clé dispo
     setRates(DEFAULT_RATES);
   }, []);
+
+  // Wrapper for setSelectedCurrency with tracking
+  const handleCurrencyChange = (newCurrency) => {
+    setSelectedCurrency(newCurrency);
+    trackCurrencyChange(newCurrency);
+  };
 
   const convert = (amount, from = 'EUR', to = selectedCurrency) => {
     if (!amount || Number.isNaN(Number(amount))) return 0;
@@ -45,7 +52,7 @@ export const CurrencyProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       selectedCurrency,
-      setSelectedCurrency,
+      setSelectedCurrency: handleCurrencyChange,
       rates,
       convert,
       formatPrice,

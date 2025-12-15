@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import api from '../config/axios';
+import { trackBookingPageView } from '../utils/analytics';
 
 const BookingPage = () => {
   const location = useLocation();
@@ -75,6 +76,21 @@ const BookingPage = () => {
 
     fetchSchedules();
   }, [product, date, timeSlot, navigate]);
+
+  // Track booking page view
+  useEffect(() => {
+    if (product && selectedSlot) {
+      trackBookingPageView({
+        productId: product._id,
+        product: product,
+        productTitle: product.title,
+        category: product.category,
+        totalAmount: totalPrice,
+        totalPrice: totalPrice,
+        numberOfTickets: tickets || 1,
+      });
+    }
+  }, [product, selectedSlot, totalPrice, tickets]);
 
   const handleContinue = async () => {
     if (!selectedSlot) return;

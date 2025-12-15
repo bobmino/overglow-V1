@@ -5,6 +5,7 @@ import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
 import ShareButtons from '../components/ShareButtons';
 import { Calendar, Clock, Eye, Tag, ArrowLeft, User } from 'lucide-react';
+import { trackBlogView } from '../utils/analytics';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -22,6 +23,17 @@ const BlogPostPage = () => {
         const { data } = await api.get(`/api/blog/${slug}`);
         setPost(data);
         setRelatedPosts(data.relatedPosts || []);
+        
+        // Track blog view
+        if (data) {
+          trackBlogView({
+            id: data._id,
+            _id: data._id,
+            title: data.title,
+            category: data.category,
+            tags: data.tags,
+          });
+        }
       } catch (err) {
         console.error('Failed to fetch blog post:', err);
         setError('Article non trouvé');
@@ -167,6 +179,7 @@ const BlogPostPage = () => {
               url={typeof window !== 'undefined' ? window.location.href : ''}
               title={post.title}
               description={post.excerpt}
+              contentType="blog_post"
             />
           </div>
 

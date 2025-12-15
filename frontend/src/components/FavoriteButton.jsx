@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
+import { trackFavorite } from '../utils/analytics';
 
-const FavoriteButton = ({ productId, listName = 'default', size = 24, showText = false }) => {
+const FavoriteButton = ({ productId, product, listName = 'default', size = 24, showText = false }) => {
   const { isAuthenticated } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +43,10 @@ const FavoriteButton = ({ productId, listName = 'default', size = 24, showText =
         await api.delete(`/api/favorites/${favoriteId}`);
         setIsFavorited(false);
         setFavoriteId(null);
+        // Track favorite removal
+        if (product) {
+          trackFavorite(product, false);
+        }
       } else {
         // Add to favorites
         const { data } = await api.post('/api/favorites', {
@@ -50,6 +55,10 @@ const FavoriteButton = ({ productId, listName = 'default', size = 24, showText =
         });
         setIsFavorited(true);
         setFavoriteId(data._id);
+        // Track favorite addition
+        if (product) {
+          trackFavorite(product, true);
+        }
       }
     } catch (error) {
       console.error('Toggle favorite error:', error);
