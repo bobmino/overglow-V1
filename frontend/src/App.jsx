@@ -41,6 +41,7 @@ const HelpPage = lazy(() => import('./pages/HelpPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const InquiriesPage = lazy(() => import('./pages/InquiriesPage'));
 const MyInquiriesPage = lazy(() => import('./pages/MyInquiriesPage'));
@@ -328,6 +329,11 @@ function App() {
           <Route path="blog" element={
             <Suspense fallback={<LoadingFallback />}>
               <BlogPage />
+            </Suspense>
+          } />
+          <Route path="blog/:slug" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <BlogPostPage />
             </Suspense>
           } />
           <Route path="terms" element={

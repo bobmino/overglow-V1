@@ -36,6 +36,7 @@ import faqRoutes from './backend/routes/faqRoutes.js';
 import chatRoutes from './backend/routes/chatRoutes.js';
 import healthRoutes from './backend/routes/healthRoutes.js';
 import sitemapRoutes from './backend/routes/sitemapRoutes.js';
+import blogRoutes from './backend/routes/blogRoutes.js';
 
 const app = express();
 
@@ -229,6 +230,7 @@ app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/view-history', viewHistoryRoutes);
 app.use('/api/faq', faqRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/blog', blogRoutes);
 app.use('/api', sitemapRoutes);
 
 // Serve static files

@@ -3,38 +3,45 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../config/axios';
 import { User, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useFormValidation } from '../hooks/useFormValidation';
+import FormField from '../components/FormField';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError('');
-  };
+  const {
+    values: formData,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validate,
+  } = useFormValidation(
+    {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    {
+      name: ['required', { type: 'minLength', value: 2, message: 'Le nom doit contenir au moins 2 caractères' }],
+      email: ['required', 'email'],
+      password: ['required', { type: 'minLength', value: 6, message: 'Le mot de passe doit contenir au moins 6 caractères' }],
+      confirmPassword: [
+        'required',
+        (value) => formData.password !== value ? 'Les mots de passe ne correspondent pas' : ''
+      ],
+    }
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setSubmitError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (!validate()) {
       return;
     }
 
@@ -55,7 +62,7 @@ const RegisterPage = () => {
       login(userData);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setSubmitError(err.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
     }
   };
@@ -75,101 +82,77 @@ const RegisterPage = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="register-title">
-          {error && (
+          {submitError && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
               <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-sm">{submitError}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5" aria-labelledby="register-title">
-            <div>
-              <label htmlFor="register-name" className="block text-sm font-semibold text-gray-700 mb-2">
-                Nom complet
-              </label>
-              <div className="relative">
-                <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  id="register-name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="John Doe"
-                  autoComplete="name"
-                  aria-required="true"
-                />
-              </div>
-            </div>
+            <FormField
+              label="Nom complet"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.name}
+              touched={touched.name}
+              placeholder="John Doe"
+              required
+              icon={User}
+              autoComplete="name"
+              helpText="Votre nom complet"
+            />
 
-            <div>
-              <label htmlFor="register-email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Adresse email
-              </label>
-              <div className="relative">
-                <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  id="register-email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  aria-required="true"
-                />
-              </div>
-            </div>
+            <FormField
+              label="Adresse email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.email}
+              touched={touched.email}
+              placeholder="you@example.com"
+              required
+              icon={Mail}
+              autoComplete="email"
+              helpText="Nous ne partagerons jamais votre email"
+            />
 
-            <div>
-              <label htmlFor="register-password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Mot de passe
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="password"
-                  id="register-password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  aria-required="true"
-                  aria-describedby="register-password-help"
-                />
-              </div>
-              <p id="register-password-help" className="text-xs text-gray-500 mt-1">Au moins 6 caractères.</p>
-            </div>
+            <FormField
+              label="Mot de passe"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.password}
+              touched={touched.password}
+              placeholder="••••••••"
+              required
+              icon={Lock}
+              autoComplete="new-password"
+              helpText="Au moins 6 caractères"
+            />
 
-            <div>
-              <label htmlFor="register-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Confirmer le mot de passe
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="password"
-                  id="register-confirm-password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                  aria-required="true"
-                  aria-describedby="register-confirm-help"
-                />
-              </div>
-              <p id="register-confirm-help" className="text-xs text-gray-500 mt-1">Répétez le mot de passe pour confirmation.</p>
-            </div>
+            <FormField
+              label="Confirmer le mot de passe"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.confirmPassword}
+              touched={touched.confirmPassword}
+              placeholder="••••••••"
+              required
+              icon={Lock}
+              autoComplete="new-password"
+              helpText="Répétez le mot de passe pour confirmation"
+            />
 
             <button
               type="submit"

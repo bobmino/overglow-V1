@@ -3,29 +3,42 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../config/axios';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useFormValidation } from '../hooks/useFormValidation';
+import FormField from '../components/FormField';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError('');
-  };
+  const {
+    values: formData,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validate,
+  } = useFormValidation(
+    {
+      email: '',
+      password: ''
+    },
+    {
+      email: ['required', 'email'],
+      password: ['required', { type: 'minLength', value: 6, message: 'Le mot de passe doit contenir au moins 6 caractères' }],
+    }
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
+
+    if (!validate()) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
 
     try {
       const { data } = await api.post('/api/auth/login', formData);
@@ -37,21 +50,6 @@ const LoginPage = () => {
       login(userData);
       navigate('/');
     } catch (err) {
-      // Log full error details for debugging
-      console.error('Login error details:', {
-        response: err.response,
-        data: err.response?.data,
-        status: err.response?.status,
-        message: err.message,
-        fullError: err
-      });
-      
-      // Log the data object separately to see its full content
-      if (err.response?.data) {
-        console.error('Error response data:', JSON.stringify(err.response.data, null, 2));
-      }
-      
-      // Try to get detailed error message
       const errorData = err.response?.data;
       let errorMessage = 'Login failed. Please try again.';
       
@@ -63,17 +61,9 @@ const LoginPage = () => {
         } else if (typeof errorData === 'string') {
           errorMessage = errorData;
         }
-        
-        // If we have error details, append them for debugging
-        if (errorData.errorType || errorData.errorCode) {
-          console.error('Error type:', errorData.errorType, 'Code:', errorData.errorCode);
-          if (errorData.stack) {
-            console.error('Error stack:', errorData.stack);
-          }
-        }
       }
       
-      setError(errorMessage);
+      setSubmitError(errorMessage);
       setLoading(false);
     }
   };
@@ -87,59 +77,45 @@ const LoginPage = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="login-title">
-          {error && (
+          {submitError && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
               <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-sm">{submitError}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email address
-              </label>
-              <div className="relative">
-                <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  id="login-email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  aria-required="true"
-                  aria-describedby="login-email-help"
-                />
-              </div>
-              <p id="login-email-help" className="text-xs text-gray-500 mt-1">Enter the email you used to register.</p>
-            </div>
+            <FormField
+              label="Email address"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.email}
+              touched={touched.email}
+              placeholder="you@example.com"
+              required
+              icon={Mail}
+              autoComplete="email"
+              helpText="Enter the email you used to register"
+            />
 
-            <div>
-              <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="password"
-                  id="login-password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  aria-required="true"
-                  aria-describedby="login-password-help"
-                />
-              </div>
-              <p id="login-password-help" className="text-xs text-gray-500 mt-1">At least 8 characters.</p>
-            </div>
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.password}
+              touched={touched.password}
+              placeholder="••••••••"
+              required
+              icon={Lock}
+              autoComplete="current-password"
+              helpText="At least 6 characters"
+            />
 
             <button
               type="submit"

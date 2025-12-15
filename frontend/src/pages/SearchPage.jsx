@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import AdvancedFilters from '../components/AdvancedFilters';
+import SearchSuggestions from '../components/SearchSuggestions';
 import { Filter, X, Search, Heart, MapPin } from 'lucide-react';
 
 const SearchPage = () => {
@@ -31,8 +33,10 @@ const SearchPage = () => {
   });
   const [savedSearches, setSavedSearches] = useState([]);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const searchInputRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState(['Marrakech', 'Casablanca', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Meknès', 'Ouarzazate']);
@@ -335,17 +339,43 @@ const SearchPage = () => {
       <div className="mb-6">
         <div className="flex items-center space-x-2 mb-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" size={20} />
             <input
+              ref={searchInputRef}
               type="text"
               id="search-query"
               name="search-query"
               placeholder="Rechercher des expériences, destinations..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => {
+                // Delay hiding suggestions to allow clicks
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
               className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               aria-label="Rechercher des expériences, destinations"
+              aria-autocomplete="list"
+              aria-expanded={showSuggestions}
             />
+            {showSuggestions && (
+              <SearchSuggestions
+                searchQuery={searchQuery}
+                onSelect={(suggestion) => {
+                  setSearchQuery(suggestion);
+                  setShowSuggestions(false);
+                  searchInputRef.current?.blur();
+                }}
+                onClear={() => {
+                  setSearchQuery('');
+                  setShowSuggestions(false);
+                }}
+                showSuggestions={showSuggestions}
+              />
+            )}
           </div>
           <button
             onClick={handleSaveSearch}
