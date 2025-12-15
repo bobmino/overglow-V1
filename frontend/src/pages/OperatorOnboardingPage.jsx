@@ -587,22 +587,24 @@ const OperatorOnboardingPage = () => {
               {/* Step 1: Provider Type */}
               {currentStep === 1 && (
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 id="step-1-title" className="text-3xl font-bold text-gray-900 mb-2">
                     Parlez-nous de votre fonctionnement
                   </h1>
                   <p className="text-gray-600 mb-6">
                     Qu'entendons-nous par cela ?
                   </p>
 
-                  <div className="space-y-4">
-                    <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
+                  <div className="space-y-4" role="radiogroup" aria-labelledby="step-1-title" aria-required="true">
+                    <label htmlFor="provider-type-company" className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
                       <input
                         type="radio"
+                        id="provider-type-company"
                         name="providerType"
                         value="company"
                         checked={formData.providerType === 'company'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
                         className="mt-1 mr-4"
+                        aria-required="true"
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
@@ -614,14 +616,16 @@ const OperatorOnboardingPage = () => {
                       </div>
                     </label>
 
-                    <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
+                    <label htmlFor="provider-type-individual-status" className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
                       <input
                         type="radio"
+                        id="provider-type-individual-status"
                         name="providerType"
                         value="individual_with_status"
                         checked={formData.providerType === 'individual_with_status'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
                         className="mt-1 mr-4"
+                        aria-required="true"
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
@@ -633,14 +637,16 @@ const OperatorOnboardingPage = () => {
                       </div>
                     </label>
 
-                    <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
+                    <label htmlFor="provider-type-individual-no-status" className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-400 transition">
                       <input
                         type="radio"
+                        id="provider-type-individual-no-status"
                         name="providerType"
                         value="individual_without_status"
                         checked={formData.providerType === 'individual_without_status'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
                         className="mt-1 mr-4"
+                        aria-required="true"
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
@@ -667,59 +673,76 @@ const OperatorOnboardingPage = () => {
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label htmlFor="public-name" className="block text-sm font-bold text-gray-700 mb-2">
                         Nom public *
                       </label>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p id="public-name-help" className="text-sm text-gray-600 mb-2">
                         Il s'agit du nom utilisé pour la promotion de vos visites, activités ou expériences (par exemple, « Les randonnées de Paul »).
                       </p>
                       <input
                         type="text"
+                        id="public-name"
+                        name="public-name"
                         value={formData.publicName}
                         onChange={(e) => handleInputChange('publicName', e.target.value)}
                         placeholder="Par exemple : « Les randonnées de Paul »"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        aria-required="true"
+                        aria-describedby="public-name-help"
+                        autoComplete="organization"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label htmlFor="experience-city" className="block text-sm font-bold text-gray-700 mb-2">
                         Où votre expérience se déroule-t-elle ? *
                       </label>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p id="experience-location-help" className="text-sm text-gray-600 mb-2">
                         Si vous proposez plusieurs expériences, indiquez l'endroit où se situe la majorité d'entre elles.
                       </p>
                       <input
                         type="text"
+                        id="experience-city"
+                        name="experience-city"
                         value={formData.experienceLocation?.city || ''}
                         onChange={(e) => handleNestedInputChange('experienceLocation', 'city', e.target.value)}
                         placeholder="Rechercher une municipalité"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        aria-required="true"
+                        aria-describedby="experience-location-help"
+                        autoComplete="address-level2"
                       />
                       <input
                         type="text"
+                        id="experience-address"
+                        name="experience-address"
                         value={formData.experienceLocation?.address || ''}
                         onChange={(e) => handleNestedInputChange('experienceLocation', 'address', e.target.value)}
                         placeholder="Adresse complète (optionnel)"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        autoComplete="street-address"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label htmlFor="experience-description" className="block text-sm font-bold text-gray-700 mb-2">
                         Parlez-nous des expériences que vous proposez *
                       </label>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p id="experience-description-help" className="text-sm text-gray-600 mb-2">
                         Écrivez une brève description des visites, activités ou autres expériences que vous offrez.
                       </p>
                       <textarea
+                        id="experience-description"
+                        name="experience-description"
                         value={formData.experienceDescription}
                         onChange={(e) => handleInputChange('experienceDescription', e.target.value)}
                         rows={6}
                         placeholder="Décrivez vos expériences..."
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        aria-required="true"
+                        aria-describedby="experience-description-help experience-description-count"
                       />
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p id="experience-description-count" className="text-sm text-gray-500 mt-1" aria-live="polite">
                         {formData.experienceDescription.length} caractères (minimum 100 requis)
                       </p>
                     </div>
@@ -740,48 +763,62 @@ const OperatorOnboardingPage = () => {
                   <div className="space-y-4">
                     {formData.publicPhotos.length > 0 && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {formData.publicPhotos.map((photo, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={photo.url}
-                              alt={`Photo ${index + 1}`}
-                              className="w-full h-32 object-cover rounded-lg"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removePhoto(index)}
-                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
-                            >
-                              <X size={16} />
-                            </button>
-                            <input
-                              type="text"
-                              value={photo.caption || ''}
-                              onChange={(e) => {
-                                const newPhotos = [...formData.publicPhotos];
-                                newPhotos[index].caption = e.target.value;
-                                setFormData(prev => ({ ...prev, publicPhotos: newPhotos }));
-                              }}
-                              placeholder="Légende (optionnel)"
-                              className="w-full mt-2 px-2 py-1 text-sm border border-gray-300 rounded"
-                            />
-                          </div>
-                        ))}
+                    {formData.publicPhotos.map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={photo.url}
+                          alt={`Photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ''}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                          aria-label={`Supprimer la photo ${index + 1}`}
+                        >
+                          <X size={16} />
+                        </button>
+                        <label htmlFor={`photo-caption-${index}`} className="sr-only">
+                          Légende pour la photo {index + 1}
+                        </label>
+                        <input
+                          type="text"
+                          id={`photo-caption-${index}`}
+                          name={`photo-caption-${index}`}
+                          value={photo.caption || ''}
+                          onChange={(e) => {
+                            const newPhotos = [...formData.publicPhotos];
+                            newPhotos[index].caption = e.target.value;
+                            setFormData(prev => ({ ...prev, publicPhotos: newPhotos }));
+                          }}
+                          placeholder="Légende (optionnel)"
+                          className="w-full mt-2 px-2 py-1 text-sm border border-gray-300 rounded"
+                          aria-label={`Légende pour la photo ${index + 1}`}
+                        />
+                      </div>
+                    ))}
                       </div>
                     )}
 
-                    <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer hover:border-primary-500 transition">
+                    <label htmlFor="photo-upload" className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer hover:border-primary-500 transition">
                       <Upload size={32} className="text-gray-400 mb-2" />
                       <span className="text-sm text-gray-600">
                         {uploading ? 'Téléchargement...' : 'Ajouter une photo'}
                       </span>
                       <input
                         type="file"
+                        id="photo-upload"
+                        name="photo-upload"
                         className="hidden"
                         onChange={handleImageUpload}
                         accept="image/*"
                         disabled={uploading}
+                        aria-label="Télécharger une photo"
+                        aria-describedby="photo-upload-help"
                       />
+                      <span id="photo-upload-help" className="sr-only">
+                        Format accepté : images (JPG, PNG, etc.). Au moins une photo est requise.
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -876,18 +913,25 @@ const OperatorOnboardingPage = () => {
                   <div className="space-y-4">
                     {formData.experienceTypes.map((type, index) => (
                       <div key={index} className="flex gap-2">
+                        <label htmlFor={`experience-type-${index}`} className="sr-only">
+                          Type d'expérience {index + 1}
+                        </label>
                         <input
                           type="text"
+                          id={`experience-type-${index}`}
+                          name={`experience-type-${index}`}
                           value={type}
                           onChange={(e) => handleArrayChange('experienceTypes', index, e.target.value)}
                           placeholder="Ex: Randonnée, Visite guidée, Activité nautique..."
                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          aria-label={`Type d'expérience ${index + 1}`}
                         />
                         {formData.experienceTypes.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeArrayItem('experienceTypes', index)}
                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            aria-label={`Supprimer le type d'expérience ${index + 1}`}
                           >
                             <X size={20} />
                           </button>
@@ -898,6 +942,7 @@ const OperatorOnboardingPage = () => {
                       type="button"
                       onClick={() => addArrayItem('experienceTypes')}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                      aria-label="Ajouter un nouveau type d'expérience"
                     >
                       + Ajouter un type
                     </button>
@@ -922,33 +967,42 @@ const OperatorOnboardingPage = () => {
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Informations de la société</h2>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-name" className="block text-sm font-bold text-gray-700 mb-2">
                               Nom de la société *
                             </label>
                             <input
                               type="text"
+                              id="company-name"
+                              name="company-name"
                               value={formData.companyInfo?.companyName || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'companyName', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              aria-required="true"
+                              autoComplete="organization"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-registration-number" className="block text-sm font-bold text-gray-700 mb-2">
                               Numéro d'enregistrement (RC/KABIS) *
                             </label>
                             <input
                               type="text"
+                              id="company-registration-number"
+                              name="company-registration-number"
                               value={formData.companyInfo?.registrationNumber || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'registrationNumber', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              aria-required="true"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-registration-type" className="block text-sm font-bold text-gray-700 mb-2">
                               Type d'enregistrement
                             </label>
                             <input
                               type="text"
+                              id="company-registration-type"
+                              name="company-registration-type"
                               value={formData.companyInfo?.registrationType || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'registrationType', e.target.value)}
                               placeholder="RC, KABIS, SIRET..."
@@ -956,22 +1010,27 @@ const OperatorOnboardingPage = () => {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-tax-id" className="block text-sm font-bold text-gray-700 mb-2">
                               Numéro TVA
                             </label>
                             <input
                               type="text"
+                              id="company-tax-id"
+                              name="company-tax-id"
                               value={formData.companyInfo?.taxId || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'taxId', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              autoComplete="off"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-legal-form" className="block text-sm font-bold text-gray-700 mb-2">
                               Forme juridique
                             </label>
                             <input
                               type="text"
+                              id="company-legal-form"
+                              name="company-legal-form"
                               value={formData.companyInfo?.legalForm || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'legalForm', e.target.value)}
                               placeholder="SARL, SAS, SA..."
@@ -979,22 +1038,26 @@ const OperatorOnboardingPage = () => {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-registration-date" className="block text-sm font-bold text-gray-700 mb-2">
                               Date d'enregistrement
                             </label>
                             <input
                               type="date"
+                              id="company-registration-date"
+                              name="company-registration-date"
                               value={formData.companyInfo?.registrationDate || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'registrationDate', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             />
                           </div>
                           <div className="col-span-2">
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="company-registration-authority" className="block text-sm font-bold text-gray-700 mb-2">
                               Autorité d'enregistrement
                             </label>
                             <input
                               type="text"
+                              id="company-registration-authority"
+                              name="company-registration-authority"
                               value={formData.companyInfo?.registrationAuthority || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'registrationAuthority', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -1010,13 +1073,16 @@ const OperatorOnboardingPage = () => {
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Informations de statut</h2>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="individual-status-type" className="block text-sm font-bold text-gray-700 mb-2">
                               Type de statut *
                             </label>
                             <select
+                              id="individual-status-type"
+                              name="individual-status-type"
                               value={formData.individualWithStatusInfo?.statusType || ''}
                               onChange={(e) => handleNestedInputChange('individualWithStatusInfo', 'statusType', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              aria-required="true"
                             >
                               <option value="">Sélectionner...</option>
                               <option value="auto-entrepreneur">Auto-entrepreneur</option>
@@ -1026,38 +1092,44 @@ const OperatorOnboardingPage = () => {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="individual-registration-number" className="block text-sm font-bold text-gray-700 mb-2">
                               Numéro d'enregistrement *
                             </label>
                             <input
                               type="text"
+                              id="individual-registration-number"
+                              name="individual-registration-number"
                               value={formData.individualWithStatusInfo?.registrationNumber || ''}
                               onChange={(e) => handleNestedInputChange('individualWithStatusInfo', 'registrationNumber', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              aria-required="true"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="individual-registration-date" className="block text-sm font-bold text-gray-700 mb-2">
                               Date d'enregistrement
                             </label>
                             <input
                               type="date"
+                              id="individual-registration-date"
+                              name="individual-registration-date"
                               value={formData.individualWithStatusInfo?.registrationDate || ''}
                               onChange={(e) => handleNestedInputChange('individualWithStatusInfo', 'registrationDate', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             />
                           </div>
                           <div>
-                            <label htmlFor="tax-id" className="block text-sm font-bold text-gray-700 mb-2">
+                            <label htmlFor="individual-tax-id" className="block text-sm font-bold text-gray-700 mb-2">
                               Numéro TVA
                             </label>
                             <input
                               type="text"
-                              id="tax-id"
-                              name="tax-id"
+                              id="individual-tax-id"
+                              name="individual-tax-id"
                               value={formData.individualWithStatusInfo?.taxId || ''}
                               onChange={(e) => handleNestedInputChange('individualWithStatusInfo', 'taxId', e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              autoComplete="off"
                             />
                           </div>
                         </div>
@@ -1089,58 +1161,73 @@ const OperatorOnboardingPage = () => {
                       <h2 className="text-xl font-bold text-gray-900 mb-4">Informations bancaires</h2>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="bank-account-holder" className="block text-sm font-bold text-gray-700 mb-2">
                             Nom du titulaire
                           </label>
                           <input
                             type="text"
+                            id="bank-account-holder"
+                            name="bank-account-holder"
                             value={formData.bankInfo?.accountHolderName || ''}
                             onChange={(e) => handleNestedInputChange('bankInfo', 'accountHolderName', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="name"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="bank-name" className="block text-sm font-bold text-gray-700 mb-2">
                             Nom de la banque
                           </label>
                           <input
                             type="text"
+                            id="bank-name"
+                            name="bank-name"
                             value={formData.bankInfo?.bankName || ''}
                             onChange={(e) => handleNestedInputChange('bankInfo', 'bankName', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="organization"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="bank-account-number" className="block text-sm font-bold text-gray-700 mb-2">
                             Numéro de compte
                           </label>
                           <input
                             type="text"
+                            id="bank-account-number"
+                            name="bank-account-number"
                             value={formData.bankInfo?.accountNumber || ''}
                             onChange={(e) => handleNestedInputChange('bankInfo', 'accountNumber', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="bank-iban" className="block text-sm font-bold text-gray-700 mb-2">
                             IBAN
                           </label>
                           <input
                             type="text"
+                            id="bank-iban"
+                            name="bank-iban"
                             value={formData.bankInfo?.iban || ''}
                             onChange={(e) => handleNestedInputChange('bankInfo', 'iban', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="bank-swift" className="block text-sm font-bold text-gray-700 mb-2">
                             SWIFT/BIC
                           </label>
                           <input
                             type="text"
+                            id="bank-swift"
+                            name="bank-swift"
                             value={formData.bankInfo?.swift || ''}
                             onChange={(e) => handleNestedInputChange('bankInfo', 'swift', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="off"
                           />
                         </div>
                       </div>
@@ -1151,36 +1238,45 @@ const OperatorOnboardingPage = () => {
                       <h2 className="text-xl font-bold text-gray-900 mb-4">Contact privé</h2>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="private-phone" className="block text-sm font-bold text-gray-700 mb-2">
                             Téléphone
                           </label>
                           <input
                             type="tel"
+                            id="private-phone"
+                            name="private-phone"
                             value={formData.privateContact?.phone || ''}
                             onChange={(e) => handleNestedInputChange('privateContact', 'phone', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="tel"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="private-email" className="block text-sm font-bold text-gray-700 mb-2">
                             Email
                           </label>
                           <input
                             type="email"
+                            id="private-email"
+                            name="private-email"
                             value={formData.privateContact?.email || ''}
                             onChange={(e) => handleNestedInputChange('privateContact', 'email', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="email"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
+                          <label htmlFor="private-alternate-email" className="block text-sm font-bold text-gray-700 mb-2">
                             Email alternatif
                           </label>
                           <input
                             type="email"
+                            id="private-alternate-email"
+                            name="private-alternate-email"
                             value={formData.privateContact?.alternateEmail || ''}
                             onChange={(e) => handleNestedInputChange('privateContact', 'alternateEmail', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            autoComplete="email"
                           />
                         </div>
                       </div>
@@ -1207,16 +1303,19 @@ const OperatorOnboardingPage = () => {
                             </button>
                           </div>
                         ))}
-                        <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-primary-500 transition">
+                        <label htmlFor="document-upload" className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-primary-500 transition">
                           <Upload size={24} className="text-gray-400 mb-2" />
                           <span className="text-sm text-gray-600">
                             {uploading ? 'Téléchargement...' : 'Ajouter un document'}
                           </span>
                           <input
                             type="file"
+                            id="document-upload"
+                            name="document-upload"
                             className="hidden"
                             onChange={(e) => handleImageUpload(e, true)}
                             disabled={uploading}
+                            aria-label="Télécharger un document"
                           />
                         </label>
                       </div>
@@ -1227,15 +1326,15 @@ const OperatorOnboardingPage = () => {
 
               {/* Error and Success Messages */}
               {error && (
-                <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="text-red-600" size={20} />
+                <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2" role="alert" aria-live="assertive">
+                  <AlertCircle className="text-red-600" size={20} aria-hidden="true" />
                   <p className="text-red-800">{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                  <CheckCircle className="text-green-600" size={20} />
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2" role="status" aria-live="polite">
+                  <CheckCircle className="text-green-600" size={20} aria-hidden="true" />
                   <p className="text-green-800">{success}</p>
                 </div>
               )}

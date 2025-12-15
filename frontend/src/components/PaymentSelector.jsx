@@ -181,8 +181,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'stripe'}
+          aria-label="Paiement par carte bancaire avec Stripe"
         >
-          <CreditCard size={32} className="mb-2 text-blue-600" />
+          <CreditCard size={32} className="mb-2 text-blue-600" aria-hidden="true" />
           <span className="font-semibold">Card (Stripe)</span>
         </button>
 
@@ -193,8 +194,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'paypal'}
+          aria-label="Paiement avec PayPal"
         >
-          <Wallet size={32} className="mb-2 text-blue-800" />
+          <Wallet size={32} className="mb-2 text-blue-800" aria-hidden="true" />
           <span className="font-semibold">PayPal</span>
         </button>
 
@@ -205,8 +207,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cmi'}
+          aria-label="Paiement avec CMI (cartes bancaires marocaines)"
         >
-          <CreditCard size={32} className="mb-2 text-orange-600" />
+          <CreditCard size={32} className="mb-2 text-orange-600" aria-hidden="true" />
           <span className="font-semibold text-sm">CMI</span>
           <span className="text-xs text-gray-600 mt-1">Cartes Marocaines</span>
         </button>
@@ -218,8 +221,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cash_pickup'}
+          aria-label="Paiement en espèces sur place"
         >
-          <Banknote size={32} className="mb-2 text-green-600" />
+          <Banknote size={32} className="mb-2 text-green-600" aria-hidden="true" />
           <span className="font-semibold text-sm">Espèces</span>
           <span className="text-xs text-gray-600 mt-1">Sur place</span>
         </button>
@@ -231,8 +235,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cash_delivery'}
+          aria-label="Paiement à la livraison"
         >
-          <Truck size={32} className="mb-2 text-purple-600" />
+          <Truck size={32} className="mb-2 text-purple-600" aria-hidden="true" />
           <span className="font-semibold text-sm">À la livraison</span>
           <span className="text-xs text-gray-600 mt-1">Paiement à la livraison</span>
         </button>
@@ -244,8 +249,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'bank'}
+          aria-label="Paiement par virement bancaire"
         >
-          <Building size={32} className="mb-2 text-gray-600" />
+          <Building size={32} className="mb-2 text-gray-600" aria-hidden="true" />
           <span className="font-semibold text-sm">Virement</span>
           <span className="text-xs text-gray-600 mt-1">Bancaire</span>
         </button>
@@ -292,6 +298,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
             <button
               onClick={handleCMI}
               className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition"
+              aria-label={`Payer ${madAmount ? madAmount.toFixed(2) + ' MAD' : amount.toFixed(2) + ' euros'} avec CMI`}
             >
               Payer avec CMI
             </button>
@@ -323,6 +330,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
             <button
               onClick={handleCashPickup}
               className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
+              aria-label="Confirmer le paiement en espèces sur place"
             >
               Confirmer - Paiement sur Place
             </button>
@@ -357,8 +365,12 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 required
                 autoComplete="street-address"
-                aria-label="Adresse de livraison"
+                aria-required="true"
+                aria-describedby="delivery-address-help"
               />
+              <p id="delivery-address-help" className="sr-only">
+                Adresse complète où l'agent de livraison viendra collecter le paiement et remettre votre confirmation
+              </p>
             </div>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
               <p className="text-xs text-yellow-800">
@@ -369,6 +381,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               onClick={handleCashDelivery}
               disabled={!deliveryAddress.trim()}
               className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              aria-label="Confirmer le paiement à la livraison"
             >
               Confirmer - Paiement à la Livraison
             </button>

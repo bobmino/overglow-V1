@@ -160,18 +160,20 @@ const WithdrawalsPage = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Nouvelle demande de retrait</h3>
               
               {error && (
-                <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4">
+                <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4" role="alert" aria-live="assertive">
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" aria-label="Formulaire de demande de retrait">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="withdrawal-amount" className="block text-sm font-medium text-gray-700 mb-2">
                     Montant (max: €{balance.availableBalance.toFixed(2)})
                   </label>
                   <input
                     type="number"
+                    id="withdrawal-amount"
+                    name="withdrawal-amount"
                     step="0.01"
                     min="0.01"
                     max={balance.availableBalance}
@@ -179,16 +181,23 @@ const WithdrawalsPage = () => {
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     required
+                    aria-required="true"
+                    aria-label="Montant à retirer"
+                    autoComplete="off"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Méthode de paiement</label>
+                  <label htmlFor="withdrawal-payment-method" className="block text-sm font-medium text-gray-700 mb-2">Méthode de paiement</label>
                   <select
+                    id="withdrawal-payment-method"
+                    name="withdrawal-payment-method"
                     value={formData.paymentMethod}
                     onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     required
+                    aria-required="true"
+                    aria-label="Méthode de paiement"
                   >
                     <option value="bank_transfer">Virement bancaire</option>
                     <option value="paypal">PayPal</option>
@@ -199,23 +208,33 @@ const WithdrawalsPage = () => {
                 {formData.paymentMethod === 'bank_transfer' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Numéro de compte</label>
+                      <label htmlFor="withdrawal-account-number" className="block text-sm font-medium text-gray-700 mb-2">Numéro de compte</label>
                       <input
                         type="text"
+                        id="withdrawal-account-number"
+                        name="withdrawal-account-number"
                         value={formData.accountNumber}
                         onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                         required
+                        aria-required="true"
+                        aria-label="Numéro de compte bancaire"
+                        autoComplete="off"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Nom de la banque</label>
+                      <label htmlFor="withdrawal-bank-name" className="block text-sm font-medium text-gray-700 mb-2">Nom de la banque</label>
                       <input
                         type="text"
+                        id="withdrawal-bank-name"
+                        name="withdrawal-bank-name"
                         value={formData.bankName}
                         onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                         required
+                        aria-required="true"
+                        aria-label="Nom de la banque"
+                        autoComplete="organization"
                       />
                     </div>
                   </>
@@ -223,13 +242,18 @@ const WithdrawalsPage = () => {
 
                 {formData.paymentMethod === 'paypal' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email PayPal</label>
+                    <label htmlFor="withdrawal-paypal-email" className="block text-sm font-medium text-gray-700 mb-2">Email PayPal</label>
                     <input
                       type="email"
+                      id="withdrawal-paypal-email"
+                      name="withdrawal-paypal-email"
                       value={formData.paypalEmail}
                       onChange={(e) => setFormData({ ...formData, paypalEmail: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                       required
+                      aria-required="true"
+                      aria-label="Adresse email PayPal"
+                      autoComplete="email"
                     />
                   </div>
                 )}
@@ -239,6 +263,7 @@ const WithdrawalsPage = () => {
                     type="submit"
                     disabled={submitting}
                     className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
+                    aria-label={submitting ? 'Envoi de la demande en cours' : 'Envoyer la demande de retrait'}
                   >
                     {submitting ? 'Envoi...' : 'Envoyer la demande'}
                   </button>
@@ -249,6 +274,7 @@ const WithdrawalsPage = () => {
                       setError('');
                     }}
                     className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition"
+                    aria-label="Annuler la demande de retrait"
                   >
                     Annuler
                   </button>

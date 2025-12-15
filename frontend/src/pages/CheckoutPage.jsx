@@ -65,14 +65,14 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Complete your booking</h1>
+          <h1 id="checkout-title" className="text-3xl font-bold text-gray-900 mb-8">Complete your booking</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Booking Summary */}
             <div className="lg:col-span-2 space-y-6">
               {/* Product Info */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h2 className="text-xl font-bold mb-4">Booking Details</h2>
+              <section className="bg-white rounded-xl border border-gray-200 p-6" aria-labelledby="booking-details-heading">
+                <h2 id="booking-details-heading" className="text-xl font-bold mb-4">Booking Details</h2>
                 <div className="flex gap-4">
                   <img 
                     src={product.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'} 
@@ -106,17 +106,17 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
 
               {/* Payment Selection */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <CreditCard size={24} className="mr-2" />
+              <section className="bg-white rounded-xl border border-gray-200 p-6" aria-labelledby="payment-heading">
+                <h2 id="payment-heading" className="text-xl font-bold mb-4 flex items-center">
+                  <CreditCard size={24} className="mr-2" aria-hidden="true" />
                   Payment Information
                 </h2>
                 
                 {error && (
-                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700" role="alert" aria-live="assertive">
                     {error}
                   </div>
                 )}
@@ -126,13 +126,13 @@ const CheckoutPage = () => {
                   onPaymentComplete={handlePaymentComplete}
                   bookingId={bookingId}
                 />
-              </div>
+              </section>
             </div>
 
             {/* Price Summary */}
-            <div className="lg:col-span-1">
+            <aside className="lg:col-span-1" aria-labelledby="price-summary-heading">
               <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
-                <h2 className="text-xl font-bold mb-4">Price Summary</h2>
+                <h2 id="price-summary-heading" className="text-xl font-bold mb-4">Price Summary</h2>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-gray-700">
@@ -152,11 +152,11 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-4">
+                <p className="text-xs text-gray-500 mt-4" aria-live="polite">
                   Free cancellation up to 24 hours before the experience starts
                 </p>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </div>
