@@ -54,27 +54,33 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" aria-label="Paiement par carte">
       <div className="p-4 border border-gray-300 rounded-lg">
-        <CardElement options={{
-          style: {
-            base: {
-              fontSize: '16px',
-              color: '#424770',
-              '::placeholder': {
-                color: '#aab7c4',
+        <p className="text-sm font-semibold text-gray-700 mb-2" id="card-element-label">
+          Détails de la carte
+        </p>
+        <CardElement
+          options={{
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                  color: '#aab7c4',
+                },
+              },
+              invalid: {
+                color: '#9e2146',
               },
             },
-            invalid: {
-              color: '#9e2146',
-            },
-          },
-        }} />
+          }}
+        />
       </div>
       <button
         type="submit"
         disabled={!stripe || processing}
         className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400"
+        aria-label={processing ? 'Paiement en cours' : `Payer ${amount.toFixed(2)} euros`}
       >
         {processing ? 'Processing...' : `Pay €${amount.toFixed(2)}`}
       </button>
@@ -167,12 +173,14 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         )}
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Choisir une méthode de paiement">
         <button
           onClick={() => setMethod('stripe')}
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'stripe' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
           }`}
+          role="radio"
+          aria-checked={method === 'stripe'}
         >
           <CreditCard size={32} className="mb-2 text-blue-600" />
           <span className="font-semibold">Card (Stripe)</span>
@@ -183,6 +191,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'paypal' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
           }`}
+          role="radio"
+          aria-checked={method === 'paypal'}
         >
           <Wallet size={32} className="mb-2 text-blue-800" />
           <span className="font-semibold">PayPal</span>
@@ -193,6 +203,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'cmi' ? 'border-orange-600 bg-orange-50' : 'border-gray-200 hover:border-orange-300'
           }`}
+          role="radio"
+          aria-checked={method === 'cmi'}
         >
           <CreditCard size={32} className="mb-2 text-orange-600" />
           <span className="font-semibold text-sm">CMI</span>
@@ -204,6 +216,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'cash_pickup' ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:border-green-300'
           }`}
+          role="radio"
+          aria-checked={method === 'cash_pickup'}
         >
           <Banknote size={32} className="mb-2 text-green-600" />
           <span className="font-semibold text-sm">Espèces</span>
@@ -215,6 +229,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'cash_delivery' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
           }`}
+          role="radio"
+          aria-checked={method === 'cash_delivery'}
         >
           <Truck size={32} className="mb-2 text-purple-600" />
           <span className="font-semibold text-sm">À la livraison</span>
@@ -226,6 +242,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
             method === 'bank' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
           }`}
+          role="radio"
+          aria-checked={method === 'bank'}
         >
           <Building size={32} className="mb-2 text-gray-600" />
           <span className="font-semibold text-sm">Virement</span>
@@ -234,7 +252,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm" role="alert" aria-live="assertive">
           {error}
         </div>
       )}
@@ -247,7 +265,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         )}
 
         {method === 'paypal' && (
-          <div className="text-center p-6 bg-gray-50 rounded-xl">
+          <div className="text-center p-6 bg-gray-50 rounded-xl" role="form" aria-label="Paiement PayPal (simulation)">
             <p className="mb-4 text-gray-600">You will be redirected to PayPal to complete your payment.</p>
             <button
               onClick={() => handleSuccess({ type: 'paypal', id: 'mock_paypal_id' })}
@@ -259,7 +277,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         )}
 
         {method === 'cmi' && (
-          <div className="text-center p-6 bg-orange-50 rounded-xl border border-orange-200">
+          <div className="text-center p-6 bg-orange-50 rounded-xl border border-orange-200" role="form" aria-label="Paiement CMI (simulation)">
             <div className="mb-4">
               <p className="text-gray-700 font-semibold mb-2">Paiement sécurisé CMI</p>
               <p className="text-sm text-gray-600 mb-3">
@@ -284,7 +302,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         )}
 
         {method === 'cash_pickup' && (
-          <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+          <div className="bg-green-50 rounded-xl p-6 border border-green-200" role="form" aria-label="Paiement en espèces sur place">
             <div className="mb-4">
               <h4 className="font-bold text-gray-900 mb-2">Paiement en Espèces sur Place</h4>
               <p className="text-sm text-gray-700 mb-3">
@@ -312,7 +330,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         )}
 
         {method === 'cash_delivery' && (
-          <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+          <div className="bg-purple-50 rounded-xl p-6 border border-purple-200" role="form" aria-label="Paiement à la livraison">
             <div className="mb-4">
               <h4 className="font-bold text-gray-900 mb-2">Paiement à la Livraison</h4>
               <p className="text-sm text-gray-700 mb-3">

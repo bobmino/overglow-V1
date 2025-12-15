@@ -69,7 +69,7 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="register-title">
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
               <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
@@ -77,7 +77,7 @@ const RegisterPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" aria-labelledby="register-title">
             <div>
               <label htmlFor="register-name" className="block text-sm font-semibold text-gray-700 mb-2">
                 Nom complet
@@ -94,6 +94,7 @@ const RegisterPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="John Doe"
                   autoComplete="name"
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -114,6 +115,7 @@ const RegisterPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="you@example.com"
                   autoComplete="email"
+                  aria-required="true"
                 />
               </div>
             </div>
@@ -134,8 +136,11 @@ const RegisterPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  aria-required="true"
+                  aria-describedby="register-password-help"
                 />
               </div>
+              <p id="register-password-help" className="text-xs text-gray-500 mt-1">Au moins 6 caractères.</p>
             </div>
 
             <div>
@@ -154,8 +159,11 @@ const RegisterPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  aria-required="true"
+                  aria-describedby="register-confirm-help"
                 />
               </div>
+              <p id="register-confirm-help" className="text-xs text-gray-500 mt-1">Répétez le mot de passe pour confirmation.</p>
             </div>
 
             <button
