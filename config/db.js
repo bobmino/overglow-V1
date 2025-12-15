@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
+import { createIndexes } from "../backend/utils/dbIndexes.js";
 
 const connectDB = async () => {
   try {
     // Check if already connected
     if (mongoose.connection.readyState === 1) {
       console.log('MongoDB already connected');
+      // Create indexes if not already done
+      await createIndexes();
       return;
     }
 
@@ -23,6 +26,9 @@ const connectDB = async () => {
       socketTimeoutMS: 45000,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Create indexes after connection
+    await createIndexes();
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
     // Don't exit on Vercel, allow serverless function to start

@@ -55,8 +55,11 @@ const SearchPage = () => {
         }
         
         // Extract unique cities from products
-        if (Array.isArray(productsRes.data)) {
-          const uniqueCities = [...new Set(productsRes.data.map(p => p.city).filter(Boolean))];
+        const productsData = Array.isArray(productsRes.data) 
+          ? productsRes.data 
+          : (productsRes.data?.products || []);
+        if (Array.isArray(productsData)) {
+          const uniqueCities = [...new Set(productsData.map(p => p.city).filter(Boolean))];
           if (uniqueCities.length > 0) {
             setCities(prev => [...new Set([...prev, ...uniqueCities])]);
           }
@@ -150,10 +153,13 @@ const SearchPage = () => {
           const params = new URLSearchParams();
           if (selectedCity) params.append('city', selectedCity);
           const { data } = await api.get(`/api/products?${params.toString()}`);
-          const productsArray = Array.isArray(data) ? data : [];
+          // Handle both old format (array) and new format (object with pagination)
+          const productsArray = Array.isArray(data) ? data : (data?.products || []);
+          const pagination = data?.pagination || { page: 1, totalPages: 1, total: productsArray.length };
           setProducts(productsArray);
           setFilteredProducts(productsArray);
-          setTotalPages(1);
+          setPage(pagination.page || 1);
+          setTotalPages(pagination.totalPages || 1);
         }
         setLoading(false);
       } catch (err) {
@@ -312,8 +318,19 @@ const SearchPage = () => {
 
   const activeFiltersCount = (Array.isArray(selectedCategories) ? selectedCategories.length : 0) + (selectedCity ? 1 : 0) + (priceRange.min || priceRange.max ? 1 : 0);
 
+  const searchTitle = searchQuery || selectedCity || selectedCategories.length > 0 
+    ? `Recherche: ${searchQuery || selectedCity || selectedCategories.join(', ')} | Overglow Trip`
+    : 'Rechercher des expériences au Maroc | Overglow Trip';
+
   return (
     <div className="container mx-auto px-4 py-8 pt-20 md:pt-24">
+      <Helmet>
+        <title>{searchTitle}</title>
+        <meta name="description" content="Recherchez et découvrez les meilleures expériences authentiques au Maroc" />
+        <meta property="og:title" content={searchTitle} />
+        <meta property="og:description" content="Recherchez et découvrez les meilleures expériences authentiques au Maroc" />
+        <link rel="canonical" href={window.location.href} />
+      </Helmet>
       {/* Search Bar */}
       <div className="mb-6">
         <div className="flex items-center space-x-2 mb-4">

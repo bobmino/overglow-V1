@@ -1,5 +1,6 @@
 import path from 'path';
 import multer from 'multer';
+import { compressImage } from '../utils/imageCompression.js';
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
@@ -12,6 +13,44 @@ const storage = multer.diskStorage({
     );
   },
 });
+
+// Post-processing: compress images after upload
+const compressAfterUpload = async (req, res, next) => {
+  if (req.files) {
+    // Multiple files
+    for (const file of req.files) {
+      try {
+        const compressedPath = await compressImage(file.path, {
+          quality: 85,
+          maxWidth: 1920,
+          maxHeight: 1080,
+          format: 'webp',
+        });
+        file.path = compressedPath;
+        file.compressed = true;
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        // Continue with original file if compression fails
+      }
+    }
+  } else if (req.file) {
+    // Single file
+    try {
+      const compressedPath = await compressImage(req.file.path, {
+        quality: 85,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        format: 'webp',
+      });
+      req.file.path = compressedPath;
+      req.file.compressed = true;
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      // Continue with original file if compression fails
+    }
+  }
+  next();
+};
 
 // Allowed MIME types (strict validation)
 const allowedMimeTypes = [
@@ -63,4 +102,6 @@ const upload = multer({
   },
 });
 
+// Export upload middleware and compression middleware
+export { compressAfterUpload };
 export default upload;

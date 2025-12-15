@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
+import { useCurrency } from '../context/CurrencyContext';
 import api from '../config/axios';
 
 const BookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { product, date, timeSlot, tickets } = location.state || {};
+  const { formatPrice } = useCurrency();
+  const { product, date, timeSlot, tickets, skipTheLine } = location.state || {};
   
   const [loading, setLoading] = useState(true);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -17,6 +19,17 @@ const BookingPage = () => {
     email: '',
     phone: ''
   });
+
+  // Calculate total price with skip-the-line
+  const totalPrice = useMemo(() => {
+    if (!selectedSlot || !tickets) return 0;
+    const basePrice = Number(selectedSlot.price) || 0;
+    const baseTotal = basePrice * tickets;
+    const skipTheLinePrice = (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice) 
+      ? Number(product.skipTheLine.additionalPrice) * tickets 
+      : 0;
+    return baseTotal + skipTheLinePrice;
+  }, [selectedSlot, tickets, product]);
 
   useEffect(() => {
     if (!product || !date || !timeSlot) {
@@ -95,7 +108,8 @@ const BookingPage = () => {
         numberOfTickets: tickets,
         travelerDetails,
         date,
-        timeSlot
+        timeSlot,
+        skipTheLine: product?.skipTheLine || null
       }
     });
   };
@@ -156,7 +170,7 @@ const BookingPage = () => {
                           {new Date(slot.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="text-sm font-medium text-primary-700 mt-2">
-                          €{slot.price.toFixed(2)}
+                          {formatPrice(slot.price, 'EUR')}
                         </div>
                       </button>
                     ))}
@@ -266,12 +280,31 @@ const BookingPage = () => {
                 </div>
 
                 <div className="border-t border-slate-100 pt-4 mb-6">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-900">Total</span>
-                    <span className="font-bold text-xl text-primary-700">
-                      €{selectedSlot ? (selectedSlot.price * tickets).toFixed(2) : '---'}
-                    </span>
-                  </div>
+                  {selectedSlot && (
+                    <>
+                      <div className="space-y-2 mb-3">
+                        <div className="flex justify-between text-sm text-slate-600">
+                          <span>{formatPrice(selectedSlot.price, 'EUR')} × {tickets} ticket{tickets > 1 ? 's' : ''}</span>
+                          <span>{formatPrice(selectedSlot.price * tickets, 'EUR')}</span>
+                        </div>
+                        {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
+                          <div className="flex justify-between text-sm text-slate-600">
+                            <span className="flex items-center gap-1">
+                              <span>⚡</span>
+                              Skip-the-Line ({product.skipTheLine.type})
+                            </span>
+                            <span>{formatPrice(product.skipTheLine.additionalPrice * tickets, 'EUR')}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                        <span className="font-bold text-slate-900">Total</span>
+                        <span className="font-bold text-xl text-primary-700">
+                          {formatPrice(totalPrice, 'EUR')}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <button

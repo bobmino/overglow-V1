@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 
+// Critical components (loaded immediately)
 import Hero from './components/Hero';
 import Features from './components/Features';
 import TopDestinations from './components/TopDestinations';
@@ -11,48 +12,59 @@ import TopAttractions from './components/TopAttractions';
 import TopTours from './components/TopTours';
 import WarmDestinations from './components/WarmDestinations';
 import AuthCTA from './components/AuthCTA';
-import SearchPage from './pages/SearchPage';
-import DestinationPage from './pages/DestinationPage';
-import CategoryPage from './pages/CategoryPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import CheckoutPage from './pages/CheckoutPage';
-import BookingPage from './pages/BookingPage';
-import BookingSuccessPage from './pages/BookingSuccessPage';
-import OperatorDashboardPage from './pages/OperatorDashboardPage';
-import OperatorProductsPage from './pages/OperatorProductsPage';
-import OperatorBookingsPage from './pages/OperatorBookingsPage';
-import OperatorProductFormPage from './pages/OperatorProductFormPage';
-import OperatorWizardPage from './pages/OperatorWizardPage';
-import OperatorOnboardingPage from './pages/OperatorOnboardingPage';
-import AffiliatePage from './pages/AffiliatePage';
-import ProfilePage from './pages/ProfilePage';
-import HelpPage from './pages/HelpPage';
-import PrivacyPage from './pages/PrivacyPage';
-import AboutPage from './pages/AboutPage';
-import BlogPage from './pages/BlogPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import InquiriesPage from './pages/InquiriesPage';
-import MyInquiriesPage from './pages/MyInquiriesPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminOperatorsPage from './pages/AdminOperatorsPage';
-import AdminProductsPage from './pages/AdminProductsPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AdminSettingsPage from './pages/AdminSettingsPage';
-import AdminBadgeManagementPage from './pages/AdminBadgeManagementPage';
-import NotificationsPage from './pages/NotificationsPage';
-import WithdrawalsPage from './pages/WithdrawalsPage';
-import AdminWithdrawalsPage from './pages/AdminWithdrawalsPage';
-import ApprovalRequestsPage from './pages/ApprovalRequestsPage';
-import AdminBadgeRequestsPage from './pages/AdminBadgeRequestsPage';
-import FavoritesPage from './pages/FavoritesPage';
-import LoyaltyPage from './pages/LoyaltyPage';
-import ViewHistoryPage from './pages/ViewHistoryPage';
 import RecommendedProducts from './components/RecommendedProducts';
 import PrivateRoute from './components/PrivateRoute';
 import OperatorRoute from './components/OperatorRoute';
+
+// Critical pages (loaded immediately)
+import SearchPage from './pages/SearchPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+
+// Lazy loaded pages (loaded on demand)
+const DestinationPage = lazy(() => import('./pages/DestinationPage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
+const BookingSuccessPage = lazy(() => import('./pages/BookingSuccessPage'));
+const OperatorDashboardPage = lazy(() => import('./pages/OperatorDashboardPage'));
+const OperatorProductsPage = lazy(() => import('./pages/OperatorProductsPage'));
+const OperatorBookingsPage = lazy(() => import('./pages/OperatorBookingsPage'));
+const OperatorProductFormPage = lazy(() => import('./pages/OperatorProductFormPage'));
+const OperatorWizardPage = lazy(() => import('./pages/OperatorWizardPage'));
+const OperatorOnboardingPage = lazy(() => import('./pages/OperatorOnboardingPage'));
+const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const InquiriesPage = lazy(() => import('./pages/InquiriesPage'));
+const MyInquiriesPage = lazy(() => import('./pages/MyInquiriesPage'));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const AdminOperatorsPage = lazy(() => import('./pages/AdminOperatorsPage'));
+const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'));
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
+const AdminBadgeManagementPage = lazy(() => import('./pages/AdminBadgeManagementPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const WithdrawalsPage = lazy(() => import('./pages/WithdrawalsPage'));
+const AdminWithdrawalsPage = lazy(() => import('./pages/AdminWithdrawalsPage'));
+const ApprovalRequestsPage = lazy(() => import('./pages/ApprovalRequestsPage'));
+const AdminBadgeRequestsPage = lazy(() => import('./pages/AdminBadgeRequestsPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
+const ViewHistoryPage = lazy(() => import('./pages/ViewHistoryPage'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+  </div>
+);
 
 function App() {
   return (
@@ -74,138 +86,202 @@ function App() {
             </>
           } />
           <Route path="search" element={<SearchPage />} />
-          <Route path="destinations/:city" element={<DestinationPage />} />
-          <Route path="categories/:category" element={<CategoryPage />} />
+          <Route path="destinations/:city" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <DestinationPage />
+            </Suspense>
+          } />
+          <Route path="categories/:category" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CategoryPage />
+            </Suspense>
+          } />
           <Route path="products/:id" element={<ProductDetailPage />} />
-          <Route path="booking" element={<BookingPage />} />
+          <Route path="booking" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <BookingPage />
+            </Suspense>
+          } />
           <Route path="dashboard" element={
             <PrivateRoute>
-              <DashboardPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <DashboardPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="profile" element={
             <PrivateRoute>
-              <ProfilePage />
+              <Suspense fallback={<LoadingFallback />}>
+                <ProfilePage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="favorites" element={
             <PrivateRoute>
-              <FavoritesPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <FavoritesPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="loyalty" element={
             <PrivateRoute>
-              <LoyaltyPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <LoyaltyPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="view-history" element={
             <PrivateRoute>
-              <ViewHistoryPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <ViewHistoryPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="dashboard/inquiries" element={
             <PrivateRoute>
-              <MyInquiriesPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <MyInquiriesPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="operator/wizard" element={
             <PrivateRoute>
-              <OperatorWizardPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorWizardPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="operator/onboarding" element={
             <PrivateRoute>
-              <OperatorOnboardingPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorOnboardingPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="operator/dashboard" element={
             <OperatorRoute>
-              <OperatorDashboardPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorDashboardPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/products" element={
             <OperatorRoute>
-              <OperatorProductsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorProductsPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/products/new" element={
             <OperatorRoute>
-              <OperatorProductFormPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorProductFormPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/products/:id/edit" element={
             <OperatorRoute>
-              <OperatorProductFormPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorProductFormPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/bookings" element={
             <OperatorRoute>
-              <OperatorBookingsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorBookingsPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/analytics" element={
             <OperatorRoute>
-              <AnalyticsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AnalyticsPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="operator/inquiries" element={
             <OperatorRoute>
-              <InquiriesPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <InquiriesPage />
+              </Suspense>
             </OperatorRoute>
           } />
           <Route path="admin/dashboard" element={
             <PrivateRoute>
-              <AdminDashboardPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminDashboardPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/operators" element={
             <PrivateRoute>
-              <AdminOperatorsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminOperatorsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/products" element={
             <PrivateRoute>
-              <AdminProductsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminProductsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/users" element={
             <PrivateRoute>
-              <AdminUsersPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminUsersPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/settings" element={
             <PrivateRoute>
-              <AdminSettingsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminSettingsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/badges" element={
             <PrivateRoute>
-              <AdminBadgeManagementPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBadgeManagementPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="notifications" element={
             <PrivateRoute>
-              <NotificationsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <NotificationsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="operator/withdrawals" element={
             <PrivateRoute>
-              <WithdrawalsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <WithdrawalsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/withdrawals" element={
             <PrivateRoute>
-              <AdminWithdrawalsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminWithdrawalsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/approval-requests" element={
             <PrivateRoute>
-              <ApprovalRequestsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <ApprovalRequestsPage />
+              </Suspense>
             </PrivateRoute>
           } />
           <Route path="admin/badge-requests" element={
             <PrivateRoute>
-              <AdminBadgeRequestsPage />
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBadgeRequestsPage />
+              </Suspense>
             </PrivateRoute>
           } />
         </Route>
@@ -213,25 +289,57 @@ function App() {
         {/* Checkout routes without layout */}
         <Route path="checkout" element={
           <PrivateRoute>
-            <CheckoutPage />
+            <Suspense fallback={<LoadingFallback />}>
+              <CheckoutPage />
+            </Suspense>
           </PrivateRoute>
         } />
         <Route path="booking-success" element={
           <PrivateRoute>
-            <BookingSuccessPage />
+            <Suspense fallback={<LoadingFallback />}>
+              <BookingSuccessPage />
+            </Suspense>
           </PrivateRoute>
         } />
         
         {/* Auth routes without layout */}
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
-          <Route path="affiliate" element={<AffiliatePage />} />
-          <Route path="help" element={<HelpPage />} />
-          <Route path="privacy" element={<PrivacyPage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="blog" element={<BlogPage />} />
-          <Route path="terms" element={<PrivacyPage />} />
-          <Route path="contact" element={<HelpPage />} />
+          <Route path="affiliate" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AffiliatePage />
+            </Suspense>
+          } />
+          <Route path="help" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HelpPage />
+            </Suspense>
+          } />
+          <Route path="privacy" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PrivacyPage />
+            </Suspense>
+          } />
+          <Route path="about" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AboutPage />
+            </Suspense>
+          } />
+          <Route path="blog" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <BlogPage />
+            </Suspense>
+          } />
+          <Route path="terms" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PrivacyPage />
+            </Suspense>
+          } />
+          <Route path="contact" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HelpPage />
+            </Suspense>
+          } />
         <Route path="operator/register" element={<RegisterPage />} />
       </Routes>
     </Router>

@@ -18,4 +18,22 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['lucide-react'],
+          'utils-vendor': ['axios'],
+          // Feature chunks
+          'auth': ['./src/context/AuthContext', './src/pages/LoginPage', './src/pages/RegisterPage'],
+          'booking': ['./src/pages/BookingPage', './src/pages/CheckoutPage', './src/components/PaymentSelector'],
+          'admin': ['./src/pages/AdminDashboardPage', './src/pages/AdminProductsPage', './src/pages/AdminOperatorsPage'],
+          'operator': ['./src/pages/OperatorDashboardPage', './src/pages/OperatorProductsPage', './src/pages/OperatorBookingsPage'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // 1MB
+  },
 })

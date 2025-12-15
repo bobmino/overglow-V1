@@ -22,6 +22,8 @@
     "mongoose": "^8.0.3",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.11",
+    "react-helmet-async": "^2.0.5",
+    "sharp": "^0.34.5",
     "stripe": "^20.0.0"
   },
   "devDependencies": {

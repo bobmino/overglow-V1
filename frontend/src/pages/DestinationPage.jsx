@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { MapPin, Star, Filter } from 'lucide-react';
@@ -87,6 +88,16 @@ const DestinationPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>Expériences à {info.name} | Overglow Trip</title>
+        <meta name="description" content={info.description} />
+        <meta property="og:title" content={`Expériences à ${info.name} | Overglow Trip`} />
+        <meta property="og:description" content={info.description} />
+        <meta property="og:image" content={info.image} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={window.location.href} />
+      </Helmet>
       {/* Hero Section */}
       <div className="relative h-64 md:h-96 overflow-hidden">
         <img 

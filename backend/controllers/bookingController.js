@@ -30,7 +30,7 @@ const createBooking = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { scheduleId, numberOfTickets, paymentIntentId } = req.body;
+  const { scheduleId, numberOfTickets, paymentIntentId, skipTheLineEnabled, skipTheLinePrice } = req.body;
 
   const schedule = await Schedule.findById(scheduleId).populate('product');
   if (!schedule) {
@@ -44,7 +44,11 @@ const createBooking = async (req, res) => {
   }
 
   const ticketPrice = Number(schedule.price) || 0;
-  const totalAmount = ticketPrice * Number(numberOfTickets);
+  const baseTotal = ticketPrice * Number(numberOfTickets);
+  
+  // Add skip-the-line price if enabled
+  const skipTheLineAmount = (skipTheLineEnabled && skipTheLinePrice) ? Number(skipTheLinePrice) : 0;
+  const totalAmount = baseTotal + skipTheLineAmount;
 
   const booking = new Booking({
     user: req.user._id,

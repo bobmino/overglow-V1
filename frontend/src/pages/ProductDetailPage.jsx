@@ -16,6 +16,7 @@ import BadgeDisplay from '../components/BadgeDisplay';
 import CancellationPolicy from '../components/CancellationPolicy';
 import FavoriteButton from '../components/FavoriteButton';
 import OthersAlsoBooked from '../components/OthersAlsoBooked';
+import ShareButtons from '../components/ShareButtons';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -219,7 +220,8 @@ const ProductDetailPage = () => {
         product,
         date: selectedDate,
         timeSlot: selectedTimeSlot,
-        tickets: numberOfTickets
+        tickets: numberOfTickets,
+        skipTheLine: product?.skipTheLine || null
       }
     });
   };
@@ -313,6 +315,20 @@ const ProductDetailPage = () => {
 
   return (
     <div className="bg-slate-50">
+      <Helmet>
+        <title>{product?.title || 'Produit'} - {product?.city || 'Maroc'} | Overglow Trip</title>
+        <meta name="description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
+        <meta property="og:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'} | Overglow Trip`} />
+        <meta property="og:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
+        <meta property="og:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="product" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'}`} />
+        <meta name="twitter:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
+        <meta name="twitter:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
+        <link rel="canonical" href={window.location.href} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8 pt-24">
         {/* Breadcrumb */}
         <nav className="text-sm text-slate-600 mb-4">
@@ -352,18 +368,23 @@ const ProductDetailPage = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex-1">
                   {product.title}
                 </h1>
-                <FavoriteButton productId={product._id} size={28} />
+                <div className="flex items-center gap-2">
+                  <ShareButtons product={product} />
+                  <FavoriteButton productId={product._id} size={28} />
+                </div>
               </div>
 
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
-                  <span className="font-bold">4.8</span>
-                  <span className="text-slate-500 ml-1">(2,451 reviews)</span>
-                </div>
-                <div className="flex items-center text-slate-600">
-                  <Clock size={16} className="mr-1" />
-                  <span>3-4 hours</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
+                    <span className="font-bold">4.8</span>
+                    <span className="text-slate-500 ml-1">(2,451 reviews)</span>
+                  </div>
+                  <div className="flex items-center text-slate-600">
+                    <Clock size={16} className="mr-1" />
+                    <span>3-4 hours</span>
+                  </div>
                 </div>
               </div>
 
@@ -616,7 +637,28 @@ const ProductDetailPage = () => {
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-slate-600">{formattedMinPrice} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
-                    <span className="font-bold">€{(minPrice * numberOfTickets).toFixed(2)}</span>
+                    <span className="font-bold">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
+                  </div>
+                  {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
+                    <div className="flex justify-between items-center mb-2 text-sm">
+                      <span className="text-slate-600 flex items-center gap-1">
+                        <span>⚡</span>
+                        Skip-the-Line ({product.skipTheLine.type})
+                      </span>
+                      <span className="font-bold">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                    <span className="font-bold text-slate-900">Total</span>
+                    <span className="font-bold text-lg text-primary-700">
+                      {formatPrice(
+                        (minPrice * numberOfTickets) + 
+                        (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
+                          ? product.skipTheLine.additionalPrice * numberOfTickets 
+                          : 0),
+                        'EUR'
+                      )}
+                    </span>
                   </div>
                 </div>
               )}

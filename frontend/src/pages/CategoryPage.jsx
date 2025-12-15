@@ -85,6 +85,15 @@ const CategoryPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>{info.name} au Maroc | Overglow Trip</title>
+        <meta name="description" content={info.description} />
+        <meta property="og:title" content={`${info.name} au Maroc | Overglow Trip`} />
+        <meta property="og:description" content={info.description} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={window.location.href} />
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">
         <div className="container mx-auto px-4">

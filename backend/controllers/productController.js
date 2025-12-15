@@ -356,13 +356,34 @@ const getPublishedProducts = async (req, res) => {
     // For simplicity, we'll filter products first, and if date is present, we might need aggregation or separate logic.
     // Here we just return products matching basic criteria.
 
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    // Select only necessary fields for list view
     const products = await Product.find(query)
+      .select('title images city category price operator badges skipTheLine metrics createdAt')
       .populate('operator', 'companyName status')
-      .populate('badges.badgeId')
+      .populate('badges.badgeId', 'name icon color')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
     
+    // Get total count for pagination
+    const total = await Product.countDocuments(query);
+    
     // Ensure we always return an array
-    res.json(Array.isArray(products) ? products : []);
+    res.json({
+      products: Array.isArray(products) ? products : [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Get published products error:', error);
     res.status(500).json([]); // Return empty array on error

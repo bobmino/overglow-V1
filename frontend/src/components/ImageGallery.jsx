@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
 
 const ImageGallery = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const galleryRef = useRef(null);
   
   const displayImages = images && images.length > 0 
@@ -61,12 +62,24 @@ const ImageGallery = ({ images }) => {
           src={displayImages[currentIndex]} 
           alt={`Product image ${currentIndex + 1}`}
           loading="lazy"
-          className="w-full h-full object-cover select-none"
+          className="w-full h-full object-cover select-none cursor-pointer"
           draggable={false}
+          onClick={() => setIsLightboxOpen(true)}
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200';
           }}
         />
+        
+        {/* Lightbox button */}
+        {displayImages.length > 1 && (
+          <button
+            onClick={() => setIsLightboxOpen(true)}
+            className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition"
+            aria-label="Open lightbox"
+          >
+            <Maximize2 size={20} />
+          </button>
+        )}
         
         {displayImages.length > 1 && (
           <>
@@ -124,6 +137,73 @@ const ImageGallery = ({ images }) => {
               />
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <button
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-4 right-4 text-white p-2 hover:bg-white/20 rounded-full transition"
+            aria-label="Close lightbox"
+          >
+            <X size={24} />
+          </button>
+          
+          <div className="relative max-w-7xl max-h-full">
+            <img 
+              src={displayImages[currentIndex]} 
+              alt={`Product image ${currentIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            {displayImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPrevious();
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNext();
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={24} />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                  {displayImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentIndex(index);
+                      }}
+                      className={`h-2 rounded-full transition ${
+                        index === currentIndex ? 'bg-white w-8' : 'bg-white/60 w-2'
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

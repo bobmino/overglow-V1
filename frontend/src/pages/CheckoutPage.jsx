@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../config/axios';
 import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import PaymentSelector from '../components/PaymentSelector';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const { formatPrice, convert } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { product, schedule, numberOfTickets } = location.state || {};
+  const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -23,7 +25,30 @@ const CheckoutPage = () => {
     }
   }, [isAuthenticated, product, schedule, navigate, location]);
 
-  const totalPrice = schedule?.price * numberOfTickets;
+  // Calculate total price with skip-the-line and multi-currency
+  const priceBreakdown = useMemo(() => {
+    if (!schedule || !numberOfTickets) return null;
+    
+    const basePrice = Number(schedule.price) || 0;
+    const baseTotal = basePrice * numberOfTickets;
+    
+    // Skip-the-line price (if enabled)
+    const skipTheLinePrice = (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice) 
+      ? Number(product.skipTheLine.additionalPrice) * numberOfTickets 
+      : 0;
+    
+    const subtotal = baseTotal + skipTheLinePrice;
+    
+    return {
+      basePrice,
+      baseTotal,
+      skipTheLinePrice,
+      subtotal,
+      numberOfTickets,
+    };
+  }, [schedule, numberOfTickets, product]);
+
+  const totalPrice = priceBreakdown?.subtotal || 0;
 
   const [bookingId, setBookingId] = useState(null);
 
@@ -41,12 +66,14 @@ const CheckoutPage = () => {
         });
         navigate('/booking-success', { state: { booking: data } });
       } else {
-        // Create booking first
+        // Create booking first (include skip-the-line in total)
         const { data } = await api.post('/api/bookings', {
           scheduleId: schedule._id,
           numberOfTickets: numberOfTickets,
           paymentMethod: paymentDetails.type,
           paymentId: paymentDetails.id,
+          skipTheLineEnabled: product?.skipTheLine?.enabled || false,
+          skipTheLinePrice: priceBreakdown?.skipTheLinePrice || 0,
           ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
         });
         navigate('/booking-success', { state: { booking: data } });
@@ -136,19 +163,28 @@ const CheckoutPage = () => {
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-gray-700">
-                    <span>€{schedule.price.toFixed(2)} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
-                    <span>€{totalPrice.toFixed(2)}</span>
+                    <span>{formatPrice(priceBreakdown?.basePrice || 0, 'EUR')} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
+                    <span>{formatPrice(priceBreakdown?.baseTotal || 0, 'EUR')}</span>
                   </div>
+                  {priceBreakdown?.skipTheLinePrice > 0 && (
+                    <div className="flex justify-between text-gray-700">
+                      <span className="flex items-center gap-1">
+                        <span>⚡</span>
+                        Skip-the-Line ({product?.skipTheLine?.type || 'Fast Track'})
+                      </span>
+                      <span>{formatPrice(priceBreakdown.skipTheLinePrice, 'EUR')}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-gray-700">
                     <span>Service fee</span>
-                    <span>€0.00</span>
+                    <span>{formatPrice(0, 'EUR')}</span>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold">Total</span>
-                    <span className="text-2xl font-bold text-green-700">€{totalPrice.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-green-700">{formatPrice(totalPrice, 'EUR')}</span>
                   </div>
                 </div>
 

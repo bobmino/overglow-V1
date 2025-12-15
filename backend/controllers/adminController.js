@@ -275,11 +275,31 @@ const getProducts = async (req, res) => {
   try {
     const { status } = req.query;
     const query = status ? { status } : {};
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
     const products = await Product.find(query)
+      .select('title images city category price status operator badges createdAt')
       .populate('operator', 'companyName')
-      .populate('badges.badgeId')
-      .sort({ createdAt: -1 });
-    res.json(products);
+      .populate('badges.badgeId', 'name icon color')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    
+    const total = await Product.countDocuments(query);
+    
+    res.json({
+      products: Array.isArray(products) ? products : [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Get products error:', error);
     res.status(500).json({ message: 'Failed to fetch products' });
