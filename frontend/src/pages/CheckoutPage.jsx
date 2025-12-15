@@ -5,6 +5,7 @@ import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import PaymentSelector from '../components/PaymentSelector';
+import { trackBeginCheckout } from '../utils/analytics';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();

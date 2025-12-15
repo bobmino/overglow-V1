@@ -5,6 +5,7 @@ import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFormValidation } from '../hooks/useFormValidation';
 import FormField from '../components/FormField';
+import { trackLogin } from '../utils/analytics';
 
 const LoginPage = () => {
   const navigate = useNavigate();

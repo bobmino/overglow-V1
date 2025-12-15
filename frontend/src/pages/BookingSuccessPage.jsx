@@ -1,10 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Calendar, MapPin, Clock, Users } from 'lucide-react';
+import { trackBooking } from '../utils/analytics';
 
 const BookingSuccessPage = () => {
   const location = useLocation();
   const { booking } = location.state || {};
+
+  // Track booking conversion
+  useEffect(() => {
+    if (booking) {
+      trackBooking({
+        id: booking._id,
+        _id: booking._id,
+        totalAmount: booking.totalAmount || booking.totalPrice,
+        totalPrice: booking.totalPrice || booking.totalAmount,
+        numberOfTickets: booking.numberOfTickets,
+        productId: booking.schedule?.product?._id,
+        product: {
+          _id: booking.schedule?.product?._id,
+          title: booking.schedule?.product?.title,
+          category: booking.schedule?.product?.category,
+          city: booking.schedule?.product?.city,
+        },
+        productTitle: booking.schedule?.product?.title,
+        category: booking.schedule?.product?.category,
+        city: booking.schedule?.product?.city,
+      });
+    }
+  }, [booking]);
 
   if (!booking) {
     return (

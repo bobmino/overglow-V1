@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import AdvancedFilters from '../components/AdvancedFilters';
 import SearchSuggestions from '../components/SearchSuggestions';
 import { Filter, X, Search, Heart, MapPin } from 'lucide-react';
+import { trackSearch } from '../utils/analytics';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -152,6 +153,19 @@ const SearchPage = () => {
           setProducts(productsArray);
           setFilteredProducts(productsArray);
           setTotalPages(data.totalPages || 1);
+          
+          // Track search
+          trackSearch(
+            searchQuery || '',
+            {
+              city: selectedCity || advancedFilters.city,
+              category: selectedCategories.join(','),
+              minPrice: advancedFilters.minPrice,
+              maxPrice: advancedFilters.maxPrice,
+              selectedDate: advancedFilters.selectedDate,
+            },
+            productsArray.length
+          );
         } else {
           // Use simple product list
           const params = new URLSearchParams();

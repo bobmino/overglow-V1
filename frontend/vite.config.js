@@ -21,19 +21,67 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['lucide-react'],
-          'utils-vendor': ['axios'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('axios') || id.includes('i18next')) {
+              return 'utils-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'charts-vendor';
+            }
+            // Other node_modules
+            return 'vendor';
+          }
+          
           // Feature chunks
-          'auth': ['./src/context/AuthContext', './src/pages/LoginPage', './src/pages/RegisterPage'],
-          'booking': ['./src/pages/BookingPage', './src/pages/CheckoutPage', './src/components/PaymentSelector'],
-          'admin': ['./src/pages/AdminDashboardPage', './src/pages/AdminProductsPage', './src/pages/AdminOperatorsPage'],
-          'operator': ['./src/pages/OperatorDashboardPage', './src/pages/OperatorProductsPage', './src/pages/OperatorBookingsPage'],
+          if (id.includes('/pages/Admin') || id.includes('/pages/Admin')) {
+            return 'admin';
+          }
+          if (id.includes('/pages/Operator')) {
+            return 'operator';
+          }
+          if (id.includes('/pages/Booking') || id.includes('/pages/Checkout')) {
+            return 'booking';
+          }
+          if (id.includes('/pages/Login') || id.includes('/pages/Register')) {
+            return 'auth';
+          }
+        },
+        // Optimize chunk names
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `assets/img/[name]-[hash][extname]`;
+          }
+          if (/woff2?|eot|ttf|otf/i.test(ext)) {
+            return `assets/fonts/[name]-[hash][extname]`;
+          }
+          return `assets/[ext]/[name]-[hash][extname]`;
         },
       },
     },
     chunkSizeWarningLimit: 1000, // 1MB
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    // Enable source maps for production debugging (optional)
+    sourcemap: false,
+    // Optimize CSS
+    cssCodeSplit: true,
+    cssMinify: true,
   },
 })

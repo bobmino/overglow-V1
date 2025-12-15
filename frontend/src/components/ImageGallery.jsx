@@ -61,7 +61,10 @@ const ImageGallery = ({ images }) => {
         <img 
           src={displayImages[currentIndex]} 
           alt={`Product image ${currentIndex + 1}`}
-          loading="lazy"
+          loading={currentIndex === 0 ? "eager" : "lazy"}
+          decoding="async"
+          width="1200"
+          height="600"
           className="w-full h-full object-cover select-none cursor-pointer"
           draggable={false}
           onClick={() => setIsLightboxOpen(true)}

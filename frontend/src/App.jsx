@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
+import { usePageTracking } from './hooks/useAnalytics';
 
 // Critical components (loaded immediately)
 import Hero from './components/Hero';
@@ -68,6 +69,24 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  // Track page views automatically
+  usePageTracking();
+
+  // Prefetch critical routes on mount
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        const criticalRoutes = ['/search', '/products'];
+        criticalRoutes.forEach(route => {
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = route;
+          document.head.appendChild(link);
+        });
+      });
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

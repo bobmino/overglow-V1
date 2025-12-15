@@ -5,6 +5,7 @@ import './index.css'
 import './i18n'; // Import i18n configuration
 import App from './App.jsx'
 import { CurrencyProvider } from './context/CurrencyContext.jsx'
+import { setupLazyImages } from './utils/performance.js'
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
@@ -62,3 +63,24 @@ createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </StrictMode>,
 )
+
+// Setup performance optimizations after initial render
+if (typeof window !== 'undefined') {
+  // Setup lazy images
+  setTimeout(() => {
+    setupLazyImages();
+  }, 1000);
+  
+  // Prefetch critical routes
+  const criticalRoutes = ['/search', '/products'];
+  criticalRoutes.forEach(route => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = route;
+        document.head.appendChild(link);
+      });
+    }
+  });
+}
