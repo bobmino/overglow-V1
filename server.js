@@ -30,6 +30,8 @@ import favoriteRoutes from './backend/routes/favoriteRoutes.js';
 import recommendationRoutes from './backend/routes/recommendationRoutes.js';
 import loyaltyRoutes from './backend/routes/loyaltyRoutes.js';
 import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
+import faqRoutes from './backend/routes/faqRoutes.js';
+import chatRoutes from './backend/routes/chatRoutes.js';
 
 const app = express();
 
@@ -196,6 +198,8 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/view-history', viewHistoryRoutes);
+app.use('/api/faq', faqRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Serve static files
 const __filename = fileURLToPath(import.meta.url);

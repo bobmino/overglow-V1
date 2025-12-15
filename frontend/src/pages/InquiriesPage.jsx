@@ -3,8 +3,9 @@ import api from '../config/axios';
 import { MessageSquare, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import ChatWidget from '../components/ChatWidget';
 
-const InquiryCard = ({ inquiry, onUpdate }) => {
+const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -133,9 +134,19 @@ const InquiryCard = ({ inquiry, onUpdate }) => {
         </div>
       )}
 
-      <div className="mt-4 pt-4 border-t text-xs text-gray-500">
-        <Clock size={12} className="inline mr-1" />
-        {new Date(inquiry.createdAt).toLocaleDateString('fr-FR')}
+      <div className="mt-4 pt-4 border-t flex items-center justify-between">
+        <div className="text-xs text-gray-500">
+          <Clock size={12} className="inline mr-1" />
+          {new Date(inquiry.createdAt).toLocaleDateString('fr-FR')}
+        </div>
+        <button
+          onClick={() => onOpenChat(inquiry._id)}
+          className="flex items-center gap-2 px-3 py-1 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition"
+          aria-label="Ouvrir le chat"
+        >
+          <MessageSquare size={16} />
+          Chat
+        </button>
       </div>
     </div>
   );
@@ -144,6 +155,7 @@ const InquiryCard = ({ inquiry, onUpdate }) => {
 const InquiriesPage = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openChatId, setOpenChatId] = useState(null);
 
   const fetchInquiries = async () => {
     try {
@@ -191,9 +203,21 @@ const InquiriesPage = () => {
       ) : (
         <div className="space-y-4">
           {inquiries.map((inquiry) => (
-            <InquiryCard key={inquiry?._id || Math.random()} inquiry={inquiry} onUpdate={fetchInquiries} />
+            <InquiryCard 
+              key={inquiry?._id || Math.random()} 
+              inquiry={inquiry} 
+              onUpdate={fetchInquiries}
+              onOpenChat={setOpenChatId}
+            />
           ))}
         </div>
+      )}
+
+      {openChatId && (
+        <ChatWidget
+          inquiryId={openChatId}
+          onClose={() => setOpenChatId(null)}
+        />
       )}
 
       <ScrollToTopButton />

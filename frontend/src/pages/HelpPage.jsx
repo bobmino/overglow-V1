@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HelpCircle, Search, Mail, MessageSquare } from 'lucide-react';
+import { HelpCircle, Mail, MessageSquare } from 'lucide-react';
+import FAQSection from '../components/FAQSection';
+import ChatWidget from '../components/ChatWidget';
 
 const HelpPage = () => {
+  const [showChat, setShowChat] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -12,16 +16,15 @@ const HelpPage = () => {
           <p className="text-xl text-gray-600">Comment pouvons-nous vous aider ?</p>
         </div>
 
+        {/* FAQ Section */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Search className="text-primary-600" size={24} />
-            <input
-              type="text"
-              placeholder="Rechercher dans l'aide..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions fréquentes</h2>
+          <FAQSection language="fr" limit={20} />
+        </div>
 
+        {/* Quick Links */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Guides rapides</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="p-6 border border-gray-200 rounded-lg hover:border-primary-500 transition">
               <h3 className="text-xl font-bold text-gray-900 mb-2">Pour les voyageurs</h3>
@@ -64,11 +67,22 @@ const HelpPage = () => {
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">Chat en direct</h3>
                 <p className="text-gray-600 mb-4">Discutez avec notre équipe de support en temps réel.</p>
-                <button className="text-primary-600 font-semibold hover:underline">
+                <button 
+                  onClick={() => setShowChat(true)}
+                  className="text-primary-600 font-semibold hover:underline"
+                >
                   Démarrer le chat →
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {showChat && (
+          <ChatWidget
+            onClose={() => setShowChat(false)}
+          />
+        )}
           </div>
         </div>
       </div>
