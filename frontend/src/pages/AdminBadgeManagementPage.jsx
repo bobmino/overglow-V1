@@ -1334,10 +1334,6 @@ const AdminBadgeManagementPage = () => {
         </div>
       )}
 
-      <ScrollToTopButton />
-    </div>
-
-      {/* Badge Entities Modal */}
       {badgeEntitiesModal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -1434,6 +1430,9 @@ const AdminBadgeManagementPage = () => {
           </div>
         </div>
       )}
+
+      <ScrollToTopButton />
+    </div>
   );
 };
 
