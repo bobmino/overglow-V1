@@ -83,8 +83,6 @@ const HelpPage = () => {
             onClose={() => setShowChat(false)}
           />
         )}
-          </div>
-        </div>
       </div>
     </div>
   );
