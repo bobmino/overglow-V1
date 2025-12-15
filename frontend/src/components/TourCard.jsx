@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, MapPin, Heart } from 'lucide-react';
 import BadgeDisplay from './BadgeDisplay';
+import { useCurrency } from '../context/CurrencyContext';
 
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
   if (!product) return null;
+  const { formatPrice } = useCurrency();
   
   const image = Array.isArray(product.images) && product.images.length > 0 
     ? product.images[0] 
@@ -52,9 +54,12 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           <span className="text-gray-500 text-xs ml-1">({reviewCount.toLocaleString()})</span>
         </div>
         
-        <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-green-700 transition min-h-[48px]">
+        <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-green-700 transition min-h-[48px]">
           {product.title}
         </h3>
+        {product.price !== undefined && (
+          <p className="text-sm font-bold text-gray-900">{formatPrice(product.price, 'EUR')}</p>
+        )}
       </div>
     </Link>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
+import CurrencySelector from './CurrencySelector';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
@@ -105,6 +106,7 @@ const Header = () => {
           </div>
           
           <LanguageSelector />
+          <CurrencySelector />
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
@@ -319,6 +321,10 @@ const Header = () => {
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
             <span className="text-slate-600 font-medium">Language</span>
             <LanguageSelector />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+            <span className="text-slate-600 font-medium">Devise</span>
+            <CurrencySelector />
           </div>
 
           {isAuthenticated ? (

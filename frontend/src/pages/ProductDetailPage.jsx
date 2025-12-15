@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../config/axios';
+import { useCurrency } from '../context/CurrencyContext';
 import { 
   MapPin, Clock, Star, CheckCircle, Users, Calendar as CalendarIcon, 
   X, ChevronDown, ChevronRight, Award, TrendingUp, Shield, Camera
@@ -31,6 +32,7 @@ const ProductDetailPage = () => {
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [productBadges, setProductBadges] = useState([]);
   const [operatorBadges, setOperatorBadges] = useState([]);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -266,7 +268,7 @@ const ProductDetailPage = () => {
 
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
-  const formattedMinPrice = hasValidPrice ? minPrice.toFixed(2) : null;
+  const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
 
   return (
     <div className="bg-slate-50">
@@ -519,7 +521,7 @@ const ProductDetailPage = () => {
                 <p className="text-sm text-slate-600 mb-1">From</p>
                 {hasValidPrice ? (
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">€{formattedMinPrice}</span>
+                    <span className="text-4xl font-bold text-slate-900">{formattedMinPrice}</span>
                     <span className="text-slate-600">per person</span>
                   </div>
                 ) : (
@@ -572,7 +574,7 @@ const ProductDetailPage = () => {
               {selectedDate && selectedTimeSlot && hasValidPrice && (
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-600">€{formattedMinPrice} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
+                    <span className="text-slate-600">{formattedMinPrice} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
                     <span className="font-bold">€{(minPrice * numberOfTickets).toFixed(2)}</span>
                   </div>
                 </div>
@@ -607,7 +609,7 @@ const ProductDetailPage = () => {
           <div>
             <p className="text-xs text-slate-600">From</p>
             <p className="text-2xl font-bold">
-              {hasValidPrice ? `€${formattedMinPrice}` : 'Price unavailable'}
+              {hasValidPrice ? formattedMinPrice : 'Price unavailable'}
             </p>
           </div>
           <button 

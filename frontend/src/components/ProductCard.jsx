@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, MapPin } from 'lucide-react';
 import BadgeDisplay from './BadgeDisplay';
+import { useCurrency } from '../context/CurrencyContext';
 import FavoriteButton from './FavoriteButton';
 
 const ProductCard = ({ product }) => {
   if (!product) return null;
+  const { formatPrice } = useCurrency();
   
   // Use first image or placeholder
   const image = Array.isArray(product.images) && product.images.length > 0 
@@ -82,7 +84,9 @@ const ProductCard = ({ product }) => {
         <div className="flex items-end justify-between mt-4 pt-4 border-t border-slate-50">
           <div>
             <span className="text-xs text-slate-400 block mb-0.5">Starting from</span>
-            <span className="font-bold text-2xl text-slate-900">€{typeof price === 'number' ? price.toFixed(2) : price}</span>
+            <span className="font-bold text-2xl text-slate-900">
+              {formatPrice(price, 'EUR')}
+            </span>
           </div>
           <button className="bg-slate-50 text-slate-900 hover:bg-primary-600 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors duration-300">
             View Details
