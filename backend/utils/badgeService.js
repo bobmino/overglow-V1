@@ -295,6 +295,9 @@ const assignProductBadges = async (productId) => {
       if (criteria.isEcoFriendly !== undefined && product.authenticity?.isEcoFriendly !== criteria.isEcoFriendly) {
         meetsCriteria = false;
       }
+      if (criteria.hasSkipTheLine !== undefined && product.skipTheLine?.enabled !== criteria.hasSkipTheLine) {
+        meetsCriteria = false;
+      }
 
       if (meetsCriteria) {
         // Check if product already has this badge
@@ -410,6 +413,15 @@ export const initializeDefaultBadges = async () => {
         color: '#10B981',
         description: 'Excellent rapport qualité/prix',
         criteria: { isBestValue: true },
+      },
+      {
+        name: 'Skip-the-Line',
+        type: 'product',
+        icon: '⚡',
+        color: '#F59E0B',
+        description: 'Évitez les files d\'attente avec cette option',
+        criteria: { hasSkipTheLine: true },
+        isAutomatic: true,
       },
       {
         name: 'Artisan',

@@ -58,10 +58,12 @@ api.interceptors.request.use(
   }
 );
 
-// Intercepteur pour gérer les erreurs globales
+// Intercepteur pour gérer les erreurs globales et refresh tokens
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
     // Log des erreurs pour debug
     if (error.response) {
       // Le serveur a répondu avec un code d'erreur
@@ -84,8 +86,62 @@ api.interceptors.response.use(
       console.error('API Error Config:', error.message);
     }
     
-    // Si erreur 401 (non autorisé), déconnecter l'utilisateur
-    if (error.response?.status === 401) {
+    // Si erreur 401 (non autorisé), essayer de refresh le token
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          const refreshToken = user.refreshToken;
+          
+          if (refreshToken) {
+            try {
+              // Appel API pour refresh (sans utiliser l'intercepteur pour éviter boucle)
+              const refreshResponse = await axios.post(`${API_URL}/api/auth/refresh`, {
+                refreshToken
+              }, {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              // Mettre à jour le token dans localStorage
+              const updatedUser = {
+                ...user,
+                token: refreshResponse.data.token
+              };
+              localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+              
+              // Réessayer la requête originale avec le nouveau token
+              originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
+              return api(originalRequest);
+            } catch (refreshError) {
+              // Refresh failed, logout user
+              console.error('Token refresh failed:', refreshError);
+              localStorage.removeItem('userInfo');
+              // Appeler logout endpoint si possible
+              try {
+                await axios.post(`${API_URL}/api/auth/logout`, { refreshToken }, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                  }
+                });
+              } catch (logoutError) {
+                // Ignore logout errors
+              }
+              window.location.href = '/login';
+              return Promise.reject(refreshError);
+            }
+          }
+        } catch (parseError) {
+          console.error('Error parsing userInfo:', parseError);
+        }
+      }
+      
+      // Si pas de refresh token ou refresh échoué, déconnecter
       localStorage.removeItem('userInfo');
       window.location.href = '/login';
     }

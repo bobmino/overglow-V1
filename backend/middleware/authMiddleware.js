@@ -47,12 +47,31 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Check token type (should be 'access' or undefined for backward compatibility)
+      if (decoded.type && decoded.type !== 'access') {
+        res.status(401);
+        return next(new Error('Invalid token type. Access token required.'));
+      }
 
       req.user = await User.findById(decoded.id).select('-password');
       
       if (!req.user) {
         res.status(401);
         return next(new Error('User not found'));
+      }
+      
+      // Check if account is locked
+      if (req.user.lockedUntil && req.user.lockedUntil > new Date()) {
+        res.status(403);
+        return next(new Error(`Account locked until ${req.user.lockedUntil.toISOString()}. Too many failed login attempts.`));
+      }
+      
+      // Unlock account if lock period has passed
+      if (req.user.lockedUntil && req.user.lockedUntil <= new Date()) {
+        req.user.lockedUntil = undefined;
+        req.user.failedLoginAttempts = 0;
+        await req.user.save();
       }
 
       next();

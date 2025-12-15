@@ -1,9 +1,11 @@
+import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
-import generateToken from '../../utils/generateToken.js';
+import generateToken, { generateAccessToken, generateRefreshToken } from '../../utils/generateToken.js';
 import { validationResult } from 'express-validator';
 import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
+import { logger } from '../utils/logger.js';
 
 // Helper to set CORS headers
 const setCORSHeaders = (req, res) => {
@@ -81,12 +83,29 @@ const registerUser = async (req, res) => {
         }
       }
 
+      // Generate tokens
+      const accessToken = generateAccessToken(user._id, user.role);
+      const refreshToken = generateRefreshToken(user._id, user.role);
+      
+      // Store refresh token in user document
+      const refreshTokenExpiry = new Date();
+      refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // 7 days
+      
+      user.refreshTokens.push({
+        token: refreshToken,
+        expiresAt: refreshTokenExpiry,
+        ipAddress: req.ip || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+      await user.save();
+
       res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id, user.role),
+        token: accessToken,
+        refreshToken: refreshToken,
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -215,10 +234,37 @@ const loginUser = async (req, res) => {
     }
 
     if (passwordMatch) {
-      // Generate token
-      let token;
+      // Reset failed login attempts
+      user.failedLoginAttempts = 0;
+      user.lockedUntil = undefined;
+      user.lastLoginAt = new Date();
+      user.lastLoginIp = req.ip || req.connection.remoteAddress;
+      
+      // Generate tokens
+      let accessToken, refreshToken;
       try {
-        token = generateToken(user._id, user.role);
+        accessToken = generateAccessToken(user._id, user.role);
+        refreshToken = generateRefreshToken(user._id, user.role);
+        
+        // Store refresh token in user document
+        const refreshTokenExpiry = new Date();
+        refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // 7 days
+        
+        // Clean old refresh tokens (keep only last 5)
+        if (user.refreshTokens.length >= 5) {
+          user.refreshTokens = user.refreshTokens
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, 4);
+        }
+        
+        user.refreshTokens.push({
+          token: refreshToken,
+          expiresAt: refreshTokenExpiry,
+          ipAddress: req.ip || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        });
+        
+        await user.save();
       } catch (tokenError) {
         console.error('Token generation error:', {
           message: tokenError.message,
@@ -237,10 +283,39 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        token: token,
+        token: accessToken,
+        refreshToken: refreshToken,
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      // Increment failed login attempts
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      
+      // Lock account after 5 failed attempts for 30 minutes
+      if (user.failedLoginAttempts >= 5) {
+        const lockUntil = new Date();
+        lockUntil.setMinutes(lockUntil.getMinutes() + 30);
+        user.lockedUntil = lockUntil;
+        
+        logger.security.accountLocked(
+          email,
+          req.ip || req.connection.remoteAddress,
+          lockUntil
+        );
+      }
+      
+      await user.save();
+      
+      logger.security.failedLogin(
+        email,
+        req.ip || req.connection.remoteAddress,
+        user.failedLoginAttempts
+      );
+      
+      res.status(401).json({ 
+        message: 'Invalid email or password',
+        failedAttempts: user.failedLoginAttempts,
+        lockedUntil: user.lockedUntil || null
+      });
     }
   } catch (error) {
     // Ensure CORS headers are set even on error
@@ -365,4 +440,88 @@ const updateProfile = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe, updateProfile };
+// @desc    Refresh access token
+// @route   POST /api/auth/refresh
+// @access  Public
+const refreshTokenHandler = async (req, res) => {
+  setCORSHeaders(req, res);
+  
+  try {
+    const { refreshToken: token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ message: 'Refresh token is required' });
+    }
+    
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+    
+    // Verify refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ message: 'Invalid or expired refresh token' });
+    }
+    
+    // Check token type
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({ message: 'Invalid token type' });
+    }
+    
+    // Find user and verify refresh token exists
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+    
+    // Check if refresh token exists in user's refresh tokens
+    const storedToken = user.refreshTokens.find(
+      rt => rt.token === token && rt.expiresAt > new Date()
+    );
+    
+    if (!storedToken) {
+      return res.status(401).json({ message: 'Refresh token not found or expired' });
+    }
+    
+    // Generate new access token
+    const accessToken = generateAccessToken(user._id, user.role);
+    
+    logger.security.tokenRefresh(user._id.toString(), true);
+    
+    res.json({
+      token: accessToken,
+    });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({ message: 'Server error during token refresh' });
+  }
+};
+
+// @desc    Logout (revoke refresh token)
+// @route   POST /api/auth/logout
+// @access  Private
+const logout = async (req, res) => {
+  setCORSHeaders(req, res);
+  
+  try {
+    const { refreshToken: token } = req.body;
+    
+    if (token) {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        // Remove refresh token
+        user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== token);
+        await user.save();
+      }
+    }
+    
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error during logout' });
+  }
+};
+
+export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout };

@@ -26,7 +26,8 @@ const SearchPage = () => {
     selectedDate: null,
     location: null,
     locationName: '',
-    radius: null
+    radius: null,
+    skipTheLine: false
   });
   const [savedSearches, setSavedSearches] = useState([]);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
@@ -114,6 +115,7 @@ const SearchPage = () => {
           (advancedFilters.durations && advancedFilters.durations.length > 0) ||
           advancedFilters.selectedDate ||
           advancedFilters.location ||
+          advancedFilters.skipTheLine ||
           searchQuery;
 
         if (hasAdvancedFilters) {
@@ -133,6 +135,7 @@ const SearchPage = () => {
             params.append('locationLng', advancedFilters.location.lng);
           }
           if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
+          if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
           params.append('sortBy', sortBy);
           params.append('page', page);
           params.append('limit', 20);
@@ -266,7 +269,8 @@ const SearchPage = () => {
       selectedDate: null,
       location: null,
       locationName: '',
-      radius: null
+      radius: null,
+      skipTheLine: false
     });
     setPage(1);
     setSearchParams({});

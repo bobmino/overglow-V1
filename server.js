@@ -1,11 +1,13 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
+import { apiLimiter, strictLimiter } from './backend/middleware/rateLimiter.js';
 
 import authRoutes from './backend/routes/authRoutes.js';
 import productRoutes from './backend/routes/productRoutes.js';
@@ -32,6 +34,7 @@ import loyaltyRoutes from './backend/routes/loyaltyRoutes.js';
 import viewHistoryRoutes from './backend/routes/viewHistoryRoutes.js';
 import faqRoutes from './backend/routes/faqRoutes.js';
 import chatRoutes from './backend/routes/chatRoutes.js';
+import healthRoutes from './backend/routes/healthRoutes.js';
 
 const app = express();
 
@@ -130,6 +133,37 @@ app.use((req, res, next) => {
   next();
 });
 
+// Security headers with Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https://api.stripe.com", "https://api.paypal.com"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Désactivé pour compatibilité CORS
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+// Additional security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
+
+// Apply rate limiting globally (after helmet, before CORS)
+app.use('/api/', apiLimiter);
+
 // Use cors package as additional layer with explicit configuration
 app.use(cors({
   origin: function (origin, callback) {
@@ -165,14 +199,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
+// Health check endpoint (using dedicated route)
+app.use('/api/health', healthRoutes);
 
 // Mount Routes
 app.use('/api/auth', authRoutes);

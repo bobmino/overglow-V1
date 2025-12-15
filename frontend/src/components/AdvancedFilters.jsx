@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, X, MapPin, Clock, Star, Calendar } from 'lucide-react';
+import { Filter, X, MapPin, Clock, Star, Calendar, Zap } from 'lucide-react';
 
 const AdvancedFilters = ({ 
   filters, 
@@ -32,7 +32,8 @@ const AdvancedFilters = ({
     (filters.durations?.length || 0) +
     (filters.selectedDate ? 1 : 0) +
     (filters.location?.lat ? 1 : 0) +
-    (filters.radius ? 1 : 0);
+    (filters.radius ? 1 : 0) +
+    (filters.skipTheLine ? 1 : 0);
 
   const durationOptions = [
     { value: '0-2', label: 'Moins de 2h' },
@@ -244,6 +245,24 @@ const AdvancedFilters = ({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Skip-the-Line Filter */}
+          <div>
+            <label htmlFor="skip-the-line" className="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+              <input
+                type="checkbox"
+                id="skip-the-line"
+                name="skip-the-line"
+                checked={filters.skipTheLine || false}
+                onChange={(e) => handleFilterChange('skipTheLine', e.target.checked)}
+                className="rounded text-primary-600 focus:ring-primary-500"
+                aria-label="Filtrer les produits avec Skip-the-Line"
+              />
+              <Zap size={16} className="text-amber-500" />
+              <span className="font-semibold text-slate-900">Skip-the-Line</span>
+              <span className="text-slate-500 text-sm">(Évitez les files d'attente)</span>
+            </label>
           </div>
         </div>
       )}

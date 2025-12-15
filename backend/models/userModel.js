@@ -74,6 +74,19 @@ const userSchema = mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
     createdAt: { type: Date, default: Date.now },
   }],
+  
+  // Security fields
+  refreshTokens: [{
+    token: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true },
+    ipAddress: { type: String },
+    userAgent: { type: String },
+  }],
+  lastLoginAt: { type: Date },
+  lastLoginIp: { type: String },
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockedUntil: { type: Date },
 }, {
   timestamps: true,
 });

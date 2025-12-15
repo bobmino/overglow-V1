@@ -29,7 +29,12 @@ const LoginPage = () => {
 
     try {
       const { data } = await api.post('/api/auth/login', formData);
-      login(data);
+      // Store both access token and refresh token
+      const userData = {
+        ...data,
+        refreshToken: data.refreshToken || null
+      };
+      login(userData);
       navigate('/');
     } catch (err) {
       // Log full error details for debugging

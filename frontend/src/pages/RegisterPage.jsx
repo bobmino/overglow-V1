@@ -47,7 +47,12 @@ const RegisterPage = () => {
         password: formData.password,
         role: 'Client', // Always Client for this page
       });
-      login(data);
+      // Store both access token and refresh token
+      const userData = {
+        ...data,
+        refreshToken: data.refreshToken || null
+      };
+      login(userData);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');

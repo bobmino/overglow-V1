@@ -29,7 +29,32 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Try to revoke refresh token on backend
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo);
+        if (user.refreshToken) {
+          try {
+            await fetch(`${import.meta.env.VITE_API_URL || 'https://overglow-backend.vercel.app'}/api/auth/logout`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+              },
+              body: JSON.stringify({ refreshToken: user.refreshToken })
+            });
+          } catch (err) {
+            // Ignore logout errors, continue with local logout
+            console.error('Logout API error:', err);
+          }
+        }
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+    
     localStorage.removeItem('userInfo');
     setUser(null);
   };

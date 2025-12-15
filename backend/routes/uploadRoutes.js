@@ -12,7 +12,7 @@ router.post('/', upload.single('image'), (req, res) => {
 });
 
 // Multiple images upload
-router.post('/images', upload.array('images', 10), (req, res) => {
+router.post('/images', strictLimiter, upload.array('images', 10), (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'No files uploaded' });
   }

@@ -82,6 +82,24 @@ const productSchema = mongoose.Schema({
     enum: ['Draft', 'Pending Review', 'Published'],
     default: 'Draft',
   },
+  
+  // Skip-the-Line feature
+  skipTheLine: {
+    enabled: { type: Boolean, default: false },
+    type: {
+      type: String,
+      enum: ['Fast Track', 'VIP', 'Early Access'],
+      default: 'Fast Track',
+    },
+    additionalPrice: { type: Number, default: 0 }, // Additional price for skip-the-line
+    description: { type: String, default: 'Évitez les files d\'attente avec cette option' },
+    availability: {
+      type: String,
+      enum: ['always', 'limited', 'seasonal'],
+      default: 'always',
+    },
+    maxCapacity: { type: Number, default: null }, // Max skip-the-line tickets per time slot
+  },
 
   // Tags/segments d'authenticité
   authenticity: {

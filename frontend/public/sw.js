@@ -1,10 +1,27 @@
 // Service Worker for Overglow PWA
-const CACHE_NAME = 'overglow-v1';
+const CACHE_NAME = 'overglow-v1.1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/vite.svg',
 ];
+
+// Install prompt handling
+let deferredPrompt;
+self.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Dispatch event to window
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'CAN_INSTALL',
+        prompt: true
+      });
+    });
+  });
+});
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {

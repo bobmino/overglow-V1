@@ -32,6 +32,14 @@ const OperatorProductFormPage = () => {
       refundPercentage: 100,
       description: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
     },
+    skipTheLine: {
+      enabled: false,
+      type: 'Fast Track',
+      additionalPrice: 0,
+      description: 'Évitez les files d\'attente avec cette option',
+      availability: 'always',
+      maxCapacity: null,
+    },
   });
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -170,6 +178,15 @@ const OperatorProductFormPage = () => {
           : [],
         // Ensure inquiryType is set correctly
         inquiryType: formData.requiresInquiry ? formData.inquiryType : 'none',
+        // Include skipTheLine
+        skipTheLine: formData.skipTheLine || {
+          enabled: false,
+          type: 'Fast Track',
+          additionalPrice: 0,
+          description: 'Évitez les files d\'attente avec cette option',
+          availability: 'always',
+          maxCapacity: null,
+        },
       };
 
       let response;
@@ -422,6 +439,91 @@ const OperatorProductFormPage = () => {
                     <option value="automatic">Automatique (validation requise)</option>
                   </select>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Skip-the-Line */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Skip-the-Line</h3>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="skipTheLineEnabled"
+                  checked={formData.skipTheLine?.enabled || false}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    skipTheLine: {
+                      ...prev.skipTheLine,
+                      enabled: e.target.checked
+                    }
+                  }))}
+                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <label htmlFor="skipTheLineEnabled" className="ml-2 text-sm font-semibold text-gray-700">
+                  Activer Skip-the-Line pour ce produit
+                </label>
+              </div>
+              
+              {formData.skipTheLine?.enabled && (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
+                    <select
+                      value={formData.skipTheLine?.type || 'Fast Track'}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        skipTheLine: {
+                          ...prev.skipTheLine,
+                          type: e.target.value
+                        }
+                      }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="Fast Track">Fast Track</option>
+                      <option value="VIP">VIP</option>
+                      <option value="Early Access">Early Access</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Prix supplémentaire (MAD)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.skipTheLine?.additionalPrice || 0}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        skipTheLine: {
+                          ...prev.skipTheLine,
+                          additionalPrice: Number(e.target.value) || 0
+                        }
+                      }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                    <textarea
+                      value={formData.skipTheLine?.description || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        skipTheLine: {
+                          ...prev.skipTheLine,
+                          description: e.target.value
+                        }
+                      }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      rows="2"
+                      placeholder="Évitez les files d'attente avec cette option"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>

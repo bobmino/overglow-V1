@@ -233,6 +233,7 @@ export const advancedSearch = async (req, res) => {
       locationLat,
       locationLng,
       radius, // in km
+      skipTheLine, // Filter for skip-the-line products
       sortBy = 'recommended',
       page = 1,
       limit = 20
@@ -261,6 +262,11 @@ export const advancedSearch = async (req, res) => {
       const normalizedCategory = normalizeCategory(category);
       // Use case-insensitive regex to match variations
       query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    }
+
+    // Skip-the-Line filter
+    if (skipTheLine === 'true' || skipTheLine === true) {
+      query['skipTheLine.enabled'] = true;
     }
 
     // Price filter - we'll filter after getting products with schedules
