@@ -699,21 +699,30 @@ const updateBadge = async (req, res) => {
     if (color) badge.color = color;
     if (description) badge.description = description;
     
-    // Update criteria - merge with existing or replace
+    // Update criteria - merge with existing, allow clearing
     if (criteria !== undefined) {
-      if (typeof criteria === 'object' && criteria !== null) {
-        // Merge criteria, but allow clearing by passing null values
-        badge.criteria = { ...badge.criteria };
-        Object.keys(criteria).forEach(key => {
-          if (criteria[key] === null || criteria[key] === undefined || criteria[key] === '') {
-            delete badge.criteria[key];
-          } else {
-            badge.criteria[key] = criteria[key];
-          }
-        });
-      } else {
-        badge.criteria = {};
-      }
+      badge.criteria = { ...badge.criteria };
+      Object.keys(criteria || {}).forEach(key => {
+        const value = criteria[key];
+        if (value === null || value === undefined || value === '') {
+          delete badge.criteria[key];
+          return;
+        }
+
+        // Cast numeric fields
+        if (['minRating', 'minReviews', 'minBookings', 'minRevenue', 'minViewCount', 'minBookingCount', 'maxResponseTime', 'minCompletionRate'].includes(key)) {
+          badge.criteria[key] = Number(value);
+          return;
+        }
+
+        // Cast boolean fields
+        if (['isVerified', 'isLocal', 'isLocal100', 'isArtisan', 'isAuthenticLocal', 'isEcoFriendly', 'isTraditional', 'isNew', 'isBestValue', 'isLastMinute'].includes(key)) {
+          badge.criteria[key] = value === true || value === 'true';
+          return;
+        }
+
+        badge.criteria[key] = value;
+      });
     }
     
     if (isAutomatic !== undefined) badge.isAutomatic = isAutomatic;

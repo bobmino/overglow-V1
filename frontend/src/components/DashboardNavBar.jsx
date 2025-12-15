@@ -57,13 +57,15 @@ const DashboardNavBar = ({ className = '' }) => {
       
       {isOperatorRoute && (
         <>
-          <Link
-            to="/operator/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
-          >
-            <BarChart3 size={16} />
-            Dashboard
-          </Link>
+          {location.pathname !== '/operator/dashboard' && (
+            <Link
+              to="/operator/dashboard"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
+            >
+              <BarChart3 size={16} />
+              Dashboard
+            </Link>
+          )}
           <Link
             to="/operator/products"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
