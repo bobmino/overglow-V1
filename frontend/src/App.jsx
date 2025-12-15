@@ -12,6 +12,8 @@ import TopTours from './components/TopTours';
 import WarmDestinations from './components/WarmDestinations';
 import AuthCTA from './components/AuthCTA';
 import SearchPage from './pages/SearchPage';
+import DestinationPage from './pages/DestinationPage';
+import CategoryPage from './pages/CategoryPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -72,6 +74,8 @@ function App() {
             </>
           } />
           <Route path="search" element={<SearchPage />} />
+          <Route path="destinations/:city" element={<DestinationPage />} />
+          <Route path="categories/:category" element={<CategoryPage />} />
           <Route path="products/:id" element={<ProductDetailPage />} />
           <Route path="booking" element={<BookingPage />} />
           <Route path="dashboard" element={

@@ -41,6 +41,47 @@ const ProductDetailPage = () => {
         setProduct(data);
         setAvailableSchedules(Array.isArray(data?.schedules) ? data.schedules : []);
         
+        // Add Schema.org structured data
+        if (data && typeof window !== 'undefined') {
+          const schema = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": data.title,
+            "description": data.description,
+            "image": Array.isArray(data.images) && data.images.length > 0 ? data.images : [],
+            "offers": {
+              "@type": "Offer",
+              "price": data.price || 0,
+              "priceCurrency": "MAD",
+              "availability": "https://schema.org/InStock",
+              "url": `${window.location.origin}/products/${data._id}`
+            },
+            "aggregateRating": data.metrics?.averageRating ? {
+              "@type": "AggregateRating",
+              "ratingValue": data.metrics.averageRating,
+              "reviewCount": data.metrics.reviewCount || 0
+            } : undefined,
+            "brand": data.operator?.companyName ? {
+              "@type": "Organization",
+              "name": data.operator.companyName
+            } : undefined
+          };
+          
+          // Remove undefined fields
+          Object.keys(schema).forEach(key => schema[key] === undefined && delete schema[key]);
+          
+          // Remove existing schema script if any
+          const existingScript = document.getElementById('product-schema');
+          if (existingScript) existingScript.remove();
+          
+          // Add new schema script
+          const script = document.createElement('script');
+          script.id = 'product-schema';
+          script.type = 'application/ld+json';
+          script.textContent = JSON.stringify(schema);
+          document.head.appendChild(script);
+        }
+        
         // Record view in history (if user is authenticated)
         const userInfo = localStorage.getItem('userInfo');
         if (userInfo && data?._id) {

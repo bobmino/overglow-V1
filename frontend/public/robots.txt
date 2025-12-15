@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://overglow-v1-3jqp.vercel.app/api/sitemap.xml
+
