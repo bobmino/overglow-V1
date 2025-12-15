@@ -81,7 +81,7 @@ const LoginPage = () => {
           <p className="text-gray-600">Sign in to your Overglow-Trip account</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="login-title">
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
               <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
@@ -106,8 +106,11 @@ const LoginPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="you@example.com"
                   autoComplete="email"
+                  aria-required="true"
+                  aria-describedby="login-email-help"
                 />
               </div>
+              <p id="login-email-help" className="text-xs text-gray-500 mt-1">Enter the email you used to register.</p>
             </div>
 
             <div>
@@ -126,8 +129,11 @@ const LoginPage = () => {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  aria-required="true"
+                  aria-describedby="login-password-help"
                 />
               </div>
+              <p id="login-password-help" className="text-xs text-gray-500 mt-1">At least 8 characters.</p>
             </div>
 
             <button

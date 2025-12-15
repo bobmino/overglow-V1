@@ -89,6 +89,7 @@ const AdminBadgeManagementPage = () => {
   const [message, setMessage] = useState('');
   const [productsWithBadges, setProductsWithBadges] = useState({});
   const [operatorsWithBadges, setOperatorsWithBadges] = useState({});
+  const [badgeEntitiesModal, setBadgeEntitiesModal] = useState({ open: false, badge: null, type: 'products', items: [], loading: false });
 
   const [newBadge, setNewBadge] = useState({
     name: '',
@@ -184,6 +185,19 @@ const AdminBadgeManagementPage = () => {
       console.error('Failed to fetch operators:', error);
       setOperators([]);
       setOperatorsWithBadges({});
+    }
+  };
+
+  const openBadgeEntities = async (badge, type) => {
+    setBadgeEntitiesModal({ open: true, badge, type, items: [], loading: true });
+    try {
+      const endpoint = type === 'products' ? `/api/admin/badges/${badge._id}/products` : `/api/admin/badges/${badge._id}/operators`;
+      const { data } = await api.get(endpoint);
+      const items = Array.isArray(data?.products) ? data.products : (Array.isArray(data?.operators) ? data.operators : []);
+      setBadgeEntitiesModal({ open: true, badge, type, items, loading: false });
+    } catch (error) {
+      setBadgeEntitiesModal({ open: true, badge, type, items: [], loading: false });
+      setMessage(error.response?.data?.message || 'Impossible de charger les éléments associés à ce badge');
     }
   };
 
@@ -474,7 +488,7 @@ const AdminBadgeManagementPage = () => {
                     </div>
                   </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => handleEditBadge(badge)}
                     className="text-blue-600 hover:text-blue-700 text-sm font-bold"
@@ -488,6 +502,18 @@ const AdminBadgeManagementPage = () => {
                   >
                     <Trash2 size={16} className="inline mr-1" />
                     Désactiver
+                  </button>
+                  <button
+                    onClick={() => openBadgeEntities(badge, 'products')}
+                    className="text-green-600 hover:text-green-700 text-sm font-bold"
+                  >
+                    Produits
+                  </button>
+                  <button
+                    onClick={() => openBadgeEntities(badge, 'operators')}
+                    className="text-purple-600 hover:text-purple-700 text-sm font-bold"
+                  >
+                    Opérateurs
                   </button>
                 </div>
               </div>
@@ -1310,6 +1336,104 @@ const AdminBadgeManagementPage = () => {
 
       <ScrollToTopButton />
     </div>
+
+      {/* Badge Entities Modal */}
+      {badgeEntitiesModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-bold">Badge</p>
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-2xl">{badgeEntitiesModal.badge?.icon}</span>
+                  <span>{badgeEntitiesModal.badge?.name}</span>
+                  <span className={`text-xs px-2 py-1 rounded ${badgeEntitiesModal.badge?.type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                    {badgeEntitiesModal.badge?.type === 'product' ? 'Produit' : 'Opérateur'}
+                  </span>
+                </h2>
+              </div>
+              <button
+                onClick={() => setBadgeEntitiesModal({ open: false, badge: null, type: 'products', items: [], loading: false })}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-800 mb-2">
+                {badgeEntitiesModal.type === 'products' ? 'Produits avec ce badge' : 'Opérateurs avec ce badge'}
+              </h3>
+              {badgeEntitiesModal.loading ? (
+                <p className="text-sm text-gray-600">Chargement...</p>
+              ) : (
+                <>
+                  {badgeEntitiesModal.items.length === 0 && (
+                    <p className="text-sm text-gray-600">Aucun élément trouvé pour ce badge.</p>
+                  )}
+                  <div className="space-y-3">
+                    {badgeEntitiesModal.type === 'products' && badgeEntitiesModal.items.map((p) => (
+                      <div key={p._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-gray-900">{p.title}</p>
+                          <p className="text-sm text-gray-600">{p.category} • {p.city}</p>
+                          {Array.isArray(p.badges) && p.badges.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                              {p.badges.map((bItem) => {
+                                const b = bItem.badgeId || bItem;
+                                return (
+                                  <span key={b._id} className="px-2 py-1 rounded" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
+                                    {b.icon} {b.name}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <a
+                          href={`/products/${p._id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                        >
+                          Ouvrir
+                        </a>
+                      </div>
+                    ))}
+
+                    {badgeEntitiesModal.type === 'operators' && badgeEntitiesModal.items.map((op) => (
+                      <div key={op._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-gray-900">{op.companyName || 'Opérateur'}</p>
+                          <p className="text-sm text-gray-600">{op.user?.name} • {op.status}</p>
+                          {Array.isArray(op.badges) && op.badges.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                              {op.badges.map((bItem) => {
+                                const b = bItem.badgeId || bItem;
+                                return (
+                                  <span key={b._id} className="px-2 py-1 rounded" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
+                                    {b.icon} {b.name}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <a
+                          href={`/admin/operators`}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                        >
+                          Aller aux opérateurs
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
   );
 };
 

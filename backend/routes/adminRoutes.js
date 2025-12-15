@@ -15,6 +15,8 @@ import {
   assignBadgeToOperators,
   updateBadge,
   deleteBadge,
+  getProductsByBadge,
+  getOperatorsByBadge,
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -37,5 +39,7 @@ router.post('/badges/assign-products', protect, authorize('Admin'), assignBadgeT
 router.post('/badges/assign-operators', protect, authorize('Admin'), assignBadgeToOperators);
 router.put('/badges/:id', protect, authorize('Admin'), updateBadge);
 router.delete('/badges/:id', protect, authorize('Admin'), deleteBadge);
+router.get('/badges/:id/products', protect, authorize('Admin'), getProductsByBadge);
+router.get('/badges/:id/operators', protect, authorize('Admin'), getOperatorsByBadge);
 
 export default router;

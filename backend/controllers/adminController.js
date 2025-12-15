@@ -13,6 +13,7 @@ import {
   updateProductMetrics, 
   updateOperatorMetrics 
 } from '../utils/badgeService.js';
+import Badge from '../models/badgeModel.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -767,6 +768,52 @@ const deleteBadge = async (req, res) => {
   }
 };
 
+// @desc    Get products that have a specific badge
+// @route   GET /api/admin/badges/:badgeId/products
+// @access  Private/Admin
+const getProductsByBadge = async (req, res) => {
+  try {
+    const { badgeId } = req.params;
+    const badge = await Badge.findById(badgeId);
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    const products = await Product.find({ 'badges.badgeId': badgeId })
+      .populate('operator', 'companyName')
+      .populate('badges.badgeId')
+      .sort({ createdAt: -1 });
+
+    res.json({ badge, products });
+  } catch (error) {
+    console.error('Get products by badge error:', error);
+    res.status(500).json({ message: 'Failed to fetch products for badge' });
+  }
+};
+
+// @desc    Get operators that have a specific badge
+// @route   GET /api/admin/badges/:badgeId/operators
+// @access  Private/Admin
+const getOperatorsByBadge = async (req, res) => {
+  try {
+    const { badgeId } = req.params;
+    const badge = await Badge.findById(badgeId);
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+
+    const operators = await Operator.find({ 'badges.badgeId': badgeId })
+      .populate('user', 'name email')
+      .populate('badges.badgeId')
+      .sort({ createdAt: -1 });
+
+    res.json({ badge, operators });
+  } catch (error) {
+    console.error('Get operators by badge error:', error);
+    res.status(500).json({ message: 'Failed to fetch operators for badge' });
+  }
+};
+
 export { 
   getAdminStats,
   getOperators, 
@@ -783,4 +830,6 @@ export {
   assignBadgeToOperators,
   updateBadge,
   deleteBadge,
+  getProductsByBadge,
+  getOperatorsByBadge,
 };
