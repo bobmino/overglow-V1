@@ -2,6 +2,7 @@ import Schedule from '../models/scheduleModel.js';
 import Product from '../models/productModel.js';
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
+import { getScheduleAvailability, getMultipleScheduleAvailability } from '../utils/availabilityService.js';
 
 // @desc    Create a schedule
 // @route   POST /api/products/:productId/schedules
@@ -42,12 +43,51 @@ const createSchedule = async (req, res) => {
   res.status(201).json(createdSchedule);
 };
 
-// @desc    Get schedules for a product
+// @desc    Get schedules for a product with availability
 // @route   GET /api/products/:productId/schedules
 // @access  Public
 const getSchedules = async (req, res) => {
-  const schedules = await Schedule.find({ product: req.params.productId });
-  res.json(schedules);
+  try {
+    const schedules = await Schedule.find({ product: req.params.productId })
+      .sort({ date: 1, time: 1 });
+    
+    // Get availability for all schedules
+    const scheduleIds = schedules.map(s => s._id.toString());
+    const availabilityMap = await getMultipleScheduleAvailability(scheduleIds);
+    
+    // Enrich schedules with availability data
+    const schedulesWithAvailability = schedules.map(schedule => {
+      const availability = availabilityMap[schedule._id.toString()] || {
+        available: schedule.capacity,
+        booked: 0,
+        total: schedule.capacity,
+      };
+      
+      const scheduleObj = schedule.toObject();
+      
+      // Check if schedule date/time has passed
+      const scheduleDateTime = new Date(schedule.date);
+      const [hours, minutes] = schedule.time.split(':').map(Number);
+      scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
+      const isPast = scheduleDateTime < new Date();
+      
+      return {
+        ...scheduleObj,
+        availability: {
+          available: availability.available,
+          booked: availability.booked,
+          total: availability.total,
+          isPast,
+          isAvailable: availability.available > 0 && !isPast,
+        },
+      };
+    });
+    
+    res.json(schedulesWithAvailability);
+  } catch (error) {
+    console.error('Get schedules error:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des créneaux' });
+  }
 };
 
 // @desc    Update a schedule

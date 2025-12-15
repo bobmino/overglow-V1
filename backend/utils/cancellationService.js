@@ -173,15 +173,9 @@ export const cancelBooking = async (bookingId, reason = '', cancelledBy = 'user'
       await notifyWithdrawalRequest(withdrawal, adminIds);
     }
 
-    // Update schedule capacity
-    const schedule = await Schedule.findById(booking.schedule._id);
-    if (schedule) {
-      // Remove booking from schedule bookings array
-      schedule.bookings = schedule.bookings.filter(
-        b => b.toString() !== booking._id.toString()
-      );
-      await schedule.save();
-    }
+    // Update schedule capacity using availability service
+    const { releaseCapacity } = await import('./availabilityService.js');
+    await releaseCapacity(booking.schedule._id, booking._id);
 
     return {
       booking,

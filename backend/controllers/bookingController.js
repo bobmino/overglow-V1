@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Booking from '../models/bookingModel.js';
 import Schedule from '../models/scheduleModel.js';
 import Product from '../models/productModel.js';
@@ -8,6 +9,7 @@ import { sendBookingConfirmation, sendCancellationEmail } from '../utils/emailSe
 import { notifyNewBooking } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
+import { checkAvailability, reserveCapacity } from '../utils/availabilityService.js';
 
 // @desc    Create payment intent (Placeholder)
 // @route   POST /api/bookings/create-payment-intent
@@ -25,77 +27,134 @@ const createPaymentIntent = async (req, res) => {
 // @route   POST /api/bookings
 // @access  Private
 const createBooking = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const { scheduleId, numberOfTickets, paymentIntentId, skipTheLineEnabled, skipTheLinePrice } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      await session.abortTransaction();
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-  const schedule = await Schedule.findById(scheduleId).populate('product');
-  if (!schedule) {
-    res.status(404);
-    throw new Error('Schedule not found');
-  }
+    const { scheduleId, numberOfTickets, paymentIntentId, skipTheLineEnabled, skipTheLinePrice } = req.body;
 
-  if (schedule.bookings.length + numberOfTickets > schedule.capacity) {
-    res.status(400);
-    throw new Error('Not enough capacity');
-  }
+    // Validate inputs
+    const tickets = Number(numberOfTickets);
+    if (!tickets || tickets < 1) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: 'Nombre de tickets invalide' });
+    }
 
-  const ticketPrice = Number(schedule.price) || 0;
-  const baseTotal = ticketPrice * Number(numberOfTickets);
-  
-  // Add skip-the-line price if enabled
-  const skipTheLineAmount = (skipTheLineEnabled && skipTheLinePrice) ? Number(skipTheLinePrice) : 0;
-  const totalAmount = baseTotal + skipTheLineAmount;
+    // Check availability atomically
+    const availabilityCheck = await checkAvailability(scheduleId, tickets);
+    if (!availabilityCheck.available) {
+      await session.abortTransaction();
+      return res.status(400).json({ 
+        message: availabilityCheck.reason || 'Créneau non disponible',
+        availability: availabilityCheck.availability,
+      });
+    }
 
-  const booking = new Booking({
-    user: req.user._id,
-    schedule: scheduleId,
-    operator: schedule.product.operator,
-    numberOfTickets,
-    totalAmount,
-    totalPrice: totalAmount,
-    status: 'Confirmed', // Assuming payment succeeded if we are here
-    paymentIntentId,
-  });
+    // Reserve capacity atomically
+    const reservation = await reserveCapacity(scheduleId, tickets);
+    if (!reservation.success) {
+      await session.abortTransaction();
+      return res.status(400).json({ 
+        message: reservation.reason || 'Erreur lors de la réservation',
+        availability: reservation.availability,
+      });
+    }
 
-  const createdBooking = await booking.save();
+    // Get schedule with product within transaction
+    const schedule = await Schedule.findById(scheduleId)
+      .populate('product')
+      .session(session);
+    
+    if (!schedule) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: 'Schedule not found' });
+    }
 
-  schedule.bookings.push(createdBooking._id);
-  await schedule.save();
+    // Calculate pricing
+    const ticketPrice = Number(schedule.price) || 0;
+    const baseTotal = ticketPrice * tickets;
+    
+    // Add skip-the-line price if enabled
+    const skipTheLineAmount = (skipTheLineEnabled && skipTheLinePrice) ? Number(skipTheLinePrice) * tickets : 0;
+    const totalAmount = baseTotal + skipTheLineAmount;
 
-  // Populate booking for email
-  const populatedBooking = await Booking.findById(createdBooking._id)
-    .populate({
-      path: 'schedule',
-      populate: { path: 'product' }
+    // Create booking within transaction
+    const booking = new Booking({
+      user: req.user._id,
+      schedule: scheduleId,
+      operator: schedule.product.operator,
+      numberOfTickets: tickets,
+      totalAmount,
+      totalPrice: totalAmount,
+      status: 'Confirmed', // Assuming payment succeeded if we are here
+      paymentIntentId,
     });
 
-  // Send confirmation email
-  sendBookingConfirmation(populatedBooking, req.user);
+    const createdBooking = await booking.save({ session });
 
-  const bookingObject = populatedBooking.toObject();
-  bookingObject.totalPrice = typeof bookingObject.totalPrice === 'number'
-    ? bookingObject.totalPrice
-    : bookingObject.totalAmount;
-  bookingObject.totalAmount = typeof bookingObject.totalAmount === 'number'
-    ? bookingObject.totalAmount
-    : bookingObject.totalPrice;
-  
-  // Notify operator of new booking
-  if (createdBooking.operator) {
-    await notifyNewBooking(createdBooking, createdBooking.operator);
-    // Update metrics (async, don't wait)
-    updateProductMetrics(schedule.product._id).catch(err => console.error('Error updating product metrics:', err));
-    updateOperatorMetrics(createdBooking.operator).catch(err => console.error('Error updating operator metrics:', err));
+    // Add booking to schedule within transaction
+    schedule.bookings.push(createdBooking._id);
+    await schedule.save({ session });
+
+    // Commit transaction
+    await session.commitTransaction();
+
+    // Populate booking for email (outside transaction for better performance)
+    const populatedBooking = await Booking.findById(createdBooking._id)
+      .populate({
+        path: 'schedule',
+        populate: { path: 'product' }
+      });
+
+    // Send confirmation email (async, don't wait)
+    sendBookingConfirmation(populatedBooking, req.user).catch(err => 
+      console.error('Error sending booking confirmation email:', err)
+    );
+
+    const bookingObject = populatedBooking.toObject();
+    bookingObject.totalPrice = typeof bookingObject.totalPrice === 'number'
+      ? bookingObject.totalPrice
+      : bookingObject.totalAmount;
+    bookingObject.totalAmount = typeof bookingObject.totalAmount === 'number'
+      ? bookingObject.totalAmount
+      : bookingObject.totalPrice;
+    
+    // Notify operator of new booking (async, don't wait)
+    if (createdBooking.operator) {
+      notifyNewBooking(createdBooking, createdBooking.operator).catch(err => 
+        console.error('Error notifying operator:', err)
+      );
+      // Update metrics (async, don't wait)
+      updateProductMetrics(schedule.product._id).catch(err => 
+        console.error('Error updating product metrics:', err)
+      );
+      updateOperatorMetrics(createdBooking.operator).catch(err => 
+        console.error('Error updating operator metrics:', err)
+      );
+    }
+
+    // Update user loyalty stats (async, don't wait)
+    updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err => 
+      console.error('Error updating user loyalty stats:', err)
+    );
+
+    res.status(201).json(bookingObject);
+  } catch (error) {
+    await session.abortTransaction();
+    console.error('Create booking error:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la création de la réservation',
+      error: error.message 
+    });
+  } finally {
+    session.endSession();
   }
-
-  // Update user loyalty stats (async, don't wait)
-  updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err => console.error('Error updating user loyalty stats:', err));
-
-  res.status(201).json(bookingObject);
 };
 
 // @desc    Get my bookings
