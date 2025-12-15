@@ -89,10 +89,10 @@ const BlogPostPage = () => {
         <meta property="og:title" content={post.metaTitle || post.title} />
         <meta property="og:description" content={post.metaDescription || post.excerpt} />
         <meta property="og:image" content={post.featuredImage || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="article" />
         <meta name="keywords" content={post.keywords?.join(', ')} />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
 
       <div className="container mx-auto px-4">
@@ -164,7 +164,7 @@ const BlogPostPage = () => {
             {/* Share Buttons */}
             <ShareButtons
               product={post}
-              url={window.location.href}
+              url={typeof window !== 'undefined' ? window.location.href : ''}
               title={post.title}
               description={post.excerpt}
             />

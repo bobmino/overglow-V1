@@ -333,7 +333,7 @@ const SearchPage = () => {
         <meta name="description" content="Recherchez et découvrez les meilleures expériences authentiques au Maroc" />
         <meta property="og:title" content={searchTitle} />
         <meta property="og:description" content="Recherchez et découvrez les meilleures expériences authentiques au Maroc" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
       {/* Search Bar */}
       <div className="mb-6">

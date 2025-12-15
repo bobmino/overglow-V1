@@ -352,9 +352,9 @@ const DestinationPage = () => {
         <meta property="og:title" content={`Expériences à ${info.name} | Overglow Trip`} />
         <meta property="og:description" content={info.description} />
         <meta property="og:image" content={info.image} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
       {/* Hero Section */}
       <div className="relative h-64 md:h-96 overflow-hidden">

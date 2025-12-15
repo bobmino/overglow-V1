@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
 import { 
@@ -321,13 +322,13 @@ const ProductDetailPage = () => {
         <meta property="og:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'} | Overglow Trip`} />
         <meta property="og:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
         <meta property="og:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="product" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'}`} />
         <meta name="twitter:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
         <meta name="twitter:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
       <div className="container mx-auto px-4 py-8 pt-24">
         {/* Breadcrumb */}

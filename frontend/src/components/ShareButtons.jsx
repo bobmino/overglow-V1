@@ -4,7 +4,7 @@ import { Share2, Facebook, Twitter, MessageCircle, Link as LinkIcon, Check } fro
 const ShareButtons = ({ product, url, title, description }) => {
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = url || window.location.href;
+  const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
   const shareTitle = title || product?.title || 'Découvrez cette expérience sur Overglow Trip';
   const shareDescription = description || product?.description?.substring(0, 200) || '';
 
@@ -36,7 +36,7 @@ const ShareButtons = ({ product, url, title, description }) => {
         shareLink = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
         break;
       case 'native':
-        if (navigator.share) {
+        if (typeof navigator !== 'undefined' && navigator.share) {
           navigator.share({
             title: shareTitle,
             text: shareDescription,
@@ -49,7 +49,7 @@ const ShareButtons = ({ product, url, title, description }) => {
         return;
     }
 
-    if (shareLink) {
+    if (shareLink && typeof window !== 'undefined') {
       window.open(shareLink, '_blank', 'width=600,height=400');
     }
   };
@@ -59,7 +59,7 @@ const ShareButtons = ({ product, url, title, description }) => {
       <span className="text-sm font-medium text-slate-700 mr-2">Partager :</span>
       
       {/* Native Share API (mobile) */}
-      {navigator.share && (
+      {typeof navigator !== 'undefined' && navigator.share && (
         <button
           onClick={() => handleShare('native')}
           className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition"

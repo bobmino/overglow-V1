@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { Filter, MapPin } from 'lucide-react';
@@ -90,9 +91,9 @@ const CategoryPage = () => {
         <meta name="description" content={info.description} />
         <meta property="og:title" content={`${info.name} au Maroc | Overglow Trip`} />
         <meta property="og:description" content={info.description} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">

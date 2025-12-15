@@ -95,7 +95,7 @@ const BlogPage = () => {
         <meta name="description" content="Découvrez nos articles sur les destinations, conseils de voyage, culture marocaine et bien plus encore" />
         <meta property="og:title" content="Blog Overglow Trip - Conseils et Guides de Voyage" />
         <meta property="og:description" content="Découvrez nos articles sur les destinations, conseils de voyage, culture marocaine et bien plus encore" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
 
       <div className="container mx-auto px-4">
