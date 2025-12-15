@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, MapPin, Heart } from 'lucide-react';
+import BadgeDisplay from './BadgeDisplay';
 
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
   if (!product) return null;
@@ -38,6 +39,12 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           <MapPin size={14} className="mr-1" />
           {product.city}
         </div>
+
+        {Array.isArray(product.badges) && product.badges.length > 0 && (
+          <div className="mb-2">
+            <BadgeDisplay badges={product.badges} size="sm" />
+          </div>
+        )}
         
         <div className="flex items-center mb-2">
           <Star size={14} className="text-yellow-500 fill-yellow-500 mr-1" />

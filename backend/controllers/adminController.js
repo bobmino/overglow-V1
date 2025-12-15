@@ -102,6 +102,7 @@ const getOperators = async (req, res) => {
     
     const operators = await Operator.find(query)
       .populate('user', 'name email')
+      .populate('badges.badgeId')
       .sort({ createdAt: -1 });
     
     // If filtering by onboarding status, we need to check OperatorOnboarding
@@ -275,6 +276,7 @@ const getProducts = async (req, res) => {
     const query = status ? { status } : {};
     const products = await Product.find(query)
       .populate('operator', 'companyName')
+      .populate('badges.badgeId')
       .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
