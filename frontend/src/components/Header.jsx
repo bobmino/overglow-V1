@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock } from 'lucide-react';
+import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock, FileText } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import CurrencySelector from './CurrencySelector';
 import { useAuth } from '../context/AuthContext';
@@ -187,6 +187,14 @@ const Header = () => {
                       >
                         <AlertCircle size={18} className="mr-3" />
                         Demandes d'approbation
+                      </Link>
+                      <Link 
+                        to="/admin/blog" 
+                        className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <FileText size={18} className="mr-3" />
+                        Gérer le Blog
                       </Link>
                     </>
                   )}

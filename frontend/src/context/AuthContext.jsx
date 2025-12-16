@@ -25,6 +25,20 @@ export const AuthProvider = ({ children }) => {
       setSentryUser(parsedUser);
     }
     setLoading(false);
+    
+    // Listen for token refresh events
+    const handleTokenRefresh = (event) => {
+      if (event.detail) {
+        setUser(event.detail);
+        setSentryUser(event.detail);
+      }
+    };
+    
+    window.addEventListener('tokenRefreshed', handleTokenRefresh);
+    
+    return () => {
+      window.removeEventListener('tokenRefreshed', handleTokenRefresh);
+    };
   }, []);
 
   const login = (userData) => {

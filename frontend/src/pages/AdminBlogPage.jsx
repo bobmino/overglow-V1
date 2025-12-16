@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
-import { FileText, CheckCircle, XCircle, Clock, Eye, Plus, Sparkles } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Clock, Eye, Plus, Edit, Trash2 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
@@ -9,7 +9,6 @@ const AdminBlogPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [initializing, setInitializing] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   const fetchPosts = async () => {
@@ -31,23 +30,6 @@ const AdminBlogPage = () => {
     fetchPosts();
   }, [filter, pagination.page]);
 
-  const handleInitialize = async () => {
-    if (!window.confirm('Voulez-vous initialiser les articles de blog par défaut ? Les articles existants seront conservés.')) {
-      return;
-    }
-
-    try {
-      setInitializing(true);
-      const { data } = await api.post('/api/blog/admin/initialize');
-      alert(`Articles initialisés : ${data.created} créés, ${data.skipped} déjà existants. Total : ${data.totalPosts}`);
-      fetchPosts();
-    } catch (error) {
-      console.error('Failed to initialize blog posts:', error);
-      alert('Erreur lors de l\'initialisation des articles');
-    } finally {
-      setInitializing(false);
-    }
-  };
 
   const handleTogglePublish = async (postId, currentStatus) => {
     try {
@@ -114,14 +96,6 @@ const AdminBlogPage = () => {
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3 mb-6">
-        <button
-          onClick={handleInitialize}
-          disabled={initializing}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2 disabled:opacity-50"
-        >
-          <Sparkles size={18} />
-          {initializing ? 'Initialisation...' : 'Initialiser les articles par défaut'}
-        </button>
         <Link
           to="/admin/blog/new"
           className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
@@ -173,13 +147,13 @@ const AdminBlogPage = () => {
           <FileText size={48} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Aucun article</h2>
           <p className="text-gray-600 mb-4">Aucun article trouvé avec ce filtre</p>
-          <button
-            onClick={handleInitialize}
-            disabled={initializing}
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50"
+          <Link
+            to="/admin/blog/new"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
           >
-            {initializing ? 'Initialisation...' : 'Initialiser les articles par défaut'}
-          </button>
+            <Plus size={18} />
+            Créer le premier article
+          </Link>
         </div>
       ) : (
         <>
@@ -234,26 +208,35 @@ const AdminBlogPage = () => {
                     <Link
                       to={`/blog/${post.slug}`}
                       target="_blank"
-                      className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                      title="Voir l'article"
                     >
                       <Eye size={16} />
-                      Voir
+                    </Link>
+                    <Link
+                      to={`/admin/blog/${post._id}/edit`}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                      title="Modifier l'article"
+                    >
+                      <Edit size={16} />
                     </Link>
                     <button
                       onClick={() => handleTogglePublish(post._id, post.isPublished)}
-                      className={`flex-1 px-3 py-2 rounded-lg font-semibold transition ${
+                      className={`px-3 py-2 rounded-lg font-semibold transition ${
                         post.isPublished
                           ? 'bg-yellow-600 text-white hover:bg-yellow-700'
                           : 'bg-green-600 text-white hover:bg-green-700'
                       }`}
+                      title={post.isPublished ? 'Dépublier' : 'Publier'}
                     >
                       {post.isPublished ? 'Dépublier' : 'Publier'}
                     </button>
                     <button
                       onClick={() => handleDelete(post._id)}
-                      className="px-3 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                      className="px-3 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center"
+                      title="Supprimer l'article"
                     >
-                      <XCircle size={16} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>

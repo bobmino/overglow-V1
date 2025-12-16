@@ -199,9 +199,15 @@ api.interceptors.response.use(
               // Mettre à jour le token dans localStorage
               const updatedUser = {
                 ...user,
-                token: refreshResponse.data.token
+                token: refreshResponse.data.token,
+                refreshToken: refreshResponse.data.refreshToken || user.refreshToken // Garder le refresh token s'il est renouvelé
               };
               localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+              
+              // Mettre à jour le contexte d'authentification si disponible
+              if (window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('tokenRefreshed', { detail: updatedUser }));
+              }
               
               // Réessayer la requête originale avec le nouveau token
               originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
