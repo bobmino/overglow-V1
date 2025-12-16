@@ -1,8 +1,7 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
-import { usePageTracking } from './hooks/useAnalytics';
 
 // Critical components (loaded immediately)
 import Hero from './components/Hero';
@@ -69,9 +68,6 @@ const LoadingFallback = () => (
 );
 
 function App() {
-  // Track page views automatically
-  usePageTracking();
-
   // Prefetch critical routes on mount
   useEffect(() => {
     if ('requestIdleCallback' in window) {

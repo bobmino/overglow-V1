@@ -3,8 +3,12 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import MobileBottomNav from './MobileBottomNav';
+import { usePageTracking } from '../hooks/useAnalytics';
 
 const Layout = () => {
+  // Track page views - must be inside Router context
+  usePageTracking();
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
