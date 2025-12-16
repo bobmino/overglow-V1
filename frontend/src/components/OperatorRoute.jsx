@@ -19,8 +19,25 @@ const OperatorRoute = ({ children }) => {
         const { data } = await api.get('/api/operator/onboarding');
         setOnboardingStatus(data);
       } catch (error) {
-        // If error, assume onboarding needs to be completed
-        setOnboardingStatus({ onboardingStatus: 'in_progress', progress: 0 });
+        // Log error for debugging
+        console.error('OperatorRoute - Onboarding check error:', {
+          status: error.response?.status,
+          message: error.response?.data?.message || error.message,
+          url: error.config?.url
+        });
+        
+        // If 401 (unauthorized), might be token issue - allow access and let refresh token handle it
+        if (error.response?.status === 401) {
+          console.warn('OperatorRoute - 401 error, allowing access (token refresh will handle)');
+          setOnboardingStatus(null); // Don't block access
+        } else if (error.response?.status === 404) {
+          // No onboarding record found - assume needs to be completed
+          setOnboardingStatus({ onboardingStatus: 'in_progress', progress: 0 });
+        } else {
+          // Other errors - don't block access, assume approved
+          console.warn('OperatorRoute - Error checking onboarding, allowing access');
+          setOnboardingStatus(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -46,8 +63,9 @@ const OperatorRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Redirect to onboarding if not completed or not approved
-  if (onboardingStatus && onboardingStatus.onboardingStatus !== 'approved') {
+  // Redirect to onboarding only if status is explicitly set and not approved
+  // Don't redirect if onboardingStatus is null (error case or not checked yet)
+  if (onboardingStatus && onboardingStatus.onboardingStatus && onboardingStatus.onboardingStatus !== 'approved') {
     return <Navigate to="/operator/onboarding" replace />;
   }
 
