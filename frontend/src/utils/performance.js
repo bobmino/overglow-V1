@@ -64,18 +64,9 @@ export const deferScript = (src) => {
 
 /**
  * Measure and report Core Web Vitals
+ * Note: Function removed to avoid build errors
+ * To enable: npm install web-vitals and create a new function
  */
-export const reportWebVitals = () => {
-  if (typeof window !== 'undefined' && 'web-vitals' in window) {
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
-      onCLS(console.log);
-      onFID(console.log);
-      onFCP(console.log);
-      onLCP(console.log);
-      onTTFB(console.log);
-    });
-  }
-};
 
 /**
  * Optimize images with responsive srcset

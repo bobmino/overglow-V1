@@ -20,6 +20,14 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      // Externalize packages that shouldn't be bundled
+      external: (id) => {
+        // Don't bundle web-vitals if not installed
+        if (id === 'web-vitals') {
+          return true;
+        }
+        return false;
+      },
       output: {
         manualChunks: (id) => {
           // Vendor chunks
