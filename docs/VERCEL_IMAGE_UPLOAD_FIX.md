@@ -53,9 +53,9 @@
    ```
 3. Configurer les variables d'environnement :
    ```env
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
+   CLOUDINARY_CLOUD_NAME=
+   CLOUDINARY_API_KEY=
+   CLOUDINARY_API_SECRET=
    ```
 4. Modifier `backend/middleware/uploadMiddleware.js` pour uploader vers Cloudinary
 5. Retourner l'URL Cloudinary au lieu de la data URL

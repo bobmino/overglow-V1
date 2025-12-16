@@ -1,13 +1,15 @@
 import path from 'path';
 import multer from 'multer';
 import { compressImageBuffer } from '../utils/imageCompression.js';
+import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryService.js';
 
 // Use memory storage for Vercel (read-only filesystem)
-// In production, images should be uploaded to Cloudinary/S3
 const storage = multer.memoryStorage();
 
-// Post-processing: compress images after upload (memory storage)
+// Post-processing: compress and upload images (memory storage)
 const compressAfterUpload = async (req, res, next) => {
+  const useCloudinary = isCloudinaryConfigured();
+
   if (req.files) {
     // Multiple files
     for (const file of req.files) {
@@ -21,8 +23,24 @@ const compressAfterUpload = async (req, res, next) => {
         });
         file.buffer = compressedBuffer;
         file.compressed = true;
-        // Convert to base64 for storage (temporary solution for Vercel)
-        file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+
+        // Upload to Cloudinary if configured, otherwise use base64
+        if (useCloudinary) {
+          try {
+            const cloudinaryUrl = await uploadToCloudinary(compressedBuffer, {
+              folder: 'overglow-trip/uploads',
+            });
+            file.cloudinaryUrl = cloudinaryUrl;
+            file.dataUrl = cloudinaryUrl; // For backward compatibility
+          } catch (cloudinaryError) {
+            console.error('Cloudinary upload failed, falling back to base64:', cloudinaryError);
+            // Fallback to base64 if Cloudinary fails
+            file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+          }
+        } else {
+          // Convert to base64 if Cloudinary not configured
+          file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+        }
       } catch (error) {
         console.error('Error compressing image:', error);
         // Fallback to base64 without compression
@@ -44,8 +62,24 @@ const compressAfterUpload = async (req, res, next) => {
       });
       req.file.buffer = compressedBuffer;
       req.file.compressed = true;
-      // Convert to base64 for storage (temporary solution for Vercel)
-      req.file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+
+      // Upload to Cloudinary if configured, otherwise use base64
+      if (useCloudinary) {
+        try {
+          const cloudinaryUrl = await uploadToCloudinary(compressedBuffer, {
+            folder: 'overglow-trip/uploads',
+          });
+          req.file.cloudinaryUrl = cloudinaryUrl;
+          req.file.dataUrl = cloudinaryUrl; // For backward compatibility
+        } catch (cloudinaryError) {
+          console.error('Cloudinary upload failed, falling back to base64:', cloudinaryError);
+          // Fallback to base64 if Cloudinary fails
+          req.file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+        }
+      } else {
+        // Convert to base64 if Cloudinary not configured
+        req.file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+      }
     } catch (error) {
       console.error('Error compressing image:', error);
       // Fallback to base64 without compression

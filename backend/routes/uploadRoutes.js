@@ -10,10 +10,14 @@ router.post('/', strictLimiter, upload.single('image'), compressAfterUpload, (re
     return res.status(400).json({ message: 'No file uploaded' });
   }
   
-  // Return data URL for Vercel (read-only filesystem)
-  // In production, this should be uploaded to Cloudinary/S3 and return a URL
+  // Return Cloudinary URL if available, otherwise data URL (base64)
   if (req.file.dataUrl) {
-    return res.json({ url: req.file.dataUrl, message: 'Image uploaded successfully' });
+    const isCloudinaryUrl = req.file.dataUrl.startsWith('http');
+    return res.json({ 
+      url: req.file.dataUrl, 
+      message: 'Image uploaded successfully',
+      source: isCloudinaryUrl ? 'cloudinary' : 'base64'
+    });
   }
   
   // Fallback (should not happen)
@@ -26,8 +30,7 @@ router.post('/images', strictLimiter, upload.array('images', 10), compressAfterU
     return res.status(400).json({ message: 'No files uploaded' });
   }
   
-  // Return data URLs for Vercel (read-only filesystem)
-  // In production, these should be uploaded to Cloudinary/S3 and return URLs
+  // Return Cloudinary URLs if available, otherwise data URLs (base64)
   const urls = req.files
     .filter(file => file.dataUrl)
     .map(file => file.dataUrl);
@@ -36,7 +39,9 @@ router.post('/images', strictLimiter, upload.array('images', 10), compressAfterU
     return res.status(500).json({ message: 'Error processing images' });
   }
   
-  res.json({ urls, images: urls });
+  const source = urls[0]?.startsWith('http') ? 'cloudinary' : 'base64';
+  
+  res.json({ urls, images: urls, source });
 });
 
 export default router;
