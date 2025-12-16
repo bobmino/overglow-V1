@@ -14,38 +14,59 @@ import { body } from 'express-validator';
 
 const router = express.Router();
 
-// Error wrapper to catch all errors
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch((error) => {
-    console.error('Blog route error:', error);
-    console.error('Error stack:', error.stack);
-    // Always return a valid response
-    if (req.path === '/categories') {
-      return res.json({ categories: [] });
-    }
-    if (req.path === '/tags') {
-      return res.json({ tags: [] });
-    }
-    if (req.path === '/' || !req.path.includes('/')) {
-      return res.json({
-        posts: [],
-        pagination: {
-          page: parseInt(req.query.page) || 1,
-          limit: parseInt(req.query.limit) || 10,
-          total: 0,
-          totalPages: 0,
-        },
-      });
-    }
-    next(error);
+// Fallback handlers - always return valid responses
+const fallbackCategories = (req, res) => {
+  console.warn('Using fallback categories handler');
+  return res.json({ categories: [] });
+};
+
+const fallbackTags = (req, res) => {
+  console.warn('Using fallback tags handler');
+  return res.json({ tags: [] });
+};
+
+const fallbackPosts = (req, res) => {
+  console.warn('Using fallback posts handler');
+  return res.json({
+    posts: [],
+    pagination: {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+      total: 0,
+      totalPages: 0,
+    },
   });
 };
 
-// Public routes with error handling
-router.get('/', asyncHandler(getBlogPosts));
-router.get('/categories', asyncHandler(getBlogCategories));
-router.get('/tags', asyncHandler(getBlogTags));
-router.get('/:slug', asyncHandler(getBlogPostBySlug));
+// Error wrapper - catches all errors and returns valid responses
+const safeHandler = (handler, fallback) => {
+  return async (req, res, next) => {
+    try {
+      const result = handler(req, res, next);
+      // If handler returns a promise, catch its errors
+      if (result && typeof result.catch === 'function') {
+        return result.catch((error) => {
+          console.error('Blog handler promise error:', error);
+          console.error('Error stack:', error.stack);
+          // Use fallback handler to return valid response
+          return fallback(req, res);
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('Blog handler sync error:', error);
+      console.error('Error stack:', error.stack);
+      // Use fallback handler to return valid response
+      return fallback(req, res);
+    }
+  };
+};
+
+// Public routes - always return valid responses even on error
+router.get('/categories', safeHandler(getBlogCategories, fallbackCategories));
+router.get('/tags', safeHandler(getBlogTags, fallbackTags));
+router.get('/', safeHandler(getBlogPosts, fallbackPosts));
+router.get('/:slug', safeHandler(getBlogPostBySlug, (req, res) => res.status(404).json({ message: 'Article non trouvé' })));
 
 // Admin routes
 router.post(
@@ -66,7 +87,7 @@ router.post(
       'Guides pratiques',
     ]).withMessage('Catégorie invalide'),
   ],
-  createBlogPost
+  safeHandler(createBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' }))
 );
 
 router.put(
@@ -78,11 +99,10 @@ router.put(
     body('excerpt').optional().trim().notEmpty(),
     body('content').optional().trim().notEmpty(),
   ],
-  updateBlogPost
+  safeHandler(updateBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' }))
 );
 
-router.delete('/:id', protect, authorize('Admin'), deleteBlogPost);
-router.get('/admin/all', protect, authorize('Admin'), getAllBlogPosts);
+router.delete('/:id', protect, authorize('Admin'), safeHandler(deleteBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' })));
+router.get('/admin/all', protect, authorize('Admin'), safeHandler(getAllBlogPosts, fallbackPosts));
 
 export default router;
-
