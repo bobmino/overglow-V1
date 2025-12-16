@@ -35,14 +35,33 @@ const LoginPage = () => {
     e.preventDefault();
     setSubmitError('');
 
-    if (!validate()) {
+    // Validate form
+    const isValid = validate();
+    if (!isValid) {
+      // Log validation errors for debugging
+      if (import.meta.env.DEV) {
+        console.log('Form validation failed:', errors);
+      }
       return;
     }
 
     setLoading(true);
 
     try {
+      // Log request for debugging (always log for troubleshooting)
+      console.log('🔐 Login attempt:', { 
+        email: formData.email, 
+        passwordLength: formData.password?.length,
+        baseURL: api.defaults.baseURL || 'relative',
+        fullURL: `${api.defaults.baseURL || ''}/api/auth/login`,
+        hasErrors: Object.keys(errors).length > 0,
+        errors: errors
+      });
+
       const { data } = await api.post('/api/auth/login', formData);
+      
+      console.log('✅ Login successful:', { userId: data._id, role: data.role });
+      
       // Store both access token and refresh token
       const userData = {
         ...data,
@@ -53,6 +72,20 @@ const LoginPage = () => {
       trackLogin('email');
       navigate('/');
     } catch (err) {
+      // Enhanced error logging (always log for troubleshooting)
+      console.error('❌ Login error:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        url: err.config?.url,
+        baseURL: err.config?.baseURL,
+        fullURL: err.config?.baseURL + err.config?.url,
+        hasRequest: !!err.request,
+        code: err.code,
+        name: err.name
+      });
+
       const errorData = err.response?.data;
       let errorMessage = 'Login failed. Please try again.';
       
@@ -64,9 +97,14 @@ const LoginPage = () => {
         } else if (typeof errorData === 'string') {
           errorMessage = errorData;
         }
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else if (!err.response && err.request) {
+        errorMessage = 'Network error. Please check your connection and try again.';
       }
       
       setSubmitError(errorMessage);
+    } finally {
       setLoading(false);
     }
   };

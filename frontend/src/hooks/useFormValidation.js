@@ -71,9 +71,11 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
         if (typeof validator === 'function') {
           errorMessage = validator(value);
         } else {
+          // Validator is a function factory (like minLength: (min) => (value) => ...)
           errorMessage = validator(rule.value)(value);
         }
-        if (!errorMessage && rule.message) {
+        // Use custom message if provided, otherwise use validator's message
+        if (errorMessage && rule.message) {
           errorMessage = rule.message;
         }
       }
