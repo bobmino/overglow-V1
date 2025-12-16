@@ -19,6 +19,10 @@ export default defineConfig({
     },
   },
   build: {
+    // Disable inline module preload (prevents data URI issues)
+    modulePreload: {
+      polyfill: false,
+    },
     rollupOptions: {
       // Externalize packages that shouldn't be bundled
       external: (id) => {
