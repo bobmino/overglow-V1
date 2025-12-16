@@ -6,9 +6,24 @@ import { validationResult } from 'express-validator';
 // @route   GET /api/blog
 // @access  Public
 export const getBlogPosts = async (req, res) => {
+  // Always return valid response, even if everything fails
   try {
+    // Check if Blog model exists
+    if (!Blog) {
+      console.warn('Blog model not available, returning empty posts');
+      return res.json({
+        posts: [],
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 10,
+          total: 0,
+          totalPages: 0,
+        },
+      });
+    }
+
     // Check MongoDB connection
-    if (mongoose.connection.readyState !== 1) {
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
       console.warn('MongoDB not connected, returning empty posts');
       return res.json({
         posts: [],
@@ -216,9 +231,16 @@ export const getBlogCategories = async (req, res) => {
 // @route   GET /api/blog/tags
 // @access  Public
 export const getBlogTags = async (req, res) => {
+  // Always return valid response, even if everything fails
   try {
+    // Check if Blog model exists
+    if (!Blog) {
+      console.warn('Blog model not available, returning empty tags');
+      return res.json({ tags: [] });
+    }
+
     // Check MongoDB connection
-    if (mongoose.connection.readyState !== 1) {
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
       console.warn('MongoDB not connected, returning empty tags');
       return res.json({ tags: [] });
     }
@@ -244,7 +266,7 @@ export const getBlogTags = async (req, res) => {
       message: error.message,
       name: error.name,
       code: error.code,
-      mongooseState: mongoose.connection.readyState
+      mongooseState: mongoose.connection?.readyState
     });
     // Always return a valid response, even on error
     return res.json({ tags: [] });

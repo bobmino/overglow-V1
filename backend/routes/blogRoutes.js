@@ -14,11 +14,38 @@ import { body } from 'express-validator';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getBlogPosts);
-router.get('/categories', getBlogCategories);
-router.get('/tags', getBlogTags);
-router.get('/:slug', getBlogPostBySlug);
+// Error wrapper to catch all errors
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch((error) => {
+    console.error('Blog route error:', error);
+    console.error('Error stack:', error.stack);
+    // Always return a valid response
+    if (req.path === '/categories') {
+      return res.json({ categories: [] });
+    }
+    if (req.path === '/tags') {
+      return res.json({ tags: [] });
+    }
+    if (req.path === '/' || !req.path.includes('/')) {
+      return res.json({
+        posts: [],
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 10,
+          total: 0,
+          totalPages: 0,
+        },
+      });
+    }
+    next(error);
+  });
+};
+
+// Public routes with error handling
+router.get('/', asyncHandler(getBlogPosts));
+router.get('/categories', asyncHandler(getBlogCategories));
+router.get('/tags', asyncHandler(getBlogTags));
+router.get('/:slug', asyncHandler(getBlogPostBySlug));
 
 // Admin routes
 router.post(
