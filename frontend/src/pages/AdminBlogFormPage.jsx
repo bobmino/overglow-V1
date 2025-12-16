@@ -112,7 +112,9 @@ const AdminBlogFormPage = () => {
       };
 
       const { data } = await api.post('/api/upload', formDataUpload, config);
-      setFormData(prev => ({ ...prev, featuredImage: data }));
+      // Handle both string (legacy) and object (new) responses
+      const imageUrl = typeof data === 'string' ? data : (data.url || data);
+      setFormData(prev => ({ ...prev, featuredImage: imageUrl }));
       setSuccess('Image uploadée avec succès');
       setUploading(false);
     } catch (error) {

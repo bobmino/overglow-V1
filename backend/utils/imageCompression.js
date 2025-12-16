@@ -3,6 +3,58 @@ import path from 'path';
 import fs from 'fs/promises';
 
 /**
+ * Compress and optimize image from buffer (for Vercel/memory storage)
+ * @param {Buffer} inputBuffer - Image buffer
+ * @param {Object} options - Compression options
+ * @returns {Buffer} Compressed image buffer
+ */
+export const compressImageBuffer = async (inputBuffer, options = {}) => {
+  const {
+    quality = 85,
+    maxWidth = 1920,
+    maxHeight = 1080,
+    format = 'webp',
+  } = options;
+
+  try {
+    // Get image metadata
+    const metadata = await sharp(inputBuffer).metadata();
+    
+    // Calculate resize dimensions
+    let width = metadata.width;
+    let height = metadata.height;
+    
+    if (width > maxWidth || height > maxHeight) {
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+
+    // Compress and resize
+    let pipeline = sharp(inputBuffer)
+      .resize(width, height, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+
+    if (format === 'webp') {
+      pipeline = pipeline.webp({ quality });
+    } else if (format === 'jpeg') {
+      pipeline = pipeline.jpeg({ quality, mozjpeg: true });
+    } else if (format === 'png') {
+      pipeline = pipeline.png({ quality: Math.min(quality, 100), compressionLevel: 9 });
+    }
+
+    const compressedBuffer = await pipeline.toBuffer();
+    return compressedBuffer;
+  } catch (error) {
+    console.error('Image compression error:', error);
+    // Return original buffer if compression fails
+    return inputBuffer;
+  }
+};
+
+/**
  * Compress and optimize image
  * @param {String} inputPath - Path to input image
  * @param {Object} options - Compression options

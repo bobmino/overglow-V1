@@ -1,52 +1,58 @@
 import path from 'path';
 import multer from 'multer';
-import { compressImage } from '../utils/imageCompression.js';
+import { compressImageBuffer } from '../utils/imageCompression.js';
 
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
-  },
-});
+// Use memory storage for Vercel (read-only filesystem)
+// In production, images should be uploaded to Cloudinary/S3
+const storage = multer.memoryStorage();
 
-// Post-processing: compress images after upload
+// Post-processing: compress images after upload (memory storage)
 const compressAfterUpload = async (req, res, next) => {
   if (req.files) {
     // Multiple files
     for (const file of req.files) {
       try {
-        const compressedPath = await compressImage(file.path, {
+        // Compress from buffer (memory storage)
+        const compressedBuffer = await compressImageBuffer(file.buffer, {
           quality: 85,
           maxWidth: 1920,
           maxHeight: 1080,
           format: 'webp',
         });
-        file.path = compressedPath;
+        file.buffer = compressedBuffer;
         file.compressed = true;
+        // Convert to base64 for storage (temporary solution for Vercel)
+        file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
       } catch (error) {
         console.error('Error compressing image:', error);
-        // Continue with original file if compression fails
+        // Fallback to base64 without compression
+        if (file.buffer) {
+          const mimeType = file.mimetype || 'image/jpeg';
+          file.dataUrl = `data:${mimeType};base64,${file.buffer.toString('base64')}`;
+        }
       }
     }
   } else if (req.file) {
     // Single file
     try {
-      const compressedPath = await compressImage(req.file.path, {
+      // Compress from buffer (memory storage)
+      const compressedBuffer = await compressImageBuffer(req.file.buffer, {
         quality: 85,
         maxWidth: 1920,
         maxHeight: 1080,
         format: 'webp',
       });
-      req.file.path = compressedPath;
+      req.file.buffer = compressedBuffer;
       req.file.compressed = true;
+      // Convert to base64 for storage (temporary solution for Vercel)
+      req.file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
     } catch (error) {
       console.error('Error compressing image:', error);
-      // Continue with original file if compression fails
+      // Fallback to base64 without compression
+      if (req.file.buffer) {
+        const mimeType = req.file.mimetype || 'image/jpeg';
+        req.file.dataUrl = `data:${mimeType};base64,${req.file.buffer.toString('base64')}`;
+      }
     }
   }
   next();
