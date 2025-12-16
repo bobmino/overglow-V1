@@ -39,16 +39,15 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'react-vendor';
             }
-            if (id.includes('lucide-react')) {
-              return 'ui-vendor';
-            }
+            // Keep lucide-react with react-vendor to avoid undefined errors
+            // Don't separate it into ui-vendor as it needs React context
             if (id.includes('axios') || id.includes('i18next')) {
               return 'utils-vendor';
             }
             if (id.includes('recharts')) {
               return 'charts-vendor';
             }
-            // Other node_modules
+            // Other node_modules (including lucide-react)
             return 'vendor';
           }
           
