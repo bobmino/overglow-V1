@@ -51,6 +51,7 @@ const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
 const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'));
 const AdminBadgeManagementPage = lazy(() => import('./pages/AdminBadgeManagementPage'));
+const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const WithdrawalsPage = lazy(() => import('./pages/WithdrawalsPage'));
 const AdminWithdrawalsPage = lazy(() => import('./pages/AdminWithdrawalsPage'));
@@ -262,6 +263,13 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBadgeManagementPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="admin/blog" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlogPage />
               </Suspense>
             </PrivateRoute>
           } />

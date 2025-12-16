@@ -8,6 +8,7 @@ import {
   updateBlogPost,
   deleteBlogPost,
   getAllBlogPosts,
+  initializeBlogPosts,
 } from '../controllers/blogController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { body } from 'express-validator';
@@ -125,5 +126,6 @@ router.put(
 
 router.delete('/:id', protect, authorize('Admin'), ultraSafeHandler(deleteBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' })));
 router.get('/admin/all', protect, authorize('Admin'), ultraSafeHandler(getAllBlogPosts, fallbackPosts));
+router.post('/admin/initialize', protect, authorize('Admin'), ultraSafeHandler(initializeBlogPosts, (req, res) => res.status(500).json({ message: 'Service non disponible' })));
 
 export default router;
