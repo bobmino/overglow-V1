@@ -74,13 +74,15 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
         errorMessage = rule(value);
       } else if (rule.type && validators[rule.type]) {
         validator = validators[rule.type];
-        if (typeof validator === 'function') {
-          errorMessage = validator(value);
-        } else {
+        
+        // Check if validator needs a parameter (function factory) or is direct
+        // If rule.value exists, it's likely a function factory like minLength(min) => (value) => ...
+        if (rule.value !== undefined && typeof validator === 'function') {
           // Validator is a function factory (like minLength: (min) => (value) => ...)
-          // Log for debugging
           const validatorFn = validator(rule.value);
           const rawError = validatorFn(value);
+          
+          // Log for debugging
           console.log(`🔍 Validating ${name} with ${rule.type}:`, {
             field: name,
             ruleType: rule.type,
@@ -89,10 +91,17 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
             valueType: typeof value,
             valueLength: value?.length,
             rawError: rawError,
-            customMessage: rule.message
+            customMessage: rule.message,
+            hasValue: value !== undefined && value !== null,
+            valueString: String(value)
           });
+          
           errorMessage = rawError;
+        } else if (typeof validator === 'function') {
+          // Direct validator function
+          errorMessage = validator(value);
         }
+        
         // Use custom message if provided, otherwise use validator's message
         // IMPORTANT: Only replace if there's an error, don't create error from empty string
         if (errorMessage && rule.message) {
