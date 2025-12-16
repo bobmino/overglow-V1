@@ -20,12 +20,14 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-// Log pour debug (toujours, pour voir en production aussi)
-console.log('🔧 API Configuration:', {
-  baseURL: API_URL || 'Using Vite proxy',
-  isProduction: import.meta.env.PROD,
-  hostname: typeof window !== 'undefined' ? window.location.hostname : 'N/A'
-});
+// Log pour debug (uniquement en développement)
+if (import.meta.env.DEV) {
+  console.log('🔧 API Configuration:', {
+    baseURL: API_URL || 'Using Vite proxy',
+    isProduction: import.meta.env.PROD,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'N/A'
+  });
+}
 
 // Créer une instance axios avec l'URL de base
 const api = axios.create({
@@ -129,7 +131,7 @@ api.interceptors.response.use(
                     'Authorization': `Bearer ${user.token}`
                   }
                 });
-              } catch (logoutError) {
+              } catch {
                 // Ignore logout errors
               }
               window.location.href = '/login';

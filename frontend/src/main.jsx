@@ -17,7 +17,10 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('Service Worker registered:', registration.scope);
+        // Log uniquement en développement
+        if (import.meta.env.DEV) {
+          console.log('Service Worker registered:', registration.scope);
+        }
         
         // Check for updates
         registration.addEventListener('updatefound', () => {
@@ -33,7 +36,8 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch((error) => {
-        console.log('Service Worker registration failed:', error);
+        // Log les erreurs même en production pour le débogage
+        console.error('Service Worker registration failed:', error);
       });
   });
   
@@ -49,7 +53,7 @@ if ('serviceWorker' in navigator) {
       installButton.addEventListener('click', async () => {
         e.prompt();
         const { outcome } = await e.userChoice;
-        if (outcome === 'accepted') {
+        if (outcome === 'accepted' && import.meta.env.DEV) {
           console.log('User accepted install prompt');
         }
         window.deferredInstallPrompt = null;
