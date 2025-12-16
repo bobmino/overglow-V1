@@ -36,18 +36,19 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // Put React, React DOM, React Router, and Lucide React together
+            // Lucide React must be with React to avoid initialization errors
+            // IMPORTANT: Keep lucide-react with React to prevent "Cannot set properties of undefined" errors
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('lucide-react')) {
               return 'react-vendor';
             }
-            // Keep lucide-react with react-vendor to avoid undefined errors
-            // Don't separate it into ui-vendor as it needs React context
             if (id.includes('axios') || id.includes('i18next')) {
               return 'utils-vendor';
             }
             if (id.includes('recharts')) {
               return 'charts-vendor';
             }
-            // Other node_modules (including lucide-react)
+            // Other node_modules
             return 'vendor';
           }
           
@@ -64,6 +65,16 @@ export default defineConfig({
           if (id.includes('/pages/Login') || id.includes('/pages/Register')) {
             return 'auth';
           }
+        },
+        // Ensure proper chunk loading order
+        format: 'es',
+        generatedCode: {
+          constBindings: true,
+        },
+        // Ensure proper chunk loading order - React must load before Lucide React
+        format: 'es',
+        generatedCode: {
+          constBindings: true,
         },
         // Optimize chunk names
         chunkFileNames: 'assets/js/[name]-[hash].js',
