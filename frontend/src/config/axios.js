@@ -9,9 +9,14 @@ const getApiUrl = () => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // En production (Vercel), utiliser l'URL du backend séparé
+  // En production (Vercel), TOUJOURS utiliser l'URL absolue du backend séparé
   // Le frontend et le backend sont sur des domaines Vercel différents
-  if (import.meta.env.PROD || window.location.hostname.includes('vercel.app')) {
+  // Ne JAMAIS utiliser d'URL relative en production car cela cause des problèmes de routage
+  const isProduction = import.meta.env.PROD || 
+                       (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) ||
+                       (typeof window !== 'undefined' && window.location.hostname !== 'localhost');
+  
+  if (isProduction) {
     // Utiliser l'URL absolue du backend séparé
     return 'https://overglow-backend.vercel.app';
   }
@@ -22,14 +27,15 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-// Log pour debug (uniquement en développement)
-if (import.meta.env.DEV) {
-  console.log('🔧 API Configuration:', {
-    baseURL: API_URL || 'Using Vite proxy',
-    isProduction: import.meta.env.PROD,
-    hostname: typeof window !== 'undefined' ? window.location.hostname : 'N/A'
-  });
-}
+// Log pour debug (toujours actif pour troubleshooting)
+console.log('🔧 API Configuration:', {
+  baseURL: API_URL || 'Using Vite proxy',
+  isProduction: import.meta.env.PROD,
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'N/A',
+  envPROD: import.meta.env.PROD,
+  envDEV: import.meta.env.DEV,
+  fullURL: API_URL ? `${API_URL}/api/auth/login` : 'relative'
+});
 
 // Créer une instance axios avec l'URL de base
 const api = axios.create({
@@ -40,6 +46,31 @@ const api = axios.create({
   timeout: 30000, // 30 secondes timeout
   // Note: withCredentials n'est pas nécessaire car on utilise JWT dans Authorization header
 });
+
+// Intercepteur pour forcer l'URL absolue en production
+api.interceptors.request.use(
+  (config) => {
+    // En production, s'assurer que toutes les requêtes API utilisent l'URL absolue
+    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+      // Si baseURL n'est pas défini ou est vide, utiliser l'URL absolue du backend
+      if (!config.baseURL || config.baseURL === '') {
+        config.baseURL = 'https://overglow-backend.vercel.app';
+      }
+      // Si l'URL est relative et commence par /api, s'assurer qu'elle utilise baseURL
+      if (config.url && config.url.startsWith('/api') && !config.url.startsWith('http')) {
+        // L'URL relative sera automatiquement combinée avec baseURL par axios
+        // Mais on s'assure que baseURL est bien défini
+        if (!config.baseURL) {
+          config.baseURL = 'https://overglow-backend.vercel.app';
+        }
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Intercepteur pour ajouter le token d'authentification automatiquement
 api.interceptors.request.use(
