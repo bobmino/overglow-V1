@@ -1,4 +1,5 @@
 import Blog from '../models/blogModel.js';
+import mongoose from 'mongoose';
 import { validationResult } from 'express-validator';
 
 // @desc    Get all published blog posts
@@ -6,6 +7,20 @@ import { validationResult } from 'express-validator';
 // @access  Public
 export const getBlogPosts = async (req, res) => {
   try {
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB not connected, returning empty posts');
+      return res.json({
+        posts: [],
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 10,
+          total: 0,
+          totalPages: 0,
+        },
+      });
+    }
+
     const {
       category,
       tag,
@@ -83,7 +98,7 @@ export const getBlogPosts = async (req, res) => {
         return 0;
       });
 
-    res.json({
+    return res.json({
       posts: posts || [],
       pagination: {
         page: parseInt(page),
@@ -95,9 +110,15 @@ export const getBlogPosts = async (req, res) => {
   } catch (error) {
     console.error('Get blog posts error:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Erreur lors de la récupération des articles',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    // Always return a valid response, even on error
+    return res.json({
+      posts: [],
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total: 0,
+        totalPages: 0,
+      },
     });
   }
 };
@@ -159,18 +180,35 @@ export const getBlogPostBySlug = async (req, res) => {
 // @access  Public
 export const getBlogCategories = async (req, res) => {
   try {
-    const categories = await Blog.distinct('category', { isPublished: true }).catch(err => {
-      console.error('Database error in getBlogCategories:', err);
-      return [];
-    });
-    res.json({ categories: categories || [] });
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB not connected, returning empty categories');
+      return res.json({ categories: [] });
+    }
+
+    // Try to get categories, return empty array if collection doesn't exist or query fails
+    let categories = [];
+    try {
+      categories = await Blog.distinct('category', { isPublished: true });
+    } catch (err) {
+      // If collection doesn't exist or query fails, return empty array
+      // This is expected if no blog posts have been created yet
+      console.warn('Could not fetch blog categories (collection may not exist):', err.message);
+      categories = [];
+    }
+    
+    return res.json({ categories: Array.isArray(categories) ? categories : [] });
   } catch (error) {
     console.error('Get blog categories error:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Erreur lors de la récupération des catégories',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      mongooseState: mongoose.connection.readyState
     });
+    // Always return a valid response, even on error
+    return res.json({ categories: [] });
   }
 };
 
@@ -179,20 +217,37 @@ export const getBlogCategories = async (req, res) => {
 // @access  Public
 export const getBlogTags = async (req, res) => {
   try {
-    const tags = await Blog.distinct('tags', { isPublished: true }).catch(err => {
-      console.error('Database error in getBlogTags:', err);
-      return [];
-    });
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB not connected, returning empty tags');
+      return res.json({ tags: [] });
+    }
+
+    // Try to get tags, return empty array if collection doesn't exist or query fails
+    let tags = [];
+    try {
+      tags = await Blog.distinct('tags', { isPublished: true });
+    } catch (err) {
+      // If collection doesn't exist or query fails, return empty array
+      // This is expected if no blog posts have been created yet
+      console.warn('Could not fetch blog tags (collection may not exist):', err.message);
+      tags = [];
+    }
+    
     // Flatten and filter tags array
     const flatTags = Array.isArray(tags) ? tags.flat().filter(Boolean) : [];
-    res.json({ tags: flatTags });
+    return res.json({ tags: flatTags });
   } catch (error) {
     console.error('Get blog tags error:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Erreur lors de la récupération des tags',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      mongooseState: mongoose.connection.readyState
     });
+    // Always return a valid response, even on error
+    return res.json({ tags: [] });
   }
 };
 
