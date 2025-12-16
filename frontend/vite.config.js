@@ -19,10 +19,8 @@ export default defineConfig({
     },
   },
   build: {
-    // Disable inline module preload (prevents data URI issues)
-    modulePreload: {
-      polyfill: false,
-    },
+    // Disable module preload completely to prevent data URI issues
+    modulePreload: false,
     rollupOptions: {
       // Externalize packages that shouldn't be bundled
       external: (id) => {
@@ -34,26 +32,14 @@ export default defineConfig({
       },
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
+          // Simplified: Put all vendor dependencies in a single chunk
+          // This prevents loading order issues and compatibility problems between React 19 and Lucide React
           if (id.includes('node_modules')) {
-            // Put React, React DOM, React Router, and Lucide React together
-            // Lucide React must be with React to avoid initialization errors
-            // IMPORTANT: Keep lucide-react with React to prevent "Cannot set properties of undefined" errors
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('lucide-react')) {
-              return 'react-vendor';
-            }
-            if (id.includes('axios') || id.includes('i18next')) {
-              return 'utils-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'charts-vendor';
-            }
-            // Other node_modules
             return 'vendor';
           }
           
-          // Feature chunks
-          if (id.includes('/pages/Admin') || id.includes('/pages/Admin')) {
+          // Feature chunks for better code splitting (only app code, not dependencies)
+          if (id.includes('/pages/Admin')) {
             return 'admin';
           }
           if (id.includes('/pages/Operator')) {
@@ -65,11 +51,6 @@ export default defineConfig({
           if (id.includes('/pages/Login') || id.includes('/pages/Register')) {
             return 'auth';
           }
-        },
-        // Ensure proper chunk loading order
-        format: 'es',
-        generatedCode: {
-          constBindings: true,
         },
         // Ensure proper chunk loading order - React must load before Lucide React
         format: 'es',
