@@ -40,8 +40,7 @@ import faqRoutes from './backend/routes/faqRoutes.js';
 import chatRoutes from './backend/routes/chatRoutes.js';
 import healthRoutes from './backend/routes/healthRoutes.js';
 import sitemapRoutes from './backend/routes/sitemapRoutes.js';
-// Blog routes - DO NOT IMPORT HERE (causes 500 errors)
-// Routes de fallback définies ci-dessous dans app.use('/api/blog', ...)
+import blogRoutes from './backend/routes/blogRoutes.js';
 
 const app = express();
 
@@ -278,53 +277,7 @@ app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/view-history', viewHistoryRoutes);
 app.use('/api/faq', faqRoutes);
 app.use('/api/chat', chatRoutes);
-
-// Blog routes - DEFINITIVE SOLUTION: Routes de fallback qui fonctionnent TOUJOURS
-// Ces routes sont définies AVANT blogRoutes et retournent toujours des réponses valides
-app.get('/api/blog/categories', (req, res) => {
-  try {
-    return res.status(200).json({ categories: [] });
-  } catch (e) {
-    return res.status(200).json({ categories: [] });
-  }
-});
-
-app.get('/api/blog/tags', (req, res) => {
-  try {
-    return res.status(200).json({ tags: [] });
-  } catch (e) {
-    return res.status(200).json({ tags: [] });
-  }
-});
-
-app.get('/api/blog', (req, res) => {
-  try {
-    return res.status(200).json({ 
-      posts: [], 
-      pagination: { 
-        page: parseInt(req.query.page) || 1, 
-        limit: parseInt(req.query.limit) || 10, 
-        total: 0, 
-        totalPages: 0 
-      } 
-    });
-  } catch (e) {
-    return res.status(200).json({ posts: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } });
-  }
-});
-
-app.get('/api/blog/:slug', (req, res) => {
-  try {
-    return res.status(404).json({ message: 'Article non trouvé' });
-  } catch (e) {
-    return res.status(404).json({ message: 'Article non trouvé' });
-  }
-});
-
-// Blog routes are handled by fallback routes above
-// These routes ALWAYS return valid responses (200 OK) instead of 500 errors
-// Admin routes will be added later when blogRoutes import issue is resolved
-
+app.use('/api/blog', blogRoutes);
 app.use('/api', sitemapRoutes);
 
 // Serve static files (reuse __dirname from above)
