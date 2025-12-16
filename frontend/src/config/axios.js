@@ -65,6 +65,20 @@ api.interceptors.request.use(
         }
       }
     }
+    
+    // Log de la requête pour debugging (toujours actif)
+    const fullURL = config.baseURL 
+      ? (config.url?.startsWith('http') ? config.url : `${config.baseURL}${config.url || ''}`)
+      : config.url;
+    
+    console.log('📤 API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: fullURL,
+      headers: config.headers
+    });
+    
     return config;
   },
   (error) => {
@@ -95,30 +109,70 @@ api.interceptors.request.use(
 
 // Intercepteur pour gérer les erreurs globales et refresh tokens
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log de la réponse pour debugging
+    const contentType = response.headers['content-type'] || response.headers['Content-Type'] || 'unknown';
+    console.log('📥 API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: contentType,
+      url: response.config?.url,
+      baseURL: response.config?.baseURL,
+      fullURL: response.config?.baseURL ? `${response.config.baseURL}${response.config.url || ''}` : response.config?.url,
+      isJSON: contentType.includes('application/json'),
+      isHTML: contentType.includes('text/html')
+    });
+    
+    // Vérifier si la réponse est du HTML au lieu de JSON (problème de routage)
+    if (contentType.includes('text/html') && response.config?.url?.includes('/api/')) {
+      console.error('⚠️ WARNING: API endpoint returned HTML instead of JSON!', {
+        url: response.config.url,
+        baseURL: response.config.baseURL,
+        fullURL: response.config.baseURL ? `${response.config.baseURL}${response.config.url}` : response.config.url,
+        responsePreview: typeof response.data === 'string' ? response.data.substring(0, 200) : response.data
+      });
+    }
+    
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     
-    // Log des erreurs pour debug
+    // Log des erreurs pour debug (toujours actif)
     if (error.response) {
       // Le serveur a répondu avec un code d'erreur
-      console.error('API Error Response:', {
+      const contentType = error.response.headers['content-type'] || error.response.headers['Content-Type'] || 'unknown';
+      console.error('❌ API Error Response:', {
         status: error.response.status,
+        statusText: error.response.statusText,
+        contentType: contentType,
         data: error.response.data,
         url: error.config?.url,
-        baseURL: error.config?.baseURL
+        baseURL: error.config?.baseURL,
+        fullURL: error.config?.baseURL ? `${error.config.baseURL}${error.config.url || ''}` : error.config?.url,
+        isHTML: contentType.includes('text/html')
       });
+      
+      // Si la réponse est du HTML, c'est un problème de routage
+      if (contentType.includes('text/html') && error.config?.url?.includes('/api/')) {
+        console.error('⚠️ CRITICAL: API endpoint returned HTML instead of JSON!', {
+          url: error.config.url,
+          baseURL: error.config.baseURL,
+          fullURL: error.config.baseURL ? `${error.config.baseURL}${error.config.url}` : error.config.url,
+          responsePreview: typeof error.response.data === 'string' ? error.response.data.substring(0, 500) : error.response.data
+        });
+      }
     } else if (error.request) {
       // La requête a été faite mais aucune réponse n'a été reçue
-      console.error('API Error Request:', {
+      console.error('❌ API Error Request:', {
         message: error.message,
         url: error.config?.url,
         baseURL: error.config?.baseURL,
-        fullURL: error.config?.baseURL + error.config?.url
+        fullURL: error.config?.baseURL ? `${error.config.baseURL}${error.config.url || ''}` : error.config?.url
       });
     } else {
       // Erreur lors de la configuration de la requête
-      console.error('API Error Config:', error.message);
+      console.error('❌ API Error Config:', error.message);
     }
     
     // Si erreur 401 (non autorisé), essayer de refresh le token

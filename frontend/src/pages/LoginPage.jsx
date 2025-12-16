@@ -38,10 +38,12 @@ const LoginPage = () => {
     // Validate form
     const isValid = validate();
     if (!isValid) {
-      // Log validation errors for debugging
-      if (import.meta.env.DEV) {
-        console.log('Form validation failed:', errors);
-      }
+      // Log validation errors for debugging (always log for troubleshooting)
+      console.log('❌ Form validation failed:', {
+        errors: errors,
+        values: formData,
+        passwordLength: formData.password?.length
+      });
       return;
     }
 
