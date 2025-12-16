@@ -15,8 +15,14 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return !emailRegex.test(value) ? 'Email invalide' : '';
     },
-    minLength: (min) => (value) => 
-      value.length < min ? `Minimum ${min} caractères requis` : '',
+    minLength: (min) => (value) => {
+      // Handle undefined/null values
+      if (value === undefined || value === null) {
+        return `Minimum ${min} caractères requis`;
+      }
+      const length = typeof value === 'string' ? value.length : String(value).length;
+      return length < min ? `Minimum ${min} caractères requis` : '';
+    },
     maxLength: (max) => (value) => 
       value.length > max ? `Maximum ${max} caractères` : '',
     password: (value) => {
@@ -72,9 +78,23 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
           errorMessage = validator(value);
         } else {
           // Validator is a function factory (like minLength: (min) => (value) => ...)
-          errorMessage = validator(rule.value)(value);
+          // Log for debugging
+          const validatorFn = validator(rule.value);
+          const rawError = validatorFn(value);
+          console.log(`🔍 Validating ${name} with ${rule.type}:`, {
+            field: name,
+            ruleType: rule.type,
+            ruleValue: rule.value,
+            actualValue: name === 'password' ? `***(${value?.length || 0} chars)` : value,
+            valueType: typeof value,
+            valueLength: value?.length,
+            rawError: rawError,
+            customMessage: rule.message
+          });
+          errorMessage = rawError;
         }
         // Use custom message if provided, otherwise use validator's message
+        // IMPORTANT: Only replace if there's an error, don't create error from empty string
         if (errorMessage && rule.message) {
           errorMessage = rule.message;
         }
