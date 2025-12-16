@@ -39,11 +39,8 @@ const LoginPage = () => {
     const isValid = validate();
     if (!isValid) {
       // Log validation errors for debugging (always log for troubleshooting)
-      console.log('❌ Form validation failed:', {
-        errors: errors,
-        values: formData,
-        passwordLength: formData.password?.length
-      });
+      // Note: errors state will be updated by validate(), but we log what we have
+      console.log('❌ Form validation failed - details logged above by validate()');
       return;
     }
 

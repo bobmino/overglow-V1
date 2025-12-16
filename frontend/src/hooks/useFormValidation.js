@@ -130,6 +130,17 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
       return acc;
     }, {}));
 
+    // Store errors in a way that can be accessed synchronously for debugging
+    if (!isValid) {
+      console.log('🔍 Validation details:', {
+        errors: newErrors,
+        values: Object.keys(validationRules).reduce((acc, key) => {
+          acc[key] = key === 'password' ? `***(${values[key]?.length || 0} chars)` : values[key];
+          return acc;
+        }, {})
+      });
+    }
+
     return isValid;
   }, [values, validationRules, validateField]);
 
