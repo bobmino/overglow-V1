@@ -9,17 +9,10 @@ const getApiUrl = () => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // En production (Vercel), utiliser le même domaine (les routes /api sont gérées par Vercel)
-  // Si le frontend et backend sont sur le même domaine Vercel, utiliser une URL relative
+  // En production (Vercel), utiliser l'URL du backend séparé
+  // Le frontend et le backend sont sur des domaines Vercel différents
   if (import.meta.env.PROD || window.location.hostname.includes('vercel.app')) {
-    // Si on est sur le même domaine que le backend, utiliser une URL relative
-    // Sinon, utiliser l'URL absolue du backend
-    const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
-    if (currentHost.includes('overglow-v1') || currentHost.includes('overglow-frontend')) {
-      // Frontend et backend sur le même domaine Vercel - utiliser URL relative
-      return '';
-    }
-    // Backend séparé - utiliser URL absolue
+    // Utiliser l'URL absolue du backend séparé
     return 'https://overglow-backend.vercel.app';
   }
   
