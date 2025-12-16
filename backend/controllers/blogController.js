@@ -33,9 +33,14 @@ export const getBlogPosts = async (req, res) => {
       query.featured = true;
     }
 
-    // Search filter
+    // Search filter (only if text index exists)
     if (search) {
-      query.$text = { $search: search };
+      // Use regex search instead of $text to avoid index requirement
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { excerpt: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
+      ];
     }
 
     // Pagination
@@ -52,32 +57,48 @@ export const getBlogPosts = async (req, res) => {
         break;
       case 'publishedAt':
       default:
-        sort = { publishedAt: -1 };
+        // Sort by publishedAt, but handle null values by using createdAt as fallback
+        sort = { publishedAt: -1, createdAt: -1 };
         break;
     }
 
     const posts = await Blog.find(query)
-      .select('title slug excerpt featuredImage category tags publishedAt views readingTime featured')
-      .populate('author', 'name')
+      .select('title slug excerpt featuredImage category tags publishedAt views readingTime featured createdAt')
+      .populate({
+        path: 'author',
+        select: 'name',
+        strictPopulate: false
+      })
       .sort(sort)
       .skip(skip)
       .limit(parseInt(limit))
-      .lean();
+      .lean()
+      .catch(err => {
+        console.error('Database query error in getBlogPosts:', err);
+        return [];
+      });
 
-    const total = await Blog.countDocuments(query);
+    const total = await Blog.countDocuments(query).catch(err => {
+        console.error('Count documents error:', err);
+        return 0;
+      });
 
     res.json({
-      posts,
+      posts: posts || [],
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / parseInt(limit)),
+        total: total || 0,
+        totalPages: Math.ceil((total || 0) / parseInt(limit)),
       },
     });
   } catch (error) {
     console.error('Get blog posts error:', error);
-    res.status(500).json({ message: 'Erreur lors de la récupération des articles' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des articles',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -89,8 +110,16 @@ export const getBlogPostBySlug = async (req, res) => {
     const { slug } = req.params;
 
     const post = await Blog.findOne({ slug, isPublished: true })
-      .populate('author', 'name email')
-      .populate('relatedProducts', 'title images city price')
+      .populate({
+        path: 'author',
+        select: 'name email',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'relatedProducts',
+        select: 'title images city price',
+        strictPopulate: false
+      })
       .lean();
 
     if (!post) {
@@ -130,11 +159,18 @@ export const getBlogPostBySlug = async (req, res) => {
 // @access  Public
 export const getBlogCategories = async (req, res) => {
   try {
-    const categories = await Blog.distinct('category', { isPublished: true });
-    res.json({ categories });
+    const categories = await Blog.distinct('category', { isPublished: true }).catch(err => {
+      console.error('Database error in getBlogCategories:', err);
+      return [];
+    });
+    res.json({ categories: categories || [] });
   } catch (error) {
     console.error('Get blog categories error:', error);
-    res.status(500).json({ message: 'Erreur lors de la récupération des catégories' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des catégories',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -143,11 +179,20 @@ export const getBlogCategories = async (req, res) => {
 // @access  Public
 export const getBlogTags = async (req, res) => {
   try {
-    const tags = await Blog.distinct('tags', { isPublished: true });
-    res.json({ tags: tags.filter(Boolean) });
+    const tags = await Blog.distinct('tags', { isPublished: true }).catch(err => {
+      console.error('Database error in getBlogTags:', err);
+      return [];
+    });
+    // Flatten and filter tags array
+    const flatTags = Array.isArray(tags) ? tags.flat().filter(Boolean) : [];
+    res.json({ tags: flatTags });
   } catch (error) {
     console.error('Get blog tags error:', error);
-    res.status(500).json({ message: 'Erreur lors de la récupération des tags' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des tags',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -168,7 +213,11 @@ export const createBlogPost = async (req, res) => {
 
     const createdPost = await post.save();
     const populatedPost = await Blog.findById(createdPost._id)
-      .populate('author', 'name email')
+      .populate({
+        path: 'author',
+        select: 'name email',
+        strictPopulate: false
+      })
       .lean();
 
     res.status(201).json(populatedPost);
@@ -206,7 +255,11 @@ export const updateBlogPost = async (req, res) => {
 
     const updatedPost = await post.save();
     const populatedPost = await Blog.findById(updatedPost._id)
-      .populate('author', 'name email')
+      .populate({
+        path: 'author',
+        select: 'name email',
+        strictPopulate: false
+      })
       .lean();
 
     res.json(populatedPost);
@@ -254,7 +307,11 @@ export const getAllBlogPosts = async (req, res) => {
     }
 
     const posts = await Blog.find(query)
-      .populate('author', 'name email')
+      .populate({
+        path: 'author',
+        select: 'name email',
+        strictPopulate: false
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
