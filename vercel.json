@@ -7,7 +7,7 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/((?!api|assets|.*\\.[a-zA-Z0-9]+$).*)",
+      "source": "/((?!api|assets|_next|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ],
