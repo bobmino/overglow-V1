@@ -197,6 +197,49 @@ app.use(cors({
 
 app.use(express.json());
 
+// Serve static files from frontend/dist (for Vercel deployment)
+// This ensures that JavaScript, CSS, and other assets are served correctly
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDistPath = path.join(__dirname, 'frontend', 'dist');
+
+// Only serve static files if the directory exists (production)
+if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+  // Serve static assets (JS, CSS, images, etc.)
+  app.use('/assets', express.static(path.join(frontendDistPath, 'assets'), {
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      // Set correct MIME types
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      }
+    }
+  }));
+  
+  // Serve other static files (favicon, manifest, etc.)
+  app.use(express.static(frontendDistPath, {
+    maxAge: '1y',
+    immutable: true
+  }));
+  
+  // Serve index.html for all non-API routes (SPA fallback)
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    // Skip if it's a file request (has extension)
+    if (req.path.match(/\.[a-zA-Z0-9]+$/)) {
+      return next();
+    }
+    // Serve index.html for SPA routes
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
+
 app.get('/', (req, res) => {
   res.json({ 
     message: 'API is running...',
