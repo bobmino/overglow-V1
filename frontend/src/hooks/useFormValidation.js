@@ -130,16 +130,26 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
       return acc;
     }, {}));
 
-    // Store errors in a way that can be accessed synchronously for debugging
-    if (!isValid) {
-      console.log('🔍 Validation details:', {
-        errors: newErrors,
-        values: Object.keys(validationRules).reduce((acc, key) => {
-          acc[key] = key === 'password' ? `***(${values[key]?.length || 0} chars)` : values[key];
-          return acc;
-        }, {})
-      });
-    }
+    // Always log validation details for debugging
+    console.log('🔍 Validation result:', {
+      isValid: isValid,
+      errors: newErrors,
+      errorCount: Object.keys(newErrors).length,
+      values: Object.keys(validationRules).reduce((acc, key) => {
+        acc[key] = key === 'password' ? `***(${values[key]?.length || 0} chars)` : values[key];
+        return acc;
+      }, {}),
+      validationRules: Object.keys(validationRules),
+      fieldResults: Object.keys(validationRules).map(name => {
+        const error = validateField(name, values[name]);
+        return {
+          field: name,
+          value: name === 'password' ? `***(${values[name]?.length || 0} chars)` : values[name],
+          error: error,
+          hasError: !!error
+        };
+      })
+    });
 
     return isValid;
   }, [values, validationRules, validateField]);

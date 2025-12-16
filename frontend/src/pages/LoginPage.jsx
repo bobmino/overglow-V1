@@ -36,11 +36,20 @@ const LoginPage = () => {
     setSubmitError('');
 
     // Validate form
+    // Note: validate() updates errors state asynchronously, so we need to check the result directly
     const isValid = validate();
+    
+    // Use setTimeout to check errors after state update
     if (!isValid) {
-      // Log validation errors for debugging (always log for troubleshooting)
-      // Note: errors state will be updated by validate(), but we log what we have
-      console.log('❌ Form validation failed - details logged above by validate()');
+      setTimeout(() => {
+        console.log('❌ Form validation failed (after state update):', {
+          errors: errors,
+          email: formData.email,
+          passwordLength: formData.password?.length,
+          emailError: errors.email,
+          passwordError: errors.password
+        });
+      }, 100);
       return;
     }
 
