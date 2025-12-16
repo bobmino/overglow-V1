@@ -283,8 +283,34 @@ export const createBlogPost = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // Ensure slug is generated if not provided
+    let slug = req.body.slug;
+    if (!slug && req.body.title) {
+      slug = req.body.title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      
+      // Ensure slug is not empty
+      if (!slug || slug.length === 0) {
+        slug = `article-${Date.now()}`;
+      }
+    }
+
+    // Check if slug already exists
+    if (slug) {
+      const existingPost = await Blog.findOne({ slug });
+      if (existingPost) {
+        // Append timestamp to make it unique
+        slug = `${slug}-${Date.now()}`;
+      }
+    }
+
     const post = new Blog({
       ...req.body,
+      slug: slug || `article-${Date.now()}`,
       author: req.user._id,
     });
 
@@ -300,10 +326,41 @@ export const createBlogPost = async (req, res) => {
     res.status(201).json(populatedPost);
   } catch (error) {
     console.error('Create blog post error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      keyPattern: error.keyPattern,
+      keyValue: error.keyValue,
+      errors: error.errors,
+      stack: error.stack
+    });
+    
     if (error.code === 11000) {
-      return res.status(400).json({ message: 'Un article avec ce slug existe déjà' });
+      const field = Object.keys(error.keyPattern || {})[0] || 'slug';
+      return res.status(400).json({ 
+        message: `Un article avec ce ${field} existe déjà`,
+        field,
+        value: error.keyValue?.[field]
+      });
     }
-    res.status(500).json({ message: 'Erreur lors de la création de l\'article' });
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors || {}).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      return res.status(400).json({ 
+        message: 'Erreurs de validation',
+        errors: validationErrors
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Erreur lors de la création de l\'article',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

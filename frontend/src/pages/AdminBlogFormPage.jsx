@@ -184,8 +184,19 @@ const AdminBlogFormPage = () => {
     }
 
     try {
+      // Clean and prepare data
       const dataToSend = {
-        ...formData,
+        title: formData.title.trim(),
+        excerpt: formData.excerpt.trim(),
+        content: formData.content.trim(),
+        category: formData.category,
+        tags: Array.isArray(formData.tags) ? formData.tags.filter(tag => tag && tag.trim()).map(tag => tag.trim()) : [],
+        featuredImage: formData.featuredImage || '',
+        metaTitle: formData.metaTitle?.trim() || '',
+        metaDescription: formData.metaDescription?.trim() || '',
+        keywords: Array.isArray(formData.keywords) ? formData.keywords.filter(kw => kw && kw.trim()).map(kw => kw.trim()) : [],
+        isPublished: formData.isPublished || false,
+        featured: formData.featured || false,
         // Set publishedAt when publishing
         publishedAt: formData.isPublished && !isEdit ? new Date() : formData.isPublished ? formData.publishedAt || new Date() : null,
       };
@@ -203,9 +214,32 @@ const AdminBlogFormPage = () => {
       }, 1500);
     } catch (error) {
       console.error('Failed to save post:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.msg ||
-                          'Erreur lors de la sauvegarde de l\'article';
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        data: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      });
+      
+      let errorMessage = 'Erreur lors de la sauvegarde de l\'article';
+      
+      if (error.response?.data) {
+        // Handle validation errors
+        if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          const validationErrors = error.response.data.errors
+            .map(err => err.msg || err.message)
+            .join(', ');
+          errorMessage = `Erreurs de validation: ${validationErrors}`;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setError(errorMessage);
       setLoading(false);
     }
