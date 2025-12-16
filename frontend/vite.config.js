@@ -79,13 +79,15 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 1000, // 1MB
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    minify: 'esbuild', // Use esbuild (default, faster than terser)
+    // Note: To use terser, install it: npm install -D terser
+    // Then change minify to 'terser' and uncomment terserOptions below
+    // terserOptions: {
+    //   compress: {
+    //     drop_console: true,
+    //     drop_debugger: true,
+    //   },
+    // },
     // Enable source maps for production debugging (optional)
     sourcemap: false,
     // Optimize CSS
