@@ -383,6 +383,7 @@ export const getAllBlogPosts = async (req, res) => {
       query.isPublished = false;
     }
 
+    // Get all fields including content for admin
     const posts = await Blog.find(query)
       .populate({
         path: 'author',
