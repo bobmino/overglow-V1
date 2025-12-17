@@ -21,24 +21,37 @@ export const initGA4 = () => {
     return;
   }
 
+  // Prevent duplicate initialization
+  if (window.__ga4Initialized) return;
+  window.__ga4Initialized = true;
+
   // Load gtag script if not already loaded
   if (!window.gtag) {
-    const script1 = document.createElement('script');
-    script1.async = true;
-    script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
-    document.head.appendChild(script1);
+    const load = () => {
+      const script1 = document.createElement('script');
+      script1.async = true;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
+      document.head.appendChild(script1);
 
-    const script2 = document.createElement('script');
-    script2.innerHTML = `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '${GA4_MEASUREMENT_ID}', {
-        page_path: window.location.pathname,
-        send_page_view: true
-      });
-    `;
-    document.head.appendChild(script2);
+      const script2 = document.createElement('script');
+      script2.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${GA4_MEASUREMENT_ID}', {
+          page_path: window.location.pathname,
+          send_page_view: true
+        });
+      `;
+      document.head.appendChild(script2);
+    };
+
+    // Defer analytics to idle time to speed up initial page load
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(load, { timeout: 2000 });
+    } else {
+      window.setTimeout(load, 1200);
+    }
   }
 };
 

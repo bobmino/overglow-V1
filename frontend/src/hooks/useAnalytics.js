@@ -10,7 +10,7 @@ export const usePageTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Initialize GA4 on mount
+    // Initialize GA4 once on mount (deferred inside initGA4)
     initGA4();
   }, []);
 
