@@ -202,7 +202,7 @@ const BlogPostPage = () => {
                 {post.tags.map((tag, index) => (
                   <Link
                     key={index}
-                    to={`/blog?tag=${encodeURIComponent(tag)}`}
+                    to={`/tags/${encodeURIComponent(String(tag).toLowerCase().replace(/\s+/g, '-'))}`}
                     className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm hover:bg-primary-100 hover:text-primary-700 transition"
                   >
                     #{tag}

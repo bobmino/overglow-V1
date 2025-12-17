@@ -20,6 +20,23 @@ const BlogPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'publishedAt');
 
+  // Keep state in sync with URL (Back/Forward navigation)
+  useEffect(() => {
+    const nextCategory = searchParams.get('category') || '';
+    const nextTag = searchParams.get('tag') || '';
+    const nextSearch = searchParams.get('search') || '';
+    const nextFeatured = searchParams.get('featured') === 'true';
+    const nextPage = parseInt(searchParams.get('page')) || 1;
+    const nextSort = searchParams.get('sort') || 'publishedAt';
+
+    setSelectedCategory(nextCategory);
+    setSelectedTag(nextTag);
+    setSearchQuery(nextSearch);
+    setFeaturedOnly(nextFeatured);
+    setPage(nextPage);
+    setSortBy(nextSort);
+  }, [searchParams]);
+
   // Fetch categories and tags
   useEffect(() => {
     const fetchMeta = async () => {
@@ -67,16 +84,6 @@ const BlogPage = () => {
         const { data } = await api.get(`/api/blog?${params.toString()}`);
         setPosts(data.posts || []);
         setTotalPages(data.pagination?.totalPages || 1);
-
-        // Update URL params
-        const newParams = new URLSearchParams();
-        if (selectedCategory) newParams.set('category', selectedCategory);
-        if (selectedTag) newParams.set('tag', selectedTag);
-        if (searchQuery) newParams.set('search', searchQuery);
-        if (featuredOnly) newParams.set('featured', 'true');
-        if (page > 1) newParams.set('page', page);
-        if (sortBy !== 'publishedAt') newParams.set('sort', sortBy);
-        setSearchParams(newParams);
       } catch (error) {
         console.error('Failed to fetch blog posts:', error);
         setPosts([]);
@@ -86,7 +93,7 @@ const BlogPage = () => {
     };
 
     fetchPosts();
-  }, [selectedCategory, selectedTag, searchQuery, featuredOnly, page, sortBy, setSearchParams]);
+  }, [selectedCategory, selectedTag, searchQuery, featuredOnly, page, sortBy]);
 
   const handleFilterChange = (filterType, value) => {
     setPage(1);
@@ -112,6 +119,18 @@ const BlogPage = () => {
   };
 
   const hasActiveFilters = !!(selectedCategory || selectedTag || searchQuery || featuredOnly || sortBy !== 'publishedAt');
+
+  // Sync URL from state (replace to avoid polluting history on every fetch)
+  useEffect(() => {
+    const newParams = new URLSearchParams();
+    if (selectedCategory) newParams.set('category', selectedCategory);
+    if (selectedTag) newParams.set('tag', selectedTag);
+    if (searchQuery) newParams.set('search', searchQuery);
+    if (featuredOnly) newParams.set('featured', 'true');
+    if (page > 1) newParams.set('page', String(page));
+    if (sortBy !== 'publishedAt') newParams.set('sort', sortBy);
+    setSearchParams(newParams, { replace: true });
+  }, [selectedCategory, selectedTag, searchQuery, featuredOnly, page, sortBy, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
