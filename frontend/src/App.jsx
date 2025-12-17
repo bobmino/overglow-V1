@@ -90,9 +90,9 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
-        <Routes>
-          <Route path="/" element={<Layout />}>
+      <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
           <Route index element={
             <>
               <Hero />
@@ -393,8 +393,8 @@ function App() {
             </Suspense>
           } />
         <Route path="operator/register" element={<RegisterPage />} />
-        </Routes>
-      </Router>
+      </Routes>
+    </Router>
       </ToastProvider>
     </AuthProvider>
   );

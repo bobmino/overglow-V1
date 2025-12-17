@@ -19,7 +19,7 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         // Log uniquement en développement
         if (import.meta.env.DEV) {
-          console.log('Service Worker registered:', registration.scope);
+        console.log('Service Worker registered:', registration.scope);
         }
         
         // Check for updates
