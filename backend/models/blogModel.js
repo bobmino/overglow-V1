@@ -118,6 +118,17 @@ blogSchema.pre('save', function(next) {
       .replace(/(^-|-$)/g, '');
   }
 
+  // Generate excerpt if missing (strip HTML, cap to 300 chars)
+  if ((!this.excerpt || String(this.excerpt).trim() === '') && this.content) {
+    const plain = String(this.content)
+      .replace(/<[^>]*>/g, ' ') // strip HTML tags
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (plain) {
+      this.excerpt = plain.length > 300 ? `${plain.substring(0, 297)}...` : plain;
+    }
+  }
+
   // Calculate reading time (average 200 words per minute)
   if (this.content) {
     const wordCount = this.content.split(/\s+/).length;

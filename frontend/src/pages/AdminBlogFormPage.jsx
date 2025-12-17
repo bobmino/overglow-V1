@@ -30,7 +30,8 @@ const AdminBlogFormPage = () => {
     metaTitle: '',
     metaDescription: '',
     keywords: [],
-    isPublished: false,
+    // Admin workflow: publish by default (drafts won't appear on /blog)
+    isPublished: true,
     featured: false,
   });
 

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Layout from './components/Layout';
 
 // Critical components (loaded immediately)
@@ -87,9 +88,10 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
+      <ToastProvider>
+        <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
           <Route index element={
             <>
               <Hero />
@@ -385,8 +387,9 @@ function App() {
             </Suspense>
           } />
         <Route path="operator/register" element={<RegisterPage />} />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

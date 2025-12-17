@@ -46,7 +46,7 @@ const BlogCard = ({ post }) => {
         <div className="flex items-center gap-4 text-xs text-slate-500 mb-3">
           <div className="flex items-center gap-1">
             <Calendar size={14} />
-            {formatDate(post.publishedAt)}
+            {formatDate(post.publishedAt || post.createdAt)}
           </div>
           <div className="flex items-center gap-1">
             <Clock size={14} />
