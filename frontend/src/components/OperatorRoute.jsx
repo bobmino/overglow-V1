@@ -8,9 +8,14 @@ const OperatorRoute = ({ children }) => {
   const [onboardingStatus, setOnboardingStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const isOperator = (() => {
+    const role = (user?.role || '').toString().toLowerCase();
+    return role === 'opérateur' || role === 'operateur' || role === 'operator';
+  })();
+
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (!isAuthenticated || user?.role !== 'Opérateur') {
+      if (!isAuthenticated || !isOperator) {
         setLoading(false);
         return;
       }
@@ -59,7 +64,7 @@ const OperatorRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'Opérateur') {
+  if (!isOperator) {
     return <Navigate to="/" replace />;
   }
 

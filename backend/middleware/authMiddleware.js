@@ -1,6 +1,24 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 
+// Normalize roles to avoid issues with older data / accent variants
+const normalizeRole = (role) => {
+  if (!role) return role;
+  const raw = String(role).trim();
+  const lower = raw.toLowerCase();
+
+  // Admin variants
+  if (lower === 'admin' || lower === 'administrator' || lower === 'superadmin') return 'Admin';
+
+  // Operator variants (accent + english)
+  if (lower === 'opérateur' || lower === 'operateur' || lower === 'operator') return 'Opérateur';
+
+  // Client variants
+  if (lower === 'client' || lower === 'user' || lower === 'customer' || lower === 'voyageur') return 'Client';
+
+  return raw;
+};
+
 // Helper to set CORS headers
 const setCORSHeaders = (req, res) => {
   const origin = req.headers.origin;
@@ -60,6 +78,9 @@ const protect = async (req, res, next) => {
         res.status(401);
         return next(new Error('User not found'));
       }
+
+      // Normalize role for backward compatibility
+      req.user.role = normalizeRole(req.user.role);
       
       // Check if account is locked
       if (req.user.lockedUntil && req.user.lockedUntil > new Date()) {
@@ -102,9 +123,10 @@ const authorize = (...roles) => {
       return next(new Error('User not authenticated'));
     }
     
-    if (!roles.includes(req.user.role)) {
+    const userRole = normalizeRole(req.user.role);
+    if (!roles.includes(userRole)) {
       res.status(403);
-      return next(new Error(`User role ${req.user.role} is not authorized to access this route`));
+      return next(new Error(`User role ${userRole} is not authorized to access this route`));
     }
     next();
   };

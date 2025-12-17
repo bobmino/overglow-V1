@@ -7,6 +7,17 @@ import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 
+// Normalize roles to avoid issues with older data / accent variants
+const normalizeRole = (role) => {
+  if (!role) return role;
+  const raw = String(role).trim();
+  const lower = raw.toLowerCase();
+  if (lower === 'admin' || lower === 'administrator' || lower === 'superadmin') return 'Admin';
+  if (lower === 'opérateur' || lower === 'operateur' || lower === 'operator') return 'Opérateur';
+  if (lower === 'client' || lower === 'user' || lower === 'customer' || lower === 'voyageur') return 'Client';
+  return raw;
+};
+
 // Helper to set CORS headers
 const setCORSHeaders = (req, res) => {
   const origin = req.headers.origin;
@@ -243,8 +254,9 @@ const loginUser = async (req, res) => {
       // Generate tokens
       let accessToken, refreshToken;
       try {
-        accessToken = generateAccessToken(user._id, user.role);
-        refreshToken = generateRefreshToken(user._id, user.role);
+        const role = normalizeRole(user.role);
+        accessToken = generateAccessToken(user._id, role);
+        refreshToken = generateRefreshToken(user._id, role);
         
         // Store refresh token in user document
         const refreshTokenExpiry = new Date();
@@ -282,7 +294,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: normalizeRole(user.role),
         token: accessToken,
         refreshToken: refreshToken,
       });
@@ -364,7 +376,7 @@ const getMe = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: normalizeRole(user.role),
       isApproved: user.isApproved,
       approvedAt: user.approvedAt,
       phone: user.phone,
@@ -426,7 +438,7 @@ const updateProfile = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: normalizeRole(user.role),
       phone: user.phone,
       bio: user.bio,
       location: user.location,
@@ -486,7 +498,7 @@ const refreshTokenHandler = async (req, res) => {
     }
     
     // Generate new access token
-    const accessToken = generateAccessToken(user._id, user.role);
+    const accessToken = generateAccessToken(user._id, normalizeRole(user.role));
     
     logger.security.tokenRefresh(user._id.toString(), true);
     
