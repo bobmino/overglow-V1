@@ -55,7 +55,9 @@ export const getBlogPosts = async (req, res) => {
 
     // Tag filter
     if (tag) {
-      query.tags = { $in: [tag] };
+      // Case-insensitive exact match to avoid tag casing issues (Eco vs eco)
+      const escaped = String(tag).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.tags = { $in: [new RegExp(`^${escaped}$`, 'i')] };
     }
 
     // Featured filter

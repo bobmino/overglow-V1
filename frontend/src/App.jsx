@@ -117,6 +117,16 @@ function App() {
             </Suspense>
           } />
           <Route path="products/:id" element={<ProductDetailPage />} />
+          <Route path="blog" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <BlogPage />
+            </Suspense>
+          } />
+          <Route path="blog/:slug" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <BlogPostPage />
+            </Suspense>
+          } />
           <Route path="booking" element={
             <Suspense fallback={<LoadingFallback />}>
               <BookingPage />
@@ -364,16 +374,6 @@ function App() {
           <Route path="about" element={
             <Suspense fallback={<LoadingFallback />}>
               <AboutPage />
-            </Suspense>
-          } />
-          <Route path="blog" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <BlogPage />
-            </Suspense>
-          } />
-          <Route path="blog/:slug" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <BlogPostPage />
             </Suspense>
           } />
           <Route path="terms" element={

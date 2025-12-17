@@ -7,6 +7,7 @@ import AdvancedFilters from '../components/AdvancedFilters';
 import SearchSuggestions from '../components/SearchSuggestions';
 import { Filter, X, Search, Heart, MapPin } from 'lucide-react';
 import { trackSearch } from '../utils/analytics';
+import { normalizeCategory } from '../utils/categoryMapping';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -231,7 +232,8 @@ const SearchPage = () => {
 
     // Category filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(p => selectedCategories.includes(p.category));
+      const normalizedSelected = selectedCategories.map((c) => normalizeCategory(c)).filter(Boolean);
+      filtered = filtered.filter((p) => normalizedSelected.includes(normalizeCategory(p.category)));
     }
 
     // City filter

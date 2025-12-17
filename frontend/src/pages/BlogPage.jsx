@@ -3,11 +3,12 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
-import { Filter, Search, TrendingUp, Calendar } from 'lucide-react';
+import { Search, TrendingUp, X } from 'lucide-react';
 
 const BlogPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
+  const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
@@ -34,6 +35,19 @@ const BlogPage = () => {
       }
     };
     fetchMeta();
+  }, []);
+
+  // Fetch featured posts for homepage section (independent from filters)
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const { data } = await api.get('/api/blog?featured=true&limit=6&sortBy=views');
+        setFeaturedPosts(Array.isArray(data.posts) ? data.posts : []);
+      } catch (error) {
+        setFeaturedPosts([]);
+      }
+    };
+    fetchFeatured();
   }, []);
 
   // Fetch blog posts
@@ -88,8 +102,19 @@ const BlogPage = () => {
     }
   };
 
+  const clearAllFilters = () => {
+    setSelectedCategory('');
+    setSelectedTag('');
+    setSearchQuery('');
+    setFeaturedOnly(false);
+    setPage(1);
+    setSortBy('publishedAt');
+  };
+
+  const hasActiveFilters = !!(selectedCategory || selectedTag || searchQuery || featuredOnly || sortBy !== 'publishedAt');
+
   return (
-    <div className="min-h-screen bg-slate-50 py-12 pt-24">
+    <div className="min-h-screen bg-slate-50 py-8">
       <Helmet>
         <title>Blog - Conseils, Guides et Actualités | Overglow Trip</title>
         <meta name="description" content="Découvrez nos articles sur les destinations, conseils de voyage, culture marocaine et bien plus encore" />
@@ -99,104 +124,170 @@ const BlogPage = () => {
       </Helmet>
 
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Blog Overglow Trip
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Conseils, guides et actualités pour découvrir le Maroc autrement
-          </p>
+        {/* Hero */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-slate-900 text-white p-8 md:p-12 mb-10">
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0) 40%), radial-gradient(circle at 80% 30%, rgba(255,255,255,0.25) 0, rgba(255,255,255,0) 45%)"
+          }} />
+          <div className="relative">
+            <p className="text-white/80 text-sm font-semibold tracking-wide uppercase mb-3">
+              Inspiration • Conseils • Guides
+            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+              Le blog Overglow Trip
+            </h1>
+            <p className="text-white/90 text-base md:text-lg max-w-2xl">
+              Des idées concrètes et des articles utiles pour découvrir le Maroc autrement — plus authentique, plus malin, plus mémorable.
+            </p>
+
+            {/* Search bar */}
+            <div className="mt-7 max-w-2xl">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Rechercher un article (ex: Marrakech, gastronomie, désert...)"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 border border-white/30 focus:ring-4 focus:ring-white/20 outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-slate-100 transition text-slate-500"
+                    aria-label="Effacer la recherche"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              {hasActiveFilters && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-white/80 font-semibold">Filtres actifs :</span>
+                  {selectedCategory && <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">Catégorie: {selectedCategory}</span>}
+                  {selectedTag && <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">Tag: #{selectedTag}</span>}
+                  {featuredOnly && <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">À la une</span>}
+                  {sortBy !== 'publishedAt' && <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">Tri: {sortBy}</span>}
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="ml-auto px-4 py-2 rounded-xl bg-white text-slate-900 font-bold hover:bg-slate-100 transition"
+                  >
+                    Réinitialiser
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-8 space-y-4">
-          {/* Search */}
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Rechercher un article..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            />
+        {/* Featured/Trending */}
+        {Array.isArray(featuredPosts) && featuredPosts.length > 0 && !hasActiveFilters && (
+          <div className="mb-10">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                <TrendingUp size={20} className="text-primary-600" />
+                Tendance
+              </h2>
+              <button
+                type="button"
+                onClick={() => handleFilterChange('featured', '')}
+                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition"
+              >
+                Voir “À la une”
+              </button>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredPosts.map((post) => (
+                <BlogCard key={post._id || post.slug} post={post} />
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Category Filter */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center">
+        {/* Explore by category */}
+        {Array.isArray(categories) && categories.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-3">
+              Explorer par catégorie
+            </h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
               <button
                 onClick={() => handleFilterChange('category', '')}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  !selectedCategory
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-slate-700 hover:bg-slate-100'
+                className={`flex-shrink-0 px-4 py-2 rounded-xl font-semibold transition border ${
+                  !selectedCategory ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                Toutes les catégories
+                Tous
               </button>
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => handleFilterChange('category', cat)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    selectedCategory === cat
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-slate-700 hover:bg-slate-100'
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl font-semibold transition border ${
+                    selectedCategory === cat ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
                   {cat}
                 </button>
               ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Tags Filter */}
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center">
-              {tags.slice(0, 10).map((tag) => (
+        {/* Explore by tags */}
+        {Array.isArray(tags) && tags.length > 0 ? (
+          <div className="mb-10">
+            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-3">
+              Explorer par intérêt
+            </h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+              {tags.slice(0, 20).map((tag) => (
                 <button
                   key={tag}
                   onClick={() => handleFilterChange('tag', tag)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-                    selectedTag === tag
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-100'
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition border ${
+                    selectedTag === tag ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
                   #{tag}
                 </button>
               ))}
             </div>
-          )}
-
-          {/* Sort and Featured */}
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => handleFilterChange('featured', '')}
-              className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
-                featuredOnly
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <TrendingUp size={18} />
-              À la une
-            </button>
-            <select
-              value={sortBy}
-              onChange={(e) => handleFilterChange('sort', e.target.value)}
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="publishedAt">Plus récent</option>
-              <option value="views">Plus populaire</option>
-              <option value="title">Titre A-Z</option>
-            </select>
           </div>
+        ) : (
+          <div className="mb-10 bg-white border border-slate-200 rounded-2xl p-5 text-slate-700">
+            <p className="font-bold text-slate-900 mb-1">Tags indisponibles</p>
+            <p className="text-sm text-slate-600">
+              Les tags sont calculés à partir des <span className="font-semibold">articles publiés</span>. Publie au moins un article avec des tags (ex: “Gastronomie”, “Éco”, “Désert”) pour les voir apparaître ici.
+            </p>
+          </div>
+        )}
+
+        {/* Sort + featured toggle */}
+        <div className="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <button
+            onClick={() => handleFilterChange('featured', '')}
+            className={`px-4 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 border ${
+              featuredOnly ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <TrendingUp size={18} />
+            À la une
+          </button>
+          <select
+            value={sortBy}
+            onChange={(e) => handleFilterChange('sort', e.target.value)}
+            className="px-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-4 focus:ring-primary-100 outline-none"
+          >
+            <option value="publishedAt">Plus récent</option>
+            <option value="views">Plus populaire</option>
+            <option value="title">Titre A-Z</option>
+          </select>
         </div>
 
         {/* Blog Posts Grid */}
@@ -246,16 +337,13 @@ const BlogPage = () => {
           </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-slate-600 text-lg mb-4">Aucun article trouvé</p>
+            <p className="text-slate-900 text-xl font-extrabold mb-2">Aucun article trouvé</p>
+            <p className="text-slate-600 mb-5">
+              Si tu viens de créer des articles, assure-toi qu’ils sont <span className="font-semibold">publiés</span> (sinon ils n’apparaissent pas ici).
+            </p>
             <button
-              onClick={() => {
-                setSelectedCategory('');
-                setSelectedTag('');
-                setSearchQuery('');
-                setFeaturedOnly(false);
-                setPage(1);
-              }}
-              className="text-primary-600 font-semibold hover:underline"
+              onClick={clearAllFilters}
+              className="px-6 py-3 rounded-xl bg-primary-600 text-white font-bold hover:bg-primary-700 transition"
             >
               Réinitialiser les filtres
             </button>

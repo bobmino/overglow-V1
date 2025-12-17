@@ -11,8 +11,8 @@ const TopTours = () => {
     const fetchProducts = async () => {
       try {
         const { data } = await api.get('/api/products');
-        // Ensure data is an array before using .slice()
-        const productsArray = Array.isArray(data) ? data : [];
+        // Backend may return either an array (legacy) or { products, pagination }
+        const productsArray = Array.isArray(data) ? data : (data?.products || []);
         setProducts(productsArray.slice(0, 8)); // Limit to 8 products
       } catch (error) {
         console.error('Failed to fetch products:', error);

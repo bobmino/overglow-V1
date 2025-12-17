@@ -9,6 +9,8 @@ import { validationResult } from 'express-validator';
 import { notifyProductPending, notifyProductApproved } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 
+const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
+
 const normalizePrice = (value) => {
   if (value === undefined || value === null || value === '') {
     return null;
@@ -145,6 +147,12 @@ const createProduct = async (req, res) => {
 // @access  Private/Operator
 const getMyProducts = async (req, res) => {
   try {
+    // If DB is not connected (Vercel cold start / transient), return empty list instead of 500
+    if (!isDbConnected()) {
+      console.warn('Get my products: MongoDB not connected, returning empty list');
+      return res.json([]);
+    }
+
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
       return res.status(404).json({ message: 'Operator profile not found' });
@@ -154,7 +162,8 @@ const getMyProducts = async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error('Get my products error:', error);
-    res.status(500).json({ message: 'Failed to fetch products' });
+    // Return empty list to keep operator dashboard usable even if something transient fails
+    res.json([]);
   }
 };
 
@@ -340,6 +349,17 @@ const deleteProduct = async (req, res) => {
 // @access  Public
 const getPublishedProducts = async (req, res) => {
   try {
+    // If DB is not connected (Vercel cold start / transient), return empty payload instead of 500
+    if (!isDbConnected()) {
+      console.warn('Get published products: MongoDB not connected, returning empty payload');
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      return res.json({
+        products: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      });
+    }
+
     const { city, category, date } = req.query;
     let query = { status: 'Published' };
 
@@ -386,7 +406,13 @@ const getPublishedProducts = async (req, res) => {
     });
   } catch (error) {
     console.error('Get published products error:', error);
-    res.status(500).json([]); // Return empty array on error
+    // Return empty payload (200) so frontend doesn't break on transient issues
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    return res.json({
+      products: [],
+      pagination: { page, limit, total: 0, totalPages: 0 },
+    });
   }
 };
 
