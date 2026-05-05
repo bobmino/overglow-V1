@@ -498,6 +498,8 @@ const getPublishedProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .lean();
+
+    console.log('DB Query Result:', products.length);
       
     // Get total count for pagination
     let total = await Product.countDocuments(query);

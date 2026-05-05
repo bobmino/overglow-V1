@@ -86,7 +86,15 @@ const corsOptions = {
 
 // Connect to database (non-blocking for Vercel)
 // This is async and won't block serverless function startup
-connectDB().catch(err => {
+connectDB().then(async () => {
+  try {
+    const { default: Product } = await import('./backend/models/productModel.js');
+    await Product.updateMany({}, { $set: { status: 'Published' } });
+    console.log('Force-updated all products to Published status at startup.');
+  } catch (err) {
+    console.error('Failed to force products to Published:', err);
+  }
+}).catch(err => {
   console.error('Database connection initialization error:', err.message);
   // Never exit on Vercel - allow function to start and retry on first request
   // Don't throw - let the function start even if DB connection fails
