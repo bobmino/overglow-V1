@@ -309,7 +309,7 @@ const ProductDetailPage = () => {
         { 
           stop: "Eiffel Tower", 
           duration: "30 min", 
-          description: "Start your tour with stunning views of Paris's most iconic landmark. Perfect photo opportunity!" 
+          description: "Commencez votre journée avec les vues époustouflantes d'Agadir. Parfait pour vos photos !" 
         },
         { 
           stop: "Louvre Museum", 

@@ -40,15 +40,15 @@ const Hero = () => {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url('${heroBackground}')` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent"></div>
       </div>
 
       <div className="relative z-10 text-center w-full max-w-5xl px-4 animate-in fade-in zoom-in duration-700">
         <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6 drop-shadow-2xl tracking-tight leading-tight">
-          {t('hero.title')}
+          Découvrez le Maroc Autrement.
         </h1>
         <p className="text-xl md:text-2xl text-slate-100 mb-10 drop-shadow-lg font-light max-w-2xl mx-auto">
-          {t('hero.subtitle')}
+          Expériences authentiques à Agadir & Taghazout, sélectionnées par nos experts locaux.
         </p>
 
         {/* Floating Glass Search Bar */}
@@ -71,7 +71,7 @@ const Hero = () => {
             />
           </div>
 
-          <button type="submit" className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-8 py-4 m-1 transition-all shadow-lg shadow-primary-600/30 hover:shadow-primary-600/50 hover:scale-105 flex items-center justify-center">
+          <button type="submit" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 py-4 m-1 transition-all shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-105 flex items-center justify-center">
             <Search size={24} strokeWidth={2.5} />
             <span className="md:hidden ml-2 font-bold">Search</span>
           </button>

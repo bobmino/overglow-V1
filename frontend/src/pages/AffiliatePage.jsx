@@ -231,7 +231,7 @@ const AffiliatePage = () => {
             {[
               {
                 name: 'Marie Dubois',
-                company: 'Paris Tours & Co',
+                company: 'Agadir Tours & Co',
                 text: 'Overglow-Trip a transformé notre activité. Nos réservations ont augmenté de 300% en 6 mois !',
                 rating: 5,
               },

@@ -1,45 +1,40 @@
 import React from 'react';
-import { Headset, Award, Star, Calendar } from 'lucide-react';
+import { MapPin, ShieldCheck, Clock } from 'lucide-react';
 
 const FeatureItem = ({ icon: Icon, title, description }) => (
-  <div className="flex flex-col items-center text-center p-4">
-    <div className="mb-4 p-3 bg-green-50 rounded-full">
-      <Icon size={32} className="text-green-700" strokeWidth={1.5} />
+  <div className="flex flex-col items-center text-center p-8 bg-white shadow-sm rounded-2xl border border-slate-100 hover:shadow-md transition-shadow">
+    <div className="mb-4 p-4 bg-emerald-50 rounded-full">
+      <Icon size={32} className="text-emerald-600" strokeWidth={1.5} />
     </div>
-    <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-    <p className="text-sm text-gray-600 leading-relaxed max-w-xs">{description}</p>
+    <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
+    <p className="text-slate-600 leading-relaxed">{description}</p>
   </div>
 );
 
 const Features = () => {
   const features = [
     {
-      icon: Headset,
-      title: "24/7 customer support",
-      description: "No matter the time zone, we're here to help."
+      icon: MapPin,
+      title: "Expertise Locale",
+      description: "Basés à Agadir, nous testons chaque activité."
     },
     {
-      icon: Award,
-      title: "Earn rewards",
-      description: "Explore, earn, redeem, and repeat with our loyalty program."
+      icon: ShieldCheck,
+      title: "Paiement Sécurisé",
+      description: "Transactions cryptées et assistance 7j/7."
     },
     {
-      icon: Star,
-      title: "Millions of reviews",
-      description: "Plan and book with confidence using reviews from fellow travelers."
-    },
-    {
-      icon: Calendar,
-      title: "Plan your way",
-      description: "Stay flexible with free cancellation and the option to reserve now and pay later."
+      icon: Clock,
+      title: "Annulation Souple",
+      description: "Liberté totale jusqu'à 24h avant le départ."
     }
   ];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Why book with Overglow-Trip?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="py-20 bg-slate-50">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <h2 className="text-3xl font-bold text-center mb-12 text-slate-900">Nos Promesses</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <FeatureItem key={index} {...feature} />
           ))}
