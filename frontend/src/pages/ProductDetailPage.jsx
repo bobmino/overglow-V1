@@ -380,15 +380,16 @@ const ProductDetailPage = () => {
           <TrustBar compact />
         </div>
         {product?.operator?.isClaimed === false && (
-          <div className="mb-5 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-cyan-900">
-              Vous etes le proprietaire de cette activite ?
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+            <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+              <Shield size={18} className="text-amber-600" />
+              Vous gérez cette activité ?
             </p>
             <Link
               to={`/partners/signup?activity=${encodeURIComponent(product?.title || '')}`}
-              className="inline-flex items-center justify-center rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800 transition"
+              className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 transition shadow-sm"
             >
-              Prendre le controle
+              Prendre le contrôle
             </Link>
           </div>
         )}
@@ -628,7 +629,7 @@ const ProductDetailPage = () => {
 
           {/* Booking Widget (Sidebar) - Desktop */}
           <div className="lg:col-span-1 hidden lg:block">
-            <div className="sticky top-24 bg-white border-2 border-slate-200 rounded-2xl p-6 shadow-lg">
+            <div className="sticky top-24 bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               {/* Cancellation Policy */}
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center text-green-700 mb-1">
@@ -729,7 +730,7 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleBookNow}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                className="w-full py-4 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-lg shadow-primary-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                className="w-full py-4 bg-emerald-600 text-white font-bold text-lg rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
               >
                 {!hasValidPrice
                   ? 'Price unavailable'
@@ -740,8 +741,9 @@ const ProductDetailPage = () => {
                   : 'Réserver maintenant'}
               </button>
 
-              <p className="text-center text-xs text-slate-500 mt-4">
-                You won't be charged yet
+              <p className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4 font-medium">
+                <Shield size={14} className="text-emerald-600" />
+                Paiement sécurisé et crypté
               </p>
             </div>
           </div>
@@ -760,7 +762,7 @@ const ProductDetailPage = () => {
           <button 
             onClick={handleBookNow}
             disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-            className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition disabled:opacity-50"
+            className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20"
           >
             {!hasValidPrice
               ? 'Price unavailable'
