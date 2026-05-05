@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import DatePicker from './DatePicker';
 import SearchAutocomplete from './SearchAutocomplete';
 import TrustBar from './TrustBar';
+import { formatImageUrl } from '../utils/formatImage';
 
 const Hero = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
+  const heroBackground = formatImageUrl('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ const Hero = () => {
       {/* Background Image with Gradient Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')" }}
+        style={{ backgroundImage: `url('${heroBackground}')` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent"></div>
       </div>

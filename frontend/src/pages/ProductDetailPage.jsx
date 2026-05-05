@@ -20,6 +20,7 @@ import FavoriteButton from '../components/FavoriteButton';
 import OthersAlsoBooked from '../components/OthersAlsoBooked';
 import ShareButtons from '../components/ShareButtons';
 import TrustBar from '../components/TrustBar';
+import { formatImageUrl } from '../utils/formatImage';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -347,7 +348,8 @@ const ProductDetailPage = () => {
   const hasValidPrice = typeof minPrice === 'number';
   const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
   const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://overglow-backend.vercel.app/products/${product?._id || ''}`;
-  const ogImage = product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg';
+  const normalizedImages = Array.isArray(product?.images) ? product.images.map(formatImageUrl).filter(Boolean) : [];
+  const ogImage = normalizedImages[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg';
   const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'} | Overglow`;
   const shortDescription = (product?.description || 'Experience locale verifiee, paiement securise et support 24/7 sur Overglow.')
     .trim()
@@ -405,7 +407,7 @@ const ProductDetailPage = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
-            <ImageGallery images={product.images} />
+            <ImageGallery images={normalizedImages} />
 
             {/* Product Header */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
