@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
@@ -44,26 +45,32 @@ const SearchPage = () => {
   const [cities, setCities] = useState(['Marrakech', 'Casablanca', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Meknès', 'Ouarzazate']);
   
   // Fetch categories and cities from API
+  const { data: initialData } = useQuery({
+    queryKey: ['searchInitialData'],
+    queryFn: async () => {
+      const [categoriesRes, productsRes] = await Promise.all([
+        api.get('/api/search/categories'),
+        api.get('/api/products')
+      ]);
+      return { categoriesRes, productsRes };
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+
   useEffect(() => {
-    const fetchData = async () => {
+    if (initialData) {
       try {
-        const [categoriesRes, productsRes] = await Promise.all([
-          api.get('/api/search/categories'),
-          api.get('/api/products')
-        ]);
-        
-        // Extract categories from API response
-        if (categoriesRes.data && Array.isArray(categoriesRes.data.categories)) {
-          const categoryNames = categoriesRes.data.categories.map(cat => 
+        if (initialData.categoriesRes.data && Array.isArray(initialData.categoriesRes.data.categories)) {
+          const categoryNames = initialData.categoriesRes.data.categories.map(cat => 
             typeof cat === 'string' ? cat : (cat.name || cat.slug)
           );
           setCategories(categoryNames);
         }
         
-        // Extract unique cities from products
-        const productsData = Array.isArray(productsRes.data) 
-          ? productsRes.data 
-          : (productsRes.data?.products || []);
+        const productsData = Array.isArray(initialData.productsRes.data) 
+          ? initialData.productsRes.data 
+          : (initialData.productsRes.data?.products || []);
+          
         if (Array.isArray(productsData)) {
           const uniqueCities = [...new Set(productsData.map(p => p.city).filter(Boolean))];
           if (uniqueCities.length > 0) {
@@ -71,13 +78,11 @@ const SearchPage = () => {
           }
         }
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        // Fallback to default categories if API fails
+        console.error('Failed to parse initial data:', err);
         setCategories(['Tours', 'Attractions', 'Food & Drink', 'Day Trips', 'Outdoor Activities', 'Shows & Performances', 'Activities']);
       }
-    };
-    fetchData();
-  }, []);
+    }
+  }, [initialData]);
 
   // Load saved searches from localStorage
   useEffect(() => {
@@ -103,9 +108,8 @@ const SearchPage = () => {
       setSearchQuery('Agadir');
     }
     
-    // Handle category from URL (convert slug to display name)
+    // Handle category from URL
     if (categoryParam) {
-      // Import category mapping utility
       import('../utils/categoryMapping.js').then(({ normalizeCategory }) => {
         const normalizedCategory = normalizeCategory(categoryParam);
         if (normalizedCategory && !selectedCategories.includes(normalizedCategory)) {
@@ -115,87 +119,91 @@ const SearchPage = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        // Use advanced search if filters are active
-        const hasAdvancedFilters = 
-          advancedFilters.minPrice || 
-          advancedFilters.maxPrice || 
-          advancedFilters.minRating ||
-          (advancedFilters.durations && advancedFilters.durations.length > 0) ||
-          advancedFilters.selectedDate ||
-          advancedFilters.location ||
-          advancedFilters.skipTheLine ||
-          searchQuery;
+  const hasAdvancedFilters = 
+    advancedFilters.minPrice || 
+    advancedFilters.maxPrice || 
+    advancedFilters.minRating ||
+    (advancedFilters.durations && advancedFilters.durations.length > 0) ||
+    advancedFilters.selectedDate ||
+    advancedFilters.location ||
+    advancedFilters.skipTheLine ||
+    searchQuery;
 
-        if (hasAdvancedFilters) {
-          const params = new URLSearchParams();
-          if (searchQuery) params.append('q', searchQuery);
-          if (selectedCity) params.append('city', selectedCity);
-          if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
-          if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
-          if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
-          if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
-          if (advancedFilters.durations.length > 0) {
-            advancedFilters.durations.forEach(d => params.append('durations', d));
-          }
-          if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
-          if (advancedFilters.location?.lat) {
-            params.append('locationLat', advancedFilters.location.lat);
-            params.append('locationLng', advancedFilters.location.lng);
-          }
-          if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
-          if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
-          params.append('sortBy', sortBy);
-          params.append('page', page);
-          params.append('limit', 20);
-
-          const { data } = await api.get(`/api/search/advanced?${params.toString()}`);
-          const productsArray = Array.isArray(data.products) ? data.products : [];
-          setProducts(productsArray);
-          setFilteredProducts(productsArray);
-          setTotalPages(data.totalPages || 1);
-          
-          // Track search
-          trackSearch(
-            searchQuery || '',
-            {
-              city: selectedCity || advancedFilters.city,
-              category: selectedCategories.join(','),
-              minPrice: advancedFilters.minPrice,
-              maxPrice: advancedFilters.maxPrice,
-              selectedDate: advancedFilters.selectedDate,
-            },
-            productsArray.length
-          );
-        } else {
-          // Use simple product list
-          const params = new URLSearchParams();
-          const genericQuery = searchQuery || selectedCity || 'Agadir';
-          params.append('q', genericQuery);
-          const { data } = await api.get(`/api/products?${params.toString()}`);
-          // Handle both old format (array) and new format (object with pagination)
-          const productsArray = Array.isArray(data) ? data : (data?.products || []);
-          const pagination = data?.pagination || { page: 1, totalPages: 1, total: productsArray.length };
-          setProducts(productsArray);
-          setFilteredProducts(productsArray);
-          setPage(pagination.page || 1);
-          setTotalPages(pagination.totalPages || 1);
+  const { data: searchResults, isLoading: isSearchLoading, isError: isSearchError } = useQuery({
+    queryKey: ['searchResults', selectedCity, selectedCategories, advancedFilters, searchQuery, sortBy, page],
+    queryFn: async () => {
+      let data;
+      if (hasAdvancedFilters) {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('q', searchQuery);
+        if (selectedCity) params.append('city', selectedCity);
+        if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
+        if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
+        if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
+        if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
+        if (advancedFilters.durations.length > 0) {
+          advancedFilters.durations.forEach(d => params.append('durations', d));
         }
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to load products:', err);
-        setError('Failed to load products');
-        setProducts([]);
-        setFilteredProducts([]);
-        setLoading(false);
-      }
-    };
+        if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
+        if (advancedFilters.location?.lat) {
+          params.append('locationLat', advancedFilters.location.lat);
+          params.append('locationLng', advancedFilters.location.lng);
+        }
+        if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
+        if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
+        params.append('sortBy', sortBy);
+        params.append('page', page);
+        params.append('limit', 20);
 
-    fetchProducts();
-  }, [selectedCity, selectedCategories, advancedFilters, searchQuery, sortBy, page]);
+        const response = await api.get(`/api/search/advanced?${params.toString()}`);
+        data = response.data;
+      } else {
+        const params = new URLSearchParams();
+        const genericQuery = searchQuery || selectedCity || 'Agadir';
+        params.append('q', genericQuery);
+        params.append('page', page);
+        params.append('limit', 20);
+        const response = await api.get(`/api/products?${params.toString()}`);
+        data = response.data;
+      }
+      return data;
+    },
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  useEffect(() => {
+    if (searchResults) {
+      const productsArray = Array.isArray(searchResults.products) ? searchResults.products : (Array.isArray(searchResults) ? searchResults : []);
+      const pagination = searchResults.pagination || { page: 1, totalPages: 1, total: productsArray.length };
+      
+      setProducts(productsArray);
+      setPage(pagination.page || 1);
+      setTotalPages(pagination.totalPages || 1);
+
+      if (hasAdvancedFilters && productsArray.length > 0) {
+        trackSearch(
+          searchQuery || '',
+          {
+            city: selectedCity || advancedFilters.city,
+            category: selectedCategories.join(','),
+            minPrice: advancedFilters.minPrice,
+            maxPrice: advancedFilters.maxPrice,
+            selectedDate: advancedFilters.selectedDate,
+          },
+          productsArray.length
+        );
+      }
+    }
+  }, [searchResults]);
+
+  useEffect(() => {
+    setLoading(isSearchLoading);
+  }, [isSearchLoading]);
+
+  useEffect(() => {
+    if (isSearchError) setError('Failed to load products');
+    else setError(null);
+  }, [isSearchError]);
 
   const getProductBasePrice = (product) => {
     const schedulePrices = Array.isArray(product.schedules)

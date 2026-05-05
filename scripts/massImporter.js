@@ -195,6 +195,23 @@ const main = async () => {
     console.log('Dry-run complete. No database writes performed.');
   } else {
     console.log(`Import complete. Products created: ${created}, updated: ${updated}`);
+    // Clear cache
+    try {
+      const apiUrl = process.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/products/webhook/clear-cache`, {
+        method: 'POST',
+        headers: {
+          'x-api-key': process.env.IMPORT_WEBHOOK_API_KEY || ''
+        }
+      });
+      if (response.ok) {
+        console.log('Cache cleared successfully via webhook.');
+      } else {
+        console.warn('Failed to clear cache via webhook. Server might not be running locally, or API key is invalid.');
+      }
+    } catch (err) {
+      console.warn('Could not reach backend to clear cache (this is normal if server is not running).', err.message);
+    }
   }
   process.exit(0);
 };

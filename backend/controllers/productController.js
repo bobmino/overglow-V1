@@ -9,6 +9,7 @@ import { validationResult } from 'express-validator';
 import { notifyProductPending, notifyProductApproved } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import crypto from 'crypto';
+import { clearCache } from '../middleware/cacheMiddleware.js';
 
 const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -222,6 +223,9 @@ const createProduct = async (req, res) => {
       await notifyProductPending(createdProduct, adminIds);
     }
     
+    // Invalidate cache for search and product listings
+    clearCache();
+    
     res.status(201).json(createdProduct);
   } catch (error) {
     console.error('Create product error:', error);
@@ -384,6 +388,10 @@ const updateProduct = async (req, res) => {
       if (operator) {
         updateOperatorMetrics(operator._id).catch(err => console.error('Error updating operator metrics:', err));
       }
+      
+      // Invalidate cache
+      clearCache();
+      
       res.json(updatedProduct);
   } catch (error) {
     console.error('Update product error:', error);
@@ -421,6 +429,10 @@ const deleteProduct = async (req, res) => {
       }
 
       await product.deleteOne();
+      
+      // Invalidate cache
+      clearCache();
+      
       res.json({ message: 'Product removed' });
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -722,6 +734,9 @@ const webhookImportProduct = async (req, res) => {
       operation = 'created';
     }
 
+    // Clear cache upon successful import
+    clearCache();
+
     return res.status(201).json({
       success: true,
       operation,
@@ -735,6 +750,24 @@ const webhookImportProduct = async (req, res) => {
   }
 };
 
+// @desc    Clear cache manually via webhook
+// @route   POST /api/products/webhook/clear-cache
+// @access  Private via X-API-KEY
+const clearCacheWebhook = (req, res) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!process.env.IMPORT_WEBHOOK_API_KEY || apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
+    return res.status(401).json({ success: false, message: 'Unauthorized webhook key' });
+  }
+
+  try {
+    clearCache();
+    return res.json({ success: true, message: 'Cache cleared successfully' });
+  } catch (error) {
+    console.error('Clear cache error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to clear cache' });
+  }
+};
+
 export {
   createProduct,
   getMyProducts,
@@ -743,4 +776,5 @@ export {
   getPublishedProducts,
   getProductById,
   webhookImportProduct,
+  clearCacheWebhook,
 };

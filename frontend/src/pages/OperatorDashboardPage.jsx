@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
 import { Package, Calendar, DollarSign, Users, TrendingUp, MessageSquare } from 'lucide-react';
@@ -19,56 +20,52 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
 );
 
 const OperatorDashboardPage = () => {
-  const [stats, setStats] = useState({
+  const { toast } = useToast();
+
+  const { data: stats, isLoading, isError } = useQuery({
+    queryKey: ['operatorStats'],
+    queryFn: async () => {
+      // Fetch operator products
+      const { data: products } = await api.get('/api/products/my-products');
+      
+      // Fetch operator bookings
+      const { data: bookings } = await api.get('/api/operator/bookings');
+      
+      const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const now = new Date();
+      const paidBookings = bookings.filter((b) => (b.paymentStatus || '').toLowerCase() === 'paid');
+      const pendingBalance = paidBookings
+        .filter((b) => b.payoutDate && new Date(b.payoutDate) > now)
+        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const availableBalance = paidBookings
+        .filter((b) => b.payoutDate && new Date(b.payoutDate) <= now)
+        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      
+      return {
+        totalProducts: products.length,
+        totalBookings: bookings.length,
+        totalRevenue,
+        activeSchedules: products.reduce((sum, p) => sum + (p.schedules?.length || 0), 0),
+        pendingBalance,
+        availableBalance,
+      };
+    },
+    onError: (error) => {
+      console.error('Failed to fetch stats:', error);
+      toast('Nous mettons a jour vos donnees financieres. Merci de reessayer.', { type: 'error' });
+    }
+  });
+
+  const displayStats = stats || {
     totalProducts: 0,
     totalBookings: 0,
     totalRevenue: 0,
     activeSchedules: 0,
     pendingBalance: 0,
     availableBalance: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  };
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Fetch operator products
-        const { data: products } = await api.get('/api/products/my-products');
-        
-        // Fetch operator bookings
-        const { data: bookings } = await api.get('/api/operator/bookings');
-        
-        const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        const now = new Date();
-        const paidBookings = bookings.filter((b) => (b.paymentStatus || '').toLowerCase() === 'paid');
-        const pendingBalance = paidBookings
-          .filter((b) => b.payoutDate && new Date(b.payoutDate) > now)
-          .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        const availableBalance = paidBookings
-          .filter((b) => b.payoutDate && new Date(b.payoutDate) <= now)
-          .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-        
-        setStats({
-          totalProducts: products.length,
-          totalBookings: bookings.length,
-          totalRevenue,
-          activeSchedules: products.reduce((sum, p) => sum + (p.schedules?.length || 0), 0),
-          pendingBalance,
-          availableBalance,
-        });
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-        toast('Nous mettons a jour vos donnees financieres. Merci de reessayer.', { type: 'error' });
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="animate-pulse space-y-4">
@@ -111,25 +108,25 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={Package}
           label="Total Products"
-          value={stats.totalProducts}
+          value={displayStats.totalProducts}
           color="bg-blue-600"
         />
         <StatCard
           icon={Calendar}
           label="Active Schedules"
-          value={stats.activeSchedules}
+          value={displayStats.activeSchedules}
           color="bg-purple-600"
         />
         <StatCard
           icon={Users}
           label="Total Bookings"
-          value={stats.totalBookings}
+          value={displayStats.totalBookings}
           color="bg-green-600"
         />
         <StatCard
           icon={DollarSign}
           label="Total Revenue"
-          value={`€${stats.totalRevenue.toFixed(2)}`}
+          value={`€${displayStats.totalRevenue.toFixed(2)}`}
           color="bg-yellow-600"
         />
       </div>
@@ -148,12 +145,12 @@ const OperatorDashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm text-amber-800 font-semibold">Solde en attente</p>
-            <p className="text-2xl font-bold text-amber-900">€{stats.pendingBalance.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-amber-900">€{displayStats.pendingBalance.toFixed(2)}</p>
             <p className="text-xs text-amber-700 mt-1">Paiements encaisses, versement programme</p>
           </div>
           <div className="rounded-lg border border-green-200 bg-green-50 p-4">
             <p className="text-sm text-green-800 font-semibold">Solde disponible</p>
-            <p className="text-2xl font-bold text-green-900">€{stats.availableBalance.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-green-900">€{displayStats.availableBalance.toFixed(2)}</p>
             <p className="text-xs text-green-700 mt-1">Versements eligibles (payoutDate atteinte)</p>
           </div>
         </div>

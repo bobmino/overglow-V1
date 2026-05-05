@@ -8,10 +8,12 @@ import {
   getPublishedProducts,
   getProductById,
   webhookImportProduct,
+  clearCacheWebhook,
 } from '../controllers/productController.js';
 import { createSchedule, getSchedules } from '../controllers/scheduleController.js';
 import { createReview, getProductReviews } from '../controllers/reviewController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
@@ -60,7 +62,7 @@ const productUpdateValidationRules = [
 ];
 
 router.route('/')
-  .get(getPublishedProducts)
+  .get(cacheMiddleware(900), getPublishedProducts)
   .post(
     protect,
     authorize('Opérateur', 'Admin'), // Allow both operators and admins
@@ -70,6 +72,7 @@ router.route('/')
 
 router.get('/my-products', protect, authorize('Opérateur'), getMyProducts);
 router.post('/webhook/import', webhookImportProduct);
+router.post('/webhook/clear-cache', clearCacheWebhook);
 
 router.route('/:id')
   .get(getProductById)
