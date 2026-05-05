@@ -356,9 +356,9 @@ const SearchPage = () => {
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
       </Helmet>
       {/* Search Bar */}
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-4">
-          <div className="flex-1 relative">
+      <div className="mb-6 relative overflow-visible">
+        <div className="flex items-center space-x-2 mb-4 overflow-visible">
+          <div className="flex-1 relative overflow-visible">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" size={20} />
             <input
               ref={searchInputRef}
@@ -640,6 +640,18 @@ const SearchPage = () => {
               >
                 Clear all filters
               </button>
+              <div className="mt-3">
+                <button
+                  onClick={() => {
+                    handleResetFilters();
+                    setSearchQuery('Agadir');
+                    setSearchParams({ q: 'Agadir' });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 transition"
+                >
+                  Voir tout
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

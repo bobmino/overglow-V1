@@ -450,13 +450,12 @@ const getPublishedProducts = async (req, res) => {
     const { city, category, q, search, date } = req.query;
     let query = { status: { $regex: /^published$/i } };
 
-    const genericQuery = (q || search || '').trim();
+    const genericQuery = typeof (q || search) === 'string' ? (q || search).trim() : '';
     if (genericQuery) {
-      const regex = new RegExp(escapeRegex(genericQuery), 'i');
+      const regex = new RegExp(genericQuery, 'i');
       query.$or = [
         { title: regex },
         { city: regex },
-        { description: regex },
       ];
     }
     if (!genericQuery && !city) {
@@ -490,6 +489,7 @@ const getPublishedProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .lean();
+    console.log('Search Query:', genericQuery || '(fallback:agadir)', 'Found:', Array.isArray(products) ? products.length : 0);
     
     // Get total count for pagination
     const total = await Product.countDocuments(query);

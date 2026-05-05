@@ -21,7 +21,7 @@ const items = [
 
 const TrustBar = ({ compact = false }) => {
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-sm ${compact ? 'p-4' : 'p-5'}`}>
+    <div className={`relative z-10 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-sm ${compact ? 'p-4' : 'p-5'}`}>
       <div className={`grid gap-3 ${compact ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}>
         {items.map((item) => (
           <div key={item.title} className="flex items-start gap-3">
