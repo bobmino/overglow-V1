@@ -94,6 +94,7 @@ export const getAutocomplete = async (req, res) => {
       .slice(0, 5)
       .map(p => ({
         id: p._id,
+        slug: p.slug,
         title: p.title,
         city: p.city,
         category: p.category

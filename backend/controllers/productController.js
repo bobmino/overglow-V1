@@ -445,8 +445,18 @@ const getPublishedProducts = async (req, res) => {
       });
     }
 
-    const { city, category, date } = req.query;
+    const { city, category, q, search, date } = req.query;
     let query = { status: 'Published' };
+
+    const genericQuery = (q || search || '').trim();
+    if (genericQuery) {
+      const regex = new RegExp(genericQuery, 'i');
+      query.$or = [
+        { title: regex },
+        { city: regex },
+        { description: regex },
+      ];
+    }
 
     if (city) {
       query.city = { $regex: city, $options: 'i' };
@@ -506,13 +516,15 @@ const getPublishedProducts = async (req, res) => {
 // @access  Public
 const getProductById = async (req, res) => {
   try {
-    // Validate MongoDB ObjectId format
-    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid product ID format' });
+    const productIdentifier = req.params.id;
+    if (!productIdentifier) {
+      return res.status(400).json({ message: 'Invalid product identifier' });
     }
 
-    // Fetch product without populate first to avoid populate errors
-    let product = await Product.findById(req.params.id).lean();
+    // Support both ObjectId and slug for SEO routes like /experiences/:slug
+    let product = mongoose.Types.ObjectId.isValid(productIdentifier)
+      ? await Product.findById(productIdentifier).lean()
+      : await Product.findOne({ slug: productIdentifier }).lean();
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

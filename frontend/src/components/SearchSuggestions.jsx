@@ -11,6 +11,9 @@ const SearchSuggestions = ({
   onClear,
   showSuggestions = true 
 }) => {
+  const safeCall = (fn, payload) => {
+    if (typeof fn === 'function') fn(payload);
+  };
   const [suggestions, setSuggestions] = useState([]);
   const [history, setHistory] = useState([]);
   const [trending, setTrending] = useState([]);
@@ -82,7 +85,7 @@ const SearchSuggestions = ({
     setHistory(newHistory);
     localStorage.setItem('searchHistory', JSON.stringify(newHistory));
     
-    onSelect(suggestion);
+    safeCall(onSelect, suggestion);
   };
 
   const handleClearHistory = () => {
@@ -127,7 +130,7 @@ const SearchSuggestions = ({
               Historique
             </div>
             <button
-              onClick={handleClearHistory}
+              onClick={() => safeCall(handleClearHistory)}
               className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
             >
               <X size={12} />

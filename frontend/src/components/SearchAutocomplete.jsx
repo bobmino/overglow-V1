@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Search as SearchIcon } from 'lucide-react';
 import api from '../config/axios';
 
-const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place or activity" }) => {
+const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Search for a place or activity" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState({ cities: [], activities: [], showNearby: false });
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,11 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
       debounceTimer.current = setTimeout(async () => {
         try {
           const { data } = await api.get(`/api/search/autocomplete?q=${value}`);
-          setSuggestions(data);
+          setSuggestions({
+            cities: Array.isArray(data?.cities) ? data.cities : [],
+            activities: Array.isArray(data?.activities) ? data.activities : [],
+            showNearby: Boolean(data?.showNearby),
+          });
           setIsOpen(true);
           setLoading(false);
         } catch (error) {
@@ -51,17 +55,25 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
     };
   }, [value]);
 
+  const safeCall = (fn, payload) => {
+    if (typeof fn === 'function') fn(payload);
+  };
+
   const handleSelect = (selection) => {
-    onChange(selection);
+    safeCall(onChange, typeof selection === 'string' ? selection : selection?.label || '');
+    safeCall(onSelect, selection);
     setIsOpen(false);
   };
 
   const handleNearby = () => {
-    onChange('Nearby');
+    safeCall(onChange, 'Nearby');
+    safeCall(onSelect, { type: 'nearby', label: 'Nearby' });
     setIsOpen(false);
   };
 
-  const hasSuggestions = suggestions.cities.length > 0 || suggestions.activities.length > 0;
+  const cities = Array.isArray(suggestions?.cities) ? suggestions.cities : [];
+  const activities = Array.isArray(suggestions?.activities) ? suggestions.activities : [];
+  const hasSuggestions = cities.length > 0 || activities.length > 0;
 
   return (
     <div className="relative w-full" ref={autocompleteRef}>
@@ -72,7 +84,7 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
           id="search-autocomplete"
           name="search-autocomplete"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => safeCall(onChange, e.target.value)}
           onFocus={() => value.length >= 2 && setIsOpen(true)}
           placeholder={placeholder}
           className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium text-lg pr-8"
@@ -86,10 +98,10 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
         )}
       </div>
 
-      {isOpen && (hasSuggestions || suggestions.showNearby) && (
+      {isOpen && (hasSuggestions || suggestions?.showNearby) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 py-2 z-[9999] max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2">
           {/* Nearby Option */}
-          {suggestions.showNearby && (
+          {suggestions?.showNearby && (
             <>
               <button
                 onClick={handleNearby}
@@ -108,15 +120,15 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
           )}
 
           {/* Cities */}
-          {suggestions.cities.length > 0 && (
+          {cities.length > 0 && (
             <div>
               <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Destinations
               </div>
-              {suggestions.cities.map((city, index) => (
+              {cities.map((city, index) => (
                 <button
                   key={`city-${index}`}
-                  onClick={() => handleSelect(city.name)}
+                  onClick={() => handleSelect({ type: 'city', label: city.name, city: city.name })}
                   className="w-full px-4 py-2 hover:bg-slate-50 transition flex items-center gap-3 text-left"
                 >
                   <MapPin size={16} className="text-slate-400" />
@@ -130,16 +142,22 @@ const SearchAutocomplete = ({ value, onChange, placeholder = "Search for a place
           )}
 
           {/* Activities */}
-          {suggestions.activities.length > 0 && (
+          {activities.length > 0 && (
             <div>
-              {suggestions.cities.length > 0 && <div className="border-t border-slate-100 my-2"></div>}
+              {cities.length > 0 && <div className="border-t border-slate-100 my-2"></div>}
               <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Activities
               </div>
-              {suggestions.activities.map((activity) => (
+              {activities.map((activity) => (
                 <button
                   key={activity.id}
-                  onClick={() => handleSelect(activity.title)}
+                  onClick={() => handleSelect({
+                    type: 'product',
+                    label: activity.title,
+                    id: activity.id,
+                    slug: activity.slug,
+                    city: activity.city,
+                  })}
                   className="w-full px-4 py-2 hover:bg-slate-50 transition text-left"
                 >
                   <div className="flex items-start gap-3">

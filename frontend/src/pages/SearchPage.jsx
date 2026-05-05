@@ -99,6 +99,9 @@ const SearchPage = () => {
     
     if (cityParam) setSelectedCity(cityParam);
     if (queryParam) setSearchQuery(queryParam);
+    if (!cityParam && !queryParam) {
+      setSearchQuery('Agadir');
+    }
     
     // Handle category from URL (convert slug to display name)
     if (categoryParam) {
@@ -170,7 +173,8 @@ const SearchPage = () => {
         } else {
           // Use simple product list
           const params = new URLSearchParams();
-          if (selectedCity) params.append('city', selectedCity);
+          const genericQuery = searchQuery || selectedCity || 'Agadir';
+          params.append('q', genericQuery);
           const { data } = await api.get(`/api/products?${params.toString()}`);
           // Handle both old format (array) and new format (object with pagination)
           const productsArray = Array.isArray(data) ? data : (data?.products || []);

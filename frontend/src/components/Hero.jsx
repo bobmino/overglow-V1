@@ -17,9 +17,20 @@ const Hero = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (destination) params.append('city', destination);
+    const normalizedQuery = String(destination || '').trim();
+    params.append('q', normalizedQuery || 'Agadir');
     if (date) params.append('date', date);
     navigate(`/search?${params.toString()}`);
+  };
+
+  const handleAutocompleteSelect = (selection) => {
+    if (selection?.type === 'product' && (selection.slug || selection.id)) {
+      navigate(`/experiences/${selection.slug || selection.id}`);
+      return;
+    }
+    if (selection?.type === 'city' && selection.city) {
+      navigate(`/search?q=${encodeURIComponent(selection.city)}`);
+    }
   };
 
   return (
@@ -47,6 +58,7 @@ const Hero = () => {
             <SearchAutocomplete
               value={destination}
               onChange={setDestination}
+              onSelect={handleAutocompleteSelect}
               placeholder={t('hero.searchPlaceholder')}
             />
           </div>
