@@ -380,22 +380,22 @@ const ProductDetailPage = () => {
           <TrustBar compact />
         </div>
         {product?.operator?.isClaimed === false && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
-            <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
-              <Shield size={18} className="text-amber-600" />
-              Vous gérez cette activité ?
+          <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+            <p className="text-sm font-medium text-slate-800 flex items-center gap-2">
+              <Shield size={18} className="text-slate-600" />
+              Vous êtes l'organisateur de cette activité ?
             </p>
             <Link
               to={`/partners/signup?activity=${encodeURIComponent(product?.title || '')}`}
-              className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 transition shadow-sm"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
             >
-              Prendre le contrôle
+              Prenez le contrôle de votre fiche
             </Link>
           </div>
         )}
         {/* Breadcrumb */}
         <nav className="text-sm text-slate-600 mb-4">
-          <Link to="/" className="hover:text-primary-600">Home</Link>
+          <Link to="/" className="hover:text-primary-600">Accueil</Link>
           <ChevronRight size={14} className="inline mx-2" />
           <Link to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</Link>
           <ChevronRight size={14} className="inline mx-2" />
@@ -427,6 +427,11 @@ const ProductDetailPage = () => {
                 {product.city} • {product.category}
               </div>
               
+              <div className="flex items-center gap-2 mb-4 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full text-sm font-semibold">
+                <CheckCircle size={16} />
+                Vérifié par Overglow
+              </div>
+              
               <div className="flex items-start justify-between mb-4">
                 <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex-1">
                   {product.title}
@@ -442,11 +447,11 @@ const ProductDetailPage = () => {
                   <div className="flex items-center">
                     <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
                     <span className="font-bold">4.8</span>
-                    <span className="text-slate-500 ml-1">(2,451 reviews)</span>
+                    <span className="text-slate-500 ml-1">(2,451 avis)</span>
                   </div>
                   <div className="flex items-center text-slate-600">
                     <Clock size={16} className="mr-1" />
-                    <span>3-4 hours</span>
+                    <span>3-4 heures</span>
                   </div>
                 </div>
               </div>
@@ -454,14 +459,14 @@ const ProductDetailPage = () => {
               {/* Urgency Message */}
               <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <p className="text-sm text-orange-700">
-                  <span className="font-bold">Popular:</span> Booked 127 times in the last 24 hours
+                  <span className="font-bold">Populaire :</span> Réservé 127 fois ces dernières 24 heures
                 </p>
               </div>
             </div>
 
             {/* Description */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">About this experience</h2>
+              <h2 className="text-2xl font-bold mb-4">À propos de cette expérience</h2>
               <p className="text-slate-700 leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
@@ -469,7 +474,7 @@ const ProductDetailPage = () => {
 
             {/* What's Included */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">What's Included</h2>
+              <h2 className="text-2xl font-bold mb-4">Ce qui est inclus</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Array.isArray(included) && included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
@@ -488,7 +493,7 @@ const ProductDetailPage = () => {
 
             {/* Highlights */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Highlights</h2>
+              <h2 className="text-2xl font-bold mb-4">Points forts</h2>
               <ul className="space-y-3">
                 {Array.isArray(highlights) && highlights.map((highlight, index) => (
                   <li key={index} className="flex items-start">
@@ -501,7 +506,7 @@ const ProductDetailPage = () => {
 
             {/* Itinerary */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Itinerary</h2>
+              <h2 className="text-2xl font-bold mb-4">Itinéraire</h2>
               <div className="space-y-4">
                 {Array.isArray(itinerary) && itinerary.map((stop, idx) => (
                   <div key={idx} className="flex gap-4 pb-4 border-b border-slate-200 last:border-0">
@@ -566,7 +571,7 @@ const ProductDetailPage = () => {
 
             {/* FAQ */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
+              <h2 className="text-2xl font-bold mb-4">Foire aux questions</h2>
               <div className="space-y-3">
                 {Array.isArray(faqs) && faqs.map((faq, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
@@ -629,28 +634,28 @@ const ProductDetailPage = () => {
 
           {/* Booking Widget (Sidebar) - Desktop */}
           <div className="lg:col-span-1 hidden lg:block">
-            <div className="sticky top-24 bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <div className="sticky top-28 bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               {/* Cancellation Policy */}
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center text-green-700 mb-1">
                   <CheckCircle size={18} className="mr-2" />
-                  <span className="font-bold">Free cancellation</span>
+                  <span className="font-bold">Annulation gratuite</span>
                 </div>
                 <p className="text-sm text-green-600">
-                  Cancel up to 24 hours in advance for a full refund
+                  Annulez jusqu'à 24h à l'avance pour un remboursement complet
                 </p>
               </div>
 
               {/* Price Display */}
               <div className="mb-6">
-                <p className="text-sm text-slate-600 mb-1">From</p>
+                <p className="text-sm text-slate-600 mb-1">À partir de</p>
                 {hasValidPrice ? (
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-slate-900">{formattedMinPrice}</span>
-                    <span className="text-slate-600">per person</span>
+                    <span className="text-slate-600">par personne</span>
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-sm">Price unavailable. Please contact support.</p>
+                  <p className="text-slate-500 text-sm">Prix non disponible. Veuillez contacter le support.</p>
                 )}
               </div>
 
@@ -676,7 +681,7 @@ const ProductDetailPage = () => {
               <div className="mb-6">
                 <label className="block text-sm font-bold text-slate-700 mb-3">
                   <Users size={16} className="inline mr-2" />
-                  Tickets
+                  Billets
                 </label>
                 <div className="flex items-center justify-between border-2 border-slate-300 rounded-xl p-3">
                   <button
@@ -699,14 +704,14 @@ const ProductDetailPage = () => {
               {selectedDate && selectedTimeSlot && hasValidPrice && (
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-600">{formattedMinPrice} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
+                    <span className="text-slate-600">{formattedMinPrice} × {numberOfTickets} billet{numberOfTickets > 1 ? 's' : ''}</span>
                     <span className="font-bold">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
                   </div>
                   {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                     <div className="flex justify-between items-center mb-2 text-sm">
                       <span className="text-slate-600 flex items-center gap-1">
                         <span>⚡</span>
-                        Skip-the-Line ({product.skipTheLine.type})
+                        Coupe-file ({product.skipTheLine.type})
                       </span>
                       <span className="font-bold">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
                     </div>
@@ -733,7 +738,7 @@ const ProductDetailPage = () => {
                 className="w-full py-4 bg-emerald-600 text-white font-bold text-lg rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
               >
                 {!hasValidPrice
-                  ? 'Price unavailable'
+                  ? 'Prix non disponible'
                   : !selectedDate
                   ? 'Sélectionner une date'
                   : !selectedTimeSlot
@@ -754,9 +759,9 @@ const ProductDetailPage = () => {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 p-4 shadow-lg z-50">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-slate-600">From</p>
+            <p className="text-xs text-slate-600">À partir de</p>
             <p className="text-2xl font-bold">
-              {hasValidPrice ? formattedMinPrice : 'Price unavailable'}
+              {hasValidPrice ? formattedMinPrice : 'Prix non disponible'}
             </p>
           </div>
           <button 
@@ -765,7 +770,7 @@ const ProductDetailPage = () => {
             className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20"
           >
             {!hasValidPrice
-              ? 'Price unavailable'
+              ? 'Prix non disponible'
               : !selectedDate
               ? 'Sélectionner une date'
               : !selectedTimeSlot
