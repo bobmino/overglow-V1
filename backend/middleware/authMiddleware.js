@@ -44,6 +44,17 @@ const setCORSHeaders = (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
 
+const parseCookies = (req) => {
+  const rawCookie = req.headers?.cookie;
+  if (!rawCookie) return {};
+  return rawCookie.split(';').reduce((acc, part) => {
+    const [rawKey, ...rest] = part.trim().split('=');
+    if (!rawKey) return acc;
+    acc[rawKey] = decodeURIComponent(rest.join('='));
+    return acc;
+  }, {});
+};
+
 const protect = async (req, res, next) => {
   // Always set CORS headers first
   setCORSHeaders(req, res);
@@ -56,60 +67,53 @@ const protect = async (req, res, next) => {
   }
 
   let token;
+  const cookies = parseCookies(req);
+  const cookieToken = cookies.accessToken;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
+  if (cookieToken) {
+    token = cookieToken;
+  }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Check token type (should be 'access' or undefined for backward compatibility)
-      if (decoded.type && decoded.type !== 'access') {
-        res.status(401);
-        return next(new Error('Invalid token type. Access token required.'));
-      }
-
-      req.user = await User.findById(decoded.id).select('-password');
-      
-      if (!req.user) {
-        res.status(401);
-        return next(new Error('User not found'));
-      }
-
-      // Normalize role for backward compatibility
-      req.user.role = normalizeRole(req.user.role);
-      
-      // Check if account is locked
-      if (req.user.lockedUntil && req.user.lockedUntil > new Date()) {
-        res.status(403);
-        return next(new Error(`Account locked until ${req.user.lockedUntil.toISOString()}. Too many failed login attempts.`));
-      }
-      
-      // Unlock account if lock period has passed
-      if (req.user.lockedUntil && req.user.lockedUntil <= new Date()) {
-        req.user.lockedUntil = undefined;
-        req.user.failedLoginAttempts = 0;
-        await req.user.save();
-      }
-
-      next();
-    } catch (error) {
-      console.error('Protect middleware error:', {
-        message: error.message,
-        name: error.name,
-        path: req.path
-      });
-      res.status(401);
-      return next(new Error('Not authorized, token failed'));
-    }
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
     res.status(401);
     return next(new Error('Not authorized, no token'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type && decoded.type !== 'access') {
+      res.status(401);
+      return next(new Error('Invalid token type. Access token required.'));
+    }
+
+    req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      res.status(401);
+      return next(new Error('User not found'));
+    }
+
+    req.user.role = normalizeRole(req.user.role);
+
+    // Keep existing account lock checks for backward compatibility
+    if (req.user.lockedUntil && req.user.lockedUntil > new Date()) {
+      res.status(403);
+      return next(new Error(`Account locked until ${req.user.lockedUntil.toISOString()}. Too many failed login attempts.`));
+    }
+
+    if (req.user.lockedUntil && req.user.lockedUntil <= new Date()) {
+      req.user.lockedUntil = undefined;
+      req.user.failedLoginAttempts = 0;
+      await req.user.save();
+    }
+
+    return next();
+  } catch (error) {
+    res.status(401);
+    return next(new Error('Not authorized, token failed'));
   }
 };
 

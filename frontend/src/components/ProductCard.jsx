@@ -56,7 +56,7 @@ const ProductCard = ({ product }) => {
             e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
           }}
         />
-        <div className="absolute top-0 inset-x-0 h-1/3 bg-gradient-to-b from-black/50 to-transparent opacity-60"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/20"></div>
         
         <div className="absolute top-4 right-4 flex items-center gap-2">
           <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center space-x-1">

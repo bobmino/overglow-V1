@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const ToastContext = createContext(null);
 
@@ -26,6 +26,17 @@ export const ToastProvider = ({ children }) => {
   );
 
   const value = useMemo(() => ({ toast, toasts, removeToast }), [toast, toasts, removeToast]);
+
+  useEffect(() => {
+    const handleAppToast = (event) => {
+      const detail = event?.detail || {};
+      if (!detail.message) return;
+      toast(detail.message, { type: detail.type || 'info', duration: detail.duration });
+    };
+
+    window.addEventListener('app-toast', handleAppToast);
+    return () => window.removeEventListener('app-toast', handleAppToast);
+  }, [toast]);
 
   return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
 };

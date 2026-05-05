@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HelpCircle, Mail, MessageSquare } from 'lucide-react';
+import { HelpCircle, Mail, MessageSquare, ShieldCheck, HandCoins, Users } from 'lucide-react';
 import FAQSection from '../components/FAQSection';
 import ChatWidget from '../components/ChatWidget';
 
@@ -16,36 +16,48 @@ const HelpPage = () => {
           <p className="text-xl text-gray-600">Comment pouvons-nous vous aider ?</p>
         </div>
 
-        {/* FAQ Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions fréquentes</h2>
-          <FAQSection language="fr" limit={20} />
+        <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-100 rounded-xl p-6 mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <ShieldCheck className="text-emerald-700" />
+            <h2 className="text-xl font-bold text-slate-900">Paiements et support: vos garanties</h2>
+          </div>
+          <p className="text-slate-700 text-sm">
+            Toutes les transactions sont securisees. Notre support client repond 24/7 pour les voyageurs et les partenaires.
+          </p>
         </div>
 
-        {/* Quick Links */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Guides rapides</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-6 border border-gray-200 rounded-lg hover:border-primary-500 transition">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Pour les voyageurs</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li><Link to="/help/booking" className="hover:text-primary-600">Comment réserver</Link></li>
-                <li><Link to="/help/cancellation" className="hover:text-primary-600">Annuler une réservation</Link></li>
-                <li><Link to="/help/payment" className="hover:text-primary-600">Modes de paiement</Link></li>
-                <li><Link to="/help/account" className="hover:text-primary-600">Gérer mon compte</Link></li>
-              </ul>
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="text-primary-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Pour les Voyageurs</h2>
             </div>
-
-            <div className="p-6 border border-gray-200 rounded-lg hover:border-primary-500 transition">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Pour les opérateurs</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li><Link to="/help/operator/getting-started" className="hover:text-primary-600">Commencer</Link></li>
-                <li><Link to="/help/operator/products" className="hover:text-primary-600">Gérer mes produits</Link></li>
-                <li><Link to="/help/operator/bookings" className="hover:text-primary-600">Gérer les réservations</Link></li>
-                <li><Link to="/help/operator/payments" className="hover:text-primary-600">Paiements et retraits</Link></li>
-              </ul>
-            </div>
+            <ul className="space-y-3 text-gray-700">
+              <li><strong>Paiement securise:</strong> cartes chiffrees et validation anti-fraude.</li>
+              <li><strong>Reservation claire:</strong> details, horaires et politique d'annulation visibles avant paiement.</li>
+              <li><strong>Support rapide:</strong> assistance par chat et email 24/7.</li>
+              <li><strong>Confiance:</strong> experiences verifiees et guides selectionnes.</li>
+            </ul>
           </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <HandCoins className="text-primary-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Pour les Partenaires</h2>
+            </div>
+            <ul className="space-y-3 text-gray-700">
+              <li><strong>Versements fiables:</strong> paiements automatises selon la date de versement.</li>
+              <li><strong>Visibilite internationale:</strong> diffusion de vos activites a une audience mondiale.</li>
+              <li><strong>Pilotage business:</strong> dashboard reservations, statuts et suivi financier.</li>
+              <li><strong>Accompagnement:</strong> equipe dediee pour lancer et optimiser vos offres.</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions frequentes</h2>
+          <FAQSection language="fr" limit={20} />
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">

@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DatePicker from './DatePicker';
 import SearchAutocomplete from './SearchAutocomplete';
+import TrustBar from './TrustBar';
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="relative h-[600px] w-full flex items-center justify-center overflow-visible">
+    <div className="relative h-[650px] w-full flex items-center justify-center overflow-visible">
       {/* Background Image with Gradient Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
@@ -61,6 +62,10 @@ const Hero = () => {
             <span className="md:hidden ml-2 font-bold">Search</span>
           </button>
         </form>
+
+        <div className="mt-5 max-w-4xl mx-auto">
+          <TrustBar compact />
+        </div>
       </div>
     </div>
   );

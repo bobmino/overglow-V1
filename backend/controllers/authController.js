@@ -6,6 +6,7 @@ import { validationResult } from 'express-validator';
 import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
+import { randomBytes } from 'crypto';
 
 // Normalize roles to avoid issues with older data / accent variants
 const normalizeRole = (role) => {
@@ -13,9 +14,38 @@ const normalizeRole = (role) => {
   const raw = String(role).trim();
   const lower = raw.toLowerCase();
   if (lower === 'admin' || lower === 'administrator' || lower === 'superadmin') return 'Admin';
-  if (lower === 'opérateur' || lower === 'operateur' || lower === 'operator') return 'Opérateur';
+  if (lower === 'opérateur' || lower === 'operateur' || lower === 'operator' || lower === 'provider' || lower === 'prestataire' || lower === 'partenaire') return 'Opérateur';
   if (lower === 'client' || lower === 'user' || lower === 'customer' || lower === 'voyageur') return 'Client';
   return raw;
+};
+
+const getCookieOptions = (isRefreshToken = false) => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+  maxAge: isRefreshToken ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000,
+});
+
+const setAuthCookies = (res, accessToken, refreshToken) => {
+  res.cookie('accessToken', accessToken, getCookieOptions(false));
+  res.cookie('refreshToken', refreshToken, getCookieOptions(true));
+};
+
+const clearAuthCookies = (res) => {
+  res.clearCookie('accessToken', getCookieOptions(false));
+  res.clearCookie('refreshToken', getCookieOptions(true));
+};
+
+const parseCookies = (req) => {
+  const rawCookie = req.headers?.cookie;
+  if (!rawCookie) return {};
+  return rawCookie.split(';').reduce((acc, part) => {
+    const [rawKey, ...rest] = part.trim().split('=');
+    if (!rawKey) return acc;
+    acc[rawKey] = decodeURIComponent(rest.join('='));
+    return acc;
+  }, {});
 };
 
 // Helper to set CORS headers
@@ -65,7 +95,7 @@ const registerUser = async (req, res) => {
     }
 
     // Default role is 'Client' (not 'Voyageur')
-    const finalRole = role || 'Client';
+    const finalRole = normalizeRole(role || 'Client');
     
     const user = await User.create({
       name,
@@ -110,6 +140,8 @@ const registerUser = async (req, res) => {
       });
       await user.save();
 
+      setAuthCookies(res, accessToken, refreshToken);
+
       res.status(201).json({
         _id: user._id,
         name: user.name,
@@ -124,6 +156,60 @@ const registerUser = async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error during registration' });
+  }
+};
+
+// @desc    Partner pre-signup (provider funnel)
+// @route   POST /api/auth/partner-signup
+// @access  Public
+const partnerSignup = async (req, res) => {
+  setCORSHeaders(req, res);
+
+  try {
+    const { name, activityType, city, whatsapp } = req.body;
+
+    if (!name || !activityType || !city || !whatsapp) {
+      return res.status(400).json({ success: false, message: 'Champs requis manquants' });
+    }
+
+    const normalizedWhatsapp = String(whatsapp).replace(/\s+/g, '').trim();
+    const existingByPhone = await User.findOne({ phone: normalizedWhatsapp });
+    if (existingByPhone) {
+      return res.status(400).json({ success: false, message: 'Ce numero WhatsApp est deja inscrit' });
+    }
+
+    const syntheticEmail = `partner_${Date.now()}_${Math.floor(Math.random() * 1000)}@partners.overglow.local`;
+    const tempPassword = randomBytes(12).toString('hex');
+
+    const user = await User.create({
+      name,
+      email: syntheticEmail,
+      password: tempPassword,
+      role: 'Opérateur',
+      phone: normalizedWhatsapp,
+      location: city,
+      bio: `Type d'activite: ${activityType}`,
+      isApproved: false,
+    });
+
+    await Operator.create({
+      user: user._id,
+      companyName: activityType,
+      description: `Partenaire en pre-inscription (${activityType})`,
+      location: { city },
+      status: 'Pending',
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Pre-inscription enregistree. Notre equipe vous contactera rapidement.',
+    });
+  } catch (error) {
+    logger.error('Partner signup error', {
+      message: error?.message,
+      stack: error?.stack,
+    });
+    return res.status(500).json({ success: false, message: 'Service momentanement indisponible' });
   }
 };
 
@@ -277,6 +363,7 @@ const loginUser = async (req, res) => {
         });
         
         await user.save();
+        setAuthCookies(res, accessToken, refreshToken);
       } catch (tokenError) {
         console.error('Token generation error:', {
           message: tokenError.message,
@@ -460,8 +547,11 @@ const refreshTokenHandler = async (req, res) => {
   
   try {
     const { refreshToken: token } = req.body;
+    const cookies = parseCookies(req);
+    const refreshTokenFromCookie = cookies.refreshToken;
+    const effectiveToken = token || refreshTokenFromCookie;
     
-    if (!token) {
+    if (!effectiveToken) {
       return res.status(400).json({ message: 'Refresh token is required' });
     }
     
@@ -472,7 +562,7 @@ const refreshTokenHandler = async (req, res) => {
     // Verify refresh token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = jwt.verify(effectiveToken, process.env.JWT_SECRET);
     } catch (error) {
       return res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
@@ -490,7 +580,7 @@ const refreshTokenHandler = async (req, res) => {
     
     // Check if refresh token exists in user's refresh tokens
     const storedToken = user.refreshTokens.find(
-      rt => rt.token === token && rt.expiresAt > new Date()
+      rt => rt.token === effectiveToken && rt.expiresAt > new Date()
     );
     
     if (!storedToken) {
@@ -501,6 +591,7 @@ const refreshTokenHandler = async (req, res) => {
     const accessToken = generateAccessToken(user._id, normalizeRole(user.role));
     
     logger.security.tokenRefresh(user._id.toString(), true);
+    res.cookie('accessToken', accessToken, getCookieOptions(false));
     
     res.json({
       token: accessToken,
@@ -519,15 +610,20 @@ const logout = async (req, res) => {
   
   try {
     const { refreshToken: token } = req.body;
+    const cookies = parseCookies(req);
+    const refreshTokenFromCookie = cookies.refreshToken;
+    const effectiveToken = token || refreshTokenFromCookie;
     
-    if (token) {
+    if (effectiveToken) {
       const user = await User.findById(req.user._id);
       if (user) {
         // Remove refresh token
-        user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== token);
+        user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== effectiveToken);
         await user.save();
       }
     }
+
+    clearAuthCookies(res);
     
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
@@ -536,4 +632,4 @@ const logout = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout };
+export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup };

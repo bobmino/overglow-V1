@@ -1,0 +1,182 @@
+[
+    {
+      "title": "Cours de Surf Débutant à Taghazout Bay",
+      "description": "Apprenez à dompter les vagues sur l'un des spots les plus célèbres au monde. Encadrement professionnel et matériel inclus.",
+      "price": 35,
+      "city": "Taghazout",
+      "gps": { "lat": 30.5445, "lng": -9.7088 },
+      "imageUrl": "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Taghazout Surf Academy"
+    },
+    {
+      "title": "Aventure Quad dans les Dunes d'Aourir",
+      "description": "Sensations fortes garanties à travers les dunes de sable et les forêts d'arganiers. Thé chez l'habitant inclus.",
+      "price": 45,
+      "city": "Agadir",
+      "gps": { "lat": 30.4912, "lng": -9.6201 },
+      "imageUrl": "https://images.unsplash.com/photo-1531737212413-667205e1cda7?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Agadir Adventure Tours"
+    },
+    {
+      "title": "Hammam Traditionnel & Massage à l'Huile d'Argan",
+      "description": "Une parenthèse de pure détente dans un spa authentique. Gommage au savon noir et massage relaxant.",
+      "price": 40,
+      "city": "Agadir",
+      "gps": { "lat": 30.4215, "lng": -9.5982 },
+      "imageUrl": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Argan Care Spa"
+    },
+    {
+      "title": "Excursion d'une journée : Parc National de Massa",
+      "description": "Découvrez la faune sauvage, les falaises de Sidi R'bat et le désert de Massa en 4x4. Déjeuner traditionnel inclus.",
+      "price": 55,
+      "city": "Massa",
+      "gps": { "lat": 30.0715, "lng": -9.6541 },
+      "imageUrl": "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Massa Safari Guides"
+    },
+    {
+      "title": "Randonnée & Baignade à Paradise Valley",
+      "description": "Évadez-vous dans l'oasis de l'Atlas. Piscines naturelles, cascades et déjeuner au bord de l'eau.",
+      "price": 30,
+      "city": "Imouzzer",
+      "gps": { "lat": 30.5852, "lng": -9.4823 },
+      "imageUrl": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Valley Trekking Co"
+    },
+    {
+      "title": "Balade à Cheval au Coucher du Soleil",
+      "description": "Promenade romantique sur la plage d'Agadir. Idéal pour les couples et les familles.",
+      "price": 25,
+      "city": "Agadir",
+      "gps": { "lat": 30.3986, "lng": -9.6054 },
+      "imageUrl": "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Agadir Ranch"
+    },
+    {
+      "title": "Jet Ski Sensation dans la Baie d'Agadir",
+      "description": "Vitesse et adrénaline face à la marina. Encadrement par des moniteurs diplômés.",
+      "price": 60,
+      "city": "Agadir",
+      "gps": { "lat": 30.4278, "lng": -9.6231 },
+      "imageUrl": "https://images.unsplash.com/photo-1559530412-588373b5d27d?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Marina Jet Club"
+    },
+    {
+      "title": "Visite Guidée : Medina Polizzi & Souk El Had",
+      "description": "Plongez dans l'histoire et l'artisanat local. Dégustation de produits du terroir incluse.",
+      "price": 20,
+      "city": "Agadir",
+      "gps": { "lat": 30.4033, "lng": -9.5814 },
+      "imageUrl": "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Heritage Discovery"
+    },
+    {
+      "title": "Session Yoga & Méditation face à l'Océan",
+      "description": "Retrouvez l'équilibre sur une terrasse surplombant Taghazout. Tisane bio offerte.",
+      "price": 15,
+      "city": "Taghazout",
+      "gps": { "lat": 30.5489, "lng": -9.7121 },
+      "imageUrl": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Zen Ocean Studio"
+    },
+    {
+      "title": "Excursion d'une journée : Taroudant & Tiout",
+      "description": "La 'Petite Marrakech' et sa palmeraie. Balade à dos d'âne et déjeuner authentique.",
+      "price": 50,
+      "city": "Taroudant",
+      "gps": { "lat": 30.4703, "lng": -8.8770 },
+      "imageUrl": "https://images.unsplash.com/photo-1489493585363-d69421e0dee3?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Atlas Nomads"
+    },
+    {
+      "title": "Dîner Spectacle Fantasia",
+      "description": "Une soirée magique sous tentes berbères. Folklore, cavaliers et cuisine traditionnelle.",
+      "price": 45,
+      "city": "Agadir",
+      "gps": { "lat": 30.3850, "lng": -9.5520 },
+      "imageUrl": "https://images.unsplash.com/photo-1547448415-e9f5b28e570d?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Fantasia Night"
+    },
+    {
+      "title": "Sortie Pêche en Mer : Côte Atlantique",
+      "description": "Accompagnez les pêcheurs locaux et tentez de remonter du bar ou de la daurade.",
+      "price": 70,
+      "city": "Agadir",
+      "gps": { "lat": 30.4280, "lng": -9.6350 },
+      "imageUrl": "https://images.unsplash.com/photo-1544551763-47a015929114?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Ocean Fishing Agadir"
+    },
+    {
+      "title": "Circuit VTT dans les Montagnes de l'Atlas",
+      "description": "Descentes techniques et paysages à couper le souffle. Guide et équipement de protection.",
+      "price": 38,
+      "city": "Agadir",
+      "gps": { "lat": 30.4520, "lng": -9.5120 },
+      "imageUrl": "https://images.unsplash.com/photo-1544191714-3d71ae5bf615?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Mountain Bike Morocco"
+    },
+    {
+      "title": "Surfer le 'Anchor Point' (Niveau Avancé)",
+      "description": "Session guidée sur le point break le plus célèbre du Maroc. Pour surfeurs expérimentés.",
+      "price": 40,
+      "city": "Taghazout",
+      "gps": { "lat": 30.5490, "lng": -9.7220 },
+      "imageUrl": "https://images.unsplash.com/photo-1459749411177-042180ce673f?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Pro Surf Guide"
+    },
+    {
+      "title": "Sandboarding dans les Dunes de Taboga",
+      "description": "Glissez sur le sable fin face à l'océan. Une expérience unique entre désert et mer.",
+      "price": 35,
+      "city": "Tamri",
+      "gps": { "lat": 30.7020, "lng": -9.8510 },
+      "imageUrl": "https://images.unsplash.com/photo-1512411441329-8733b8a364be?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Dune Sliders"
+    },
+    {
+      "title": "Croisière en Voilier avec Déjeuner",
+      "description": "Détente totale sur les eaux bleues d'Agadir. Baignade et repas de poisson frais à bord.",
+      "price": 65,
+      "city": "Agadir",
+      "gps": { "lat": 30.4260, "lng": -9.6210 },
+      "imageUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Agadir Sailing"
+    },
+    {
+      "title": "Atelier Cuisine : Tajine Authentique",
+      "description": "Apprenez les secrets des épices et cuisinez votre propre tajine chez l'habitant.",
+      "price": 32,
+      "city": "Taghazout",
+      "gps": { "lat": 30.5450, "lng": -9.7090 },
+      "imageUrl": "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Berber Kitchen"
+    },
+    {
+      "title": "Visite du Crocoparc : Frissons en Famille",
+      "description": "Explorez le jardin botanique et rencontrez les 300 crocodiles du Nil. Incontournable.",
+      "price": 10,
+      "city": "Agadir",
+      "gps": { "lat": 30.3890, "lng": -9.4850 },
+      "imageUrl": "https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Crocoparc Official"
+    },
+    {
+      "title": "Parachute Ascensionnel sur la Baie",
+      "description": "Prenez de la hauteur et admirez Agadir depuis les airs. Sensations douces.",
+      "price": 30,
+      "city": "Agadir",
+      "gps": { "lat": 30.4180, "lng": -9.6010 },
+      "imageUrl": "https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Sky Water Sports"
+    },
+    {
+      "title": "Exploration Buggy : Désert & Océan",
+      "description": "Plus stable que le quad, idéal pour explorer les pistes sauvages du littoral.",
+      "price": 85,
+      "city": "Agadir",
+      "gps": { "lat": 30.4850, "lng": -9.6320 },
+      "imageUrl": "https://images.unsplash.com/photo-1502472545330-0397fc13cc8a?auto=format&fit=crop&w=800&q=80",
+      "operatorName": "Extreme Buggy Agadir"
+    }
+  ]

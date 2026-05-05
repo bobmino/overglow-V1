@@ -10,6 +10,9 @@ import { notifyNewBooking } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
 import { checkAvailability, reserveCapacity } from '../utils/availabilityService.js';
+import { logger } from '../utils/logger.js';
+import { captureException } from '../utils/sentry.js';
+import { processPayment } from '../services/paymentService.js';
 
 // @desc    Create payment intent (Placeholder)
 // @route   POST /api/bookings/create-payment-intent
@@ -26,7 +29,7 @@ const createPaymentIntent = async (req, res) => {
 // @desc    Create a booking
 // @route   POST /api/bookings
 // @access  Private
-const createBooking = async (req, res) => {
+const createBooking = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -37,7 +40,14 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { scheduleId, numberOfTickets, paymentIntentId, skipTheLineEnabled, skipTheLinePrice } = req.body;
+    const {
+      scheduleId,
+      numberOfTickets,
+      paymentIntentId,
+      paymentMethod,
+      skipTheLineEnabled,
+      skipTheLinePrice,
+    } = req.body;
 
     // Validate inputs
     const tickets = Number(numberOfTickets);
@@ -84,6 +94,12 @@ const createBooking = async (req, res) => {
     const skipTheLineAmount = (skipTheLineEnabled && skipTheLinePrice) ? Number(skipTheLinePrice) * tickets : 0;
     const totalAmount = baseTotal + skipTheLineAmount;
 
+    const serviceDate = schedule.date ? new Date(schedule.date) : new Date();
+    const payoutDate = new Date(serviceDate);
+    payoutDate.setDate(payoutDate.getDate() + 7);
+    const payoutEligibleDate = new Date(serviceDate);
+    payoutEligibleDate.setDate(payoutEligibleDate.getDate() + 7);
+
     // Create booking within transaction
     const booking = new Booking({
       user: req.user._id,
@@ -92,8 +108,12 @@ const createBooking = async (req, res) => {
       numberOfTickets: tickets,
       totalAmount,
       totalPrice: totalAmount,
-      status: 'Confirmed', // Assuming payment succeeded if we are here
+      status: 'Pending',
       paymentIntentId,
+      paymentStatus: 'pending',
+      payoutStatus: 'pending',
+      payoutDate,
+      payoutEligibleDate,
     });
 
     const createdBooking = await booking.save({ session });
@@ -105,17 +125,62 @@ const createBooking = async (req, res) => {
     // Commit transaction
     await session.commitTransaction();
 
-    // Populate booking for email (outside transaction for better performance)
-    const populatedBooking = await Booking.findById(createdBooking._id)
-      .populate({
-        path: 'schedule',
-        populate: { path: 'product' }
+    // Provider-agnostic payment orchestration with simulation fallback.
+    let paymentResult;
+    try {
+      paymentResult = await processPayment({
+        provider: paymentMethod || 'stripe',
+        amount: totalAmount,
+        currency: 'EUR',
+        paymentIntentId,
+        metadata: {
+          bookingId: createdBooking._id.toString(),
+          scheduleId: scheduleId.toString(),
+          userId: req.user._id.toString(),
+        },
       });
 
-    // Send confirmation email (async, don't wait)
-    sendBookingConfirmation(populatedBooking, req.user).catch(err => 
-      console.error('Error sending booking confirmation email:', err)
-    );
+      createdBooking.paymentIntentId = paymentResult.transactionId || createdBooking.paymentIntentId;
+      createdBooking.paymentStatus = paymentResult.status === 'succeeded' ? 'paid' : 'pending';
+      createdBooking.payoutStatus = 'scheduled';
+      createdBooking.payoutDate = payoutDate;
+      createdBooking.payoutEligibleDate = payoutDate;
+      await createdBooking.save();
+    } catch (paymentError) {
+      createdBooking.paymentStatus = 'failed';
+      await createdBooking.save();
+
+      logger.error('Silent payment failure during booking creation', {
+        bookingId: createdBooking._id?.toString(),
+        provider: paymentMethod || 'stripe',
+        message: paymentError?.message,
+      });
+      captureException(paymentError, {
+        bookingId: createdBooking._id?.toString(),
+        provider: paymentMethod || 'stripe',
+      });
+
+      return res.status(202).json({
+        success: true,
+        message: 'Validation de la réservation en cours...',
+        bookingId: createdBooking._id,
+      });
+    }
+
+    // Populate booking for response (outside transaction for better performance)
+    const populatedBooking = await Booking.findById(createdBooking._id).populate({
+      path: 'schedule',
+      populate: { path: 'product' },
+    });
+
+    // Do not send final confirmation before payment validation webhook.
+    logger.info('Booking created in pending state', {
+      bookingId: createdBooking._id?.toString(),
+      paymentIntentId: createdBooking.paymentIntentId,
+      status: createdBooking.status,
+      paymentStatus: createdBooking.paymentStatus,
+      payoutStatus: createdBooking.payoutStatus,
+    });
 
     const bookingObject = populatedBooking.toObject();
     bookingObject.totalPrice = typeof bookingObject.totalPrice === 'number'
@@ -128,8 +193,8 @@ const createBooking = async (req, res) => {
     // Notify operator of new booking (async, don't wait)
     if (createdBooking.operator) {
       // In-app notification
-      notifyNewBooking(createdBooking, createdBooking.operator).catch(err => 
-        console.error('Error notifying operator:', err)
+      notifyNewBooking(createdBooking, createdBooking.operator).catch(err =>
+        logger.error('Error notifying operator', { message: err?.message })
       );
       
       // Email notification to operator
@@ -137,41 +202,62 @@ const createBooking = async (req, res) => {
       const operator = await Operator.findById(createdBooking.operator);
       if (operator) {
         sendOperatorBookingNotification(populatedBooking, operator, req.user).catch(err =>
-          console.error('Error sending operator email notification:', err)
+          logger.error('Error sending operator email notification', { message: err?.message })
         );
       }
       
       // Update metrics (async, don't wait)
-      updateProductMetrics(schedule.product._id).catch(err => 
-        console.error('Error updating product metrics:', err)
+      updateProductMetrics(schedule.product._id).catch(err =>
+        logger.error('Error updating product metrics', { message: err?.message })
       );
-      updateOperatorMetrics(createdBooking.operator).catch(err => 
-        console.error('Error updating operator metrics:', err)
+      updateOperatorMetrics(createdBooking.operator).catch(err =>
+        logger.error('Error updating operator metrics', { message: err?.message })
       );
     }
 
     // Update user loyalty stats (async, don't wait)
-    updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err => 
-      console.error('Error updating user loyalty stats:', err)
+    updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err =>
+      logger.error('Error updating user loyalty stats', { message: err?.message })
     );
 
     res.status(201).json(bookingObject);
   } catch (error) {
     await session.abortTransaction();
-    console.error('Create booking error:', error);
-    res.status(500).json({ 
-      message: 'Erreur lors de la création de la réservation',
-      error: error.message 
-    });
+    logger.error('Create booking error', { message: error?.message, stack: error?.stack });
+    next(error);
   } finally {
     session.endSession();
   }
 };
 
+// Designed for Stripe webhook usage (or future PSP webhooks)
+const validateAndConfirmBookingPayment = async ({ bookingId, paymentIntentId }) => {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    throw new Error('Booking not found for payment confirmation');
+  }
+
+  if (paymentIntentId && booking.paymentIntentId && booking.paymentIntentId !== paymentIntentId) {
+    throw new Error('Payment intent mismatch');
+  }
+
+  if (booking.status === 'Confirmed') {
+    return booking;
+  }
+
+  booking.status = 'Confirmed';
+  booking.paymentStatus = 'paid';
+  if (!booking.payoutStatus || booking.payoutStatus === 'pending') {
+    booking.payoutStatus = 'scheduled';
+  }
+  await booking.save();
+  return booking;
+};
+
 // @desc    Get my bookings
 // @route   GET /api/bookings/my-bookings
 // @access  Private
-const getMyBookings = async (req, res) => {
+const getMyBookings = async (req, res, next) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
       .populate({
@@ -184,8 +270,8 @@ const getMyBookings = async (req, res) => {
     // Ensure we always return an array
     res.json(Array.isArray(bookings) ? bookings : []);
   } catch (error) {
-    console.error('Get my bookings error:', error);
-    res.status(500).json([]); // Return empty array on error
+    logger.error('Get my bookings error', { message: error?.message, stack: error?.stack });
+    next(error);
   }
 };
 
@@ -195,7 +281,7 @@ const getMyBookings = async (req, res) => {
 // @desc    Update booking internal note
 // @route   PUT /api/bookings/:id/note
 // @access  Private/Operator
-const updateBookingNote = async (req, res) => {
+const updateBookingNote = async (req, res, next) => {
   try {
     const operator = await Operator.findOne({ user: req.user._id });
     
@@ -219,15 +305,15 @@ const updateBookingNote = async (req, res) => {
 
     res.json(updatedBooking);
   } catch (error) {
-    console.error('Update booking note error:', error);
-    res.status(500).json({ message: 'Failed to update booking note' });
+    logger.error('Update booking note error', { message: error?.message, stack: error?.stack });
+    next(error);
   }
 };
 
 // @desc    Mark booking as handled
 // @route   PUT /api/bookings/:id/handle
 // @access  Private/Operator
-const markBookingHandled = async (req, res) => {
+const markBookingHandled = async (req, res, next) => {
   try {
     const operator = await Operator.findOne({ user: req.user._id });
     
@@ -252,9 +338,16 @@ const markBookingHandled = async (req, res) => {
 
     res.json(updatedBooking);
   } catch (error) {
-    console.error('Mark booking handled error:', error);
-    res.status(500).json({ message: 'Failed to mark booking as handled' });
+    logger.error('Mark booking handled error', { message: error?.message, stack: error?.stack });
+    next(error);
   }
 };
 
-export { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled };
+export {
+  createPaymentIntent,
+  createBooking,
+  getMyBookings,
+  updateBookingNote,
+  markBookingHandled,
+  validateAndConfirmBookingPayment,
+};

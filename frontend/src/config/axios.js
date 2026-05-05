@@ -44,7 +44,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000, // 30 secondes timeout
-  // Note: withCredentials n'est pas nécessaire car on utilise JWT dans Authorization header
+  withCredentials: true,
 });
 
 // Intercepteur pour forcer l'URL absolue en production
@@ -89,8 +89,11 @@ api.interceptors.request.use(
 // Intercepteur pour ajouter le token d'authentification automatiquement
 api.interceptors.request.use(
   (config) => {
+    config.withCredentials = true;
     const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
+    const preferCookieAuth = config.preferCookieAuth !== false;
+    const explicitAuthHeader = Boolean(config.headers?.Authorization);
+    if (userInfo && !preferCookieAuth && !explicitAuthHeader) {
       try {
         const user = JSON.parse(userInfo);
         if (user && user.token) {
@@ -133,6 +136,20 @@ api.interceptors.response.use(
       });
     }
     
+    // Handle backend silent failure envelope without breaking UI state.
+    if (response?.data && response.data.success === false) {
+      const politeMessage = response.data.message || 'Validation de la réservation en cours...';
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { type: 'info', message: politeMessage }
+        }));
+      }
+      const wrappedError = new Error(politeMessage);
+      wrappedError.response = response;
+      wrappedError.__toastShown = true;
+      return Promise.reject(wrappedError);
+    }
+
     return response;
   },
   async (error) => {
@@ -194,6 +211,7 @@ api.interceptors.response.use(
                 headers: {
                   'Content-Type': 'application/json',
                 },
+                withCredentials: true,
               });
               
               // Mettre à jour le token dans localStorage
@@ -222,7 +240,8 @@ api.interceptors.response.use(
                   headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
-                  }
+                  },
+                  withCredentials: true,
                 });
               } catch {
                 // Ignore logout errors
@@ -239,6 +258,16 @@ api.interceptors.response.use(
       // Si pas de refresh token ou refresh échoué, déconnecter
       localStorage.removeItem('userInfo');
       window.location.href = '/login';
+    }
+
+    if (!error?.__toastShown) {
+      const backendMessage = error?.response?.data?.message;
+      const fallbackMessage = backendMessage || 'Validation de la réservation en cours...';
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { type: 'error', message: fallbackMessage }
+        }));
+      }
     }
     
     return Promise.reject(error);

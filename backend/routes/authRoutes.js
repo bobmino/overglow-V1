@@ -1,6 +1,6 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
@@ -45,5 +45,16 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.post('/refresh', refreshTokenHandler);
 router.post('/logout', protect, logout);
+router.post(
+  '/partner-signup',
+  authLimiter,
+  [
+    check('name', 'Name is required').trim().notEmpty(),
+    check('activityType', 'Activity type is required').trim().notEmpty(),
+    check('city', 'City is required').trim().notEmpty(),
+    check('whatsapp', 'WhatsApp is required').trim().notEmpty(),
+  ],
+  partnerSignup
+);
 
 export default router;

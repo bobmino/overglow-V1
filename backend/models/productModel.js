@@ -10,6 +10,10 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  slug: {
+    type: String,
+    index: true,
+  },
   description: {
     type: String,
     required: true,
@@ -49,6 +53,13 @@ const productSchema = mongoose.Schema({
   images: [{
     type: String,
   }],
+  seo: {
+    metaTitle: { type: String },
+    metaDescription: { type: String },
+    ogTitle: { type: String },
+    ogDescription: { type: String },
+    ogImage: { type: String },
+  },
   highlights: {
     type: [String],
     default: [],

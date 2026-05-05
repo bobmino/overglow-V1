@@ -7,6 +7,7 @@ import {
   deleteProduct,
   getPublishedProducts,
   getProductById,
+  webhookImportProduct,
 } from '../controllers/productController.js';
 import { createSchedule, getSchedules } from '../controllers/scheduleController.js';
 import { createReview, getProductReviews } from '../controllers/reviewController.js';
@@ -68,6 +69,7 @@ router.route('/')
   );
 
 router.get('/my-products', protect, authorize('Opérateur'), getMyProducts);
+router.post('/webhook/import', webhookImportProduct);
 
 router.route('/:id')
   .get(getProductById)

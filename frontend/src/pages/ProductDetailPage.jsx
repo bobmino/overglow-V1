@@ -19,6 +19,7 @@ import CancellationPolicy from '../components/CancellationPolicy';
 import FavoriteButton from '../components/FavoriteButton';
 import OthersAlsoBooked from '../components/OthersAlsoBooked';
 import ShareButtons from '../components/ShareButtons';
+import TrustBar from '../components/TrustBar';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -345,24 +346,50 @@ const ProductDetailPage = () => {
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
   const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://overglow-backend.vercel.app/products/${product?._id || ''}`;
+  const ogImage = product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg';
+  const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'} | Overglow`;
+  const shortDescription = (product?.description || 'Experience locale verifiee, paiement securise et support 24/7 sur Overglow.')
+    .trim()
+    .slice(0, 155);
 
   return (
     <div className="bg-slate-50">
       <Helmet>
-        <title>{product?.title || 'Produit'} - {product?.city || 'Maroc'} | Overglow Trip</title>
-        <meta name="description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
-        <meta property="og:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'} | Overglow Trip`} />
-        <meta property="og:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
-        <meta property="og:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
-        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <title>{metaTitle}</title>
+        <meta name="description" content={shortDescription} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={shortDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:secure_url" content={ogImage} />
+        <meta property="og:image:alt" content={product?.title || 'Experience Overglow'} />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:site_name" content="Overglow" />
+        <meta property="og:locale" content="fr_FR" />
         <meta property="og:type" content="product" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product?.title || 'Produit'} - ${product?.city || 'Maroc'}`} />
-        <meta name="twitter:description" content={product?.description?.substring(0, 160) || 'Découvrez cette expérience authentique au Maroc'} />
-        <meta name="twitter:image" content={product?.images?.[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={shortDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        <link rel="canonical" href={currentUrl} />
       </Helmet>
       <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="mb-5">
+          <TrustBar compact />
+        </div>
+        {product?.operator?.isClaimed === false && (
+          <div className="mb-5 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-cyan-900">
+              Vous etes le proprietaire de cette activite ?
+            </p>
+            <Link
+              to={`/partners/signup?activity=${encodeURIComponent(product?.title || '')}`}
+              className="inline-flex items-center justify-center rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800 transition"
+            >
+              Prendre le controle
+            </Link>
+          </div>
+        )}
         {/* Breadcrumb */}
         <nav className="text-sm text-slate-600 mb-4">
           <Link to="/" className="hover:text-primary-600">Home</Link>

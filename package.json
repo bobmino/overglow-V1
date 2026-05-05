@@ -8,7 +8,8 @@
     "start": "node -r dotenv/config server.js",
     "dev": "nodemon -r dotenv/config server.js",
     "create-admin": "node -r dotenv/config scripts/createAdmin.js",
-    "test-login": "node -r dotenv/config scripts/testLogin.js"
+    "test-login": "node -r dotenv/config scripts/testLogin.js",
+    "mass-import": "node -r dotenv/config scripts/massImporter.js"
   },
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",

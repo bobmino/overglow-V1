@@ -123,6 +123,10 @@ const operatorSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isClaimed: {
+    type: Boolean,
+    default: true,
+  },
 
   // Tags/segments d'authenticité opérateur
   authenticity: {

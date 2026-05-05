@@ -8,6 +8,7 @@ import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyProductPending, notifyProductApproved } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
+import crypto from 'crypto';
 
 const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -17,6 +18,90 @@ const normalizePrice = (value) => {
   }
   const numericPrice = Number(value);
   return Number.isFinite(numericPrice) ? numericPrice : null;
+};
+
+const slugify = (input) => {
+  return String(input || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+const buildSeoFields = (payload) => {
+  const baseTitle = payload.metaTitle || payload.title;
+  const baseDescription = payload.metaDescription || payload.description || '';
+  const ogImage = payload.ogImage || payload.imageUrl || (Array.isArray(payload.images) ? payload.images[0] : '');
+  return {
+    metaTitle: String(baseTitle || '').slice(0, 70),
+    metaDescription: String(baseDescription || '').slice(0, 160),
+    ogTitle: String(payload.ogTitle || baseTitle || '').slice(0, 70),
+    ogDescription: String(payload.ogDescription || baseDescription || '').slice(0, 200),
+    ogImage: ogImage || '',
+  };
+};
+
+const isValidImageUrl = (value) => {
+  try {
+    const parsed = new URL(String(value || ''));
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+};
+
+const buildDefaultSchedules = ({ productId, price, startDate = new Date() }) => {
+  const entries = [];
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 3);
+
+  const current = new Date(startDate);
+  current.setHours(0, 0, 0, 0);
+  while (current <= endDate) {
+    entries.push({
+      product: productId,
+      date: new Date(current),
+      time: '10:00',
+      endTime: '13:00',
+      capacity: 20,
+      price,
+      currency: 'EUR',
+    });
+    current.setDate(current.getDate() + 1);
+  }
+  return entries;
+};
+
+const getOrCreatePlaceholderOperator = async ({ operatorName = 'Placeholder Partner', operatorEmail }) => {
+  const normalizedOperatorName = operatorName || 'Placeholder Partner';
+  const syntheticEmail = operatorEmail || `placeholder_${slugify(normalizedOperatorName)}_${Date.now()}@overglow.local`;
+
+  let user = await User.findOne({ email: syntheticEmail });
+  if (!user) {
+    user = await User.create({
+      name: normalizedOperatorName,
+      email: syntheticEmail,
+      password: crypto.randomBytes(16).toString('hex'),
+      role: 'Opérateur',
+      isApproved: true,
+      approvedAt: new Date(),
+    });
+  }
+
+  let operator = await Operator.findOne({ user: user._id });
+  if (!operator) {
+    operator = await Operator.create({
+      user: user._id,
+      companyName: normalizedOperatorName,
+      description: 'Placeholder operator auto-created by import pipeline',
+      status: 'Active',
+      isFormCompleted: false,
+      isClaimed: false,
+    });
+  }
+
+  return operator;
 };
 
 // @desc    Create a product
@@ -436,7 +521,7 @@ const getProductById = async (req, res) => {
     // Populate operator separately with error handling
     try {
       const operator = await Operator.findById(product.operator)
-        .select('companyName status')
+        .select('companyName status isClaimed')
         .lean();
       product.operator = operator || null;
     } catch (err) {
@@ -526,6 +611,112 @@ const getProductById = async (req, res) => {
   }
 };
 
+// @desc    Secure webhook import for AI pipelines
+// @route   POST /api/products/webhook/import
+// @access  Private via X-API-KEY
+const webhookImportProduct = async (req, res) => {
+  try {
+    const apiKey = req.headers['x-api-key'];
+    if (!process.env.IMPORT_WEBHOOK_API_KEY || apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
+      return res.status(401).json({ success: false, message: 'Unauthorized webhook key' });
+    }
+
+    const {
+      title,
+      description,
+      price,
+      city,
+      gps,
+      imageUrl,
+      operatorName,
+      operatorEmail,
+      category = 'Experiences',
+      address,
+      duration = '3 hours',
+      slug,
+      metaTitle,
+      metaDescription,
+      ogTitle,
+      ogDescription,
+      ogImage,
+      status = 'Published',
+    } = req.body || {};
+
+    if (!title || !description || !price || !city || !gps || !imageUrl) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    if (!isValidImageUrl(imageUrl)) {
+      return res.status(400).json({ success: false, message: 'Invalid image URL' });
+    }
+
+    const normalizedPrice = normalizePrice(price);
+    if (normalizedPrice === null || normalizedPrice <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid price' });
+    }
+
+    const coordinates = Array.isArray(gps)
+      ? gps
+      : [Number(gps.lng), Number(gps.lat)];
+    if (!Array.isArray(coordinates) || coordinates.length !== 2 || coordinates.some((n) => !Number.isFinite(Number(n)))) {
+      return res.status(400).json({ success: false, message: 'Invalid GPS coordinates' });
+    }
+
+    const operator = await getOrCreatePlaceholderOperator({ operatorName, operatorEmail });
+    const resolvedSlug = slug || `${slugify(title)}-${Date.now()}`;
+    const seo = buildSeoFields({ title, description, imageUrl, metaTitle, metaDescription, ogTitle, ogDescription, ogImage });
+
+    let product = await Product.findOne({ slug: resolvedSlug });
+    let schedulesCreated = 0;
+    let operation = 'updated';
+
+    if (product) {
+      product.price = normalizedPrice;
+      product.description = description;
+      product.images = [imageUrl];
+      product.seo = seo;
+      product.location = {
+        type: 'Point',
+        coordinates: [Number(coordinates[0]), Number(coordinates[1])],
+      };
+      await product.save();
+    } else {
+      product = await Product.create({
+        operator: operator._id,
+        title,
+        slug: resolvedSlug,
+        description,
+        category,
+        city,
+        address: address || city,
+        duration,
+        price: normalizedPrice,
+        location: {
+          type: 'Point',
+          coordinates: [Number(coordinates[0]), Number(coordinates[1])],
+        },
+        images: [imageUrl],
+        status,
+        seo,
+      });
+      const schedules = buildDefaultSchedules({ productId: product._id, price: normalizedPrice });
+      await Schedule.insertMany(schedules);
+      schedulesCreated = schedules.length;
+      operation = 'created';
+    }
+
+    return res.status(201).json({
+      success: true,
+      operation,
+      productId: product._id,
+      slug: product.slug,
+      schedulesCreated,
+    });
+  } catch (error) {
+    console.error('Webhook import product error:', error);
+    return res.status(500).json({ success: false, message: 'Import failed' });
+  }
+};
+
 export {
   createProduct,
   getMyProducts,
@@ -533,4 +724,5 @@ export {
   deleteProduct,
   getPublishedProducts,
   getProductById,
+  webhookImportProduct,
 };

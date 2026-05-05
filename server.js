@@ -8,10 +8,27 @@ import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
 import { apiLimiter, strictLimiter } from './backend/middleware/rateLimiter.js';
-import { initSentry } from './backend/utils/sentry.js';
+import { initSentry, captureException } from './backend/utils/sentry.js';
+import { logger } from './backend/utils/logger.js';
 
 // Initialize Sentry BEFORE everything else
 initSentry();
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', {
+    reason: reason?.message || String(reason),
+    stack: reason?.stack,
+  });
+  captureException(reason instanceof Error ? reason : new Error(String(reason)));
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', {
+    message: error?.message,
+    stack: error?.stack,
+  });
+  captureException(error);
+});
 
 import authRoutes from './backend/routes/authRoutes.js';
 import productRoutes from './backend/routes/productRoutes.js';

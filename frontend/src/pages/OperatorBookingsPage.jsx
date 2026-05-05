@@ -4,12 +4,15 @@ import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCi
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import InternalNoteModal from '../components/InternalNoteModal';
+import { useToast } from '../context/ToastContext';
 
 const OperatorBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showNoteModal, setShowNoteModal] = useState(false);
+  const [handlingBookingId, setHandlingBookingId] = useState(null);
+  const { toast } = useToast();
 
   const fetchBookings = async () => {
     try {
@@ -20,6 +23,7 @@ const OperatorBookingsPage = () => {
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
       setBookings([]);
+      toast('Impossible de charger les reservations pour le moment.', { type: 'error' });
       setLoading(false);
     }
   };
@@ -30,11 +34,15 @@ const OperatorBookingsPage = () => {
 
   const handleMarkHandled = async (bookingId) => {
     try {
+      setHandlingBookingId(bookingId);
       await api.put(`/api/bookings/${bookingId}/handle`);
       fetchBookings();
+      toast('Reservation marquee comme geree.', { type: 'success' });
     } catch (error) {
       console.error('Failed to mark booking as handled:', error);
-      alert('Failed to mark booking as handled');
+      toast('Action impossible pour le moment. Merci de reessayer.', { type: 'error' });
+    } finally {
+      setHandlingBookingId(null);
     }
   };
 
@@ -50,6 +58,22 @@ const OperatorBookingsPage = () => {
       case 'Cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getPaymentStatusLabel = (paymentStatus) => {
+    const normalized = (paymentStatus || 'pending').toLowerCase();
+    if (normalized === 'paid') return 'Paye';
+    if (normalized === 'refunded') return 'Rembourse';
+    if (normalized === 'failed') return 'Echec';
+    return 'En attente';
+  };
+
+  const getPaymentStatusColor = (paymentStatus) => {
+    const normalized = (paymentStatus || 'pending').toLowerCase();
+    if (normalized === 'paid') return 'bg-emerald-100 text-emerald-800';
+    if (normalized === 'refunded') return 'bg-slate-200 text-slate-800';
+    if (normalized === 'failed') return 'bg-rose-100 text-rose-800';
+    return 'bg-amber-100 text-amber-800';
   };
 
   if (loading) {
@@ -95,6 +119,9 @@ const OperatorBookingsPage = () => {
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.status)}`}>
                     {booking.status}
                   </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPaymentStatusColor(booking.paymentStatus)}`}>
+                    {getPaymentStatusLabel(booking.paymentStatus)}
+                  </span>
                   {booking.isHandled && (
                     <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1">
                       <CheckCircle size={12} />
@@ -137,6 +164,12 @@ const OperatorBookingsPage = () => {
                   <p className="text-xs text-gray-500">Revenue</p>
                   <p className="text-xl font-bold text-green-700">€{booking.totalAmount.toFixed(2)}</p>
                 </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Versement estime</p>
+                  <p className="font-semibold text-gray-900">
+                    {booking.payoutDate ? new Date(booking.payoutDate).toLocaleDateString('fr-FR') : 'A definir'}
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
@@ -164,10 +197,11 @@ const OperatorBookingsPage = () => {
                 {!booking.isHandled && (
                   <button
                     onClick={() => handleMarkHandled(booking._id)}
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold"
+                    disabled={handlingBookingId === booking._id}
+                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ArrowRightCircle size={16} />
-                    Marquer comme géré
+                    {handlingBookingId === booking._id ? 'Traitement...' : 'Marquer comme gere'}
                   </button>
                 )}
                 {booking.isHandled && (

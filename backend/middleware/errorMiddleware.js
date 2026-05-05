@@ -1,4 +1,5 @@
 import { captureException } from '../utils/sentry.js';
+import { logger } from '../utils/logger.js';
 
 const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -62,38 +63,33 @@ const errorHandler = (err, req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
-  // Log error details for debugging
-  console.error('Error Handler:', {
-    message: err.message,
-    stack: err.stack,
-    name: err.name,
+  // Log error details for debugging/observability
+  logger.error('Unhandled API error', {
+    message: err?.message,
+    stack: err?.stack,
+    name: err?.name,
     statusCode,
     path: req.path,
     method: req.method,
   });
-  
-  // Send to Sentry (only for non-404 errors and production)
-  if (statusCode !== 404 && process.env.NODE_ENV === 'production') {
+
+  // Always capture server errors in Sentry when available
+  if (statusCode >= 500) {
     captureException(err, {
       req: {
         url: req.url,
         method: req.method,
         headers: req.headers,
         query: req.query,
-        body: req.body,
       },
       statusCode,
     });
   }
-  
+
+  // Never expose raw error payloads to clients
   res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
-    ...(process.env.NODE_ENV === 'development' && { 
-      name: err.name,
-      path: req.path,
-      method: req.method,
-    }),
+    success: false,
+    message: 'Service momentanément indisponible',
   });
 };
 

@@ -63,6 +63,7 @@ const AdminBadgeRequestsPage = lazy(() => import('./pages/AdminBadgeRequestsPage
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
 const ViewHistoryPage = lazy(() => import('./pages/ViewHistoryPage'));
+const PartnerSignupPage = lazy(() => import('./pages/PartnerSignupPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -390,6 +391,11 @@ function App() {
           <Route path="contact" element={
             <Suspense fallback={<LoadingFallback />}>
               <HelpPage />
+            </Suspense>
+          } />
+          <Route path="partners/signup" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PartnerSignupPage />
             </Suspense>
           } />
         <Route path="operator/register" element={<RegisterPage />} />
