@@ -464,7 +464,7 @@ const getPublishedProducts = async (req, res) => {
 
     const genericQuery = typeof (q || search) === 'string' ? (q || search).trim() : '';
     if (genericQuery) {
-      const regex = new RegExp(genericQuery, 'i');
+      const regex = new RegExp(escapeRegex(genericQuery), 'i');
       query.$or = [
         { title: regex },
         { city: regex },
@@ -472,11 +472,11 @@ const getPublishedProducts = async (req, res) => {
       ];
     }
     if (!genericQuery && !city) {
-      query.city = { $regex: /^agadir$/i };
+      query.city = new RegExp('^agadir$', 'i');
     }
 
     if (city && typeof city === 'string') {
-      query.city = { $regex: city.trim(), $options: 'i' };
+      query.city = new RegExp(escapeRegex(city.trim()), 'i');
     }
     if (category && typeof category === 'string') {
       // Normalize category for case-insensitive matching
@@ -509,7 +509,7 @@ const getPublishedProducts = async (req, res) => {
       console.log(`No results for query in ${city.trim()}. Falling back to popular activities.`);
       const fallbackQuery = { 
         status: { $regex: /^published$/i },
-        city: { $regex: city.trim(), $options: 'i' }
+        city: new RegExp(escapeRegex(city.trim()), 'i')
       };
       
       products = await Product.find(fallbackQuery)

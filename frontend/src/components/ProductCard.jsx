@@ -71,24 +71,28 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-4">
-          <div className="inline-flex items-center bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded-md">
-            <MapPin size={12} className="mr-1" />
-            {product.city}
+        {/* Product Badges & Prix Garanti */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 max-w-[60%]">
+          <div className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md w-fit">
+            <span className="text-[10px]">✨</span> Prix Garanti
           </div>
+          {product.badges && Array.isArray(product.badges) && product.badges.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              <BadgeDisplay badges={product.badges} size="sm" />
+            </div>
+          )}
         </div>
-        
-        {/* Product Badges */}
-        {product.badges && Array.isArray(product.badges) && product.badges.length > 0 && (
-          <div className="absolute top-4 left-4 flex flex-wrap gap-1 max-w-[60%]">
-            <BadgeDisplay badges={product.badges} size="sm" />
-          </div>
-        )}
       </div>
       
       <div className="p-5">
-        <div className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">
-          {product.category}
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-bold text-primary-600 uppercase tracking-wider">
+            {product.category}
+          </div>
+          <div className="text-xs text-slate-500 flex items-center">
+            <MapPin size={12} className="mr-1" />
+            {product.city}
+          </div>
         </div>
         
         <h3 className="font-heading font-bold text-xl text-slate-900 mb-3 line-clamp-2 group-hover:text-primary-700 transition-colors">
@@ -97,13 +101,16 @@ const ProductCard = ({ product }) => {
         
         <div className="flex items-end justify-between mt-4 pt-4 border-t border-slate-50">
           <div>
-            <span className="text-xs text-slate-400 block mb-0.5">Starting from</span>
-            <span className="font-bold text-2xl text-slate-900">
-              {formatPrice(price, 'EUR')}
-            </span>
+            <span className="text-xs text-slate-400 block mb-0.5">À partir de</span>
+            <div className="flex items-baseline gap-1">
+              <span className="font-bold text-2xl text-emerald-600">
+                {formatPrice(price, 'EUR')}
+              </span>
+              <span className="text-xs text-slate-500 font-medium">/ pers.</span>
+            </div>
           </div>
-          <button className="bg-slate-50 text-slate-900 hover:bg-primary-600 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors duration-300">
-            View Details
+          <button className="bg-slate-50 text-slate-900 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors duration-300 shadow-sm hover:shadow-emerald-600/20">
+            Voir l'offre
           </button>
         </div>
       </div>

@@ -44,7 +44,7 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
         }
       }, 300);
     } else {
-      setSuggestions({ cities: [], activities: [], showNearby: false });
+      setSuggestions({ cities: [], activities: [], showNearby: true });
       setIsOpen(false);
     }
 
@@ -71,8 +71,16 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
     setIsOpen(false);
   };
 
-  const cities = Array.isArray(suggestions?.cities) ? suggestions.cities : [];
+  const defaultCities = [
+    { name: 'Agadir' },
+    { name: 'Taghazout' },
+    { name: 'Marrakech' }
+  ];
+  const apiCities = Array.isArray(suggestions?.cities) ? suggestions.cities : [];
   const activities = Array.isArray(suggestions?.activities) ? suggestions.activities : [];
+  
+  const isFallback = value.length < 2 || (apiCities.length === 0 && activities.length === 0);
+  const cities = isFallback ? defaultCities : apiCities;
   const hasSuggestions = cities.length > 0 || activities.length > 0;
 
   return (
@@ -85,7 +93,7 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
           name="search-autocomplete"
           value={value}
           onChange={(e) => safeCall(onChange, e.target.value)}
-          onFocus={() => value.length >= 2 && setIsOpen(true)}
+          onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
           className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium text-lg pr-8"
           autoComplete="off"
@@ -111,8 +119,8 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
                   <Navigation size={18} className="text-primary-600" />
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900">Nearby</div>
-                  <div className="text-xs text-slate-500">Discover activities near you</div>
+                  <div className="font-bold text-slate-900">À proximité</div>
+                  <div className="text-xs text-slate-500">Activités autour de vous</div>
                 </div>
               </button>
               <div className="border-t border-slate-100 my-2"></div>
@@ -146,7 +154,7 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
             <div>
               {cities.length > 0 && <div className="border-t border-slate-100 my-2"></div>}
               <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Activities
+                Activités
               </div>
               {activities.map((activity) => (
                 <button
