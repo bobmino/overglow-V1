@@ -271,14 +271,16 @@ export const advancedSearch = async (req, res) => {
     // Build base query
     let query = { status: { $regex: /^published$/i } };
 
-    // Keyword search (title, description, highlights)
+    // Keyword search (title, description, highlights, city, category)
     const normalizedQ = typeof q === 'string' ? q.trim() : '';
     if (normalizedQ) {
-      const keywordRegex = new RegExp(escapeRegex(normalizedQ), 'i');
+      const keywordRegex = escapeRegex(normalizedQ);
       query.$or = [
-        { title: keywordRegex },
-        { description: keywordRegex },
-        { highlights: { $in: [keywordRegex] } }
+        { title: { $regex: keywordRegex, $options: 'i' } },
+        { description: { $regex: keywordRegex, $options: 'i' } },
+        { highlights: { $in: [new RegExp(keywordRegex, 'i')] } },
+        { city: { $regex: keywordRegex, $options: 'i' } },
+        { category: { $regex: keywordRegex, $options: 'i' } }
       ];
     }
     if (!normalizedQ && !city) {
@@ -287,14 +289,14 @@ export const advancedSearch = async (req, res) => {
 
     // City filter
     if (city) {
-      query.city = { $regex: city, $options: 'i' };
+      query.city = { $regex: escapeRegex(city), $options: 'i' };
     }
 
     // Category filter - normalize category name
     if (category) {
       const normalizedCategory = normalizeCategory(category);
       // Use case-insensitive regex to match variations
-      query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+      query.category = { $regex: `^${escapeRegex(normalizedCategory)}$`, $options: 'i' };
     }
 
     // Skip-the-Line filter

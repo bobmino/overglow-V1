@@ -354,6 +354,8 @@ const SearchPage = () => {
     ? `Recherche: ${searchQuery || selectedCity || selectedCategories.join(', ')} | Overglow Trip`
     : 'Rechercher des expériences au Maroc | Overglow Trip';
 
+  console.log('Search Results Data:', searchResults);
+
   return (
     <div className="container mx-auto px-4 py-8 pt-20 md:pt-24">
       <Helmet>
@@ -461,7 +463,7 @@ const SearchPage = () => {
           <div className="bg-white p-6 rounded-xl border border-slate-200 sticky top-24">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-bold text-lg flex items-center">
-                <Filter size={20} className="mr-2" /> Filters
+                <Filter size={20} className="mr-2" /> Filtres
                 {activeFiltersCount > 0 && (
                   <span className="ml-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {activeFiltersCount}
@@ -472,13 +474,13 @@ const SearchPage = () => {
                 onClick={handleResetFilters}
                 className="text-sm text-primary-600 hover:underline font-medium"
               >
-                Reset
+                Réinitialiser
               </button>
             </div>
 
             {/* Category Filter */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-slate-900">Category</h3>
+              <h3 className="font-semibold mb-3 text-slate-900">Catégorie</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {Array.isArray(categories) && categories.map((cat) => {
                   const categoryName = typeof cat === 'object' ? (cat.name || cat.slug) : cat;
@@ -512,7 +514,7 @@ const SearchPage = () => {
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 aria-label="Filtrer par destination"
               >
-                <option value="">All Cities</option>
+                <option value="">Toutes les destinations</option>
                 {Array.isArray(cities) && cities.map(city => (
                   <option key={city} value={city}>{city}</option>
                 ))}
@@ -521,7 +523,7 @@ const SearchPage = () => {
 
             {/* Price Filter */}
             <div className="mb-6">
-              <label className="font-semibold mb-3 text-slate-900 block">Price Range (MAD)</label>
+              <label className="font-semibold mb-3 text-slate-900 block">Fourchette de prix (MAD)</label>
               <div className="flex items-center space-x-2">
                 <label htmlFor="price-min" className="sr-only">Prix minimum</label>
                 <input 

@@ -47,7 +47,7 @@ const TopTours = () => {
         // Backend may return either an array (legacy) or { products, pagination }
         const productsArray = Array.isArray(data) ? data : (data?.products || []);
         
-        if (productsArray.length === 0) {
+        if (!productsArray || productsArray.length === 0) {
           setProducts(fallbackProducts);
         } else {
           setProducts(productsArray.slice(0, 8)); // Limit to 8 products
@@ -90,15 +90,19 @@ const TopTours = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex space-x-4">
-              {Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
+              {(!products || products.length === 0) ? fallbackProducts.map((product, index) => (
                 <TourCard 
                   key={product?._id || index} 
                   product={product}
                   isLikelyToSellOut={index % 3 === 0}
                 />
-              )) : (
-                <div className="text-center text-gray-500 py-8">No tours available</div>
-              )}
+              )) : products.map((product, index) => (
+                <TourCard 
+                  key={product?._id || index} 
+                  product={product}
+                  isLikelyToSellOut={index % 3 === 0}
+                />
+              ))}
             </div>
           </div>
           
