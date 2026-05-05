@@ -1,42 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DestinationCard from './DestinationCard';
 import api from '../config/axios';
 import destinationsData from '../config/destinations';
 
 const TopDestinations = () => {
-  const [activeDestinations, setActiveDestinations] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchActiveDestinations = async () => {
-      try {
-        // Fetch up to 100 products to get a good coverage of active cities
-        const { data } = await api.get('/api/products?limit=100');
-        const products = Array.isArray(data) ? data : (data.products || []);
-        
-        const activeCities = new Set(products.map(p => p.city?.toLowerCase().trim()));
-        
-        const filtered = destinationsData
-          .filter(dest => activeCities.has(dest.name.toLowerCase().trim()))
-          .map(dest => {
-            const count = products.filter(p => p.city?.toLowerCase().trim() === dest.name.toLowerCase().trim()).length;
-            return {
-              name: dest.name,
-              image: dest.image,
-              toursCount: count
-            };
-          });
-          
-        setActiveDestinations(filtered);
-      } catch (error) {
-        console.error('Failed to load active destinations:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchActiveDestinations();
-  }, []);
+  const { data: activeDestinations = [], isLoading: loading } = useQuery({
+    queryKey: ['activeDestinations'],
+    queryFn: async () => {
+      // Fetch up to 100 products to get a good coverage of active cities
+      const { data } = await api.get('/api/products?limit=100');
+      const products = Array.isArray(data) ? data : (data.products || []);
+      
+      const activeCities = new Set(products.map(p => p.city?.toLowerCase().trim()));
+      
+      return destinationsData
+        .filter(dest => activeCities.has(dest.name.toLowerCase().trim()))
+        .map(dest => {
+          const count = products.filter(p => p.city?.toLowerCase().trim() === dest.name.toLowerCase().trim()).length;
+          return {
+            name: dest.name,
+            image: dest.image,
+            toursCount: count
+          };
+        });
+    },
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
 
   // Ne pas afficher la section si aucune destination n'est prête (products.length === 0)
   if (loading || activeDestinations.length === 0) {

@@ -100,10 +100,11 @@ function App() {
               <Features />
               <TopDestinations />
               <FlexibilityBanner />
-              <TopAttractions />
-              <TopTours />
+              {/* Sections masquées temporairement car elles contiennent des données factices (Paris, Londres, etc.) */}
+              {/* <TopAttractions /> */}
+              {/* <TopTours /> */}
               <RecommendedProducts title="Pour vous" type="personalized" limit={8} />
-              <WarmDestinations />
+              {/* <WarmDestinations /> */}
               <AuthCTA />
             </>
           } />
