@@ -61,17 +61,28 @@ import blogRoutes from './backend/routes/blogRoutes.js';
 
 const app = express();
 
-// CRITICAL: Handle OPTIONS IMMEDIATELY - before ANY other code execution
-// This must be the absolute first thing after creating the app
-app.options('*', (req, res) => {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
-  return res.status(200).end();
+const allowedOrigins = [
+  'https://overglow-v1-3jqp.vercel.app',
+  'https://overglow-v1.vercel.app',
+  'http://localhost:5173',
+];
+
+logger.info('CORS allowlist configured', {
+  allowedOrigins,
 });
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser clients (curl/postman/server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS origin not allowed'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200,
+};
 
 // Connect to database (non-blocking for Vercel)
 // This is async and won't block serverless function startup
@@ -81,80 +92,8 @@ connectDB().catch(err => {
   // Don't throw - let the function start even if DB connection fails
 });
 
-// CRITICAL: Handle OPTIONS preflight requests FIRST, before ANY other middleware
-// This MUST be the absolute first middleware - even before express.json() or anything else
-// Use a try-catch to ensure it never fails
-app.use((req, res, next) => {
-  try {
-    if (req.method === 'OPTIONS') {
-      const origin = req.headers.origin || '*';
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Max-Age', '86400');
-      return res.status(200).end();
-    }
-    next();
-  } catch (err) {
-    // If anything fails, still try to send OPTIONS response
-    console.error('OPTIONS handler error:', err);
-    try {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-      if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-      }
-    } catch (e) {
-      // Last resort - just send 200
-      if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-      }
-    }
-    next();
-  }
-});
-
-// CORS configuration - Must be after OPTIONS handler
-// This handles CORS for Vercel serverless functions
-const allowedOrigins = [
-  'https://overglow-v1-3jqp.vercel.app',
-  'https://overglow-v1.vercel.app',
-  'https://overglow-frontend.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5174',
-];
-
-// Custom CORS middleware for all requests (non-OPTIONS)
-app.use((req, res, next) => {
-  // Skip if already handled OPTIONS above
-  if (req.method === 'OPTIONS') {
-    return next();
-  }
-  
-  const origin = req.headers.origin;
-  
-  // Check if origin is allowed
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    // Allow requests without origin (like Postman, curl)
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else {
-    // For other origins, still allow
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
-  res.setHeader('Access-Control-Max-Age', '86400');
-  
-  next();
-});
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Security headers with Helmet
 app.use(
@@ -186,31 +125,6 @@ app.use((req, res, next) => {
 
 // Apply rate limiting globally (after helmet, before CORS)
 app.use('/api/', apiLimiter);
-
-// Use cors package as additional layer with explicit configuration
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowed list or is a Vercel domain
-    if (allowedOrigins.includes(origin) || 
-        origin.includes('vercel.app') || 
-        origin.includes('localhost')) {
-      callback(null, true);
-    } else {
-      // Still allow but log
-      callback(null, true);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400,
-  preflightContinue: false,
-  optionsSuccessStatus: 200
-}));
 
 app.use(express.json());
 

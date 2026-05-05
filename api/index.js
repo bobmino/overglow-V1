@@ -36,26 +36,21 @@ const loadApp = async () => {
 const allowedOrigins = [
   'https://overglow-v1-3jqp.vercel.app',
   'https://overglow-v1.vercel.app',
-  'https://overglow-frontend.vercel.app',
   'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5174',
 ];
 
 const setCORSHeaders = (req, res) => {
   const origin = req.headers.origin;
-  
-  // Always set CORS headers - be permissive
-  if (origin) {
+
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
   res.setHeader('Access-Control-Max-Age', '86400');
 };
 
