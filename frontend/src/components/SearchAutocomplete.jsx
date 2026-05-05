@@ -66,8 +66,8 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
   };
 
   const handleNearby = () => {
-    safeCall(onChange, 'Nearby');
-    safeCall(onSelect, { type: 'nearby', label: 'Nearby' });
+    safeCall(onChange, 'À proximité');
+    safeCall(onSelect, { type: 'nearby', label: 'À proximité' });
     setIsOpen(false);
   };
 

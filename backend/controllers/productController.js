@@ -489,6 +489,8 @@ const getPublishedProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
+    console.log('Mongoose Query Filter:', JSON.stringify(query));
+
     // Select only necessary fields for list view
     let products = await Product.find(query)
       .select('title images city category price operator badges skipTheLine metrics createdAt')

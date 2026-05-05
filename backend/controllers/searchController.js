@@ -324,6 +324,8 @@ export const advancedSearch = async (req, res) => {
       };
     }
 
+    console.log('Mongoose Query Filter:', JSON.stringify(query));
+
     // Execute base query
     let products = [];
     try {
