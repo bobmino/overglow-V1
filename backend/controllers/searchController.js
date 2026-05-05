@@ -59,14 +59,14 @@ export const getAutocomplete = async (req, res) => {
     const q = typeof req.query?.q === 'string' ? req.query.q.trim() : '';
     
     if (!q || q.length < 2) {
-      return res.json({ cities: [], activities: [] });
+      return res.json({ cities: [], activities: [], showNearby: true });
     }
 
     const searchRegex = new RegExp(escapeRegex(q), 'i');
 
     // Search in products
     const products = await Product.find({
-      status: 'Published',
+      status: { $regex: /^published$/i },
       $or: [
         { city: searchRegex },
         { title: searchRegex }
@@ -96,10 +96,10 @@ export const getAutocomplete = async (req, res) => {
       .slice(0, 5)
       .map(p => ({
         id: p._id,
-        slug: p.slug,
-        title: p.title,
-        city: p.city,
-        category: p.category
+        slug: p?.slug || null,
+        title: p?.title || '',
+        city: p?.city || '',
+        category: p?.category || ''
       }));
 
     res.json({
@@ -118,20 +118,46 @@ export const getAutocomplete = async (req, res) => {
 // @access  Public
 export const getCategories = async (req, res) => {
   try {
-    const categoryCounts = await Product.aggregate([
-      { $match: { status: 'Published' } },
+    let categoryCounts = [];
+    try {
+      categoryCounts = await Product.aggregate([
+      { $match: { status: { $regex: /^published$/i } } },
       { $group: { _id: '$category', count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
+    } catch (aggregateError) {
+      console.error('Get categories aggregate error:', aggregateError);
+      categoryCounts = [];
+    }
+
+    let dynamicCategories = categoryCounts
+      .map(item => item?._id)
+      .filter(Boolean);
+
+    // Fallback intelligent: extract from imported products if aggregate returned nothing
+    if (!dynamicCategories.length) {
+      try {
+        dynamicCategories = (await Product.distinct('category', {
+          status: { $regex: /^published$/i },
+        })).filter(Boolean);
+      } catch (distinctError) {
+        console.error('Get categories distinct fallback error:', distinctError);
+        dynamicCategories = [];
+      }
+    }
 
     res.json({
-      categories: activityCategories,
+      categories: dynamicCategories.length ? dynamicCategories : (Array.isArray(activityCategories) ? activityCategories : []),
       popularActivities,
       counts: categoryCounts
     });
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ message: 'Failed to fetch categories' });
+    return res.json({
+      categories: [],
+      popularActivities: Array.isArray(popularActivities) ? popularActivities : [],
+      counts: [],
+    });
   }
 };
 
