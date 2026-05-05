@@ -167,6 +167,7 @@ const productSchema = mongoose.Schema({
   },
 }, {
   timestamps: true,
+  strict: false,
 });
 
 const Product = mongoose.model('Product', productSchema);

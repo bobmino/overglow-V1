@@ -27,6 +27,18 @@ const connectDB = async () => {
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
+    try {
+      const count = await mongoose.connection.db.collection('products').countDocuments();
+      const sample = await mongoose.connection.db.collection('products').findOne({});
+      console.log('--- DIAGNOSTIC DATA ---');
+      console.log('Nombre total de docs dans "products":', count);
+      console.log('Exemple de doc:', JSON.stringify(sample, null, 2));
+      console.log('Nom de la base connectée:', mongoose.connection.name);
+      console.log('-----------------------');
+    } catch(err) {
+      console.error('Diagnostic error:', err);
+    }
+    
     // Create indexes after connection
     await createIndexes();
   } catch (error) {
