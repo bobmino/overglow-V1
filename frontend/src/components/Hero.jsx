@@ -52,7 +52,7 @@ const Hero = () => {
         </p>
 
         {/* Floating Glass Search Bar */}
-        <form onSubmit={handleSearch} className="bg-white/90 backdrop-blur-xl rounded-2xl p-3 flex flex-col md:flex-row items-center shadow-2xl max-w-4xl mx-auto border border-white/20">
+        <form onSubmit={handleSearch} className="relative z-50 bg-white/90 backdrop-blur-xl rounded-2xl p-3 flex flex-col md:flex-row items-center shadow-2xl max-w-4xl mx-auto border border-white/20">
           <div className="flex-1 w-full md:w-auto px-6 py-3 border-b md:border-b-0 md:border-r border-slate-200/60 group">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 text-left group-focus-within:text-primary-600 transition-colors">{t('hero.where')}</label>
             <SearchAutocomplete

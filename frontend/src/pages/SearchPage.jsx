@@ -366,7 +366,7 @@ const SearchPage = () => {
       {/* Search Bar */}
       <div className="mb-6 relative overflow-visible">
         <div className="flex items-center space-x-2 mb-4 overflow-visible">
-          <div className="flex-1 relative overflow-visible">
+          <div className="flex-1 relative overflow-visible z-50">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" size={20} />
             <input
               ref={searchInputRef}

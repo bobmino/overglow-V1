@@ -100,7 +100,7 @@ const SearchSuggestions = ({
   return (
     <div 
       ref={containerRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-[999] max-h-96 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-slate-200 z-[9999] max-h-96 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Suggestions */}
       {suggestions.length > 0 && (
