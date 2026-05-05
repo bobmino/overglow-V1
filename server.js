@@ -61,27 +61,11 @@ import blogRoutes from './backend/routes/blogRoutes.js';
 
 const app = express();
 
-const allowedOrigins = [
-  'https://overglow-v1-3jqp.vercel.app',
-  'https://overglow-v1.vercel.app',
-  'http://localhost:5173',
-];
-
-logger.info('CORS allowlist configured', {
-  allowedOrigins,
-});
-
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow non-browser clients (curl/postman/server-to-server)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS origin not allowed'));
-  },
+  origin: true, // Autorise dynamiquement l'origine de la requête
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  optionsSuccessStatus: 200,
 };
 
 // Connect to database (non-blocking for Vercel)

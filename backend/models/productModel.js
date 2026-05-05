@@ -170,6 +170,6 @@ const productSchema = mongoose.Schema({
   strict: false,
 });
 
-const Product = mongoose.model('Product', productSchema);
+const Product = mongoose.model('Product', productSchema, 'products');
 
 export default Product;
