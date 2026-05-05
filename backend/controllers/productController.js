@@ -51,6 +51,8 @@ const isValidImageUrl = (value) => {
   }
 };
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const buildDefaultSchedules = ({ productId, price, startDate = new Date() }) => {
   const entries = [];
   const endDate = new Date(startDate);
@@ -446,16 +448,19 @@ const getPublishedProducts = async (req, res) => {
     }
 
     const { city, category, q, search, date } = req.query;
-    let query = { status: 'Published' };
+    let query = { status: { $regex: /^published$/i } };
 
     const genericQuery = (q || search || '').trim();
     if (genericQuery) {
-      const regex = new RegExp(genericQuery, 'i');
+      const regex = new RegExp(escapeRegex(genericQuery), 'i');
       query.$or = [
         { title: regex },
         { city: regex },
         { description: regex },
       ];
+    }
+    if (!genericQuery && !city) {
+      query.city = { $regex: /^agadir$/i };
     }
 
     if (city) {
@@ -677,6 +682,7 @@ const webhookImportProduct = async (req, res) => {
     const resolvedSlug = slug || `${slugify(title)}-${Date.now()}`;
     const seo = buildSeoFields({ title, description, imageUrl, metaTitle, metaDescription, ogTitle, ogDescription, ogImage });
 
+    const normalizedStatus = String(status || 'Published').toLowerCase() === 'active' ? 'Published' : (status || 'Published');
     let product = await Product.findOne({ slug: resolvedSlug });
     let schedulesCreated = 0;
     let operation = 'updated';
@@ -707,7 +713,7 @@ const webhookImportProduct = async (req, res) => {
           coordinates: [Number(coordinates[0]), Number(coordinates[1])],
         },
         images: [imageUrl],
-        status,
+        status: normalizedStatus,
         seo,
       });
       const schedules = buildDefaultSchedules({ productId: product._id, price: normalizedPrice });

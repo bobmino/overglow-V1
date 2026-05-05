@@ -49,18 +49,20 @@ const normalizeCategory = (category) => {
   return category;
 };
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @desc    Get autocomplete suggestions
 // @route   GET /api/search/autocomplete?q=query
 // @access  Public
 export const getAutocomplete = async (req, res) => {
   try {
-    const { q } = req.query;
+    const q = typeof req.query?.q === 'string' ? req.query.q.trim() : '';
     
     if (!q || q.length < 2) {
       return res.json({ cities: [], activities: [] });
     }
 
-    const searchRegex = new RegExp(q, 'i');
+    const searchRegex = new RegExp(escapeRegex(q), 'i');
 
     // Search in products
     const products = await Product.find({
@@ -107,7 +109,7 @@ export const getAutocomplete = async (req, res) => {
     });
   } catch (error) {
     console.error('Autocomplete error:', error);
-    res.status(500).json({ message: 'Failed to fetch suggestions' });
+    return res.json({ cities: [], activities: [], showNearby: true });
   }
 };
 
@@ -241,16 +243,20 @@ export const advancedSearch = async (req, res) => {
     } = req.query;
 
     // Build base query
-    let query = { status: 'Published' };
+    let query = { status: { $regex: /^published$/i } };
 
     // Keyword search (title, description, highlights)
-    if (q) {
-      const keywordRegex = new RegExp(q, 'i');
+    const normalizedQ = typeof q === 'string' ? q.trim() : '';
+    if (normalizedQ) {
+      const keywordRegex = new RegExp(escapeRegex(normalizedQ), 'i');
       query.$or = [
         { title: keywordRegex },
         { description: keywordRegex },
         { highlights: { $in: [keywordRegex] } }
       ];
+    }
+    if (!normalizedQ && !city) {
+      query.city = { $regex: /^agadir$/i };
     }
 
     // City filter
@@ -291,9 +297,21 @@ export const advancedSearch = async (req, res) => {
     }
 
     // Execute base query
-    let products = await Product.find(query)
-      .populate('operator', 'companyName status')
-      .lean();
+    let products = [];
+    try {
+      products = await Product.find(query)
+        .populate('operator', 'companyName status isClaimed')
+        .lean();
+    } catch (mongoError) {
+      console.error('Advanced search mongo error:', mongoError);
+      return res.json({
+        products: [],
+        total: 0,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: 0,
+      });
+    }
 
     // Apply filters that require additional processing
     let filteredProducts = products;
@@ -414,6 +432,12 @@ export const advancedSearch = async (req, res) => {
     });
   } catch (error) {
     console.error('Advanced search error:', error);
-    res.status(500).json({ message: 'Failed to perform search', error: error.message });
+    return res.json({
+      products: [],
+      total: 0,
+      page: parseInt(req.query?.page || 1),
+      limit: parseInt(req.query?.limit || 20),
+      totalPages: 0,
+    });
   }
 };

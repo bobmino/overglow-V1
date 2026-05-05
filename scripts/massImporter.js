@@ -132,6 +132,7 @@ const main = async () => {
     }
 
     const slug = entry.slug || `${slugify(title)}-${Date.now()}`;
+    const normalizedStatus = String(entry.status || 'Published').toLowerCase() === 'active' ? 'Published' : (entry.status || 'Published');
     const seo = buildSeoFields({
       title,
       description,
@@ -180,7 +181,7 @@ const main = async () => {
         coordinates: [lng, lat],
       },
       images: [imageUrl],
-      status: entry.status || 'Published',
+      status: normalizedStatus,
       seo,
     });
 
