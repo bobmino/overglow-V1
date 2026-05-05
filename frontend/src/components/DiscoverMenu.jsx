@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Compass, Palmtree, Tent, Camera, Utensils, Ticket, Map as MapIcon, Star } from 'lucide-react';
 import api from '../config/axios';
 import { getCategoryName } from '../utils/categoryMapping';
+import trendingDestinations from '../config/destinations';
 
 const getCategoryLucideIcon = (name) => {
   const lowerName = name.toLowerCase();
@@ -14,12 +15,6 @@ const getCategoryLucideIcon = (name) => {
   if (lowerName.includes('attraction') || lowerName.includes('sight') || lowerName.includes('city')) return <Camera size={18} className="text-rose-500" />;
   return <Compass size={18} className="text-primary-500" />;
 };
-
-const trendingDestinations = [
-  { name: 'Marrakech', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=300&q=80' },
-  { name: 'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=300&q=80' },
-  { name: 'Casablanca', image: 'https://images.unsplash.com/photo-1577147443647-81856d5151af?auto=format&fit=crop&w=300&q=80' }
-];
 
 const DiscoverMenu = ({ isOpen, onClose }) => {
   const [categories, setCategories] = useState([]);

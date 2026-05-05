@@ -468,24 +468,21 @@ const getPublishedProducts = async (req, res) => {
       query.$or = [
         { title: regex },
         { city: regex },
+        { description: regex }
       ];
     }
     if (!genericQuery && !city) {
       query.city = { $regex: /^agadir$/i };
     }
 
-    if (city) {
-      query.city = { $regex: city, $options: 'i' };
+    if (city && typeof city === 'string') {
+      query.city = { $regex: city.trim(), $options: 'i' };
     }
-    if (category) {
+    if (category && typeof category === 'string') {
       // Normalize category for case-insensitive matching
       const normalizedCategory = category.trim();
       query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
     }
-
-    // Date filtering would typically involve checking schedules, which is more complex.
-    // For simplicity, we'll filter products first, and if date is present, we might need aggregation or separate logic.
-    // Here we just return products matching basic criteria.
 
     // Pagination
     const page = parseInt(req.query.page) || 1;
@@ -493,7 +490,7 @@ const getPublishedProducts = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Select only necessary fields for list view
-    const products = await Product.find(query)
+    let products = await Product.find(query)
       .select('title images city category price operator badges skipTheLine metrics createdAt')
       .populate('operator', 'companyName status')
       .populate('badges.badgeId', 'name icon color')
@@ -501,11 +498,32 @@ const getPublishedProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .lean();
-    console.log('Search Query:', genericQuery || '(fallback:agadir)', 'Found:', Array.isArray(products) ? products.length : 0);
-    
+      
     // Get total count for pagination
-    const total = await Product.countDocuments(query);
+    let total = await Product.countDocuments(query);
+
+    // Fallback: If no results found for a specific city query, fetch popular activities in that city
+    if (products.length === 0 && city && typeof city === 'string') {
+      console.log(`No results for query in ${city.trim()}. Falling back to popular activities.`);
+      const fallbackQuery = { 
+        status: { $regex: /^published$/i },
+        city: { $regex: city.trim(), $options: 'i' }
+      };
+      
+      products = await Product.find(fallbackQuery)
+        .select('title images city category price operator badges skipTheLine metrics createdAt')
+        .populate('operator', 'companyName status')
+        .populate('badges.badgeId', 'name icon color')
+        .sort({ 'metrics.rating': -1, 'metrics.totalReviews': -1 }) // Sort by popularity
+        .skip(skip)
+        .limit(limit)
+        .lean();
+        
+      total = await Product.countDocuments(fallbackQuery);
+    }
     
+    console.log('Search Query:', genericQuery || '(fallback:agadir)', 'Found:', Array.isArray(products) ? products.length : 0);
+
     // Ensure we always return an array
     res.json({
       products: Array.isArray(products) ? products : [],
@@ -513,7 +531,7 @@ const getPublishedProducts = async (req, res) => {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit) || 1
       }
     });
   } catch (error) {
