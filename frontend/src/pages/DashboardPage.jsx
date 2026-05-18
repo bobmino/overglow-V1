@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
-import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReviewModal from '../components/ReviewModal';
+import RecommendationsSection from '../components/RecommendationsSection';
 
 const CancelModal = ({ booking, onClose, onConfirm }) => {
   const [loading, setLoading] = useState(false);
