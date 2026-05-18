@@ -8,6 +8,8 @@ import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 import { randomBytes } from 'crypto';
 import { sendWelcomeEmail } from '../utils/emailService.js';
+import connectDB from '../../config/db.js';
+
 
 // Normalize roles to avoid issues with older data / accent variants
 const normalizeRole = (role) => {
@@ -260,7 +262,6 @@ const loginUser = async (req, res) => {
       });
       // Try to reconnect
       try {
-        const connectDB = (await import('../../config/db.js')).default;
         await connectDB();
         // Wait a bit for connection to establish
         await new Promise(resolve => setTimeout(resolve, 2000));
