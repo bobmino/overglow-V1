@@ -204,7 +204,7 @@ export const sendOperatorOnboardingPendingEmail = async (user) => {
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: '⏳ Votre demande est en cours d\\'examen',
+    subject: "⏳ Votre demande est en cours d'examen",
     html: getOperatorOnboardingPendingTemplate(user),
   };
 

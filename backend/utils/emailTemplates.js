@@ -381,7 +381,7 @@ export const getOperatorOnboardingPendingTemplate = (user) => {
     <p>Merci pour votre patience et à très vite !</p>
   `;
 
-  return getEmailWrapper(content, 'Votre demande est en cours d\\'examen');
+  return getEmailWrapper(content, "Votre demande est en cours d'examen");
 };
 
 /**
