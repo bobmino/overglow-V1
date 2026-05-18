@@ -219,7 +219,7 @@ const OperatorOnboardingPage = () => {
           ...prev,
           documents: [...prev.documents, {
             type: 'other',
-            url: data,
+            url: typeof data === 'string' ? data : (data.url || data),
             uploadedAt: new Date(),
             verified: false,
           }],
@@ -228,7 +228,7 @@ const OperatorOnboardingPage = () => {
         setFormData(prev => ({
           ...prev,
           publicPhotos: [...prev.publicPhotos, {
-            url: data,
+            url: typeof data === 'string' ? data : (data.url || data),
             caption: '',
           }],
         }));
