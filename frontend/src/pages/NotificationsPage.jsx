@@ -24,6 +24,18 @@ const NotificationsPage = () => {
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
       setLoading(false);
+      
+      // Auto-mark as read once loaded if there are unread notifications
+      if (data.unreadCount > 0) {
+        api.put('/api/notifications/mark-all-read')
+          .then(() => {
+            window.dispatchEvent(new CustomEvent('notificationsRead'));
+            // If filter was unread, we might want to keep the list or clear it, but let's just set unreadCount to 0
+            setUnreadCount(0);
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
+          })
+          .catch(err => console.error('Failed to auto-mark all as read:', err));
+      }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
       setLoading(false);

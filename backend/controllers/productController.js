@@ -11,7 +11,19 @@ import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeServi
 import crypto from 'crypto';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 
-const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
+import connectDB from '../../config/db.js';
+
+const ensureDbConnected = async () => {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return;
+  }
+  console.log('Database not connected. Attempting connection...');
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Failed to connect to database:', err);
+  }
+};
 
 const normalizePrice = (value) => {
   if (value === undefined || value === null || value === '') {
@@ -238,11 +250,7 @@ const createProduct = async (req, res) => {
 // @access  Private/Operator
 const getMyProducts = async (req, res) => {
   try {
-    // If DB is not connected (Vercel cold start / transient), return empty list instead of 500
-    if (!isDbConnected()) {
-      console.warn('Get my products: MongoDB not connected, returning empty list');
-      return res.json([]);
-    }
+    await ensureDbConnected();
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -448,16 +456,7 @@ const deleteProduct = async (req, res) => {
 // @access  Public
 const getPublishedProducts = async (req, res) => {
   try {
-    // If DB is not connected (Vercel cold start / transient), return empty payload instead of 500
-    if (!isDbConnected()) {
-      console.warn('Get published products: MongoDB not connected, returning empty payload');
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 20;
-      return res.json({
-        products: [],
-        pagination: { page, limit, total: 0, totalPages: 0 },
-      });
-    }
+    await ensureDbConnected();
 
     const { city, category, q, search, date } = req.query;
     let query = { status: { $regex: /^published$/i } };

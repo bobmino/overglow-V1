@@ -471,3 +471,63 @@ export const advancedSearch = async (req, res) => {
     });
   }
 };
+
+// @desc    Get search suggestions (for dropdown autocomplete)
+// @route   GET /api/search/suggestions?q=query
+// @access  Public
+export const getSearchSuggestions = async (req, res) => {
+  try {
+    const q = typeof req.query?.q === 'string' ? req.query.q.trim() : '';
+    
+    if (!q || q.length < 2) {
+      return res.json({ suggestions: [] });
+    }
+
+    const searchRegex = new RegExp(escapeRegex(q), 'i');
+
+    // Search in products
+    const products = await Product.find({
+      status: { $regex: /^published$/i },
+      $or: [
+        { city: searchRegex },
+        { title: searchRegex },
+        { category: searchRegex }
+      ]
+    })
+    .select('city title category')
+    .limit(20);
+
+    const suggestions = [];
+
+    // Add matching cities
+    products.forEach(p => {
+      if (p.city && p.city.toLowerCase().includes(q.toLowerCase())) {
+        suggestions.push(p.city);
+      }
+    });
+
+    // Add matching categories
+    products.forEach(p => {
+      if (p.category && p.category.toLowerCase().includes(q.toLowerCase())) {
+        suggestions.push(p.category);
+      }
+    });
+
+    // Add matching titles
+    products.forEach(p => {
+      if (p.title && p.title.toLowerCase().includes(q.toLowerCase())) {
+        suggestions.push(p.title);
+      }
+    });
+
+    // Deduplicate and limit to 5
+    const uniqueSuggestions = [...new Set(suggestions)].slice(0, 5);
+
+    res.json({
+      suggestions: uniqueSuggestions
+    });
+  } catch (error) {
+    console.error('Suggestions error:', error);
+    return res.json({ suggestions: [] });
+  }
+};

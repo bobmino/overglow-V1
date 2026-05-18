@@ -30,9 +30,18 @@ const NotificationBadge = () => {
 
     fetchUnreadCount();
     
+    const handleNotificationsRead = () => {
+      setUnreadCount(0);
+    };
+    
+    window.addEventListener('notificationsRead', handleNotificationsRead);
+    
     // Refresh every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('notificationsRead', handleNotificationsRead);
+      clearInterval(interval);
+    };
   }, [isAuthenticated]);
 
   const requestNotificationPermission = async () => {

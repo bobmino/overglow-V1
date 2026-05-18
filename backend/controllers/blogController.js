@@ -1,6 +1,19 @@
 import Blog from '../models/blogModel.js';
 import mongoose from 'mongoose';
 import { validationResult } from 'express-validator';
+import connectDB from '../../config/db.js';
+
+const ensureDbConnected = async () => {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return;
+  }
+  console.log('Database not connected. Attempting connection...');
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Failed to connect to database:', err);
+  }
+};
 
 // @desc    Get all published blog posts
 // @route   GET /api/blog
@@ -22,19 +35,7 @@ export const getBlogPosts = async (req, res) => {
       });
     }
 
-    // Check MongoDB connection
-    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-      console.warn('MongoDB not connected, returning empty posts');
-      return res.json({
-        posts: [],
-        pagination: {
-          page: parseInt(req.query.page) || 1,
-          limit: parseInt(req.query.limit) || 10,
-          total: 0,
-          totalPages: 0,
-        },
-      });
-    }
+    await ensureDbConnected();
 
     const {
       category,
@@ -197,11 +198,7 @@ export const getBlogPostBySlug = async (req, res) => {
 // @access  Public
 export const getBlogCategories = async (req, res) => {
   try {
-    // Check MongoDB connection
-    if (mongoose.connection.readyState !== 1) {
-      console.warn('MongoDB not connected, returning empty categories');
-      return res.json({ categories: [] });
-    }
+    await ensureDbConnected();
 
     // Try to get categories, return empty array if collection doesn't exist or query fails
     let categories = [];
@@ -241,11 +238,7 @@ export const getBlogTags = async (req, res) => {
       return res.json({ tags: [] });
     }
 
-    // Check MongoDB connection
-    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-      console.warn('MongoDB not connected, returning empty tags');
-      return res.json({ tags: [] });
-    }
+    await ensureDbConnected();
 
     // Try to get tags, return empty array if collection doesn't exist or query fails
     let tags = [];
