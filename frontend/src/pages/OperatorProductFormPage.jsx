@@ -128,7 +128,8 @@ const OperatorProductFormPage = () => {
       };
 
       const { data } = await api.post('/api/upload', formData, config);
-      setFormData(prev => ({ ...prev, images: [...prev.images, data] }));
+      const imageUrl = typeof data === 'string' ? data : (data.url || data);
+      setFormData(prev => ({ ...prev, images: [...prev.images, imageUrl] }));
       setUploading(false);
     } catch (error) {
       console.error(error);
