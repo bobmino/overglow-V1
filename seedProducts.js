@@ -288,6 +288,8 @@ const seedDatabase = async () => {
     for (const productData of sampleProducts) {
       const product = await Product.create({
         ...productData,
+        duration: productData.duration || '3 heures',
+        price: productData.basePrice || 0,
         operator: operator._id,
         user: operator.user
       });
