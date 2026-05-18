@@ -10,7 +10,7 @@ import DiscoverMenu from './DiscoverMenu';
 import NotificationBadge from './NotificationBadge';
 
 const Header = () => {
-  const { user, logout, isAuthenticated, updateUser } = useAuth();
+  const { user, login, logout, isAuthenticated, updateUser } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
@@ -80,7 +80,15 @@ const Header = () => {
     setIsUpgrading(true);
     try {
       const response = await api.post('/api/auth/upgrade-to-operator');
-      updateUser(response.data.user);
+      const updatedUser = { ...user, ...response.data.user };
+      
+      // Fallback in case updateUser is not available in the deployed AuthContext
+      if (typeof updateUser === 'function') {
+        updateUser(updatedUser);
+      } else if (typeof login === 'function') {
+        login(updatedUser);
+      }
+      
       setShowUserMenu(false);
       navigate('/operator/wizard');
     } catch (error) {
