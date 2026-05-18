@@ -220,6 +220,61 @@ const partnerSignup = async (req, res) => {
   }
 };
 
+// @desc    Upgrade existing user to operator
+// @route   POST /api/auth/upgrade-to-operator
+// @access  Private
+const upgradeToOperator = async (req, res) => {
+  setCORSHeaders(req, res);
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === 'Opérateur') {
+      return res.status(400).json({ message: 'User is already an operator' });
+    }
+
+    // Upgrade role
+    user.role = 'Opérateur';
+    await user.save();
+
+    // Create Operator profile if it doesn't exist
+    let operator = await Operator.findOne({ user: user._id });
+    if (!operator) {
+      operator = await Operator.create({
+        user: user._id,
+        companyName: user.name || 'My Company',
+        description: 'New Operator Profile',
+        status: 'Pending',
+      });
+    }
+
+    // Issue new token with updated role
+    const accessToken = generateAccessToken(user._id, user.role);
+    res.cookie('accessToken', accessToken, getCookieOptions(false));
+
+    res.json({
+      message: 'Successfully upgraded to operator',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: accessToken
+      }
+    });
+  } catch (error) {
+    logger.error('Upgrade to operator error', {
+      message: error?.message,
+      stack: error?.stack,
+    });
+    res.status(500).json({ message: 'Server error during upgrade' });
+  }
+};
+
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
@@ -639,4 +694,4 @@ const logout = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup };
+export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup, upgradeToOperator };

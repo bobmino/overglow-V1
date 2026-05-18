@@ -10,10 +10,11 @@ import DiscoverMenu from './DiscoverMenu';
 import NotificationBadge from './NotificationBadge';
 
 const Header = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, updateUser } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const userMenuRef = React.useRef(null);
   const discoverMenuRef = React.useRef(null);
   const mobileMenuRef = React.useRef(null);
@@ -72,6 +73,22 @@ const Header = () => {
     setShowUserMenu(false);
     setIsMobileMenuOpen(false);
     navigate('/');
+  };
+
+  const handleUpgradeToOperator = async () => {
+    if (isUpgrading) return;
+    setIsUpgrading(true);
+    try {
+      const response = await api.post('/api/auth/upgrade-to-operator');
+      updateUser(response.data.user);
+      setShowUserMenu(false);
+      navigate('/operator/wizard');
+    } catch (error) {
+      console.error('Failed to upgrade to operator:', error);
+      alert('Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.');
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   return (
@@ -276,6 +293,19 @@ const Header = () => {
                           Mon Profil
                         </Link>
                   
+                  {user?.role === 'Client' && (
+                    <div className="border-t border-slate-50 mt-2 pt-2">
+                      <button 
+                        onClick={handleUpgradeToOperator}
+                        disabled={isUpgrading}
+                        className="w-full flex items-center px-4 py-2.5 text-primary-600 hover:bg-primary-50 transition font-medium"
+                      >
+                        <Building2 size={18} className="mr-3" />
+                        {isUpgrading ? 'Création en cours...' : 'Devenir Partenaire'}
+                      </button>
+                    </div>
+                  )}
+                  
                   <div className="border-t border-slate-50 mt-2 pt-2">
                     <button 
                       onClick={handleLogout}
@@ -357,6 +387,19 @@ const Header = () => {
                   <TrendingUp size={18} className="mr-3" />
                   Operator Dashboard
                 </Link>
+              )}
+              {user?.role === 'Client' && (
+                <button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleUpgradeToOperator();
+                  }}
+                  disabled={isUpgrading}
+                  className="w-full flex items-center p-3 rounded-lg hover:bg-primary-50 text-primary-600 font-medium"
+                >
+                  <Building2 size={18} className="mr-3" />
+                  {isUpgrading ? 'Création...' : 'Devenir Partenaire'}
+                </button>
               )}
               <button 
                 onClick={handleLogout}

@@ -1,6 +1,6 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup, upgradeToOperator } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
@@ -45,6 +45,7 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.post('/refresh', refreshTokenHandler);
 router.post('/logout', protect, logout);
+router.post('/upgrade-to-operator', protect, upgradeToOperator);
 router.post(
   '/partner-signup',
   authLimiter,
