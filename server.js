@@ -61,6 +61,9 @@ import blogRoutes from './backend/routes/blogRoutes.js';
 
 const app = express();
 
+// Trust proxy for Vercel deployment (ensures correct client IP for rate limiting)
+app.set('trust proxy', 1);
+
 const corsOptions = {
   origin: true, // Autorise dynamiquement l'origine de la requête
   credentials: true,
@@ -77,6 +80,51 @@ connectDB().then(async () => {
     console.log('Force-updated all products to Published status at startup.');
   } catch (err) {
     console.error('Failed to force products to Published:', err);
+  }
+
+  // Auto-seed default users for testing/demo if they do not exist
+  try {
+    const { default: User } = await import('./backend/models/userModel.js');
+    const { default: Operator } = await import('./backend/models/operatorModel.js');
+
+    // 1. Create Default Admin
+    const adminEmail = 'admin@overglow.com';
+    const existingAdmin = await User.findOne({ email: { $regex: new RegExp(`^${adminEmail}$`, 'i') } });
+    if (!existingAdmin) {
+      await User.create({
+        name: 'Admin Overglow',
+        email: adminEmail,
+        password: 'admin123',
+        role: 'Admin',
+        isApproved: true,
+        approvedAt: new Date()
+      });
+      console.log('✅ Auto-created default admin in production: admin@overglow.com / admin123');
+    }
+
+    // 2. Create Default Operator
+    const operatorEmail = 'operator@overglow.com';
+    const existingOperator = await User.findOne({ email: { $regex: new RegExp(`^${operatorEmail}$`, 'i') } });
+    if (!existingOperator) {
+      const opUser = await User.create({
+        name: 'Sample Operator',
+        email: operatorEmail,
+        password: 'password123',
+        role: 'Opérateur',
+        isApproved: true,
+        approvedAt: new Date()
+      });
+      
+      await Operator.create({
+        user: opUser._id,
+        companyName: 'Overglow Premium Partner',
+        description: 'Partenaire certifié',
+        status: 'Active'
+      });
+      console.log('✅ Auto-created default operator in production: operator@overglow.com / password123');
+    }
+  } catch (userSeedErr) {
+    console.error('Failed to auto-seed default users:', userSeedErr);
   }
 }).catch(err => {
   console.error('Database connection initialization error:', err.message);

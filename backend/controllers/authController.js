@@ -87,8 +87,9 @@ const registerUser = async (req, res) => {
     }
 
     const { name, email, password, role, companyName, description } = req.body;
+    const trimmedEmail = String(email || '').trim();
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: { $regex: new RegExp(`^${trimmedEmail}$`, 'i') } });
 
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
@@ -99,7 +100,7 @@ const registerUser = async (req, res) => {
     
     const user = await User.create({
       name,
-      email,
+      email: trimmedEmail,
       password,
       role: finalRole,
       // Clients are auto-approved, operators need approval
@@ -284,15 +285,16 @@ const loginUser = async (req, res) => {
     }
 
     // Find user
+    const trimmedEmail = String(email || '').trim();
     let user;
     try {
-      user = await User.findOne({ email });
+      user = await User.findOne({ email: { $regex: new RegExp(`^${trimmedEmail}$`, 'i') } });
     } catch (findError) {
       console.error('User find error:', {
         message: findError.message,
         stack: findError.stack,
         name: findError.name,
-        email: email
+        email: trimmedEmail
       });
       return res.status(500).json({ 
         message: 'Server error during user lookup',
