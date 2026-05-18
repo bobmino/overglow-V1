@@ -337,3 +337,74 @@ export const getRefundProcessedTemplate = (withdrawal, user) => {
   return getEmailWrapper(content, 'Remboursement effectué');
 };
 
+/**
+ * Welcome email template (Client / General)
+ */
+export const getWelcomeEmailTemplate = (user) => {
+  const content = `
+    <h2 style="color: #10b981; margin-top: 0;">👋 Bienvenue sur Overglow Trip !</h2>
+    
+    <p>Bonjour ${user.name || 'Cher voyageur'},</p>
+    
+    <p>Nous sommes ravis de vous compter parmi nous ! Votre compte a été créé avec succès.</p>
+    
+    <p>Vous pouvez dès à présent explorer et réserver des expériences uniques et authentiques au Maroc.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${process.env.FRONTEND_URL || 'https://overglow-v1-3jqp.vercel.app'}" style="${BASE_STYLES.button}">Explorer les expériences</a>
+    </div>
+    
+    <p>Si vous avez la moindre question, n'hésitez pas à nous contacter.</p>
+  `;
+
+  return getEmailWrapper(content, 'Bienvenue sur Overglow Trip');
+};
+
+/**
+ * Operator Onboarding Pending template (Sent to Operator)
+ */
+export const getOperatorOnboardingPendingTemplate = (user) => {
+  const content = `
+    <h2 style="color: #f59e0b; margin-top: 0;">⏳ Votre demande est en cours d'examen</h2>
+    
+    <p>Bonjour ${user.name || 'Opérateur'},</p>
+    
+    <p>Nous avons bien reçu votre demande d'inscription en tant qu'opérateur sur Overglow Trip.</p>
+    
+    <p>Notre équipe est actuellement en train d'examiner vos informations. Ce processus prend généralement entre 24 et 48 heures.</p>
+    
+    <div style="${BASE_STYLES.infoBox}; border-left-color: #f59e0b; background-color: #fffbeb;">
+      <h3 style="margin-top: 0; color: #d97706;">Que se passe-t-il ensuite ?</h3>
+      <p style="margin: 0; color: #92400e;">Dès que votre profil sera approuvé, vous recevrez un nouvel email et vous pourrez commencer à créer et publier vos expériences.</p>
+    </div>
+    
+    <p>Merci pour votre patience et à très vite !</p>
+  `;
+
+  return getEmailWrapper(content, 'Votre demande est en cours d\\'examen');
+};
+
+/**
+ * Operator Approved template
+ */
+export const getOperatorApprovedTemplate = (user) => {
+  const content = `
+    <h2 style="color: #10b981; margin-top: 0;">🎉 Félicitations, votre compte est approuvé !</h2>
+    
+    <p>Bonjour ${user.name || 'Opérateur'},</p>
+    
+    <p>Excellente nouvelle ! Votre demande d'inscription en tant qu'opérateur a été <strong>approuvée</strong> par notre équipe.</p>
+    
+    <p>Vous pouvez dès maintenant accéder à votre tableau de bord et commencer à publier vos expériences.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${process.env.FRONTEND_URL || 'https://overglow-v1-3jqp.vercel.app'}/operator/dashboard" style="${BASE_STYLES.button}">Accéder à mon tableau de bord</a>
+    </div>
+    
+    <p>Nous sommes impatients de voir les expériences incroyables que vous allez proposer !</p>
+  `;
+
+  return getEmailWrapper(content, 'Votre compte opérateur est approuvé');
+};
+
+

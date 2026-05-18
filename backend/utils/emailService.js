@@ -5,6 +5,9 @@ import {
   getCancellationTemplate,
   getOperatorBookingNotificationTemplate,
   getRefundProcessedTemplate,
+  getWelcomeEmailTemplate,
+  getOperatorOnboardingPendingTemplate,
+  getOperatorApprovedTemplate,
 } from './emailTemplates.js';
 import { getBookingConfirmationPremiumTemplate } from '../services/emailService.js';
 
@@ -175,5 +178,59 @@ export const sendRefundProcessedEmail = async (withdrawal, user) => {
     console.log('✅ Refund processed email sent to:', user.email);
   } catch (error) {
     console.error('❌ Error sending refund processed email:', error.message);
+  }
+};
+
+// Send welcome email
+export const sendWelcomeEmail = async (user) => {
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '👋 Bienvenue sur Overglow Trip !',
+    html: getWelcomeEmailTemplate(user),
+  };
+
+  if (!transporter || !isEmailEnabled()) return;
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error.message);
+  }
+};
+
+// Send operator onboarding pending email
+export const sendOperatorOnboardingPendingEmail = async (user) => {
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '⏳ Votre demande est en cours d\\'examen',
+    html: getOperatorOnboardingPendingTemplate(user),
+  };
+
+  if (!transporter || !isEmailEnabled()) return;
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('❌ Error sending operator onboarding pending email:', error.message);
+  }
+};
+
+// Send operator approved email
+export const sendOperatorApprovedEmail = async (user) => {
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '🎉 Félicitations, votre compte est approuvé !',
+    html: getOperatorApprovedTemplate(user),
+  };
+
+  if (!transporter || !isEmailEnabled()) return;
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('❌ Error sending operator approved email:', error.message);
   }
 };

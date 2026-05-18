@@ -5,6 +5,7 @@ import Operator from '../models/operatorModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyApprovalRequest } from '../utils/notificationService.js';
+import { sendOperatorApprovedEmail } from '../utils/emailService.js';
 
 // @desc    Create approval request
 // @route   POST /api/approval-requests
@@ -188,6 +189,7 @@ const approveRequest = async (req, res) => {
             user.isApproved = true;
             user.approvedAt = new Date();
             await user.save();
+            sendOperatorApprovedEmail(user).catch(err => console.error('Failed to send approved email:', err));
           }
         }
         break;

@@ -14,6 +14,7 @@ import {
   updateOperatorMetrics 
 } from '../utils/badgeService.js';
 import Badge from '../models/badgeModel.js';
+import { sendOperatorApprovedEmail } from '../utils/emailService.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -233,6 +234,11 @@ const updateOperatorStatus = async (req, res) => {
       
       // Notify operator of operator account approval
       await notifyOperatorApproved(operator, req.user._id);
+      
+      // Send email to operator
+      if (user) {
+        sendOperatorApprovedEmail(user).catch(err => console.error('Failed to send approved email:', err));
+      }
     }
     
     // Populate operator with user info for response

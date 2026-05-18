@@ -7,6 +7,7 @@ import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 import { randomBytes } from 'crypto';
+import { sendWelcomeEmail } from '../utils/emailService.js';
 
 // Normalize roles to avoid issues with older data / accent variants
 const normalizeRole = (role) => {
@@ -140,6 +141,9 @@ const registerUser = async (req, res) => {
         userAgent: req.headers['user-agent'],
       });
       await user.save();
+      
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(user).catch(err => console.error('Failed to send welcome email:', err));
 
       setAuthCookies(res, accessToken, refreshToken);
 

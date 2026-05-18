@@ -3,6 +3,7 @@ import Operator from '../models/operatorModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyOnboardingSubmitted } from '../utils/notificationService.js';
+import { sendOperatorOnboardingPendingEmail } from '../utils/emailService.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -569,6 +570,12 @@ const submitOnboarding = async (req, res) => {
     const adminIds = adminUsers.map(admin => admin._id);
     if (adminIds.length > 0) {
       await notifyOnboardingSubmitted(onboarding, adminIds);
+    }
+    
+    // Notify operator by email
+    const userToNotify = await User.findById(req.user._id);
+    if (userToNotify) {
+      sendOperatorOnboardingPendingEmail(userToNotify).catch(err => console.error('Failed to send pending email:', err));
     }
 
     res.json({ 
