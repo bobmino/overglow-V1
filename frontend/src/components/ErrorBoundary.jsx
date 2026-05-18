@@ -80,13 +80,13 @@ class ErrorBoundary extends React.Component {
                 Recharger la page
               </button>
               
-              <Link
-                to="/"
+              <a
+                href="/"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
               >
                 <Home size={18} />
                 Retour à l'accueil
-              </Link>
+              </a>
             </div>
           </div>
         </div>
