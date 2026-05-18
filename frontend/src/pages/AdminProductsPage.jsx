@@ -14,7 +14,7 @@ const AdminProductsPage = () => {
     try {
       const url = filter === 'all' ? '/api/admin/products' : `/api/admin/products?status=${filter}`;
       const { data } = await api.get(url);
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : (data?.products || []));
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch products:', error);
