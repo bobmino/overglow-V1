@@ -86,7 +86,7 @@ router.route('/:id')
 
 // Nested routes
 router.route('/:productId/schedules')
-  .post(protect, authorize('Opérateur'), createSchedule)
+  .post(protect, authorize('Opérateur', 'Admin'), createSchedule)
   .get(getSchedules);
 
 router.route('/:productId/reviews')

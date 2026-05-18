@@ -216,6 +216,41 @@ const sampleProducts = [
     status: 'Published',
     basePrice: 45
   },
+
+  // Las Vegas - Entertainment & Day Trips
+  {
+    title: 'Grand Canyon Helicopter Tour with Strip Flyover',
+    description: 'Fly from Las Vegas to the Grand Canyon in a luxury helicopter, and enjoy stunning views of the Las Vegas Strip on your return.',
+    category: 'Tours',
+    city: 'Las Vegas',
+    address: 'Las Vegas Strip, NV',
+    location: { type: 'Point', coordinates: [-115.1728, 36.1147] },
+    images: ['https://images.unsplash.com/photo-1508849789987-4e5333c12b78?w=800'],
+    status: 'Published',
+    basePrice: 320
+  },
+  {
+    title: 'High Roller Observation Wheel Ticket',
+    description: 'Soar 550 feet above the center of the Las Vegas Strip on the world’s largest observation wheel.',
+    category: 'Attractions',
+    city: 'Las Vegas',
+    address: '3545 S Las Vegas Blvd',
+    location: { type: 'Point', coordinates: [-115.1681, 36.1174] },
+    images: ['https://images.unsplash.com/photo-1581338834647-b0fb40704e21?w=800'],
+    status: 'Published',
+    basePrice: 38
+  },
+  {
+    title: 'Las Vegas Strip Evening Helicopter Tour',
+    description: 'See the bright lights of the Las Vegas Strip from above on an unforgettable nighttime helicopter flight.',
+    category: 'Tours',
+    city: 'Las Vegas',
+    address: 'Las Vegas Strip, NV',
+    location: { type: 'Point', coordinates: [-115.1728, 36.1147] },
+    images: ['https://images.unsplash.com/photo-1546708973-b339540b5162?w=800'],
+    status: 'Published',
+    basePrice: 99
+  },
 ];
 
 const seedDatabase = async () => {

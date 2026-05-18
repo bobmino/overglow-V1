@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
-import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare, Award } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare, Award, Building2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import ReviewModal from '../components/ReviewModal';
 import RecommendationsSection from '../components/RecommendationsSection';
+import { useAuth } from '../context/AuthContext';
 
 const CancelModal = ({ booking, onClose, onConfirm }) => {
   const [loading, setLoading] = useState(false);
@@ -243,9 +244,34 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
 };
 
 const DashboardPage = () => {
+  const { user, updateUser, login } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleUpgradeToOperator = async () => {
+    if (isUpgrading) return;
+    setIsUpgrading(true);
+    try {
+      const response = await api.post('/api/auth/upgrade-to-operator');
+      const updatedUser = { ...user, ...response.data.user };
+      
+      if (typeof updateUser === 'function') {
+        updateUser(updatedUser);
+      } else if (typeof login === 'function') {
+        login(updatedUser);
+      }
+      
+      navigate('/operator/wizard');
+    } catch (error) {
+      console.error('Failed to upgrade to operator:', error);
+      alert('Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.');
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -280,6 +306,16 @@ const DashboardPage = () => {
       <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Mes réservations</h1>
         <div className="flex gap-3">
+          {user?.role === 'Client' && (
+            <button
+              onClick={handleUpgradeToOperator}
+              disabled={isUpgrading}
+              className="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition flex items-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <Building2 size={18} />
+              {isUpgrading ? 'Création en cours...' : 'Devenir Partenaire'}
+            </button>
+          )}
           <Link
             to="/loyalty"
             className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition flex items-center gap-2"

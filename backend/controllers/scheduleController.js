@@ -22,10 +22,12 @@ const createSchedule = async (req, res) => {
     throw new Error('Product not found');
   }
 
-  const operator = await Operator.findOne({ user: req.user._id });
-  if (product.operator.toString() !== operator._id.toString()) {
-    res.status(401);
-    throw new Error('Not authorized to add schedule to this product');
+  if (req.user.role !== 'Admin') {
+    const operator = await Operator.findOne({ user: req.user._id });
+    if (!operator || product.operator.toString() !== operator._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized to add schedule to this product');
+    }
   }
 
   const schedule = new Schedule({
@@ -99,10 +101,12 @@ const updateSchedule = async (req, res) => {
   const schedule = await Schedule.findById(req.params.id).populate('product');
 
   if (schedule) {
-    const operator = await Operator.findOne({ user: req.user._id });
-    if (schedule.product.operator.toString() !== operator._id.toString()) {
-      res.status(401);
-      throw new Error('Not authorized to update this schedule');
+    if (req.user.role !== 'Admin') {
+      const operator = await Operator.findOne({ user: req.user._id });
+      if (!operator || schedule.product.operator.toString() !== operator._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to update this schedule');
+      }
     }
 
     schedule.date = date || schedule.date;
@@ -128,10 +132,12 @@ const deleteSchedule = async (req, res) => {
   const schedule = await Schedule.findById(req.params.id).populate('product');
 
   if (schedule) {
-    const operator = await Operator.findOne({ user: req.user._id });
-    if (schedule.product.operator.toString() !== operator._id.toString()) {
-      res.status(401);
-      throw new Error('Not authorized to delete this schedule');
+    if (req.user.role !== 'Admin') {
+      const operator = await Operator.findOne({ user: req.user._id });
+      if (!operator || schedule.product.operator.toString() !== operator._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete this schedule');
+      }
     }
 
     await schedule.deleteOne();
