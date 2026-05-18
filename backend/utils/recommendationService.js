@@ -231,7 +231,7 @@ export const getTrendingProducts = async (limit = 10, days = 30) => {
       .sort((a, b) => productCounts[b] - productCounts[a])
       .slice(0, limit);
 
-    const products = await Product.find({
+    let products = await Product.find({
       _id: { $in: productIds },
       status: 'Published',
     })
@@ -245,6 +245,20 @@ export const getTrendingProducts = async (limit = 10, days = 30) => {
       const countB = productCounts[b._id.toString()] || 0;
       return countB - countA;
     });
+
+    // Fallback: If not enough trending products from bookings, return any published products
+    if (products.length < limit) {
+      const excludedIds = products.map(p => p._id);
+      const fallbackProducts = await Product.find({
+        status: 'Published',
+        _id: { $nin: excludedIds }
+      })
+        .populate('operator', 'companyName publicName')
+        .populate('badges.badgeId')
+        .limit(limit - products.length)
+        .lean();
+      products = [...products, ...fallbackProducts];
+    }
 
     return products;
   } catch (error) {
@@ -261,7 +275,7 @@ export const getTrendingProducts = async (limit = 10, days = 30) => {
 export const getNewUserRecommendations = async (limit = 10) => {
   try {
     // Return popular, highly-rated products
-    const products = await Product.find({
+    let products = await Product.find({
       status: 'Published',
       'metrics.averageRating': { $gte: 4.0 },
       'metrics.bookingCount': { $gte: 5 },
@@ -274,6 +288,20 @@ export const getNewUserRecommendations = async (limit = 10) => {
       })
       .limit(limit)
       .lean();
+
+    // Fallback: If not enough products meet the strict criteria, return any published products
+    if (products.length < limit) {
+      const excludedIds = products.map(p => p._id);
+      const fallbackProducts = await Product.find({
+        status: 'Published',
+        _id: { $nin: excludedIds }
+      })
+        .populate('operator', 'companyName publicName')
+        .populate('badges.badgeId')
+        .limit(limit - products.length)
+        .lean();
+      products = [...products, ...fallbackProducts];
+    }
 
     return products;
   } catch (error) {
