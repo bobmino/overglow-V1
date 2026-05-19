@@ -1,3 +1,4 @@
+// Build: 2026-05-19T02:00 - TDZ fix: priceBreakdown must be declared before useEffect
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../config/axios';
