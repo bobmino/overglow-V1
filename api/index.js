@@ -55,12 +55,9 @@ const setCORSHeaders = (req, res) => {
 };
 
 export default async (req, res) => {
-  // CRITICAL: Set CORS headers FIRST, before ANYTHING else
-  // This MUST happen before any async operations
-  setCORSHeaders(req, res);
-  
-  // Handle OPTIONS preflight immediately
+  // Handle OPTIONS preflight immediately — set CORS only here
   if (req.method === 'OPTIONS') {
+    setCORSHeaders(req, res);
     return res.status(200).end();
   }
   
@@ -81,23 +78,20 @@ export default async (req, res) => {
       cause: loadError.cause
     });
     
-    // CORS headers already set above
-    // Return detailed error for debugging (even in production for now)
+    // Set CORS only on error fallback (Express won't handle this)
+    setCORSHeaders(req, res);
     return res.status(500).json({ 
       message: 'Server initialization error',
       error: loadError.message,
       errorType: loadError.name,
       errorCode: loadError.code,
-      // Include stack in response for debugging
       stack: loadError.stack
     });
   }
   
-  // Call the Express app handler
-  // Express app may not return a promise, so we call it directly
-  // The CORS headers are already set above, so they'll be included in the response
+  // Let Express handle the request — Express cors() middleware sets CORS headers.
+  // Do NOT set CORS here to avoid duplicate Access-Control-Allow-Origin values.
   try {
-    // Call the Express app - it handles the request/response
     expressApp(req, res);
   } catch (appError) {
     console.error('Express app error:', {
@@ -106,9 +100,7 @@ export default async (req, res) => {
       name: appError.name
     });
     
-    // Only send error if headers haven't been sent yet
     if (!res.headersSent) {
-      // Ensure CORS headers are set (they should already be, but double-check)
       setCORSHeaders(req, res);
       return res.status(500).json({ 
         message: 'Internal server error',
