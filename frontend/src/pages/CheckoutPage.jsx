@@ -17,28 +17,6 @@ const CheckoutPage = () => {
 
   const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: location } });
-    }
-    if (!product || !schedule) {
-      navigate('/');
-    } else {
-      // Track begin_checkout event
-      trackBeginCheckout({
-        totalAmount: priceBreakdown?.subtotal || 0,
-        totalPrice: priceBreakdown?.subtotal || 0,
-        items: [{
-          item_id: product._id,
-          item_name: product.title,
-          item_category: product.category,
-          price: schedule.price || product.price || 0,
-          quantity: numberOfTickets || 1,
-        }],
-      });
-    }
-  }, [isAuthenticated, product, schedule, navigate, location, priceBreakdown, numberOfTickets]);
-
   // Calculate total price with skip-the-line and multi-currency
   const priceBreakdown = useMemo(() => {
     if (!schedule || !numberOfTickets) return null;
@@ -63,6 +41,28 @@ const CheckoutPage = () => {
   }, [schedule, numberOfTickets, product]);
 
   const totalPrice = priceBreakdown?.subtotal || 0;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } });
+    }
+    if (!product || !schedule) {
+      navigate('/');
+    } else {
+      // Track begin_checkout event
+      trackBeginCheckout({
+        totalAmount: priceBreakdown?.subtotal || 0,
+        totalPrice: priceBreakdown?.subtotal || 0,
+        items: [{
+          item_id: product._id,
+          item_name: product.title,
+          item_category: product.category,
+          price: schedule.price || product.price || 0,
+          quantity: numberOfTickets || 1,
+        }],
+      });
+    }
+  }, [isAuthenticated, product, schedule, navigate, location, priceBreakdown, numberOfTickets]);
 
   const [bookingId, setBookingId] = useState(null);
 

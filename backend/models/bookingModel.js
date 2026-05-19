@@ -44,6 +44,15 @@ const bookingSchema = mongoose.Schema({
     enum: ['pending', 'paid', 'refunded', 'failed'],
     default: 'pending',
   },
+  paymentMethod: {
+    type: String,
+    enum: ['stripe', 'paypal', 'cmi', 'cash_pickup', 'cash_delivery', 'bank_transfer'],
+    default: 'stripe',
+  },
+  deliveryAddress: {
+    type: String,
+    default: '',
+  },
   payoutStatus: {
     type: String,
     enum: ['pending', 'scheduled', 'completed'],

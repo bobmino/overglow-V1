@@ -44,10 +44,14 @@ const createBooking = async (req, res, next) => {
       scheduleId,
       numberOfTickets,
       paymentIntentId,
+      paymentId,
       paymentMethod,
       skipTheLineEnabled,
       skipTheLinePrice,
+      deliveryAddress,
     } = req.body;
+
+    const actualPaymentIntentId = paymentIntentId || paymentId;
 
     // Validate inputs
     const tickets = Number(numberOfTickets);
@@ -109,8 +113,10 @@ const createBooking = async (req, res, next) => {
       totalAmount,
       totalPrice: totalAmount,
       status: 'Pending',
-      paymentIntentId,
+      paymentIntentId: actualPaymentIntentId,
       paymentStatus: 'pending',
+      paymentMethod: paymentMethod || 'stripe',
+      deliveryAddress: deliveryAddress || '',
       payoutStatus: 'pending',
       payoutDate,
       payoutEligibleDate,
@@ -132,7 +138,7 @@ const createBooking = async (req, res, next) => {
         provider: paymentMethod || 'stripe',
         amount: totalAmount,
         currency: 'EUR',
-        paymentIntentId,
+        paymentIntentId: actualPaymentIntentId,
         metadata: {
           bookingId: createdBooking._id.toString(),
           scheduleId: scheduleId.toString(),
@@ -141,7 +147,13 @@ const createBooking = async (req, res, next) => {
       });
 
       createdBooking.paymentIntentId = paymentResult.transactionId || createdBooking.paymentIntentId;
-      createdBooking.paymentStatus = paymentResult.status === 'succeeded' ? 'paid' : 'pending';
+      
+      // For offline payment methods, payment status remains pending until collected
+      const isOfflinePayment = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(paymentMethod);
+      createdBooking.paymentStatus = isOfflinePayment 
+        ? 'pending' 
+        : (paymentResult.status === 'succeeded' ? 'paid' : 'pending');
+      
       createdBooking.payoutStatus = 'scheduled';
       createdBooking.payoutDate = payoutDate;
       createdBooking.payoutEligibleDate = payoutDate;

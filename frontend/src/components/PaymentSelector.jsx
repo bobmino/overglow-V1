@@ -120,14 +120,18 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
   };
 
   const handleCashPickup = async () => {
-    try {
-      const { data } = await api.post('/api/payments/cash-pickup', {
-        bookingId,
-        amount: madAmount || amount
-      });
-      handleSuccess({ type: 'cash_pickup', ...data });
-    } catch (err) {
-      handleError(err.response?.data?.message || 'Failed to process cash pickup payment');
+    if (bookingId) {
+      try {
+        const { data } = await api.post('/api/payments/cash-pickup', {
+          bookingId,
+          amount: madAmount || amount
+        });
+        handleSuccess({ type: 'cash_pickup', ...data });
+      } catch (err) {
+        handleError(err.response?.data?.message || 'Failed to process cash pickup payment');
+      }
+    } else {
+      handleSuccess({ type: 'cash_pickup', id: 'cash_pickup_' + Date.now() });
     }
   };
 
@@ -136,30 +140,42 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       handleError('Please provide a delivery address');
       return;
     }
-    try {
-      const { data } = await api.post('/api/payments/cash-delivery', {
-        bookingId,
-        amount: madAmount || amount,
-        deliveryAddress
+    if (bookingId) {
+      try {
+        const { data } = await api.post('/api/payments/cash-delivery', {
+          bookingId,
+          amount: madAmount || amount,
+          deliveryAddress
+        });
+        handleSuccess({ type: 'cash_delivery', ...data });
+      } catch (err) {
+        handleError(err.response?.data?.message || 'Failed to process cash delivery payment');
+      }
+    } else {
+      handleSuccess({ 
+        type: 'cash_delivery', 
+        id: 'cash_delivery_' + Date.now(),
+        deliveryAddress 
       });
-      handleSuccess({ type: 'cash_delivery', ...data });
-    } catch (err) {
-      handleError(err.response?.data?.message || 'Failed to process cash delivery payment');
     }
   };
 
   const handleCMI = async () => {
-    try {
-      const { data } = await api.post('/api/payments/cmi-init', {
-        amount: madAmount || amount,
-        bookingId,
-        currency: 'MAD'
-      });
-      // In production, redirect to CMI gateway
-      // For now, simulate success
-      handleSuccess({ type: 'cmi', ...data });
-    } catch (err) {
-      handleError(err.response?.data?.message || 'Failed to initialize CMI payment');
+    if (bookingId) {
+      try {
+        const { data } = await api.post('/api/payments/cmi-init', {
+          amount: madAmount || amount,
+          bookingId,
+          currency: 'MAD'
+        });
+        // In production, redirect to CMI gateway
+        // For now, simulate success
+        handleSuccess({ type: 'cmi', ...data });
+      } catch (err) {
+        handleError(err.response?.data?.message || 'Failed to initialize CMI payment');
+      }
+    } else {
+      handleSuccess({ type: 'cmi', id: 'cmi_' + Date.now() });
     }
   };
 
