@@ -42,9 +42,10 @@ export const processPayment = async ({
       throw new Error('Simulated payment failure');
     }
 
-    if (!providerHasKeys(provider)) {
+    const isMockId = paymentIntentId && (paymentIntentId.startsWith('mock_') || paymentIntentId.startsWith('sim_'));
+    if (!providerHasKeys(provider) || isMockId) {
       await sleep(1000);
-      logger.info('Payment simulated due to missing provider keys', { provider, amount, currency });
+      logger.info('Payment simulated due to missing provider keys or mock ID', { provider, amount, currency, paymentIntentId });
       return buildSimulatedTransaction({ amount, currency, provider, metadata });
     }
 

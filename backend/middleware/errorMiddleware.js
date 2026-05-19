@@ -86,11 +86,18 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Never expose raw error payloads to clients
-  res.json({
-    success: false,
-    message: 'Service momentanément indisponible',
-  });
+  // Only hide raw error payloads for server errors (>= 500)
+  if (statusCode >= 500) {
+    res.json({
+      success: false,
+      message: 'Service momentanément indisponible',
+    });
+  } else {
+    res.json({
+      success: false,
+      message: err.message || 'Service momentanément indisponible',
+    });
+  }
 };
 
 export { notFound, errorHandler };
