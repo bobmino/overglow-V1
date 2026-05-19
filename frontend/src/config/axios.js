@@ -91,9 +91,8 @@ api.interceptors.request.use(
   (config) => {
     config.withCredentials = true;
     const userInfo = localStorage.getItem('userInfo');
-    const preferCookieAuth = config.preferCookieAuth !== false;
     const explicitAuthHeader = Boolean(config.headers?.Authorization);
-    if (userInfo && !preferCookieAuth && !explicitAuthHeader) {
+    if (userInfo && !explicitAuthHeader) {
       try {
         const user = JSON.parse(userInfo);
         if (user && user.token) {
