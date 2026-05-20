@@ -35,14 +35,6 @@ const createBooking = async (req, res, next) => {
     try {
       attempts++;
       
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        if (transactionActive && session) {
-          await session.abortTransaction();
-        }
-        if (session) session.endSession();
-        return res.status(400).json({ errors: errors.array() });
-      }
 
       const {
         scheduleId,

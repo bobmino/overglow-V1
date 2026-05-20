@@ -11,10 +11,6 @@ router.post('/create-payment-intent', protect, createPaymentIntent);
 router.post(
   '/',
   protect,
-  [
-    check('scheduleId', 'Schedule ID is required').not().isEmpty(),
-    check('numberOfTickets', 'Number of tickets is required').not().isEmpty(),
-  ],
   createBooking
 );
 
