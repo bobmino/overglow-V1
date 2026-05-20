@@ -26,57 +26,60 @@ const createPaymentIntent = async (req, res) => {
   res.json({ clientSecret: 'fake_client_secret_' + Date.now() });
 };
 
-// @desc    Create a booking
-// @route   POST /api/bookings
-// @access  Private
 const createBooking = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const {
-    scheduleId,
-    numberOfTickets,
-    paymentIntentId,
-    paymentId,
-    paymentMethod,
-    skipTheLineEnabled,
-    skipTheLinePrice,
-    deliveryAddress,
-    virtualScheduleData,
-  } = req.body;
-
-  let targetScheduleId = scheduleId;
-
-  // Dynamically resolve virtual schedules
-  if (String(scheduleId).startsWith('virtual_') && virtualScheduleData) {
-    let existingSchedule = await Schedule.findOne({
-      product: virtualScheduleData.productId,
-      date: virtualScheduleData.date,
-      time: virtualScheduleData.time,
-    });
-
-    if (!existingSchedule) {
-      existingSchedule = await Schedule.create({
-        product: virtualScheduleData.productId,
-        date: virtualScheduleData.date,
-        time: virtualScheduleData.time,
-        endTime: virtualScheduleData.endTime,
-        capacity: virtualScheduleData.capacity || 100,
-        price: virtualScheduleData.price || 0,
-        currency: virtualScheduleData.currency || 'EUR',
-      });
-    }
-    targetScheduleId = existingSchedule._id;
-  } else if (String(scheduleId).startsWith('virtual_')) {
-    return res.status(400).json({ message: 'Données de créneau manquantes' });
-  }
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      await session.abortTransaction();
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      scheduleId,
+      numberOfTickets,
+      paymentIntentId,
+      paymentId,
+      paymentMethod,
+      skipTheLineEnabled,
+      skipTheLinePrice,
+      deliveryAddress,
+      virtualScheduleData,
+    } = req.body;
+
+    let targetScheduleId = scheduleId;
+    const isVirtual = String(scheduleId).startsWith('virtual_');
+
+    // Dynamically resolve virtual schedules inside the transaction/try block
+    if (isVirtual) {
+      if (!virtualScheduleData) {
+        await session.abortTransaction();
+        return res.status(400).json({ message: 'Données de créneau manquantes pour la réservation ouverte' });
+      }
+
+      let existingSchedule = await Schedule.findOne({
+        product: virtualScheduleData.productId,
+        date: virtualScheduleData.date,
+        time: virtualScheduleData.time,
+      }).session(session);
+
+      if (!existingSchedule) {
+        existingSchedule = await Schedule.create([{
+          product: virtualScheduleData.productId,
+          date: virtualScheduleData.date,
+          time: virtualScheduleData.time,
+          endTime: virtualScheduleData.endTime,
+          capacity: virtualScheduleData.capacity || 100,
+          price: virtualScheduleData.price || 0,
+          currency: virtualScheduleData.currency || 'EUR',
+        }], { session });
+        existingSchedule = existingSchedule[0];
+      }
+      targetScheduleId = existingSchedule._id;
+    }
+
     const actualPaymentIntentId = paymentIntentId || paymentId;
 
     // Validate inputs
@@ -86,24 +89,26 @@ const createBooking = async (req, res, next) => {
       return res.status(400).json({ message: 'Nombre de tickets invalide' });
     }
 
-    // Check availability atomically
-    const availabilityCheck = await checkAvailability(targetScheduleId, tickets);
-    if (!availabilityCheck.available) {
-      await session.abortTransaction();
-      return res.status(400).json({ 
-        message: availabilityCheck.reason || 'Créneau non disponible',
-        availability: availabilityCheck.availability,
-      });
-    }
+    // Only strictly check availability and reserve capacity for real schedules
+    // Virtual schedules are generated on-demand (open availability), so they always have capacity
+    if (!isVirtual) {
+      const availabilityCheck = await checkAvailability(targetScheduleId, tickets);
+      if (!availabilityCheck.available) {
+        await session.abortTransaction();
+        return res.status(400).json({ 
+          message: availabilityCheck.reason || 'Créneau non disponible',
+          availability: availabilityCheck.availability,
+        });
+      }
 
-    // Reserve capacity atomically
-    const reservation = await reserveCapacity(targetScheduleId, tickets);
-    if (!reservation.success) {
-      await session.abortTransaction();
-      return res.status(400).json({ 
-        message: reservation.reason || 'Erreur lors de la réservation',
-        availability: reservation.availability,
-      });
+      const reservation = await reserveCapacity(targetScheduleId, tickets);
+      if (!reservation.success) {
+        await session.abortTransaction();
+        return res.status(400).json({ 
+          message: reservation.reason || 'Erreur lors de la réservation',
+          availability: reservation.availability,
+        });
+      }
     }
 
     // Get schedule with product within transaction
