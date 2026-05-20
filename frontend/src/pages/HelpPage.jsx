@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HelpCircle, Mail, MessageSquare, ShieldCheck, HandCoins, Users } from 'lucide-react';
 import FAQSection from '../components/FAQSection';
 import ChatWidget from '../components/ChatWidget';
+import { useAuth } from '../context/AuthContext';
 
 const HelpPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [showChat, setShowChat] = useState(false);
 
   return (
@@ -80,7 +83,13 @@ const HelpPage = () => {
                 <h3 className="font-bold text-gray-900 mb-2">Chat en direct</h3>
                 <p className="text-gray-600 mb-4">Discutez avec notre équipe de support en temps réel.</p>
                 <button 
-                  onClick={() => setShowChat(true)}
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setShowChat(true);
+                    } else {
+                      navigate('/login', { state: { from: { pathname: '/help' } } });
+                    }
+                  }}
                   className="text-primary-600 font-semibold hover:underline"
                 >
                   Démarrer le chat →

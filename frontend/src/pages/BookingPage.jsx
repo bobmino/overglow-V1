@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { trackBookingPageView } from '../utils/analytics';
 
@@ -9,17 +10,30 @@ const BookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const { product, date, timeSlot, tickets, skipTheLine } = location.state || {};
   
   const [loading, setLoading] = useState(true);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [travelerDetails, setTravelerDetails] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: ''
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: user?.phone || ''
   });
+
+  // Keep traveler details synchronized if user loads after mount
+  useEffect(() => {
+    if (user) {
+      setTravelerDetails(prev => ({
+        firstName: prev.firstName || user.name?.split(' ')[0] || '',
+        lastName: prev.lastName || user.name?.split(' ').slice(1).join(' ') || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || ''
+      }));
+    }
+  }, [user]);
 
   // Calculate total price with skip-the-line
   const totalPrice = useMemo(() => {
@@ -64,8 +78,11 @@ const BookingPage = () => {
             bookings: []
           };
           setAvailableSlots([virtualSchedule]);
+          setSelectedSlot(virtualSchedule);
         } else {
           setAvailableSlots(relevantSchedules);
+          const matchingSlot = relevantSchedules.find(s => s.time === timeSlot.startTime) || relevantSchedules[0];
+          setSelectedSlot(matchingSlot);
         }
         setLoading(false);
       } catch (error) {
@@ -95,32 +112,10 @@ const BookingPage = () => {
   const handleContinue = async () => {
     if (!selectedSlot) return;
     
-    // If it's a virtual schedule, we need to create it first
-    let scheduleToUse = selectedSlot;
-    
-    if (selectedSlot._id && selectedSlot._id.startsWith('virtual_')) {
-      try {
-        // Create schedule on backend
-        const { data: newSchedule } = await api.post(`/api/products/${product._id}/schedules`, {
-          date: date,
-          time: timeSlot.startTime,
-          endTime: timeSlot.endTime,
-          capacity: 100,
-          price: product.price || 0,
-          currency: 'EUR'
-        });
-        scheduleToUse = newSchedule;
-      } catch (error) {
-        console.error('Failed to create schedule:', error);
-        alert('Erreur lors de la création du créneau. Veuillez réessayer.');
-        return;
-      }
-    }
-    
     navigate('/checkout', {
       state: {
         product,
-        schedule: scheduleToUse,
+        schedule: selectedSlot,
         numberOfTickets: tickets,
         travelerDetails,
         date,

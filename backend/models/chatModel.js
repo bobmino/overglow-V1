@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 
 const messageSchema = mongoose.Schema(
   {
+    chat: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Chat',
+      required: true,
+    },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -78,15 +83,6 @@ const chatSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-
-// Add chat reference to message schema
-messageSchema.add({
-  chat: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chat',
-    required: true,
-  },
-});
 
 // Indexes
 chatSchema.index({ participants: 1 });

@@ -30,27 +30,53 @@ const createPaymentIntent = async (req, res) => {
 // @route   POST /api/bookings
 // @access  Private
 const createBooking = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    scheduleId,
+    numberOfTickets,
+    paymentIntentId,
+    paymentId,
+    paymentMethod,
+    skipTheLineEnabled,
+    skipTheLinePrice,
+    deliveryAddress,
+    virtualScheduleData,
+  } = req.body;
+
+  let targetScheduleId = scheduleId;
+
+  // Dynamically resolve virtual schedules
+  if (String(scheduleId).startsWith('virtual_') && virtualScheduleData) {
+    let existingSchedule = await Schedule.findOne({
+      product: virtualScheduleData.productId,
+      date: virtualScheduleData.date,
+      time: virtualScheduleData.time,
+    });
+
+    if (!existingSchedule) {
+      existingSchedule = await Schedule.create({
+        product: virtualScheduleData.productId,
+        date: virtualScheduleData.date,
+        time: virtualScheduleData.time,
+        endTime: virtualScheduleData.endTime,
+        capacity: virtualScheduleData.capacity || 100,
+        price: virtualScheduleData.price || 0,
+        currency: virtualScheduleData.currency || 'EUR',
+      });
+    }
+    targetScheduleId = existingSchedule._id;
+  } else if (String(scheduleId).startsWith('virtual_')) {
+    return res.status(400).json({ message: 'Données de créneau manquantes' });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      await session.abortTransaction();
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const {
-      scheduleId,
-      numberOfTickets,
-      paymentIntentId,
-      paymentId,
-      paymentMethod,
-      skipTheLineEnabled,
-      skipTheLinePrice,
-      deliveryAddress,
-    } = req.body;
-
     const actualPaymentIntentId = paymentIntentId || paymentId;
 
     // Validate inputs
@@ -61,7 +87,7 @@ const createBooking = async (req, res, next) => {
     }
 
     // Check availability atomically
-    const availabilityCheck = await checkAvailability(scheduleId, tickets);
+    const availabilityCheck = await checkAvailability(targetScheduleId, tickets);
     if (!availabilityCheck.available) {
       await session.abortTransaction();
       return res.status(400).json({ 
@@ -71,7 +97,7 @@ const createBooking = async (req, res, next) => {
     }
 
     // Reserve capacity atomically
-    const reservation = await reserveCapacity(scheduleId, tickets);
+    const reservation = await reserveCapacity(targetScheduleId, tickets);
     if (!reservation.success) {
       await session.abortTransaction();
       return res.status(400).json({ 
@@ -81,7 +107,7 @@ const createBooking = async (req, res, next) => {
     }
 
     // Get schedule with product within transaction
-    const schedule = await Schedule.findById(scheduleId)
+    const schedule = await Schedule.findById(targetScheduleId)
       .populate('product')
       .session(session);
     
@@ -107,7 +133,7 @@ const createBooking = async (req, res, next) => {
     // Create booking within transaction
     const booking = new Booking({
       user: req.user._id,
-      schedule: scheduleId,
+      schedule: targetScheduleId,
       operator: schedule.product.operator,
       numberOfTickets: tickets,
       totalAmount,
@@ -141,7 +167,7 @@ const createBooking = async (req, res, next) => {
         paymentIntentId: actualPaymentIntentId,
         metadata: {
           bookingId: createdBooking._id.toString(),
-          scheduleId: scheduleId.toString(),
+          scheduleId: targetScheduleId.toString(),
           userId: req.user._id.toString(),
         },
       });

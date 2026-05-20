@@ -19,6 +19,8 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       fetchChat();
     } else if (inquiryId) {
       fetchOrCreateChat();
+    } else {
+      fetchOrCreateSupportChat();
     }
   }, [chatId, inquiryId]);
 
@@ -36,6 +38,20 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
 
     return () => clearInterval(interval);
   }, [chat?._id]);
+
+  const fetchOrCreateSupportChat = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/api/chat/support');
+      setChat(data.chat);
+      setMessages(data.messages || []);
+    } catch (error) {
+      console.error('Failed to fetch support chat:', error);
+      setError('Erreur lors du chargement du chat de support');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchOrCreateChat = async () => {
     try {

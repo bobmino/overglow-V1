@@ -82,7 +82,7 @@ const CheckoutPage = () => {
         navigate('/booking-success', { state: { booking: data } });
       } else {
         // Create booking first (include skip-the-line in total)
-        const { data } = await api.post('/api/bookings', {
+        const payload = {
           scheduleId: schedule._id,
           numberOfTickets: numberOfTickets,
           paymentMethod: paymentDetails.type,
@@ -90,7 +90,21 @@ const CheckoutPage = () => {
           skipTheLineEnabled: product?.skipTheLine?.enabled || false,
           skipTheLinePrice: priceBreakdown?.skipTheLinePrice || 0,
           ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
-        });
+        };
+
+        if (schedule._id && String(schedule._id).startsWith('virtual_')) {
+          payload.virtualScheduleData = {
+            productId: product._id,
+            date: schedule.date,
+            time: schedule.time,
+            endTime: schedule.endTime,
+            price: product.price || 0,
+            capacity: 100,
+            currency: 'EUR'
+          };
+        }
+
+        const { data } = await api.post('/api/bookings', payload);
         navigate('/booking-success', { state: { booking: data } });
       }
     } catch (err) {

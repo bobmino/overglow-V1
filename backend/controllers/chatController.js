@@ -54,7 +54,12 @@ const getOrCreateInquiryChat = async (req, res) => {
     }
 
     // Get messages
-    const messages = await Message.find({ _id: { $in: chat.messages || [] } })
+    const messages = await Message.find({
+      $or: [
+        { chat: chat._id },
+        { chat: chat._id.toString() }
+      ]
+    })
       .populate('sender', 'name email role')
       .sort({ createdAt: 1 });
 
@@ -108,14 +113,22 @@ const getChatById = async (req, res) => {
     }
 
     // Get messages
-    const messages = await Message.find({ chat: chat._id })
+    const messages = await Message.find({
+      $or: [
+        { chat: chat._id },
+        { chat: chat._id.toString() }
+      ]
+    })
       .populate('sender', 'name email role')
       .sort({ createdAt: 1 });
 
     // Mark messages as read for current user
     await Message.updateMany(
       {
-        chat: chat._id,
+        $or: [
+          { chat: chat._id },
+          { chat: chat._id.toString() }
+        ],
         sender: { $ne: req.user._id },
         isRead: false,
       },
@@ -213,7 +226,10 @@ const markChatAsRead = async (req, res) => {
     // Mark all messages as read
     await Message.updateMany(
       {
-        chat: chat._id,
+        $or: [
+          { chat: chat._id },
+          { chat: chat._id.toString() }
+        ],
         sender: { $ne: req.user._id },
         isRead: false,
       },
@@ -234,8 +250,63 @@ const markChatAsRead = async (req, res) => {
   }
 };
 
+// @desc    Get or create support chat for current user
+// @route   GET /api/chat/support
+// @access  Private
+const getOrCreateSupportChat = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find the admin user
+    const adminUser = await User.findOne({ role: 'Admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Support agent (Admin) not found' });
+    }
+
+    // Find existing support chat between this user and the admin
+    let chat = await Chat.findOne({
+      type: 'support',
+      participants: { $all: [userId, adminUser._id] },
+      isActive: true,
+    }).populate('participants', 'name email role');
+
+    if (!chat) {
+      // Create new support chat
+      chat = await Chat.create({
+        participants: [userId, adminUser._id],
+        type: 'support',
+        unreadCount: new Map([
+          [userId.toString(), 0],
+          [adminUser._id.toString(), 0],
+        ]),
+      });
+
+      await chat.populate('participants', 'name email role');
+    }
+
+    // Get messages
+    const messages = await Message.find({
+      $or: [
+        { chat: chat._id },
+        { chat: chat._id.toString() }
+      ]
+    })
+      .populate('sender', 'name email role')
+      .sort({ createdAt: 1 });
+
+    res.json({
+      chat,
+      messages,
+    });
+  } catch (error) {
+    console.error('Get or create support chat error:', error);
+    res.status(500).json({ message: 'Failed to get or create support chat' });
+  }
+};
+
 export {
   getOrCreateInquiryChat,
+  getOrCreateSupportChat,
   getUserChats,
   getChatById,
   sendMessage,

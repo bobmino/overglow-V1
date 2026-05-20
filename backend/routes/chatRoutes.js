@@ -2,6 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   getOrCreateInquiryChat,
+  getOrCreateSupportChat,
   getUserChats,
   getChatById,
   sendMessage,
@@ -30,6 +31,7 @@ const messageValidation = [
 
 // Routes
 router.get('/', getUserChats);
+router.get('/support', getOrCreateSupportChat);
 router.get('/inquiry/:inquiryId', getOrCreateInquiryChat);
 router.get('/:id', getChatById);
 router.post('/:id/messages', messageValidation, sendMessage);
