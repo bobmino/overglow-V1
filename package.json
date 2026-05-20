@@ -5,12 +5,12 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node -r dotenv/config server.js",
-    "dev": "nodemon -r dotenv/config server.js",
-    "create-admin": "node -r dotenv/config scripts/createAdmin.js",
-    "test-login": "node -r dotenv/config scripts/testLogin.js",
-    "mass-import": "node -r dotenv/config scripts/massImporter.js",
-    "publish-all": "node -r dotenv/config scripts/publishAll.js"
+    "start": "node --max-old-space-size=1024 -r dotenv/config server.js",
+    "dev": "nodemon --exec \"node --max-old-space-size=1024\" -r dotenv/config server.js",
+    "create-admin": "node --max-old-space-size=1024 -r dotenv/config scripts/createAdmin.js",
+    "test-login": "node --max-old-space-size=1024 -r dotenv/config scripts/testLogin.js",
+    "mass-import": "node --max-old-space-size=1024 -r dotenv/config scripts/massImporter.js",
+    "publish-all": "node --max-old-space-size=1024 -r dotenv/config scripts/publishAll.js"
   },
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",

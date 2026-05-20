@@ -1,0 +1,19 @@
+{
+  "watch": [
+    "server.js",
+    "backend/",
+    "utils/",
+    "config/"
+  ],
+  "ext": "js,mjs,json",
+  "ignore": [
+    "frontend/**",
+    "node_modules/**",
+    "uploads/**",
+    "docs/**",
+    ".git/**",
+    "*.md",
+    "*.json"
+  ],
+  "delay": "1000"
+}

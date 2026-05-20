@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
   ],
   server: {
+    watch: {
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**']
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5001',

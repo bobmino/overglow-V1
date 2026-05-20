@@ -27,249 +27,329 @@ const createPaymentIntent = async (req, res) => {
 };
 
 const createBooking = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      await session.abortTransaction();
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const {
-      scheduleId,
-      numberOfTickets,
-      paymentIntentId,
-      paymentId,
-      paymentMethod,
-      skipTheLineEnabled,
-      skipTheLinePrice,
-      deliveryAddress,
-      virtualScheduleData,
-    } = req.body;
-
-    let targetScheduleId = scheduleId;
-    const isVirtual = String(scheduleId).startsWith('virtual_');
-
-    // Dynamically resolve virtual schedules inside the transaction/try block
-    if (isVirtual) {
-      if (!virtualScheduleData) {
-        await session.abortTransaction();
-        return res.status(400).json({ message: 'Données de créneau manquantes pour la réservation ouverte' });
+  let session = null;
+  let transactionActive = false;
+  let attempts = 0;
+  
+  while (attempts < 2) {
+    try {
+      attempts++;
+      
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        if (transactionActive && session) {
+          await session.abortTransaction();
+        }
+        if (session) session.endSession();
+        return res.status(400).json({ errors: errors.array() });
       }
 
-      let existingSchedule = await Schedule.findOne({
-        product: virtualScheduleData.productId,
-        date: virtualScheduleData.date,
-        time: virtualScheduleData.time,
-      }).session(session);
+      const {
+        scheduleId,
+        numberOfTickets,
+        paymentIntentId,
+        paymentId,
+        paymentMethod,
+        skipTheLineEnabled,
+        skipTheLinePrice,
+        deliveryAddress,
+        virtualScheduleData,
+      } = req.body;
+      
+      const tickets = Number(numberOfTickets) || 0;
+      if (tickets < 1 || isNaN(tickets)) {
+        if (transactionActive && session) {
+          await session.abortTransaction();
+        }
+        if (session) session.endSession();
+        return res.status(400).json({ message: 'Nombre de tickets invalide' });
+      }
 
-      if (!existingSchedule) {
-        existingSchedule = await Schedule.create([{
+      const skipLinePrice = Number(skipTheLinePrice) || 0;
+      const skipLineEnabled = Boolean(skipTheLineEnabled);
+
+      // Initialize session only on first attempt if we want transactions
+      if (attempts === 1) {
+        try {
+          session = await mongoose.startSession();
+          session.startTransaction();
+          transactionActive = true;
+        } catch (err) {
+          logger.warn('Could not start session/transaction, falling back to no-transaction mode', { message: err.message });
+          transactionActive = false;
+          if (session) {
+            session.endSession();
+            session = null;
+          }
+        }
+      }
+
+      let targetScheduleId = scheduleId;
+      const isVirtual = String(scheduleId).startsWith('virtual_');
+
+      // Dynamically resolve virtual schedules
+      if (isVirtual) {
+        if (!virtualScheduleData) {
+          if (transactionActive && session) await session.abortTransaction();
+          if (session) session.endSession();
+          return res.status(400).json({ message: 'Données de créneau manquantes pour la réservation ouverte' });
+        }
+
+        let existingScheduleQuery = Schedule.findOne({
           product: virtualScheduleData.productId,
           date: virtualScheduleData.date,
           time: virtualScheduleData.time,
-          endTime: virtualScheduleData.endTime,
-          capacity: virtualScheduleData.capacity || 100,
-          price: virtualScheduleData.price || 0,
-          currency: virtualScheduleData.currency || 'EUR',
-        }], { session });
-        existingSchedule = existingSchedule[0];
+        });
+
+        if (transactionActive && session) {
+          existingScheduleQuery = existingScheduleQuery.session(session);
+        }
+        let existingSchedule = await existingScheduleQuery;
+
+        if (!existingSchedule) {
+          const createData = {
+            product: virtualScheduleData.productId,
+            date: virtualScheduleData.date,
+            time: virtualScheduleData.time,
+            endTime: virtualScheduleData.endTime,
+            capacity: virtualScheduleData.capacity || 100,
+            price: virtualScheduleData.price || 0,
+            currency: virtualScheduleData.currency || 'EUR',
+          };
+
+          if (transactionActive && session) {
+            const createdArr = await Schedule.create([createData], { session });
+            existingSchedule = createdArr[0];
+          } else {
+            existingSchedule = await Schedule.create(createData);
+          }
+        }
+        targetScheduleId = existingSchedule._id;
       }
-      targetScheduleId = existingSchedule._id;
-    }
 
-    const actualPaymentIntentId = paymentIntentId || paymentId;
+      // Check availability and reserve
+      if (!isVirtual) {
+        const availabilityCheck = await checkAvailability(targetScheduleId, tickets);
+        if (!availabilityCheck.available) {
+          if (transactionActive && session) await session.abortTransaction();
+          if (session) session.endSession();
+          return res.status(400).json({ 
+            message: availabilityCheck.reason || 'Créneau non disponible',
+            availability: availabilityCheck.availability,
+          });
+        }
 
-    // Validate inputs
-    const tickets = Number(numberOfTickets);
-    if (!tickets || tickets < 1) {
-      await session.abortTransaction();
-      return res.status(400).json({ message: 'Nombre de tickets invalide' });
-    }
+        const reservation = await reserveCapacity(targetScheduleId, tickets);
+        if (!reservation.success) {
+          if (transactionActive && session) await session.abortTransaction();
+          if (session) session.endSession();
+          return res.status(400).json({ 
+            message: reservation.reason || 'Erreur lors de la réservation',
+            availability: reservation.availability,
+          });
+        }
+      }
 
-    // Only strictly check availability and reserve capacity for real schedules
-    // Virtual schedules are generated on-demand (open availability), so they always have capacity
-    if (!isVirtual) {
-      const availabilityCheck = await checkAvailability(targetScheduleId, tickets);
-      if (!availabilityCheck.available) {
-        await session.abortTransaction();
-        return res.status(400).json({ 
-          message: availabilityCheck.reason || 'Créneau non disponible',
-          availability: availabilityCheck.availability,
+      // Get schedule with product
+      let scheduleQuery = Schedule.findById(targetScheduleId).populate('product');
+      if (transactionActive && session) {
+        scheduleQuery = scheduleQuery.session(session);
+      }
+      const schedule = await scheduleQuery;
+      
+      if (!schedule) {
+        if (transactionActive && session) await session.abortTransaction();
+        if (session) session.endSession();
+        return res.status(404).json({ message: 'Schedule not found' });
+      }
+
+      if (!schedule.product) {
+        if (transactionActive && session) await session.abortTransaction();
+        if (session) session.endSession();
+        return res.status(400).json({ message: 'Produit associé au créneau introuvable' });
+      }
+
+      if (!schedule.product.operator) {
+        if (transactionActive && session) await session.abortTransaction();
+        if (session) session.endSession();
+        return res.status(400).json({ message: 'Opérateur associé au produit introuvable' });
+      }
+
+      // Calculate pricing
+      const ticketPrice = Number(schedule.price) || 0;
+      const baseTotal = ticketPrice * tickets;
+      const skipTheLineAmount = (skipLineEnabled && skipLinePrice) ? skipLinePrice * tickets : 0;
+      const totalAmount = baseTotal + skipTheLineAmount;
+
+      if (isNaN(totalAmount) || totalAmount < 0) {
+        if (transactionActive && session) await session.abortTransaction();
+        if (session) session.endSession();
+        return res.status(400).json({ message: 'Le montant total calculé est invalide' });
+      }
+
+      const serviceDate = schedule.date ? new Date(schedule.date) : new Date();
+      const payoutDate = new Date(serviceDate);
+      payoutDate.setDate(payoutDate.getDate() + 7);
+
+      const bookingData = {
+        user: req.user._id,
+        schedule: targetScheduleId,
+        operator: schedule.product.operator,
+        numberOfTickets: tickets,
+        totalAmount,
+        totalPrice: totalAmount,
+        status: 'Pending',
+        paymentIntentId: paymentIntentId || paymentId,
+        paymentStatus: 'pending',
+        paymentMethod: paymentMethod || 'stripe',
+        deliveryAddress: deliveryAddress || '',
+        payoutStatus: 'pending',
+        payoutDate,
+        payoutEligibleDate: payoutDate,
+      };
+
+      let createdBooking;
+      if (transactionActive && session) {
+        const savedArr = await Booking.create([bookingData], { session });
+        createdBooking = savedArr[0];
+      } else {
+        createdBooking = await Booking.create(bookingData);
+      }
+
+      // Add booking to schedule
+      schedule.bookings.push(createdBooking._id);
+      if (transactionActive && session) {
+        await schedule.save({ session });
+      } else {
+        await schedule.save();
+      }
+
+      // Commit transaction
+      if (transactionActive && session) {
+        await session.commitTransaction();
+        transactionActive = false;
+      }
+      
+      if (session) {
+        session.endSession();
+        session = null;
+      }
+
+      // ----------------------------------------------------
+      // Payment orchestration, notification and response
+      // ----------------------------------------------------
+      let paymentResult;
+      const actualPaymentIntentId = paymentIntentId || paymentId;
+      try {
+        paymentResult = await processPayment({
+          provider: paymentMethod || 'stripe',
+          amount: totalAmount,
+          currency: 'EUR',
+          paymentIntentId: actualPaymentIntentId,
+          metadata: {
+            bookingId: createdBooking._id.toString(),
+            scheduleId: targetScheduleId.toString(),
+            userId: req.user._id.toString(),
+          },
+        });
+
+        createdBooking.paymentIntentId = paymentResult.transactionId || createdBooking.paymentIntentId;
+        const isOfflinePayment = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(paymentMethod);
+        createdBooking.paymentStatus = isOfflinePayment 
+          ? 'pending' 
+          : (paymentResult.status === 'succeeded' ? 'paid' : 'pending');
+        
+        createdBooking.payoutStatus = 'scheduled';
+        await createdBooking.save();
+      } catch (paymentError) {
+        createdBooking.paymentStatus = 'failed';
+        await createdBooking.save();
+
+        logger.error('Silent payment failure during booking creation', {
+          bookingId: createdBooking._id?.toString(),
+          provider: paymentMethod || 'stripe',
+          message: paymentError?.message,
+        });
+        
+        return res.status(202).json({
+          success: true,
+          message: 'Validation de la réservation en cours...',
+          bookingId: createdBooking._id,
         });
       }
 
-      const reservation = await reserveCapacity(targetScheduleId, tickets);
-      if (!reservation.success) {
-        await session.abortTransaction();
-        return res.status(400).json({ 
-          message: reservation.reason || 'Erreur lors de la réservation',
-          availability: reservation.availability,
-        });
-      }
-    }
-
-    // Get schedule with product within transaction
-    const schedule = await Schedule.findById(targetScheduleId)
-      .populate('product')
-      .session(session);
-    
-    if (!schedule) {
-      await session.abortTransaction();
-      return res.status(404).json({ message: 'Schedule not found' });
-    }
-
-    // Calculate pricing
-    const ticketPrice = Number(schedule.price) || 0;
-    const baseTotal = ticketPrice * tickets;
-    
-    // Add skip-the-line price if enabled
-    const skipTheLineAmount = (skipTheLineEnabled && skipTheLinePrice) ? Number(skipTheLinePrice) * tickets : 0;
-    const totalAmount = baseTotal + skipTheLineAmount;
-
-    const serviceDate = schedule.date ? new Date(schedule.date) : new Date();
-    const payoutDate = new Date(serviceDate);
-    payoutDate.setDate(payoutDate.getDate() + 7);
-    const payoutEligibleDate = new Date(serviceDate);
-    payoutEligibleDate.setDate(payoutEligibleDate.getDate() + 7);
-
-    // Create booking within transaction
-    const booking = new Booking({
-      user: req.user._id,
-      schedule: targetScheduleId,
-      operator: schedule.product.operator,
-      numberOfTickets: tickets,
-      totalAmount,
-      totalPrice: totalAmount,
-      status: 'Pending',
-      paymentIntentId: actualPaymentIntentId,
-      paymentStatus: 'pending',
-      paymentMethod: paymentMethod || 'stripe',
-      deliveryAddress: deliveryAddress || '',
-      payoutStatus: 'pending',
-      payoutDate,
-      payoutEligibleDate,
-    });
-
-    const createdBooking = await booking.save({ session });
-
-    // Add booking to schedule within transaction
-    schedule.bookings.push(createdBooking._id);
-    await schedule.save({ session });
-
-    // Commit transaction
-    await session.commitTransaction();
-
-    // Provider-agnostic payment orchestration with simulation fallback.
-    let paymentResult;
-    try {
-      paymentResult = await processPayment({
-        provider: paymentMethod || 'stripe',
-        amount: totalAmount,
-        currency: 'EUR',
-        paymentIntentId: actualPaymentIntentId,
-        metadata: {
-          bookingId: createdBooking._id.toString(),
-          scheduleId: targetScheduleId.toString(),
-          userId: req.user._id.toString(),
-        },
+      const populatedBooking = await Booking.findById(createdBooking._id).populate({
+        path: 'schedule',
+        populate: { path: 'product' },
       });
 
-      createdBooking.paymentIntentId = paymentResult.transactionId || createdBooking.paymentIntentId;
-      
-      // For offline payment methods, payment status remains pending until collected
-      const isOfflinePayment = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(paymentMethod);
-      createdBooking.paymentStatus = isOfflinePayment 
-        ? 'pending' 
-        : (paymentResult.status === 'succeeded' ? 'paid' : 'pending');
-      
-      createdBooking.payoutStatus = 'scheduled';
-      createdBooking.payoutDate = payoutDate;
-      createdBooking.payoutEligibleDate = payoutDate;
-      await createdBooking.save();
-    } catch (paymentError) {
-      createdBooking.paymentStatus = 'failed';
-      await createdBooking.save();
+      const bookingObject = populatedBooking.toObject();
+      bookingObject.totalPrice = typeof bookingObject.totalPrice === 'number'
+        ? bookingObject.totalPrice
+        : bookingObject.totalAmount;
+      bookingObject.totalAmount = typeof bookingObject.totalAmount === 'number'
+        ? bookingObject.totalAmount
+        : bookingObject.totalPrice;
 
-      logger.error('Silent payment failure during booking creation', {
-        bookingId: createdBooking._id?.toString(),
-        provider: paymentMethod || 'stripe',
-        message: paymentError?.message,
-      });
-      captureException(paymentError, {
-        bookingId: createdBooking._id?.toString(),
-        provider: paymentMethod || 'stripe',
-      });
-
-      return res.status(202).json({
-        success: true,
-        message: 'Validation de la réservation en cours...',
-        bookingId: createdBooking._id,
-      });
-    }
-
-    // Populate booking for response (outside transaction for better performance)
-    const populatedBooking = await Booking.findById(createdBooking._id).populate({
-      path: 'schedule',
-      populate: { path: 'product' },
-    });
-
-    // Do not send final confirmation before payment validation webhook.
-    logger.info('Booking created in pending state', {
-      bookingId: createdBooking._id?.toString(),
-      paymentIntentId: createdBooking.paymentIntentId,
-      status: createdBooking.status,
-      paymentStatus: createdBooking.paymentStatus,
-      payoutStatus: createdBooking.payoutStatus,
-    });
-
-    const bookingObject = populatedBooking.toObject();
-    bookingObject.totalPrice = typeof bookingObject.totalPrice === 'number'
-      ? bookingObject.totalPrice
-      : bookingObject.totalAmount;
-    bookingObject.totalAmount = typeof bookingObject.totalAmount === 'number'
-      ? bookingObject.totalAmount
-      : bookingObject.totalPrice;
-    
-    // Notify operator of new booking (async, don't wait)
-    if (createdBooking.operator) {
-      // In-app notification
-      notifyNewBooking(createdBooking, createdBooking.operator).catch(err =>
-        logger.error('Error notifying operator', { message: err?.message })
-      );
-      
-      // Email notification to operator
-      const Operator = (await import('../models/operatorModel.js')).default;
-      const operator = await Operator.findById(createdBooking.operator);
-      if (operator) {
-        sendOperatorBookingNotification(populatedBooking, operator, req.user).catch(err =>
-          logger.error('Error sending operator email notification', { message: err?.message })
+      if (createdBooking.operator) {
+        notifyNewBooking(createdBooking, createdBooking.operator).catch(err =>
+          logger.error('Error notifying operator', { message: err?.message })
+        );
+        
+        const Operator = (await import('../models/operatorModel.js')).default;
+        const operator = await Operator.findById(createdBooking.operator);
+        if (operator) {
+          sendOperatorBookingNotification(populatedBooking, operator, req.user).catch(err =>
+            logger.error('Error sending operator email notification', { message: err?.message })
+          );
+        }
+        
+        updateProductMetrics(schedule.product._id).catch(err =>
+          logger.error('Error updating product metrics', { message: err?.message })
+        );
+        updateOperatorMetrics(createdBooking.operator).catch(err =>
+          logger.error('Error updating operator metrics', { message: err?.message })
         );
       }
+
+      updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err =>
+        logger.error('Error updating user loyalty stats', { message: err?.message })
+      );
+
+      return res.status(201).json(bookingObject);
       
-      // Update metrics (async, don't wait)
-      updateProductMetrics(schedule.product._id).catch(err =>
-        logger.error('Error updating product metrics', { message: err?.message })
-      );
-      updateOperatorMetrics(createdBooking.operator).catch(err =>
-        logger.error('Error updating operator metrics', { message: err?.message })
-      );
+    } catch (error) {
+      logger.error(`Create booking attempt ${attempts} failed`, { message: error?.message, code: error?.code });
+      
+      if (transactionActive && session) {
+        try {
+          await session.abortTransaction();
+        } catch (abortErr) {
+          logger.error('Abort transaction failed', { message: abortErr.message });
+        }
+      }
+      
+      if (session) {
+        session.endSession();
+        session = null;
+      }
+      
+      transactionActive = false;
+      
+      // Check if error is due to MongoDB standalone not supporting transactions
+      const isTxUnsupportedError = error.message?.includes('Transaction numbers are only allowed') ||
+                                   error.message?.includes('does not support transactions') ||
+                                   error.code === 251 ||
+                                   error.codeName === 'IllegalOperation';
+                                   
+      if (isTxUnsupportedError && attempts === 1) {
+        logger.warn('Transactions not supported by database. Retrying booking creation without transaction...', { code: error.code });
+        continue; // Loop again, next attempt will run without session/transaction
+      }
+      
+      next(error);
+      break;
     }
-
-    // Update user loyalty stats (async, don't wait)
-    updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err =>
-      logger.error('Error updating user loyalty stats', { message: err?.message })
-    );
-
-    res.status(201).json(bookingObject);
-  } catch (error) {
-    await session.abortTransaction();
-    logger.error('Create booking error', { message: error?.message, stack: error?.stack });
-    next(error);
-  } finally {
-    session.endSession();
   }
 };
 
