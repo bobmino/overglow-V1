@@ -170,14 +170,19 @@ const createBooking = async (req, res, next) => {
         return res.status(400).json({ message: 'Produit associé au créneau introuvable' });
       }
 
-      if (!schedule.product.operator) {
-        if (transactionActive && session) await session.abortTransaction();
-        if (session) session.endSession();
-        logger.error('createBooking 400 Error: Opérateur introuvable', { productId: schedule.product._id });
-        return res.status(400).json({ message: 'Ce produit n\'a pas d\'opérateur assigné. La réservation est impossible.' });
-      }
-
       let operatorId = schedule.product.operator;
+      if (!operatorId) {
+        const Operator = (await import('../models/operatorModel.js')).default;
+        const defaultOp = await Operator.findOne();
+        if (defaultOp) {
+          operatorId = defaultOp._id;
+        } else {
+          if (transactionActive && session) await session.abortTransaction();
+          if (session) session.endSession();
+          logger.error('createBooking 400 Error: Opérateur introuvable', { productId: schedule.product._id });
+          return res.status(400).json({ message: 'Ce produit n\'a pas d\'opérateur assigné. La réservation est impossible.' });
+        }
+      }
 
       // Calculate pricing
       const ticketPrice = Number(schedule.price) || 0;

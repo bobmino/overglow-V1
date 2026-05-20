@@ -13,7 +13,7 @@ router.post(
   protect,
   [
     check('scheduleId', 'Schedule ID is required').not().isEmpty(),
-    check('numberOfTickets', 'Number of tickets is required').isNumeric(),
+    check('numberOfTickets', 'Number of tickets is required').not().isEmpty(),
   ],
   createBooking
 );
