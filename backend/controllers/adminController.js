@@ -340,6 +340,59 @@ const updateProductStatus = async (req, res) => {
   }
 };
 
+// @desc    Assign, modify, or clone product to an operator
+// @route   POST /api/admin/products/:id/assign
+// @access  Private/Admin
+const assignProductToOperator = async (req, res) => {
+  try {
+    const { operatorId, clone, updates } = req.body;
+    const originalProduct = await Product.findById(req.params.id);
+
+    if (!originalProduct) {
+      return res.status(404).json({ message: 'Produit introuvable' });
+    }
+
+    const targetOperator = await Operator.findById(operatorId);
+    if (!targetOperator) {
+      return res.status(404).json({ message: 'Opérateur introuvable' });
+    }
+
+    if (clone) {
+      // Create a cloned product
+      const newProductData = originalProduct.toObject();
+      delete newProductData._id;
+      delete newProductData.createdAt;
+      delete newProductData.updatedAt;
+      
+      // Apply updates if provided
+      if (updates) {
+        Object.assign(newProductData, updates);
+      }
+      
+      // Assign to new operator
+      newProductData.operator = operatorId;
+      // Cloned products start as Draft by default unless specified
+      newProductData.status = updates?.status || 'Draft';
+      
+      const newProduct = await Product.create(newProductData);
+      return res.status(201).json({ message: 'Produit cloné et assigné avec succès', product: newProduct });
+    } else {
+      // Reassign and modify existing product
+      originalProduct.operator = operatorId;
+      if (updates) {
+        Object.keys(updates).forEach(key => {
+          originalProduct[key] = updates[key];
+        });
+      }
+      await originalProduct.save();
+      return res.status(200).json({ message: 'Produit réassigné et modifié avec succès', product: originalProduct });
+    }
+  } catch (error) {
+    console.error('Assign product error:', error);
+    res.status(500).json({ message: 'Failed to assign product' });
+  }
+};
+
 // @desc    Get all users
 // @route   GET /api/admin/users
 // @access  Private/Admin
@@ -846,6 +899,7 @@ export {
   updateOperatorStatus, 
   getProducts,
   updateProductStatus, 
+  assignProductToOperator,
   getUsers, 
   deleteUser,
   initializeBadgesAndFlags,

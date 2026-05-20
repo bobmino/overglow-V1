@@ -10,6 +10,15 @@ const AdminProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
+  // Assignment Modal State
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignProductTarget, setAssignProductTarget] = useState(null);
+  const [operatorsList, setOperatorsList] = useState([]);
+  const [selectedOperator, setSelectedOperator] = useState('');
+  const [assignActionClone, setAssignActionClone] = useState(false);
+  const [assignCloneStatus, setAssignCloneStatus] = useState('Draft');
+  const [assigning, setAssigning] = useState(false);
+
   const fetchProducts = async () => {
     try {
       const url = filter === 'all' ? '/api/admin/products' : `/api/admin/products?status=${filter}`;
@@ -22,9 +31,38 @@ const AdminProductsPage = () => {
     }
   };
 
+  const fetchOperators = async () => {
+    try {
+      const { data } = await api.get('/api/admin/operators');
+      setOperatorsList(data);
+    } catch (error) {
+      console.error('Failed to fetch operators:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, [filter]);
+
+  const handleAssignSubmit = async () => {
+    if (!selectedOperator || !assignProductTarget) return;
+    setAssigning(true);
+    try {
+      await api.post(`/api/admin/products/${assignProductTarget._id}/assign`, {
+        operatorId: selectedOperator,
+        clone: assignActionClone,
+        updates: assignActionClone ? { status: assignCloneStatus } : null
+      });
+      setShowAssignModal(false);
+      fetchProducts();
+      alert(`Produit ${assignActionClone ? 'cloné et assigné' : 'réassigné'} avec succès!`);
+    } catch (error) {
+      console.error('Failed to assign product:', error);
+      alert('Erreur lors de l\'assignation du produit');
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   const handleStatusChange = async (productId, newStatus) => {
     try {
@@ -136,7 +174,7 @@ const AdminProductsPage = () => {
                 <div className="text-sm text-gray-500 mb-4">
                   <span className="font-semibold">Opérateur:</span> {product.operator?.companyName || 'N/A'}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Link
                     to={`/products/${product._id}`}
                     target="_blank"
@@ -145,6 +183,16 @@ const AdminProductsPage = () => {
                     <Eye size={16} />
                     Voir
                   </Link>
+                  <button
+                    onClick={() => {
+                      setAssignProductTarget(product);
+                      setShowAssignModal(true);
+                      fetchOperators();
+                    }}
+                    className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold hover:bg-blue-200 transition"
+                  >
+                    Assigner
+                  </button>
                   {product.status === 'Pending Review' && (
                     <>
                       <button
@@ -155,7 +203,7 @@ const AdminProductsPage = () => {
                       </button>
                       <button
                         onClick={() => handleStatusChange(product._id, 'Draft')}
-                        className="px-3 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
                       >
                         Rejeter
                       </button>
@@ -173,6 +221,75 @@ const AdminProductsPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {showAssignModal && assignProductTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Assigner un Opérateur</h3>
+              <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
+                <XCircle size={24} />
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700">Produit: {assignProductTarget.title}</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Sélectionner un opérateur</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  value={selectedOperator}
+                  onChange={(e) => setSelectedOperator(e.target.value)}
+                >
+                  <option value="">-- Choisir un opérateur --</option>
+                  {operatorsList.map(op => (
+                    <option key={op._id} value={op._id}>{op.companyName} ({op.user?.email})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="cloneProduct" 
+                  checked={assignActionClone}
+                  onChange={(e) => setAssignActionClone(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 rounded"
+                />
+                <label htmlFor="cloneProduct" className="text-sm text-gray-700 font-medium">Cloner le produit (créer une copie)</label>
+              </div>
+
+              {assignActionClone && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nouveau statut du clone</label>
+                  <select 
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500"
+                    value={assignCloneStatus}
+                    onChange={(e) => setAssignCloneStatus(e.target.value)}
+                  >
+                    <option value="Draft">Brouillon</option>
+                    <option value="Published">Publié</option>
+                    <option value="Pending Review">En attente de révision</option>
+                  </select>
+                </div>
+              )}
+
+              <button
+                onClick={handleAssignSubmit}
+                disabled={!selectedOperator || assigning}
+                className={`w-full py-3 rounded-lg font-bold text-white transition mt-4 ${
+                  !selectedOperator || assigning ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                }`}
+              >
+                {assigning ? 'Traitement en cours...' : (assignActionClone ? 'Cloner et Assigner' : 'Réassigner')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

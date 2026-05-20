@@ -207,6 +207,9 @@ const partnerSignup = async (req, res) => {
       status: 'Pending',
     });
 
+    const { sendOperatorOnboardingPendingEmail } = await import('../utils/emailService.js');
+    sendOperatorOnboardingPendingEmail(user).catch(err => console.error('Failed to send onboarding pending email:', err));
+
     return res.status(201).json({
       success: true,
       message: 'Pre-inscription enregistree. Notre equipe vous contactera rapidement.',
@@ -251,6 +254,9 @@ const upgradeToOperator = async (req, res) => {
         status: 'Pending',
       });
     }
+
+    const { sendOperatorOnboardingPendingEmail } = await import('../utils/emailService.js');
+    sendOperatorOnboardingPendingEmail(user).catch(err => console.error('Failed to send onboarding pending email:', err));
 
     // Issue new token with updated role
     const accessToken = generateAccessToken(user._id, user.role);

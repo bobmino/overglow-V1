@@ -166,14 +166,18 @@ const createBooking = async (req, res, next) => {
       if (!schedule.product) {
         if (transactionActive && session) await session.abortTransaction();
         if (session) session.endSession();
+        logger.error('createBooking 400 Error: Produit introuvable', { scheduleId: targetScheduleId });
         return res.status(400).json({ message: 'Produit associé au créneau introuvable' });
       }
 
       if (!schedule.product.operator) {
         if (transactionActive && session) await session.abortTransaction();
         if (session) session.endSession();
-        return res.status(400).json({ message: 'Opérateur associé au produit introuvable' });
+        logger.error('createBooking 400 Error: Opérateur introuvable', { productId: schedule.product._id });
+        return res.status(400).json({ message: 'Ce produit n\'a pas d\'opérateur assigné. La réservation est impossible.' });
       }
+
+      let operatorId = schedule.product.operator;
 
       // Calculate pricing
       const ticketPrice = Number(schedule.price) || 0;
@@ -184,6 +188,7 @@ const createBooking = async (req, res, next) => {
       if (isNaN(totalAmount) || totalAmount < 0) {
         if (transactionActive && session) await session.abortTransaction();
         if (session) session.endSession();
+        logger.error('createBooking 400 Error: Montant invalide', { totalAmount, ticketPrice, tickets, skipLineEnabled, skipLinePrice, baseTotal, skipTheLineAmount });
         return res.status(400).json({ message: 'Le montant total calculé est invalide' });
       }
 
@@ -194,7 +199,7 @@ const createBooking = async (req, res, next) => {
       const bookingData = {
         user: req.user._id,
         schedule: targetScheduleId,
-        operator: schedule.product.operator,
+        operator: operatorId,
         numberOfTickets: tickets,
         totalAmount,
         totalPrice: totalAmount,
@@ -314,6 +319,11 @@ const createBooking = async (req, res, next) => {
 
       updateUserStatsAfterBooking(req.user._id, totalAmount).catch(err =>
         logger.error('Error updating user loyalty stats', { message: err?.message })
+      );
+
+      // Send booking confirmation email to the client
+      sendBookingConfirmation(populatedBooking, req.user).catch(err => 
+        logger.error('Error sending booking confirmation email to client', { message: err?.message })
       );
 
       return res.status(201).json(bookingObject);

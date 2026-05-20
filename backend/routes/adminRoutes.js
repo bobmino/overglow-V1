@@ -5,6 +5,7 @@ import {
   updateOperatorStatus,
   getProducts,
   updateProductStatus,
+  assignProductToOperator,
   getUsers,
   deleteUser,
   initializeBadgesAndFlags,
@@ -27,6 +28,7 @@ router.get('/operators', protect, authorize('Admin'), getOperators);
 router.put('/operators/:id/status', protect, authorize('Admin'), updateOperatorStatus);
 router.get('/products', protect, authorize('Admin'), getProducts);
 router.put('/products/:id/status', protect, authorize('Admin'), updateProductStatus);
+router.post('/products/:id/assign', protect, authorize('Admin'), assignProductToOperator);
 router.get('/users', protect, authorize('Admin'), getUsers);
 router.delete('/users/:id', protect, authorize('Admin'), deleteUser);
 router.post('/initialize-badges', protect, authorize('Admin'), initializeBadgesAndFlags);

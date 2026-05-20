@@ -3,7 +3,7 @@ import Product from '../models/productModel.js';
 import Schedule from '../models/scheduleModel.js';
 import Withdrawal from '../models/withdrawalModel.js';
 import { notifyRefundProcessed } from './notificationService.js';
-import { sendCancellationEmail } from './emailService.js';
+import { sendCancellationEmail, sendRefundProcessedEmail } from './emailService.js';
 
 /**
  * Calculate refund amount based on cancellation policy and timing
