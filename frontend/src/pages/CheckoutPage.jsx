@@ -108,7 +108,11 @@ const CheckoutPage = () => {
         navigate('/booking-success', { state: { booking: data } });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Booking failed. Please try again.');
+      if (err.response?.data?.errors) {
+        setError(JSON.stringify(err.response.data.errors));
+      } else {
+        setError(err.response?.data?.message || 'Booking failed. Please try again.');
+      }
       setLoading(false);
     }
   };

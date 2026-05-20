@@ -162,7 +162,7 @@ api.interceptors.response.use(
         status: error.response.status,
         statusText: error.response.statusText,
         contentType: contentType,
-        data: error.response.data,
+        data: JSON.stringify(error.response.data),
         url: error.config?.url,
         baseURL: error.config?.baseURL,
         fullURL: error.config?.baseURL ? `${error.config.baseURL}${error.config.url || ''}` : error.config?.url,
