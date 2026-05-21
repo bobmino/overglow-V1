@@ -22,6 +22,11 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  productType: {
+    type: String,
+    enum: ['tour', 'luxury_stay', 'service'],
+    default: 'tour',
+  },
   city: {
     type: String,
     required: true,
@@ -110,6 +115,37 @@ const productSchema = mongoose.Schema({
       default: 'always',
     },
     maxCapacity: { type: Number, default: null }, // Max skip-the-line tickets per time slot
+  },
+
+  // Séjours Luxe
+  luxuryStay: {
+    rooms: { type: Number, default: 1 },
+    capacity: { type: Number, default: 2 },
+    amenities: {
+      pool: { type: Boolean, default: false },
+      wifi: { type: Boolean, default: false },
+      jacuzzi: { type: Boolean, default: false },
+    },
+    standing: {
+      type: Number,
+      enum: [1, 2, 3], // 1 to 3 stars luxury
+      default: 1,
+    },
+  },
+
+  // Services (Transport, Guide, etc.)
+  serviceDetails: {
+    vehicleType: { type: String, default: '' },
+    vehicleCount: { type: Number, default: 1 },
+    guideIncluded: { type: Boolean, default: false },
+    languages: { type: [String], default: [] },
+  },
+
+  // Préférence de paiement
+  paymentPreference: {
+    type: String,
+    enum: ['Paiement par virement bancaire', 'Paiement sur place'],
+    default: 'Paiement sur place',
   },
 
   // Tags/segments d'authenticité

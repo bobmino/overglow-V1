@@ -14,10 +14,23 @@ const OperatorProductFormPage = () => {
     title: '',
     description: '',
     category: 'Tours',
+    productType: 'tour',
     city: '',
     address: '',
     duration: '',
-    price: '',
+    luxuryStay: {
+      rooms: 1,
+      capacity: 2,
+      amenities: { pool: false, wifi: false, jacuzzi: false },
+      standing: 1,
+    },
+    serviceDetails: {
+      vehicleType: '',
+      vehicleCount: 1,
+      guideIncluded: false,
+      languages: [''],
+    },
+    paymentPreference: 'Paiement sur place',
     images: [],
     highlights: [''],
     included: [''],
@@ -45,12 +58,6 @@ const OperatorProductFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isEditMode) {
-      fetchProduct();
-    }
-  }, [id]);
-
   const fetchProduct = async () => {
     try {
       const { data } = await api.get(`/api/products/${id}`);
@@ -60,6 +67,7 @@ const OperatorProductFormPage = () => {
         title: data.title || '',
         description: data.description || '',
         category: data.category || 'Tours',
+        productType: data.productType || 'tour',
         city: data.city || '',
         address: data.address || '',
         duration: data.duration || '',
@@ -72,6 +80,18 @@ const OperatorProductFormPage = () => {
         inquiryType: data.inquiryType || 'none',
         timeSlots: Array.isArray(data.timeSlots) && data.timeSlots.length ? data.timeSlots : [{ startTime: '09:00', endTime: '17:00' }],
         status: data.status || 'Draft',
+        luxuryStay: data.luxuryStay || {
+          rooms: 1,
+          capacity: 2,
+          amenities: { pool: false, wifi: false, jacuzzi: false },
+          standing: 1,
+        },
+        serviceDetails: data.serviceDetails || {
+          vehicleType: '',
+          vehicleCount: 1,
+          guideIncluded: false,
+          languages: [''],
+        },
         cancellationPolicy: data.cancellationPolicy || {
           type: 'moderate',
           freeCancellationHours: 24,
@@ -86,6 +106,12 @@ const OperatorProductFormPage = () => {
       setError(err.response?.data?.message || 'Failed to fetch product details');
     }
   };
+
+  useEffect(() => {
+    if (isEditMode) {
+      fetchProduct();
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -156,30 +182,30 @@ const OperatorProductFormPage = () => {
         return;
       }
 
-      // Clean up empty array items before sending
       const cleanHighlights = formData.highlights.filter(item => item.trim() !== '');
       const cleanIncluded = formData.included.filter(item => item.trim() !== '');
       const cleanRequirements = formData.requirements.filter(item => item.trim() !== '');
+      const cleanLanguages = Array.isArray(formData.serviceDetails?.languages)
+        ? formData.serviceDetails.languages.filter(lang => lang.trim() !== '')
+        : [];
 
       const payload = {
         ...formData,
         price: numericPrice,
+        productType: formData.productType || 'tour',
         highlights: cleanHighlights.length > 0 ? cleanHighlights : [],
         included: cleanIncluded.length > 0 ? cleanIncluded : [],
         requirements: cleanRequirements.length > 0 ? cleanRequirements : [],
-        // Ensure timeSlots is always an array with valid format
-        timeSlots: Array.isArray(formData.timeSlots) && formData.timeSlots.length > 0 
-          ? formData.timeSlots.filter(slot => 
-              slot && 
-              slot.startTime && 
+        timeSlots: Array.isArray(formData.timeSlots) && formData.timeSlots.length > 0
+          ? formData.timeSlots.filter(slot =>
+              slot &&
+              slot.startTime &&
               slot.endTime &&
               typeof slot.startTime === 'string' &&
               typeof slot.endTime === 'string'
             )
           : [],
-        // Ensure inquiryType is set correctly
         inquiryType: formData.requiresInquiry ? formData.inquiryType : 'none',
-        // Include skipTheLine
         skipTheLine: formData.skipTheLine || {
           enabled: false,
           type: 'Fast Track',
@@ -188,16 +214,18 @@ const OperatorProductFormPage = () => {
           availability: 'always',
           maxCapacity: null,
         },
+        serviceDetails: {
+          ...formData.serviceDetails,
+          languages: cleanLanguages.length > 0 ? cleanLanguages : [],
+        },
       };
 
-      let response;
       if (isEditMode) {
-        response = await api.put(`/api/products/${id}`, payload);
+        await api.put(`/api/products/${id}`, payload);
       } else {
-        response = await api.post('/api/products', payload);
+        await api.post('/api/products', payload);
       }
       
-      // Clear error on success
       setError('');
       navigate('/operator/products');
     } catch (err) {
@@ -210,7 +238,6 @@ const OperatorProductFormPage = () => {
                           'Failed to save product';
       setError(errorMessage);
       setLoading(false);
-      // Don't navigate away on error so user can fix and retry without losing data
     }
   };
 
@@ -257,6 +284,22 @@ const OperatorProductFormPage = () => {
                 <option value="Activities">Activities</option>
                 <option value="Tickets">Tickets</option>
                 <option value="Rentals">Rentals</option>
+                <option value="LuxuryStay">Séjours Luxe</option>
+                <option value="Services">Services</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Type de Produit</label>
+              <select
+                name="productType"
+                value={formData.productType}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              >
+                <option value="tour">Tour / Excursion</option>
+                <option value="luxury_stay">Séjour Luxe</option>
+                <option value="service">Service (Transport, Guide, etc.)</option>
               </select>
             </div>
 
@@ -340,6 +383,217 @@ const OperatorProductFormPage = () => {
                 required
               ></textarea>
             </div>
+
+          {/* Luxury Stay Fields */}
+          {formData.category === 'LuxuryStay' && (
+            <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de chambres</label>
+                <input
+                  type="number"
+                  name="luxuryRooms"
+                  value={formData.luxuryStay.rooms}
+                  min="1"
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    luxuryStay: { ...prev.luxuryStay, rooms: Number(e.target.value) },
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Capacité d'accueil (personnes)</label>
+                <input
+                  type="number"
+                  name="luxuryCapacity"
+                  value={formData.luxuryStay.capacity}
+                  min="1"
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    luxuryStay: { ...prev.luxuryStay, capacity: Number(e.target.value) },
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Équipements</label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.luxuryStay.amenities.pool}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, pool: e.target.checked } },
+                      }))}
+                    />
+                    <span className="ml-2">Piscine</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.luxuryStay.amenities.wifi}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, wifi: e.target.checked } },
+                      }))}
+                    />
+                    <span className="ml-2">Wifi</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.luxuryStay.amenities.jacuzzi}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, jacuzzi: e.target.checked } },
+                      }))}
+                    />
+                    <span className="ml-2">Jacuzzi</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Standing (Étoiles Luxe 1-3)</label>
+                <select
+                  name="luxuryStanding"
+                  value={formData.luxuryStay.standing}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    luxuryStay: { ...prev.luxuryStay, standing: Number(e.target.value) },
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Service Details Fields */}
+          {(formData.category === 'Services' || formData.productType === 'service') && (
+            <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="col-span-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Détails du Service</h3>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Type de véhicule</label>
+                <select
+                  name="serviceVehicleType"
+                  value={formData.serviceDetails.vehicleType}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    serviceDetails: { ...prev.serviceDetails, vehicleType: e.target.value },
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">-- Sélectionner --</option>
+                  <option value="sedan">Berline</option>
+                  <option value="suv">SUV / 4x4</option>
+                  <option value="minivan">Minivan</option>
+                  <option value="bus">Bus / Autocar</option>
+                  <option value="boat">Bateau</option>
+                  <option value="quad">Quad</option>
+                  <option value="camel">Chameau</option>
+                  <option value="other">Autre</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de véhicules</label>
+                <input
+                  type="number"
+                  name="serviceVehicleCount"
+                  value={formData.serviceDetails.vehicleCount}
+                  min="1"
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    serviceDetails: { ...prev.serviceDetails, vehicleCount: Number(e.target.value) },
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.serviceDetails.guideIncluded}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      serviceDetails: { ...prev.serviceDetails, guideIncluded: e.target.checked },
+                    }))}
+                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <span className="ml-2 text-sm font-semibold text-gray-700">Guide touristique inclus</span>
+                </label>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Langues parlées</label>
+                <div className="space-y-2">
+                  {Array.isArray(formData.serviceDetails.languages) && formData.serviceDetails.languages.map((lang, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={lang}
+                        onChange={(e) => {
+                          const newLangs = [...formData.serviceDetails.languages];
+                          newLangs[index] = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            serviceDetails: { ...prev.serviceDetails, languages: newLangs },
+                          }));
+                        }}
+                        placeholder="ex: Français, Anglais, Arabe..."
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                      {formData.serviceDetails.languages.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newLangs = formData.serviceDetails.languages.filter((_, i) => i !== index);
+                            setFormData(prev => ({
+                              ...prev,
+                              serviceDetails: { ...prev.serviceDetails, languages: newLangs },
+                            }));
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X size={20} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        serviceDetails: { ...prev.serviceDetails, languages: [...prev.serviceDetails.languages, ''] },
+                      }));
+                    }}
+                    className="text-sm text-green-700 font-bold hover:underline"
+                  >
+                    + Ajouter une langue
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Preference */}
+          <div className="col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Préférence de paiement</label>
+            <select
+              name="paymentPreference"
+              value={formData.paymentPreference}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            >
+              <option value="Paiement par virement bancaire">Paiement par virement bancaire</option>
+              <option value="Paiement sur place">Paiement sur place</option>
+            </select>
+          </div>
           </div>
 
           {/* Images */}

@@ -134,30 +134,6 @@ const initCmiPayment = async (req, res) => {
   });
 };
 
-// @desc    Handle Cash on Pickup payment
-// @route   POST /api/payments/cash-pickup
-// @access  Private
-const createCashPickupPayment = async (req, res) => {
-  const { bookingId, amount } = req.body;
-  
-  // Mark booking as pending payment (cash on pickup)
-  const Booking = (await import('../models/bookingModel.js')).default;
-  const booking = await Booking.findById(bookingId);
-  
-  if (!booking) {
-    return res.status(404).json({ message: 'Booking not found' });
-  }
-  
-  // Booking status remains 'Pending' until cash is collected
-  res.json({
-    type: 'cash_pickup',
-    bookingId: bookingId,
-    amount: amount,
-    status: 'pending',
-    message: 'Booking confirmed. Please pay in cash when you arrive.',
-    instructions: 'Please bring the exact amount in cash. Payment will be collected at the meeting point.'
-  });
-};
 
 // @desc    Handle Cash on Delivery payment
 // @route   POST /api/payments/cash-delivery
@@ -215,17 +191,128 @@ const convertToMAD = async (req, res) => {
   });
 };
 
-// @desc    Get Bank Transfer Details
-// @route   GET /api/payments/bank-details
+// @desc    Get Bank Transfer Details with dynamic RIB and payment reference
+// @route   GET /api/payments/bank-details?bookingId=xxx
 // @access  Private
-const getBankDetails = (req, res) => {
-  res.json({
-    bankName: 'Overglow Bank',
+const getBankDetails = async (req, res) => {
+  const { bookingId } = req.query;
+
+  // Generate a unique payment reference
+  const paymentReference = bookingId
+    ? `OG-${bookingId.toString().slice(-8).toUpperCase()}`
+    : `OG-${Date.now().toString(36).toUpperCase()}`;
+
+  // Dynamic RIB based on operator or platform (can be extended per operator)
+  const bankDetails = {
+    bankName: 'Attijariwafa Bank',
     accountName: 'Overglow Trip SARL',
-    iban: 'MA64 0000 1111 2222 3333 4444 55',
-    swift: 'OVGLMAMA',
-    message: 'Please include your booking reference in the transfer description.'
-  });
+    iban: 'MA64 0077 8800 0000 1111 2222 33',
+    swift: 'OVGLMAMC',
+    paymentReference: paymentReference,
+    message: `Veuillez inclure la référence "${paymentReference}" dans le motif du virement.`,
+  };
+
+  // If bookingId provided, update booking with payment reference
+  if (bookingId) {
+    try {
+      const booking = await Booking.findById(bookingId);
+      if (booking) {
+        booking.paymentReference = paymentReference;
+        booking.paymentMethod = 'bank_transfer';
+        booking.status = 'PENDING_PAYMENT';
+        await booking.save();
+      }
+    } catch (err) {
+      console.error('Failed to update booking with payment reference:', err.message);
+    }
+  }
+
+  res.json(bankDetails);
+};
+
+// @desc    Initiate Bank Transfer payment
+// @route   POST /api/payments/bank-transfer
+// @access  Private
+const createBankTransferPayment = async (req, res) => {
+  const { bookingId, amount } = req.body;
+
+  if (!bookingId) {
+    return res.status(400).json({ message: 'Booking ID is required' });
+  }
+
+  try {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Generate unique payment reference
+    const paymentReference = `OG-${bookingId.toString().slice(-8).toUpperCase()}`;
+
+    // Update booking status
+    booking.paymentMethod = 'bank_transfer';
+    booking.paymentStatus = 'pending';
+    booking.status = 'PENDING_PAYMENT';
+    booking.paymentReference = paymentReference;
+    await booking.save();
+
+    // Bank details (can be made dynamic per operator in the future)
+    const bankDetails = {
+      bankName: 'Attijariwafa Bank',
+      accountName: 'Overglow Trip SARL',
+      iban: 'MA64 0077 8800 0000 1111 2222 33',
+      swift: 'OVGLMAMC',
+      paymentReference: paymentReference,
+      amount: amount || booking.totalAmount,
+      currency: 'MAD',
+    };
+
+    res.json({
+      type: 'bank_transfer',
+      bookingId: bookingId,
+      status: 'pending',
+      paymentReference: paymentReference,
+      bankDetails: bankDetails,
+      message: 'Virement bancaire initié. Veuillez effectuer le virement avec la référence fournie.',
+      instructions: `Effectuez un virement de ${bankDetails.amount} MAD vers le compte indiqué en utilisant la référence "${paymentReference}". Votre réservation sera confirmée dès réception du virement.`,
+    });
+  } catch (err) {
+    console.error('Bank transfer payment error:', err);
+    res.status(500).json({ message: 'Failed to initiate bank transfer payment' });
+  }
+};
+
+// @desc    Confirm Cash Pickup payment (mark booking as PENDING_PAYMENT)
+// @route   POST /api/payments/cash-pickup
+// @access  Private
+const createCashPickupPayment = async (req, res) => {
+  const { bookingId, amount } = req.body;
+
+  try {
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Update booking for cash pickup
+    booking.paymentMethod = 'cash_pickup';
+    booking.paymentStatus = 'pending';
+    booking.status = 'PENDING_PAYMENT';
+    await booking.save();
+
+    res.json({
+      type: 'cash_pickup',
+      bookingId: bookingId,
+      amount: amount || booking.totalAmount,
+      status: 'pending',
+      message: 'Réservation confirmée. Le paiement en espèces sera collecté sur place.',
+      instructions: 'Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous.',
+    });
+  } catch (err) {
+    console.error('Cash pickup payment error:', err);
+    res.status(500).json({ message: 'Failed to process cash pickup payment' });
+  }
 };
 
 export {
@@ -233,6 +320,7 @@ export {
   createPaypalOrder,
   initCmiPayment,
   getBankDetails,
+  createBankTransferPayment,
   createCashPickupPayment,
   createCashDeliveryPayment,
   convertToMAD

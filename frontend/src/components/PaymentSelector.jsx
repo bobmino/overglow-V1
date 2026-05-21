@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Building, Wallet, Banknote, Truck } from 'lucide-react';
+import { CreditCard, Building, Wallet, Banknote, Truck, Copy, CheckCircle, AlertCircle, Landmark } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../config/axios';
@@ -50,7 +50,7 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
           onSuccess({ type: 'stripe', id: result.paymentIntent.id });
         }
       }
-    } catch (err) {
+    } catch {
       onError('Payment failed');
     }
     setProcessing(false);
@@ -82,10 +82,10 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
       <button
         type="submit"
         disabled={!stripe || processing}
-        className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400"
+        className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-3 rounded-xl font-bold hover:from-emerald-700 hover:to-emerald-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
         aria-label={processing ? 'Paiement en cours' : `Payer ${amount.toFixed(2)} euros`}
       >
-        {processing ? 'Processing...' : `Pay €${amount.toFixed(2)}`}
+        {processing ? 'Traitement en cours...' : `Payer €${amount.toFixed(2)}`}
       </button>
     </form>
   );
@@ -95,8 +95,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
   const [method, setMethod] = useState('stripe');
   const [error, setError] = useState('');
   const [madAmount, setMadAmount] = useState(null);
-  const [showMad, setShowMad] = useState(true);
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [bankDetails, setBankDetails] = useState(null);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [loadingBankDetails, setLoadingBankDetails] = useState(false);
 
   useEffect(() => {
     // Fetch MAD conversion
@@ -111,12 +114,51 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
     fetchMadConversion();
   }, [amount]);
 
+  // Fetch bank details when bank transfer is selected
+  useEffect(() => {
+    if (method === 'bank' && bookingId && !bankDetails) {
+      fetchBankDetails();
+    }
+  }, [method, bookingId]);
+
+  const fetchBankDetails = async () => {
+    setLoadingBankDetails(true);
+    try {
+      const { data } = await api.get(`/api/payments/bank-details?bookingId=${bookingId}`);
+      setBankDetails(data);
+      setPaymentReference(data.paymentReference || '');
+    } catch (err) {
+      console.error('Failed to fetch bank details:', err);
+      setError('Impossible de charger les détails bancaires');
+    } finally {
+      setLoadingBankDetails(false);
+    }
+  };
+
   const handleSuccess = (paymentDetails) => {
     onPaymentComplete(paymentDetails);
   };
 
   const handleError = (msg) => {
     setError(msg);
+  };
+
+  const handleBankTransfer = async () => {
+    if (!bookingId) {
+      handleSuccess({ type: 'bank_transfer', id: 'pending' });
+      return;
+    }
+    try {
+      const { data } = await api.post('/api/payments/bank-transfer', {
+        bookingId,
+        amount: madAmount || amount,
+      });
+      setBankDetails(data.bankDetails);
+      setPaymentReference(data.paymentReference);
+      handleSuccess({ type: 'bank_transfer', ...data });
+    } catch (err) {
+      handleError(err.response?.data?.message || 'Échec de l\'initiation du virement');
+    }
   };
 
   const handleCashPickup = async () => {
@@ -128,7 +170,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         });
         handleSuccess({ type: 'cash_pickup', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Failed to process cash pickup payment');
+        handleError(err.response?.data?.message || 'Échec du traitement du paiement sur place');
       }
     } else {
       handleSuccess({ type: 'cash_pickup', id: 'cash_pickup_' + Date.now() });
@@ -137,7 +179,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
 
   const handleCashDelivery = async () => {
     if (!deliveryAddress.trim()) {
-      handleError('Please provide a delivery address');
+      handleError('Veuillez fournir une adresse de livraison');
       return;
     }
     if (bookingId) {
@@ -149,13 +191,13 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         });
         handleSuccess({ type: 'cash_delivery', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Failed to process cash delivery payment');
+        handleError(err.response?.data?.message || 'Échec du traitement du paiement à la livraison');
       }
     } else {
-      handleSuccess({ 
-        type: 'cash_delivery', 
+      handleSuccess({
+        type: 'cash_delivery',
         id: 'cash_delivery_' + Date.now(),
-        deliveryAddress 
+        deliveryAddress
       });
     }
   };
@@ -168,210 +210,247 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           bookingId,
           currency: 'MAD'
         });
-        // In production, redirect to CMI gateway
-        // For now, simulate success
         handleSuccess({ type: 'cmi', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Failed to initialize CMI payment');
+        handleError(err.response?.data?.message || 'Échec de l\'initialisation du paiement CMI');
       }
     } else {
       handleSuccess({ type: 'cmi', id: 'cmi_' + Date.now() });
     }
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header with amount display */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-gray-900">Méthode de Paiement</h3>
+        <h3 className="text-2xl font-bold text-gray-900">Méthode de Paiement</h3>
         {madAmount && (
-          <div className="text-right">
-            <p className="text-sm text-gray-600">Prix en MAD</p>
-            <p className="text-lg font-bold text-primary-600">{madAmount.toFixed(2)} MAD</p>
-            <p className="text-xs text-gray-500">≈ {amount.toFixed(2)} €</p>
+          <div className="text-right backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Montant total</p>
+            <p className="text-2xl font-bold text-emerald-700">{madAmount.toFixed(2)} MAD</p>
+            <p className="text-xs text-gray-400">≈ {amount.toFixed(2)} €</p>
           </div>
         )}
       </div>
-      
+
+      {/* Payment method selection grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Choisir une méthode de paiement">
         <button
           onClick={() => setMethod('stripe')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'stripe' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'stripe'
+              ? 'border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-100'
+              : 'border-gray-200 hover:border-emerald-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'stripe'}
           aria-label="Paiement par carte bancaire avec Stripe"
         >
-          <CreditCard size={32} className="mb-2 text-blue-600" aria-hidden="true" />
-          <span className="font-semibold">Card (Stripe)</span>
+          <CreditCard size={36} className={`mb-3 ${method === 'stripe' ? 'text-emerald-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">Carte Bancaire</span>
+          <span className="text-xs text-gray-500 mt-1">Visa, Mastercard</span>
         </button>
 
         <button
           onClick={() => setMethod('paypal')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'paypal' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'paypal'
+              ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
+              : 'border-gray-200 hover:border-blue-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'paypal'}
           aria-label="Paiement avec PayPal"
         >
-          <Wallet size={32} className="mb-2 text-blue-800" aria-hidden="true" />
-          <span className="font-semibold">PayPal</span>
+          <Wallet size={36} className={`mb-3 ${method === 'paypal' ? 'text-blue-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">PayPal</span>
+          <span className="text-xs text-gray-500 mt-1">Paiement sécurisé</span>
         </button>
 
         <button
           onClick={() => setMethod('cmi')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'cmi' ? 'border-orange-600 bg-orange-50' : 'border-gray-200 hover:border-orange-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'cmi'
+              ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-100'
+              : 'border-gray-200 hover:border-orange-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'cmi'}
           aria-label="Paiement avec CMI (cartes bancaires marocaines)"
         >
-          <CreditCard size={32} className="mb-2 text-orange-600" aria-hidden="true" />
-          <span className="font-semibold text-sm">CMI</span>
-          <span className="text-xs text-gray-600 mt-1">Cartes Marocaines</span>
+          <CreditCard size={36} className={`mb-3 ${method === 'cmi' ? 'text-orange-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">CMI</span>
+          <span className="text-xs text-gray-500 mt-1">Cartes Marocaines</span>
         </button>
 
         <button
           onClick={() => setMethod('cash_pickup')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'cash_pickup' ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:border-green-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'cash_pickup'
+              ? 'border-green-500 bg-green-50 shadow-lg shadow-green-100'
+              : 'border-gray-200 hover:border-green-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'cash_pickup'}
           aria-label="Paiement en espèces sur place"
         >
-          <Banknote size={32} className="mb-2 text-green-600" aria-hidden="true" />
-          <span className="font-semibold text-sm">Espèces</span>
-          <span className="text-xs text-gray-600 mt-1">Sur place</span>
+          <Banknote size={36} className={`mb-3 ${method === 'cash_pickup' ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">Espèces</span>
+          <span className="text-xs text-gray-500 mt-1">Paiement sur place</span>
         </button>
 
         <button
           onClick={() => setMethod('cash_delivery')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'cash_delivery' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'cash_delivery'
+              ? 'border-purple-500 bg-purple-50 shadow-lg shadow-purple-100'
+              : 'border-gray-200 hover:border-purple-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'cash_delivery'}
           aria-label="Paiement à la livraison"
         >
-          <Truck size={32} className="mb-2 text-purple-600" aria-hidden="true" />
-          <span className="font-semibold text-sm">À la livraison</span>
-          <span className="text-xs text-gray-600 mt-1">Paiement à la livraison</span>
+          <Truck size={36} className={`mb-3 ${method === 'cash_delivery' ? 'text-purple-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">À la livraison</span>
+          <span className="text-xs text-gray-500 mt-1">Paiement comptant</span>
         </button>
 
         <button
           onClick={() => setMethod('bank')}
-          className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center transition ${
-            method === 'bank' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
+            method === 'bank'
+              ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100'
+              : 'border-gray-200 hover:border-indigo-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'bank'}
           aria-label="Paiement par virement bancaire"
         >
-          <Building size={32} className="mb-2 text-gray-600" aria-hidden="true" />
-          <span className="font-semibold text-sm">Virement</span>
-          <span className="text-xs text-gray-600 mt-1">Bancaire</span>
+          <Landmark size={36} className={`mb-3 ${method === 'bank' ? 'text-indigo-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <span className="font-bold text-gray-800">Virement</span>
+          <span className="text-xs text-gray-500 mt-1">Bancaire</span>
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm" role="alert" aria-live="assertive">
-          {error}
+        <div className="backdrop-blur-md bg-red-50/80 text-red-700 p-4 rounded-xl text-sm border border-red-200 flex items-center gap-3" role="alert" aria-live="assertive">
+          <AlertCircle size={20} className="flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="mt-6">
+      {/* Payment method detail panels */}
+      <div className="mt-8">
         {method === 'stripe' && (
-          <Elements stripe={stripePromise}>
-            <StripeForm amount={amount} onSuccess={handleSuccess} onError={handleError} />
-          </Elements>
+          <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200">
+            <Elements stripe={stripePromise}>
+              <StripeForm amount={amount} onSuccess={handleSuccess} onError={handleError} />
+            </Elements>
+          </div>
         )}
 
         {method === 'paypal' && (
-          <div className="text-center p-6 bg-gray-50 rounded-xl" role="form" aria-label="Paiement PayPal (simulation)">
-            <p className="mb-4 text-gray-600">You will be redirected to PayPal to complete your payment.</p>
+          <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200 text-center">
+            <Wallet size={48} className="mx-auto mb-4 text-blue-600" />
+            <p className="mb-6 text-gray-600 text-lg">Vous serez redirigé vers PayPal pour finaliser votre paiement.</p>
             <button
               onClick={() => handleSuccess({ type: 'paypal', id: 'mock_paypal_id' })}
-              className="w-full bg-[#0070ba] text-white py-3 rounded-lg font-bold hover:bg-[#003087]"
+              className="w-full bg-[#0070ba] text-white py-4 rounded-xl font-bold hover:bg-[#003087] transition-all shadow-lg"
             >
-              Pay with PayPal
+              Payer avec PayPal
             </button>
           </div>
         )}
 
         {method === 'cmi' && (
-          <div className="text-center p-6 bg-orange-50 rounded-xl border border-orange-200" role="form" aria-label="Paiement CMI (simulation)">
-            <div className="mb-4">
-              <p className="text-gray-700 font-semibold mb-2">Paiement sécurisé CMI</p>
-              <p className="text-sm text-gray-600 mb-3">
-                Vous serez redirigé vers la passerelle de paiement sécurisée CMI pour finaliser votre paiement.
+          <div className="backdrop-blur-md bg-orange-50/80 rounded-2xl p-8 shadow-xl border border-orange-200">
+            <div className="mb-6 text-center">
+              <CreditCard size={48} className="mx-auto mb-4 text-orange-600" />
+              <p className="text-gray-700 font-bold text-xl mb-2">Paiement Sécurisé CMI</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Vous serez redirigé vers la passerelle de paiement sécurisée CMI pour finaliser votre transaction.
               </p>
               {madAmount && (
-                <p className="text-lg font-bold text-orange-700">
-                  Montant: {madAmount.toFixed(2)} MAD
-                </p>
+                <div className="backdrop-blur-md bg-white/60 rounded-xl p-4 border border-orange-200 inline-block">
+                  <p className="text-sm text-gray-500">Montant à payer</p>
+                  <p className="text-3xl font-bold text-orange-700">{madAmount.toFixed(2)} MAD</p>
+                </div>
               )}
             </div>
             <button
               onClick={handleCMI}
-              className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition"
+              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg shadow-orange-200"
               aria-label={`Payer ${madAmount ? madAmount.toFixed(2) + ' MAD' : amount.toFixed(2) + ' euros'} avec CMI`}
             >
               Payer avec CMI
             </button>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-gray-500 mt-4 text-center">
               Accepte toutes les cartes bancaires marocaines (Visa, Mastercard, CMI)
             </p>
           </div>
         )}
 
         {method === 'cash_pickup' && (
-          <div className="bg-green-50 rounded-xl p-6 border border-green-200" role="form" aria-label="Paiement en espèces sur place">
-            <div className="mb-4">
-              <h4 className="font-bold text-gray-900 mb-2">Paiement en Espèces sur Place</h4>
-              <p className="text-sm text-gray-700 mb-3">
+          <div className="backdrop-blur-md bg-green-50/80 rounded-2xl p-8 shadow-xl border border-green-200">
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Banknote size={40} className="text-green-600" />
+                <h4 className="font-bold text-gray-900 text-xl">Paiement en Espèces sur Place</h4>
+              </div>
+              <p className="text-gray-700 mb-4">
                 Vous paierez en espèces directement à l'arrivée au point de rendez-vous.
               </p>
               {madAmount && (
-                <div className="bg-white p-4 rounded-lg border border-green-200">
-                  <p className="text-sm text-gray-600">Montant à payer:</p>
-                  <p className="text-2xl font-bold text-green-700">{madAmount.toFixed(2)} MAD</p>
+                <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-green-200">
+                  <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à payer</p>
+                  <p className="text-3xl font-bold text-green-700">{madAmount.toFixed(2)} MAD</p>
                 </div>
               )}
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-              <p className="text-xs text-yellow-800">
-                ⚠️ Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous.
-              </p>
+            <div className="backdrop-blur-md bg-amber-50/80 border border-amber-200 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800">
+                  Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous par notre équipe.
+                </p>
+              </div>
             </div>
             <button
               onClick={handleCashPickup}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-200"
               aria-label="Confirmer le paiement en espèces sur place"
             >
-              Confirmer - Paiement sur Place
+              Confirmer — Paiement sur Place
             </button>
           </div>
         )}
 
         {method === 'cash_delivery' && (
-          <div className="bg-purple-50 rounded-xl p-6 border border-purple-200" role="form" aria-label="Paiement à la livraison">
-            <div className="mb-4">
-              <h4 className="font-bold text-gray-900 mb-2">Paiement à la Livraison</h4>
-              <p className="text-sm text-gray-700 mb-3">
+          <div className="backdrop-blur-md bg-purple-50/80 rounded-2xl p-8 shadow-xl border border-purple-200">
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Truck size={40} className="text-purple-600" />
+                <h4 className="font-bold text-gray-900 text-xl">Paiement à la Livraison</h4>
+              </div>
+              <p className="text-gray-700 mb-4">
                 Le paiement sera collecté lors de la livraison de votre confirmation de réservation.
               </p>
               {madAmount && (
-                <div className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
-                  <p className="text-sm text-gray-600">Montant à payer:</p>
-                  <p className="text-2xl font-bold text-purple-700">{madAmount.toFixed(2)} MAD</p>
+                <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-purple-200 mb-6">
+                  <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à payer</p>
+                  <p className="text-3xl font-bold text-purple-700">{madAmount.toFixed(2)} MAD</p>
                 </div>
               )}
             </div>
-            <div className="mb-4">
-              <label htmlFor="delivery-address" className="block text-sm font-semibold text-gray-700 mb-2">
+            <div className="mb-6">
+              <label htmlFor="delivery-address" className="block text-sm font-bold text-gray-700 mb-2">
                 Adresse de livraison *
               </label>
               <textarea
@@ -379,49 +458,134 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                 name="delivery-address"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Entrez votre adresse complète..."
+                placeholder="Entrez votre adresse complète (rue, ville, code postal)..."
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none backdrop-blur-md bg-white/80"
                 required
                 autoComplete="street-address"
                 aria-required="true"
-                aria-describedby="delivery-address-help"
               />
-              <p id="delivery-address-help" className="sr-only">
-                Adresse complète où l'agent de livraison viendra collecter le paiement et remettre votre confirmation
-              </p>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-              <p className="text-xs text-yellow-800">
-                ⚠️ Un agent de livraison viendra à votre adresse pour collecter le paiement et remettre votre confirmation.
-              </p>
+            <div className="backdrop-blur-md bg-amber-50/80 border border-amber-200 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800">
+                  Un agent de livraison viendra à votre adresse pour collecter le paiement et remettre votre confirmation de réservation.
+                </p>
+              </div>
             </div>
             <button
               onClick={handleCashDelivery}
               disabled={!deliveryAddress.trim()}
-              className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg shadow-purple-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
               aria-label="Confirmer le paiement à la livraison"
             >
-              Confirmer - Paiement à la Livraison
+              Confirmer — Paiement à la Livraison
             </button>
           </div>
         )}
 
         {method === 'bank' && (
-          <div className="bg-gray-50 p-6 rounded-xl space-y-3">
-            <h4 className="font-bold text-gray-900">Bank Transfer Details</h4>
-            <p className="text-sm text-gray-600">Please transfer the total amount to:</p>
-            <div className="bg-white p-4 rounded border border-gray-200 text-sm font-mono">
-              <p>Bank: Overglow Bank</p>
-              <p>IBAN: MA64 0000 1111 2222 3333 4444 55</p>
-              <p>BIC: OVGLMAMA</p>
+          <div className="backdrop-blur-md bg-indigo-50/80 rounded-2xl p-8 shadow-xl border border-indigo-200">
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Landmark size={40} className="text-indigo-600" />
+                <h4 className="font-bold text-gray-900 text-xl">Virement Bancaire</h4>
+              </div>
+              <p className="text-gray-700 mb-6">
+                Effectuez un virement vers le compte ci-dessous. Votre réservation sera confirmée dès réception du paiement.
+              </p>
+
+              {loadingBankDetails ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
+                  <p className="text-gray-500 mt-3">Chargement des détails bancaires...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Bank Details Card */}
+                  <div className="backdrop-blur-md bg-white/80 rounded-xl p-6 border border-indigo-200 mb-6">
+                    <h5 className="font-bold text-gray-800 mb-4 text-lg">Coordonnées Bancaires</h5>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-500">Banque</span>
+                        <span className="font-semibold text-gray-800">{bankDetails?.bankName || 'Attijariwafa Bank'}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-500">Titulaire</span>
+                        <span className="font-semibold text-gray-800">{bankDetails?.accountName || 'Overglow Trip SARL'}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-500">IBAN</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || 'MA64 0077 8800 0000 1111 2222 33'}</span>
+                          <button
+                            onClick={() => copyToClipboard(bankDetails?.iban || 'MA64 0077 8800 0000 1111 2222 33')}
+                            className="p-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                            aria-label="Copier l'IBAN"
+                          >
+                            {copied ? <CheckCircle size={16} className="text-green-600" /> : <Copy size={16} className="text-indigo-600" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-500">SWIFT/BIC</span>
+                        <span className="font-mono font-semibold text-gray-800">{bankDetails?.swift || 'OVGLMAMC'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Reference Card */}
+                  <div className="backdrop-blur-md bg-emerald-50/80 rounded-xl p-6 border border-emerald-200 mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <CheckCircle size={24} className="text-emerald-600" />
+                      <h5 className="font-bold text-gray-800 text-lg">Référence de Paiement</h5>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      <strong>IMPORTANT :</strong> Incluez cette référence dans le motif de votre virement pour que nous puissions identifier votre paiement.
+                    </p>
+                    <div className="flex items-center justify-between backdrop-blur-md bg-white/80 rounded-lg p-4 border border-emerald-200">
+                      <span className="font-mono text-xl font-bold text-emerald-700 tracking-wider">
+                        {paymentReference || bankDetails?.paymentReference || 'OG-XXXXXXXX'}
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(paymentReference || bankDetails?.paymentReference || '')}
+                        className="p-2 rounded-lg hover:bg-emerald-100 transition-colors"
+                        aria-label="Copier la référence"
+                      >
+                        {copied ? <CheckCircle size={20} className="text-green-600" /> : <Copy size={20} className="text-emerald-600" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Amount Card */}
+                  {madAmount && (
+                    <div className="backdrop-blur-md bg-white/80 rounded-xl p-5 border border-indigo-200 mb-6">
+                      <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à virer</p>
+                      <p className="text-3xl font-bold text-indigo-700">{madAmount.toFixed(2)} MAD</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            <p className="text-xs text-gray-500">Your booking will be confirmed once we receive the transfer.</p>
+
+            <div className="backdrop-blur-md bg-amber-50/80 border border-amber-200 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Délai de traitement</p>
+                  <p>Les virements bancaires peuvent prendre 1 à 3 jours ouvrables. Votre réservation sera confirmée dès réception du virement.</p>
+                </div>
+              </div>
+            </div>
+
             <button
-              onClick={() => handleSuccess({ type: 'bank_transfer', id: 'pending' })}
-              className="w-full bg-gray-800 text-white py-3 rounded-lg font-bold hover:bg-gray-900 mt-4"
+              onClick={handleBankTransfer}
+              disabled={loadingBankDetails}
+              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-xl font-bold hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
+              aria-label="Confirmer le virement bancaire"
             >
-              I will make the transfer
+              J'effectue le virement
             </button>
           </div>
         )}

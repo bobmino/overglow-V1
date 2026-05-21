@@ -6,6 +6,7 @@ import {
   createPaypalOrder,
   initCmiPayment,
   getBankDetails,
+  createBankTransferPayment,
   createCashPickupPayment,
   createCashDeliveryPayment,
   convertToMAD
@@ -22,6 +23,7 @@ router.post('/create-paypal-order', strictLimiter, protect, createPaypalOrder);
 router.post('/cmi-init', strictLimiter, protect, initCmiPayment);
 router.post('/cash-pickup', strictLimiter, protect, createCashPickupPayment);
 router.post('/cash-delivery', strictLimiter, protect, createCashDeliveryPayment);
+router.post('/bank-transfer', strictLimiter, protect, createBankTransferPayment);
 router.get('/bank-details', protect, getBankDetails);
 
 export default router;
