@@ -58,11 +58,18 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     const schedule = availability.schedule;
 
     // Check if schedule date/time has passed
+    // CORRECTION: Utiliser un buffer de 24h pour permettre les réservations de dernière minute
+    // et éviter les problèmes de fuseau horaire
     const scheduleDateTime = new Date(schedule.date);
     const [hours, minutes] = schedule.time.split(':').map(Number);
     scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
 
-    if (scheduleDateTime < new Date()) {
+    const now = new Date();
+    // Permettre la réservation si le créneau est dans le futur ou aujourd'hui
+    // Ajouter un buffer de 2 heures pour les réservations de dernière minute
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    
+    if (scheduleDateTime < twoHoursAgo) {
       return {
         available: false,
         reason: 'Ce créneau est déjà passé',

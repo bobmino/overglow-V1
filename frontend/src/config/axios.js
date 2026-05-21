@@ -203,7 +203,9 @@ api.interceptors.response.use(
           
           if (refreshToken) {
             try {
-              // Appel API pour refresh (sans utiliser l'intercepteur pour éviter boucle)
+              console.log('🔄 Attempting token refresh...');
+              // CORRECTION: Appel API pour refresh avec le token dans le body ET les cookies
+              // Le backend accepte le refresh token soit dans le body, soit dans les cookies
               const refreshResponse = await axios.post(`${API_URL}/api/auth/refresh`, {
                 refreshToken
               }, {
@@ -213,11 +215,13 @@ api.interceptors.response.use(
                 withCredentials: true,
               });
               
+              console.log('✅ Token refresh successful');
+              
               // Mettre à jour le token dans localStorage
               const updatedUser = {
                 ...user,
                 token: refreshResponse.data.token,
-                refreshToken: refreshResponse.data.refreshToken || user.refreshToken // Garder le refresh token s'il est renouvelé
+                refreshToken: refreshResponse.data.refreshToken || user.refreshToken
               };
               localStorage.setItem('userInfo', JSON.stringify(updatedUser));
               
@@ -230,22 +234,31 @@ api.interceptors.response.use(
               originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
               return api(originalRequest);
             } catch (refreshError) {
-              // Refresh failed, logout user
-              console.error('Token refresh failed:', refreshError);
-              localStorage.removeItem('userInfo');
-              // Appeler logout endpoint si possible
-              try {
-                await axios.post(`${API_URL}/api/auth/logout`, { refreshToken }, {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                  },
-                  withCredentials: true,
-                });
-              } catch {
-                // Ignore logout errors
+              // Refresh failed
+              console.error('❌ Token refresh failed:', refreshError.response?.data || refreshError.message);
+              
+              // Ne PAS rediriger vers login pendant le checkout - laisser l'utilisateur réessayer
+              // Vérifier si on est sur une page critique (checkout, booking)
+              const isCriticalPage = window.location.pathname.includes('/checkout') ||
+                                     window.location.pathname.includes('/booking');
+              
+              if (!isCriticalPage) {
+                localStorage.removeItem('userInfo');
+                // Appeler logout endpoint si possible
+                try {
+                  await axios.post(`${API_URL}/api/auth/logout`, { refreshToken }, {
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${user.token}`
+                    },
+                    withCredentials: true,
+                  });
+                } catch {
+                  // Ignore logout errors
+                }
+                window.location.href = '/login';
               }
-              window.location.href = '/login';
+              
               return Promise.reject(refreshError);
             }
           }
@@ -254,9 +267,14 @@ api.interceptors.response.use(
         }
       }
       
-      // Si pas de refresh token ou refresh échoué, déconnecter
-      localStorage.removeItem('userInfo');
-      window.location.href = '/login';
+      // Si pas de refresh token ou refresh échoué, ne PAS rediriger sur les pages critiques
+      const isCriticalPage = window.location.pathname.includes('/checkout') ||
+                             window.location.pathname.includes('/booking');
+      
+      if (!isCriticalPage) {
+        localStorage.removeItem('userInfo');
+        window.location.href = '/login';
+      }
     }
 
     if (!error?.__toastShown) {

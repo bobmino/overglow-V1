@@ -24,8 +24,10 @@ const normalizeRole = (role) => {
 
 const getCookieOptions = (isRefreshToken = false) => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  // CORRECTION: En production Vercel, secure doit être true pour sameSite: 'none'
+  // Mais on utilise 'lax' pour éviter les problèmes de cookies cross-site
+  secure: process.env.NODE_ENV === 'production' || process.env.VERCEL,
+  sameSite: 'lax', // Utiliser 'lax' au lieu de 'none' pour compatibilité Vercel
   path: '/',
   maxAge: isRefreshToken ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000,
 });
