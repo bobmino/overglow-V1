@@ -81,19 +81,20 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
     const now = new Date();
-    // Permettre la réservation si le créneau est dans le futur ou aujourd'hui
-    // Ajouter un buffer de 2 heures pour les réservations de dernière minute
-    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    // CORRECTION CRITIQUE: Utiliser un buffer de 24h pour permettre les réservations le jour même
+    // Les créneaux du jour doivent rester disponibles même si leur heure théorique est passée
+    // car les utilisateurs peuvent réserver jusqu'à la fin de la journée
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     
     console.log('⏰ Time comparison:', {
       scheduleDateTime: scheduleDateTime.toISOString(),
       now: now.toISOString(),
-      twoHoursAgo: twoHoursAgo.toISOString(),
-      isPast: scheduleDateTime < twoHoursAgo,
+      twentyFourHoursAgo: twentyFourHoursAgo.toISOString(),
+      isPast: scheduleDateTime < twentyFourHoursAgo,
     });
     
-    if (scheduleDateTime < twoHoursAgo) {
-      console.log('❌ Schedule is in the past');
+    if (scheduleDateTime < twentyFourHoursAgo) {
+      console.log('❌ Schedule is in the past (older than 24h)');
       return {
         available: false,
         reason: 'Ce créneau est déjà passé',
