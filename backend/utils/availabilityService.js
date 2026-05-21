@@ -54,22 +54,46 @@ export const getScheduleAvailability = async (scheduleId) => {
  */
 export const checkAvailability = async (scheduleId, numberOfTickets) => {
   try {
+    console.log('🔍 checkAvailability called:', { scheduleId, numberOfTickets });
+    
     const availability = await getScheduleAvailability(scheduleId);
     const schedule = availability.schedule;
+    
+    console.log('📅 Schedule data:', {
+      scheduleId: schedule._id?.toString(),
+      date: schedule.date,
+      time: schedule.time,
+      capacity: schedule.capacity,
+      available: availability.available,
+    });
 
     // Check if schedule date/time has passed
     // CORRECTION: Utiliser un buffer de 24h pour permettre les réservations de dernière minute
     // et éviter les problèmes de fuseau horaire
     const scheduleDateTime = new Date(schedule.date);
-    const [hours, minutes] = schedule.time.split(':').map(Number);
-    scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
+    
+    // CORRECTION: Vérifier que schedule.time existe avant de le parser
+    if (schedule.time) {
+      const [hours, minutes] = schedule.time.split(':').map(Number);
+      scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
+    }
+    
+    console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
     const now = new Date();
     // Permettre la réservation si le créneau est dans le futur ou aujourd'hui
     // Ajouter un buffer de 2 heures pour les réservations de dernière minute
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     
+    console.log('⏰ Time comparison:', {
+      scheduleDateTime: scheduleDateTime.toISOString(),
+      now: now.toISOString(),
+      twoHoursAgo: twoHoursAgo.toISOString(),
+      isPast: scheduleDateTime < twoHoursAgo,
+    });
+    
     if (scheduleDateTime < twoHoursAgo) {
+      console.log('❌ Schedule is in the past');
       return {
         available: false,
         reason: 'Ce créneau est déjà passé',
@@ -78,22 +102,24 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
 
     // Check capacity
     if (availability.available < numberOfTickets) {
+      console.log('❌ Not enough capacity:', { available: availability.available, requested: numberOfTickets });
       return {
         available: false,
         reason: `Il ne reste que ${availability.available} place${availability.available > 1 ? 's' : ''} disponible${availability.available > 1 ? 's' : ''}`,
       };
     }
 
+    console.log('✅ Schedule is available');
     return {
       available: true,
       reason: null,
       availability,
     };
   } catch (error) {
-    console.error('Check availability error:', error);
+    console.error('❌ Check availability error:', { message: error.message, stack: error.stack });
     return {
       available: false,
-      reason: 'Erreur lors de la vérification de disponibilité',
+      reason: 'Erreur lors de la vérification de disponibilité: ' + error.message,
     };
   }
 };
