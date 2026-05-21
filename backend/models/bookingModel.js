@@ -68,6 +68,10 @@ const bookingSchema = mongoose.Schema({
     type: String,
     default: '',
   },
+  paymentReference: {
+    type: String,
+    // Format: OG-XXXXXXXX (8 derniers caractères de l'ID booking)
+  },
   isHandled: {
     type: Boolean,
     default: false,

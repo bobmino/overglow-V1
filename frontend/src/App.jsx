@@ -64,6 +64,7 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
 const ViewHistoryPage = lazy(() => import('./pages/ViewHistoryPage'));
 const PartnerSignupPage = lazy(() => import('./pages/PartnerSignupPage'));
+const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -306,6 +307,13 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogFormPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="admin/pending-payments" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminPendingPaymentsPage />
               </Suspense>
             </PrivateRoute>
           } />

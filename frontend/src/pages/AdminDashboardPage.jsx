@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
-import { Users, Building2, Package, Calendar, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Users, Building2, Package, Calendar, DollarSign, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
@@ -113,6 +113,12 @@ const AdminDashboardPage = () => {
           className="bg-pink-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-pink-700 transition"
         >
           Gérer le Blog
+        </Link>
+        <Link
+          to="/admin/pending-payments"
+          className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-amber-700 transition"
+        >
+          Paiements à valider
         </Link>
       </div>
 

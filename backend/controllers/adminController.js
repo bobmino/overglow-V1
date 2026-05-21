@@ -2,19 +2,20 @@ import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import Product from '../models/productModel.js';
 import Booking from '../models/bookingModel.js';
-import { 
+import Schedule from '../models/scheduleModel.js';
+import {
   notifyProductApproved,
   notifyOperatorApproved,
   notifyOnboardingApproved,
   notifyOnboardingRejected,
 } from '../utils/notificationService.js';
-import { 
-  initializeDefaultBadges, 
-  updateProductMetrics, 
-  updateOperatorMetrics 
+import {
+  initializeDefaultBadges,
+  updateProductMetrics,
+  updateOperatorMetrics
 } from '../utils/badgeService.js';
 import Badge from '../models/badgeModel.js';
-import { sendOperatorApprovedEmail } from '../utils/emailService.js';
+import { sendOperatorApprovedEmail, sendBookingConfirmation, sendCancellationEmail } from '../utils/emailService.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -887,13 +888,185 @@ const getOperatorsByBadge = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json({ badge, operators });
-  } catch (error) {
-    console.error('Get operators by badge error:', error);
-    res.status(500).json({ message: 'Failed to fetch operators for badge' });
-  }
-};
-
-export { 
+    } catch (error) {
+      console.error('Get operators by badge error:', error);
+      res.status(500).json({ message: 'Failed to fetch operators for badge' });
+    }
+  };
+  
+  // @desc    Get all bookings with PENDING_PAYMENT status
+  // @route   GET /api/admin/bookings/pending-payments
+  // @access  Private/Admin
+  const getPendingPaymentBookings = async (req, res) => {
+    try {
+      const bookings = await Booking.find({ status: 'PENDING_PAYMENT' })
+        .populate({
+          path: 'user',
+          select: 'name email phone',
+        })
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: {
+            path: 'product',
+            select: 'title city images category',
+          },
+        })
+        .populate({
+          path: 'operator',
+          select: 'companyName',
+        })
+        .sort({ createdAt: -1 });
+  
+      res.json(bookings);
+    } catch (error) {
+      console.error('Get pending payment bookings error:', error);
+      res.status(500).json({ message: 'Failed to fetch pending payment bookings' });
+    }
+  };
+  
+  // @desc    Confirm offline payment for a booking
+  // @route   PUT /api/admin/bookings/:id/confirm-payment
+  // @access  Private/Admin
+  const confirmPayment = async (req, res) => {
+    try {
+      const booking = await Booking.findById(req.params.id)
+        .populate('user', 'name email phone')
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: {
+            path: 'product',
+            select: 'title city images',
+          },
+        })
+        .populate('operator', 'companyName user');
+  
+      if (!booking) {
+        return res.status(404).json({ message: 'Réservation introuvable' });
+      }
+  
+      if (booking.status !== 'PENDING_PAYMENT') {
+        return res.status(400).json({ message: 'Cette réservation n\'est pas en attente de paiement' });
+      }
+  
+      // Update booking status
+      booking.status = 'Confirmed';
+      booking.paymentStatus = 'paid';
+      booking.isHandled = true;
+      booking.handledAt = new Date();
+      await booking.save();
+  
+      // Send confirmation email to client
+      if (booking.user && booking.user.email) {
+        try {
+          await sendBookingConfirmation(booking, booking.user);
+        } catch (emailError) {
+          console.error('Failed to send confirmation email:', emailError.message);
+          // Don't fail the request if email fails
+        }
+      }
+  
+      // Populate for response
+      const updatedBooking = await Booking.findById(booking._id)
+        .populate('user', 'name email phone')
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: {
+            path: 'product',
+            select: 'title city images',
+          },
+        })
+        .populate('operator', 'companyName');
+  
+      res.json({
+        message: 'Paiement confirmé avec succès',
+        booking: updatedBooking,
+      });
+    } catch (error) {
+      console.error('Confirm payment error:', error);
+      res.status(500).json({ message: 'Failed to confirm payment' });
+    }
+  };
+  
+  // @desc    Reject offline payment for a booking
+  // @route   PUT /api/admin/bookings/:id/reject-payment
+  // @access  Private/Admin
+  const rejectPayment = async (req, res) => {
+    try {
+      const { rejectionReason } = req.body;
+  
+      if (!rejectionReason || rejectionReason.trim() === '') {
+        return res.status(400).json({ message: 'Le motif de rejet est obligatoire' });
+      }
+  
+      const booking = await Booking.findById(req.params.id)
+        .populate('user', 'name email phone')
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: {
+            path: 'product',
+            select: 'title city images',
+          },
+        })
+        .populate('operator', 'companyName');
+  
+      if (!booking) {
+        return res.status(404).json({ message: 'Réservation introuvable' });
+      }
+  
+      if (booking.status !== 'PENDING_PAYMENT') {
+        return res.status(400).json({ message: 'Cette réservation n\'est pas en attente de paiement' });
+      }
+  
+      // Update booking status
+      booking.status = 'Cancelled';
+      booking.paymentStatus = 'failed';
+      booking.cancellationReason = rejectionReason;
+      booking.cancelledAt = new Date();
+      booking.isHandled = true;
+      booking.handledAt = new Date();
+      await booking.save();
+  
+      // Send cancellation email to client
+      if (booking.user && booking.user.email) {
+        try {
+          await sendCancellationEmail(booking, booking.user, {
+            reason: rejectionReason,
+            refundStatus: 'Not Applicable',
+          });
+        } catch (emailError) {
+          console.error('Failed to send cancellation email:', emailError.message);
+          // Don't fail the request if email fails
+        }
+      }
+  
+      // Populate for response
+      const updatedBooking = await Booking.findById(booking._id)
+        .populate('user', 'name email phone')
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: {
+            path: 'product',
+            select: 'title city images',
+          },
+        })
+        .populate('operator', 'companyName');
+  
+      res.json({
+        message: 'Paiement rejeté avec succès',
+        booking: updatedBooking,
+      });
+    } catch (error) {
+      console.error('Reject payment error:', error);
+      res.status(500).json({ message: 'Failed to reject payment' });
+    }
+  };
+  
+  export {
   getAdminStats,
   getOperators, 
   updateOperatorStatus, 
@@ -912,4 +1085,7 @@ export {
   deleteBadge,
   getProductsByBadge,
   getOperatorsByBadge,
+  getPendingPaymentBookings,
+  confirmPayment,
+  rejectPayment,
 };
