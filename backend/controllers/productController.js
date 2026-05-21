@@ -609,8 +609,15 @@ const getProductById = async (req, res) => {
     }
 
     // Fetch schedules and reviews in parallel
+    // CORRECTION: Filtrer les schedules passés pour ne retourner que les futurs
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    
     const [schedules, reviews] = await Promise.all([
-      Schedule.find({ product: product._id }).lean().catch(err => {
+      Schedule.find({
+        product: product._id,
+        date: { $gte: twoHoursAgo.toISOString().split('T')[0] } // Filtrer les dates passées
+      }).lean().catch(err => {
         console.error('Error fetching schedules:', err);
         return [];
       }),

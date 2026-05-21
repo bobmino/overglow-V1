@@ -68,8 +68,6 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     });
 
     // Check if schedule date/time has passed
-    // NOTE: Validation de date désactivée pour permettre les réservations de test/démo
-    // Les créneaux avec des dates passées restent disponibles pour les tests
     const scheduleDateTime = new Date(schedule.date);
     
     // CORRECTION: Vérifier que schedule.time existe avant de le parser
@@ -81,17 +79,23 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
     const now = new Date();
-    // CORRECTION CRITIQUE: Validation de date complètement désactivée
-    // Permettre les réservations sur tous les créneaux, même passés
-    // Utile pour les tests et démos
-    console.log('⏰ Time comparison (validation disabled):', {
+    // Buffer de 2 heures pour les réservations de dernière minute
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    
+    console.log('⏰ Time comparison:', {
       scheduleDateTime: scheduleDateTime.toISOString(),
       now: now.toISOString(),
-      validationDisabled: true,
+      twoHoursAgo: twoHoursAgo.toISOString(),
+      isPast: scheduleDateTime < twoHoursAgo,
     });
     
-    // Validation de date désactivée - on ne bloque plus les créneaux passés
-    // if (scheduleDateTime < twentyFourHoursAgo) { ... }
+    if (scheduleDateTime < twoHoursAgo) {
+      console.log('❌ Schedule is in the past');
+      return {
+        available: false,
+        reason: 'Ce créneau est déjà passé',
+      };
+    }
 
     // Check capacity
     if (availability.available < numberOfTickets) {
