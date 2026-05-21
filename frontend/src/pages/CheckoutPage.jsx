@@ -81,6 +81,25 @@ const CheckoutPage = () => {
         });
         navigate('/booking-success', { state: { booking: data } });
       } else {
+        // CORRECTION: Validation de schedule._id avant envoi
+        if (!schedule._id) {
+          console.error('❌ Checkout Error: schedule._id is missing', { schedule, product, numberOfTickets });
+          setError('Erreur: Créneau horaire invalide. Veuillez retourner à la page précédente et resélectionner un horaire.');
+          setLoading(false);
+          return;
+        }
+
+        // CORRECTION: Log détaillé pour déboguer les erreurs 400
+        console.log('📦 Checkout payload preparation:', {
+          scheduleId: schedule._id,
+          scheduleType: typeof schedule._id,
+          isVirtual: String(schedule._id).startsWith('virtual_'),
+          numberOfTickets,
+          paymentMethod: paymentDetails.type,
+          skipTheLineEnabled: product?.skipTheLine?.enabled || false,
+          skipTheLinePrice: priceBreakdown?.skipTheLinePrice || 0,
+        });
+
         // Create booking first (include skip-the-line in total)
         const payload = {
           scheduleId: schedule._id,
@@ -104,10 +123,13 @@ const CheckoutPage = () => {
           };
         }
 
+        console.log('📤 Sending booking request:', payload);
         const { data } = await api.post('/api/bookings', payload);
+        console.log('✅ Booking created successfully:', data);
         navigate('/booking-success', { state: { booking: data } });
       }
     } catch (err) {
+      console.error('❌ Booking creation failed:', err.response?.data || err.message);
       if (err.response?.data?.errors) {
         setError(JSON.stringify(err.response.data.errors));
       } else {

@@ -185,9 +185,14 @@ const updateFavorite = async (req, res) => {
 
 // @desc    Check if product is favorited
 // @route   GET /api/favorites/check/:productId
-// @access  Private
+// @access  Optional (returns false if not authenticated)
 const checkFavorite = async (req, res) => {
   try {
+    // CORRECTION: Si l'utilisateur n'est pas authentifié, retourner isFavorited: false
+    if (!req.user) {
+      return res.json({ isFavorited: false, favorite: null });
+    }
+    
     const favorite = await Favorite.findOne({
       user: req.user._id,
       product: req.params.productId,

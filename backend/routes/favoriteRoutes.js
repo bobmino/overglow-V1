@@ -10,7 +10,7 @@ import {
   getSharedList,
   getPriceAlerts,
 } from '../controllers/favoriteController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, optionalAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -22,7 +22,8 @@ router.get('/price-alerts', protect, getPriceAlerts);
 router.post('/lists/:listName/share', protect, shareList);
 router.get('/', protect, getFavorites);
 router.get('/lists', protect, getFavoriteLists);
-router.get('/check/:productId', protect, checkFavorite);
+// CORRECTION: checkFavorite utilise optionalAuth pour ne pas bloquer le checkout si token expiré
+router.get('/check/:productId', optionalAuth, checkFavorite);
 router.post('/', protect, addFavorite);
 router.put('/:id', protect, updateFavorite);
 router.delete('/:id', protect, removeFavorite);

@@ -136,4 +136,53 @@ const authorize = (...roles) => {
   };
 };
 
-export { protect, authorize };
+// @desc    Optional authentication - sets req.user if token is valid, but doesn't block if missing
+// @usage   Used for endpoints that work with or without auth (e.g., checkFavorite during checkout)
+const optionalAuth = async (req, res, next) => {
+  setCORSHeaders(req, res);
+  
+  let token;
+  const cookies = parseCookies(req);
+  const cookieToken = cookies.accessToken;
+
+  if (cookieToken) {
+    token = cookieToken;
+  }
+
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    // No token provided, continue without user context
+    req.user = null;
+    return next();
+  }
+
+  try {
+    if (!process.env.JWT_SECRET) {
+      req.user = null;
+      return next();
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type && decoded.type !== 'access') {
+      req.user = null;
+      return next();
+    }
+
+    req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      req.user = null;
+    } else {
+      req.user.role = normalizeRole(req.user.role);
+    }
+  } catch (error) {
+    // Token is invalid or expired, continue without user context
+    req.user = null;
+  }
+  
+  return next();
+};
+
+export { protect, authorize, optionalAuth };

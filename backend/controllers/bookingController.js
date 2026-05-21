@@ -31,6 +31,13 @@ const createBooking = async (req, res, next) => {
   let transactionActive = false;
   let attempts = 0;
   
+  // CORRECTION: Log détaillé pour déboguer les erreurs 400
+  logger.info('createBooking called', {
+    body: req.body,
+    userId: req.user?._id?.toString(),
+    headers: { contentType: req.headers['content-type'] }
+  });
+  
   while (attempts < 2) {
     try {
       attempts++;
@@ -48,12 +55,19 @@ const createBooking = async (req, res, next) => {
         virtualScheduleData,
       } = req.body;
       
+      // CORRECTION: Validation renforcée de scheduleId
+      if (!scheduleId) {
+        logger.error('createBooking 400 Error: scheduleId manquant', { body: req.body });
+        return res.status(400).json({ message: 'Identifiant du créneau manquant. Veuillez sélectionner un horaire.' });
+      }
+      
       const tickets = Number(numberOfTickets) || 0;
       if (tickets < 1 || isNaN(tickets)) {
         if (transactionActive && session) {
           await session.abortTransaction();
         }
         if (session) session.endSession();
+        logger.error('createBooking 400 Error: tickets invalide', { numberOfTickets, tickets });
         return res.status(400).json({ message: 'Nombre de tickets invalide' });
       }
 
@@ -77,7 +91,8 @@ const createBooking = async (req, res, next) => {
       }
 
       let targetScheduleId = scheduleId;
-      const isVirtual = String(scheduleId).startsWith('virtual_');
+      // CORRECTION: Vérification sécurisée de scheduleId avant String()
+      const isVirtual = scheduleId && String(scheduleId).startsWith('virtual_');
 
       // Dynamically resolve virtual schedules
       if (isVirtual) {
