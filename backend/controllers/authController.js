@@ -616,16 +616,26 @@ const refreshTokenHandler = async (req, res) => {
   setCORSHeaders(req, res);
   
   try {
+    console.log('🔄 Refresh token handler called');
+    
     const { refreshToken: token } = req.body;
     const cookies = parseCookies(req);
     const refreshTokenFromCookie = cookies.refreshToken;
     const effectiveToken = token || refreshTokenFromCookie;
     
+    console.log('📋 Refresh token input:', {
+      hasBodyToken: !!token,
+      hasCookieToken: !!refreshTokenFromCookie,
+      tokenLength: effectiveToken ? effectiveToken.length : 0,
+    });
+    
     if (!effectiveToken) {
+      console.log('❌ No refresh token provided');
       return res.status(400).json({ message: 'Refresh token is required' });
     }
     
     if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET not configured');
       return res.status(500).json({ message: 'Server configuration error' });
     }
     
@@ -633,42 +643,96 @@ const refreshTokenHandler = async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(effectiveToken, process.env.JWT_SECRET);
+      console.log('✅ Token verified, decoded:', { id: decoded.id, type: decoded.type, role: decoded.role });
     } catch (error) {
+      console.log('❌ Token verification failed:', error.message);
       return res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
     
     // Check token type
     if (decoded.type !== 'refresh') {
+      console.log('❌ Invalid token type:', decoded.type);
       return res.status(401).json({ message: 'Invalid token type' });
     }
     
+    // Ensure database connection
+    try {
+      if (mongoose.connection.readyState !== 1) {
+        console.log('⚠️ Database not connected, attempting reconnect...');
+        await connectDB();
+        console.log('✅ Database reconnected');
+      }
+    } catch (dbError) {
+      console.error('❌ Database connection error:', dbError.message);
+      return res.status(500).json({ message: 'Database connection error' });
+    }
+    
     // Find user and verify refresh token exists
-    const user = await User.findById(decoded.id);
+    let user;
+    try {
+      user = await User.findById(decoded.id);
+      console.log('👤 User lookup:', { found: !!user, userId: decoded.id });
+    } catch (findError) {
+      console.error('❌ User find error:', findError.message);
+      return res.status(500).json({ message: 'Database error during user lookup' });
+    }
+    
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
     }
     
     // Check if refresh token exists in user's refresh tokens
+    console.log('🔍 Checking stored tokens, count:', user.refreshTokens?.length || 0);
+    
+    if (!user.refreshTokens || !Array.isArray(user.refreshTokens)) {
+      console.log('❌ User has no refreshTokens array');
+      return res.status(401).json({ message: 'No refresh tokens found for user' });
+    }
+    
     const storedToken = user.refreshTokens.find(
       rt => rt.token === effectiveToken && rt.expiresAt > new Date()
     );
     
+    console.log('🔑 Stored token check:', { found: !!storedToken });
+    
     if (!storedToken) {
+      // Check if token exists but is expired
+      const expiredToken = user.refreshTokens.find(rt => rt.token === effectiveToken);
+      console.log('❌ Token not valid, expired:', !!expiredToken);
       return res.status(401).json({ message: 'Refresh token not found or expired' });
     }
     
     // Generate new access token
-    const accessToken = generateAccessToken(user._id, normalizeRole(user.role));
+    let accessToken;
+    try {
+      const normalizedRole = normalizeRole(user.role);
+      console.log('🔧 Generating access token:', { userId: user._id, role: normalizedRole });
+      accessToken = generateAccessToken(user._id, normalizedRole);
+      console.log('✅ Access token generated, length:', accessToken?.length);
+    } catch (tokenError) {
+      console.error('❌ Token generation error:', tokenError.message);
+      return res.status(500).json({ message: 'Failed to generate access token' });
+    }
     
-    logger.security.tokenRefresh(user._id.toString(), true);
+    try {
+      logger.security.tokenRefresh(user._id.toString(), true);
+    } catch (logError) {
+      console.error('⚠️ Logger error (non-critical):', logError.message);
+    }
+    
     res.cookie('accessToken', accessToken, getCookieOptions(false));
     
+    console.log('✅ Refresh token success');
     res.json({
       token: accessToken,
     });
   } catch (error) {
-    console.error('Refresh token error:', error);
-    res.status(500).json({ message: 'Server error during token refresh' });
+    console.error('❌ Refresh token unhandled error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    res.status(500).json({ message: 'Server error during token refresh', detail: error.message });
   }
 };
 
