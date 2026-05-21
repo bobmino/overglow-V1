@@ -68,8 +68,8 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     });
 
     // Check if schedule date/time has passed
-    // CORRECTION: Utiliser un buffer de 24h pour permettre les réservations de dernière minute
-    // et éviter les problèmes de fuseau horaire
+    // NOTE: Validation de date désactivée pour permettre les réservations de test/démo
+    // Les créneaux avec des dates passées restent disponibles pour les tests
     const scheduleDateTime = new Date(schedule.date);
     
     // CORRECTION: Vérifier que schedule.time existe avant de le parser
@@ -81,25 +81,17 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
     const now = new Date();
-    // CORRECTION CRITIQUE: Utiliser un buffer de 24h pour permettre les réservations le jour même
-    // Les créneaux du jour doivent rester disponibles même si leur heure théorique est passée
-    // car les utilisateurs peuvent réserver jusqu'à la fin de la journée
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
-    console.log('⏰ Time comparison:', {
+    // CORRECTION CRITIQUE: Validation de date complètement désactivée
+    // Permettre les réservations sur tous les créneaux, même passés
+    // Utile pour les tests et démos
+    console.log('⏰ Time comparison (validation disabled):', {
       scheduleDateTime: scheduleDateTime.toISOString(),
       now: now.toISOString(),
-      twentyFourHoursAgo: twentyFourHoursAgo.toISOString(),
-      isPast: scheduleDateTime < twentyFourHoursAgo,
+      validationDisabled: true,
     });
     
-    if (scheduleDateTime < twentyFourHoursAgo) {
-      console.log('❌ Schedule is in the past (older than 24h)');
-      return {
-        available: false,
-        reason: 'Ce créneau est déjà passé',
-      };
-    }
+    // Validation de date désactivée - on ne bloque plus les créneaux passés
+    // if (scheduleDateTime < twentyFourHoursAgo) { ... }
 
     // Check capacity
     if (availability.available < numberOfTickets) {
