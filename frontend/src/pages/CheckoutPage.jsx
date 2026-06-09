@@ -7,8 +7,6 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -201,7 +199,7 @@ const CheckoutPage = () => {
                           {item.schedule?.date && (
                             <div className="flex items-center">
                               <Calendar size={14} className="mr-2 text-emerald-600" />
-                              <span className="capitalize">{format(new Date(item.schedule.date), 'EEEE d MMMM yyyy', { locale: fr })}</span>
+                              <span className="capitalize">{new Date(item.schedule.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                             </div>
                           )}
                           {item.schedule?.time && (

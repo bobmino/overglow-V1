@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { FiTrash2, FiClock, FiCalendar, FiMapPin, FiCheckCircle } from 'react-icons/fi';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { Trash2 as FiTrash2, Clock as FiClock, Calendar as FiCalendar, MapPin as FiMapPin, CheckCircle as FiCheckCircle } from 'lucide-react';
 
 const CircuitPage = () => {
   const { circuitItems, removeFromCircuit } = useCart();
@@ -79,7 +77,7 @@ const CircuitPage = () => {
                         {item.schedule?.date && (
                           <div className="flex items-center gap-2">
                             <FiCalendar className="w-4 h-4 text-primary-500" />
-                            <span className="capitalize">{format(new Date(item.schedule.date), 'EEEE d MMMM yyyy', { locale: fr })}</span>
+                            <span className="capitalize">{new Date(item.schedule.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                           </div>
                         )}
                         {item.schedule?.time && (
