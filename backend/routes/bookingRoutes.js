@@ -1,6 +1,6 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled, bulkManualCheckout } from '../controllers/bookingController.js';
+import { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled, updateBookingStatus } from '../controllers/bookingController.js';
 import { getRefundCalculation, cancelBookingRequest, processRefundRequest } from '../controllers/cancellationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -24,5 +24,7 @@ router.post('/:id/process-refund', protect, authorize('Admin'), processRefundReq
 router.put('/:id/note', protect, authorize('Opérateur'), updateBookingNote);
 
 router.put('/:id/handle', protect, authorize('Opérateur'), markBookingHandled);
+
+router.put('/:id/status', protect, authorize('Admin'), updateBookingStatus);
 
 export default router;

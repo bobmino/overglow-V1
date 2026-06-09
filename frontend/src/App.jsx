@@ -94,8 +94,8 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CartDrawer />
       <Router>
+        <CartDrawer />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={
@@ -160,11 +160,9 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="favorites" element={
-            <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <FavoritesPage />
               </Suspense>
-            </PrivateRoute>
           } />
           <Route path="loyalty" element={
             <PrivateRoute>

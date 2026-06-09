@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
-import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCircle, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCircle, CheckCircle, CreditCard } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import InternalNoteModal from '../components/InternalNoteModal';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const OperatorBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,7 +13,9 @@ const OperatorBookingsPage = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [handlingBookingId, setHandlingBookingId] = useState(null);
+  const [confirmingPaymentId, setConfirmingPaymentId] = useState(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchBookings = async () => {
     try {
@@ -43,6 +46,20 @@ const OperatorBookingsPage = () => {
       toast('Action impossible pour le moment. Merci de reessayer.', { type: 'error' });
     } finally {
       setHandlingBookingId(null);
+    }
+  };
+
+  const handleConfirmPaymentAdmin = async (bookingId) => {
+    try {
+      setConfirmingPaymentId(bookingId);
+      await api.put(`/api/bookings/${bookingId}/status`, { status: 'CONFIRMED' });
+      fetchBookings();
+      toast('Paiement confirmé avec succès.', { type: 'success' });
+    } catch (error) {
+      console.error('Failed to confirm payment:', error);
+      toast('Erreur lors de la confirmation du paiement.', { type: 'error' });
+    } finally {
+      setConfirmingPaymentId(null);
     }
   };
 
@@ -119,6 +136,17 @@ const OperatorBookingsPage = () => {
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.status)}`}>
                     {booking.status}
                   </span>
+                  {user?.role?.toLowerCase() === 'admin' && (booking.status === 'Pending' || booking.status === 'PENDING_PAYMENT') && (
+                    <button
+                      onClick={() => handleConfirmPaymentAdmin(booking._id)}
+                      disabled={confirmingPaymentId === booking._id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition disabled:opacity-50"
+                      title="Confirmer le paiement"
+                    >
+                      <CreditCard size={12} />
+                      {confirmingPaymentId === booking._id ? 'Confirmation...' : 'Confirmer le paiement'}
+                    </button>
+                  )}
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPaymentStatusColor(booking.paymentStatus)}`}>
                     {getPaymentStatusLabel(booking.paymentStatus)}
                   </span>

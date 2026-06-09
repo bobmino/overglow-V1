@@ -718,6 +718,45 @@ const bulkManualCheckout = async (req, res, next) => {
   }
 };
 
+// @desc    Update booking status (Admin)
+// @route   PUT /api/bookings/:id/status
+// @access  Private/Admin
+const updateBookingStatus = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id).populate('user');
+    if (!booking) {
+      return res.status(404).json({ message: 'Réservation introuvable' });
+    }
+
+    const { status } = req.body;
+    
+    // Map CONFIRMED to Confirmed
+    if (status === 'CONFIRMED' || status === 'Confirmed') {
+      booking.status = 'Confirmed';
+      booking.paymentStatus = 'paid';
+      booking.isHandled = true;
+      booking.handledAt = new Date();
+    } else {
+      booking.status = status;
+    }
+
+    await booking.save();
+
+    // Optionally send email
+    if (booking.status === 'Confirmed' && booking.user && booking.user.email) {
+      try {
+        await sendBookingConfirmation(booking, booking.user);
+      } catch (err) {
+        console.error('Failed to send confirmation email:', err.message);
+      }
+    }
+
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   createPaymentIntent,
   createBooking,
@@ -725,5 +764,6 @@ export {
   updateBookingNote,
   markBookingHandled,
   validateAndConfirmBookingPayment,
+  updateBookingStatus,
   // bulkManualCheckout,
 };
