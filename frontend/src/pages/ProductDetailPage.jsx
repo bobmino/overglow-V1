@@ -40,7 +40,7 @@ const ProductDetailPage = () => {
   const [productBadges, setProductBadges] = useState([]);
   const [operatorBadges, setOperatorBadges] = useState([]);
   const { formatPrice } = useCurrency();
-  const { addToCircuit } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -265,7 +265,7 @@ const ProductDetailPage = () => {
     });
   };
 
-  const handleAddToCircuit = () => {
+  const handleAddToCart = () => {
     if (!selectedDate) {
       alert('Veuillez sélectionner une date');
       return;
@@ -301,14 +301,8 @@ const ProductDetailPage = () => {
       skipTheLine: product?.skipTheLine?.enabled || false,
     };
 
-    addToCircuit(newItem);
-
-    toast(
-      <span>
-        Activité ajoutée à votre circuit ! <Link to="/circuit" className="underline font-bold text-white hover:text-slate-100 ml-1">Voir mon circuit</Link>
-      </span>,
-      { type: 'success', duration: 4000 }
-    );
+    addToCart(newItem);
+    setIsCartOpen(true);
   };
 
   if (loading) {
@@ -797,12 +791,12 @@ const ProductDetailPage = () => {
               </button>
 
               <button
-                onClick={handleAddToCircuit}
+                onClick={handleAddToCart}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
                 className="w-full mt-3 py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <span>➕</span>
-                Ajouter à mon circuit
+                <span>🛒</span>
+                Ajouter au panier
               </button>
 
               <p className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4 font-medium">
@@ -831,12 +825,12 @@ const ProductDetailPage = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={handleAddToCircuit}
+              onClick={handleAddToCart}
               disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
               className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1"
             >
-              <span>➕</span>
-              Mon Circuit
+              <span>🛒</span>
+              Au panier
             </button>
             <button 
               onClick={handleBookNow}

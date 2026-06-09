@@ -725,5 +725,5 @@ export {
   updateBookingNote,
   markBookingHandled,
   validateAndConfirmBookingPayment,
-  bulkManualCheckout,
+  // bulkManualCheckout,
 };

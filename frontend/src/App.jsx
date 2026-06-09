@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/Layout';
+import CartDrawer from './components/CartDrawer';
 
 // Critical components (loaded immediately)
 import Hero from './components/Hero';
@@ -93,6 +94,7 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
+        <CartDrawer />
       <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -185,6 +187,7 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
+          {/* 
           <Route path="operator/wizard" element={
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
@@ -199,6 +202,7 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
+          */}
           <Route path="operator/dashboard" element={
             <OperatorRoute>
               <Suspense fallback={<LoadingFallback />}>
@@ -353,11 +357,13 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
+          {/*
           <Route path="circuit" element={
             <Suspense fallback={<LoadingFallback />}>
               <CircuitPage />
             </Suspense>
           } />
+          */}
         </Route>
         
         {/* Checkout routes without layout */}

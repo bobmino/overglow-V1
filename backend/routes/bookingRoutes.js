@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post('/create-payment-intent', protect, createPaymentIntent);
 
-router.post('/bulk-manual-checkout', protect, bulkManualCheckout);
+// router.post('/bulk-manual-checkout', protect, bulkManualCheckout);
 
 router.post(
   '/',

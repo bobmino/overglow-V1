@@ -6,6 +6,7 @@ import './i18n'; // Import i18n configuration
 import App from './App.jsx'
 import { CurrencyProvider } from './context/CurrencyContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
+import { WishlistProvider } from './context/WishlistContext.jsx'
 import { setupLazyImages } from './utils/performance.js'
 import { initSentry } from './utils/sentry.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -83,7 +84,9 @@ createRoot(document.getElementById('root')).render(
         <HelmetProvider>
           <CurrencyProvider>
             <CartProvider>
-              <App />
+              <WishlistProvider>
+                <App />
+              </WishlistProvider>
             </CartProvider>
           </CurrencyProvider>
         </HelmetProvider>

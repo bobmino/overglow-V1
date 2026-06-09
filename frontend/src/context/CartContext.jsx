@@ -3,24 +3,25 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [circuitItems, setCircuitItems] = useState(() => {
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState(() => {
     try {
-      const stored = localStorage.getItem('circuitItems');
+      const stored = localStorage.getItem('cartItems');
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Failed to parse circuitItems from localStorage:', error);
+      console.error('Failed to parse cartItems from localStorage:', error);
       return [];
     }
   });
 
-  // Keep localStorage in sync with circuitItems state
+  // Keep localStorage in sync with cartItems state
   useEffect(() => {
     try {
-      localStorage.setItem('circuitItems', JSON.stringify(circuitItems));
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
     } catch (error) {
-      console.error('Failed to save circuitItems to localStorage:', error);
+      console.error('Failed to save cartItems to localStorage:', error);
     }
-  }, [circuitItems]);
+  }, [cartItems]);
 
   // Check if two circuit items are the same product + schedule
   const isSameItem = (itemA, itemB) => {
@@ -60,8 +61,8 @@ export const CartProvider = ({ children }) => {
     };
   };
 
-  const addToCircuit = useCallback((newItem) => {
-    setCircuitItems((prevItems) => {
+  const addToCart = useCallback((newItem) => {
+    setCartItems((prevItems) => {
       // Find if item already exists in circuit
       const existingIndex = prevItems.findIndex((item) => isSameItem(item, newItem));
 
@@ -106,21 +107,23 @@ export const CartProvider = ({ children }) => {
     });
   }, []);
 
-  const removeFromCircuit = useCallback((itemId) => {
-    setCircuitItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  const removeFromCart = useCallback((itemId) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
   }, []);
 
-  const clearCircuit = useCallback(() => {
-    setCircuitItems([]);
+  const clearCart = useCallback(() => {
+    setCartItems([]);
   }, []);
 
   return (
     <CartContext.Provider
       value={{
-        circuitItems,
-        addToCircuit,
-        removeFromCircuit,
-        clearCircuit,
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        isCartOpen,
+        setIsCartOpen,
       }}
     >
       {children}

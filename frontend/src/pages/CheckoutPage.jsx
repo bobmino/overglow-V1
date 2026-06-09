@@ -13,17 +13,15 @@ const CheckoutPage = () => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { formatPrice } = useCurrency();
-  const { circuitItems, clearCircuit } = useCart();
+  const { cartItems, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { isCircuit, product, schedule, numberOfTickets, skipTheLine } = location.state || {};
+  const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
 
-  // Déterminer les items à payer
+  // Déterminer les items à payer : soit depuis le state de redirection direct, soit depuis le panier
   const checkoutItems = useMemo(() => {
-    if (isCircuit) {
-      return circuitItems;
-    } else if (product && schedule) {
+    if (product && schedule) {
       return [{
         product,
         schedule,
@@ -34,9 +32,11 @@ const CheckoutPage = () => {
                     (skipTheLine && product?.skipTheLine?.enabled ? Number(product.skipTheLine.additionalPrice) * numberOfTickets : 0)
         }
       }];
+    } else if (cartItems && cartItems.length > 0) {
+      return cartItems;
     }
     return [];
-  }, [isCircuit, circuitItems, product, schedule, numberOfTickets, skipTheLine]);
+  }, [cartItems, product, schedule, numberOfTickets, skipTheLine]);
 
   const totalPrice = useMemo(() => {
     return checkoutItems.reduce((sum, item) => sum + (item.priceBreakdown?.subtotal || 0), 0);
@@ -73,14 +73,28 @@ const CheckoutPage = () => {
     setError('');
 
     try {
-      if (isCircuit) {
-        // Mode Circuit: Bulk Checkout
-        const itemsPayload = checkoutItems.map(item => ({
-          productId: item.product._id,
+      const createdBookings = [];
+
+      // Boucle asynchrone sur chaque item du panier (réservation unitaire standard)
+      for (const item of checkoutItems) {
+        if (!item.schedule._id) {
+          throw new Error('Créneau horaire invalide pour un ou plusieurs articles.');
+        }
+
+        const payload = {
           scheduleId: item.schedule._id,
           numberOfTickets: item.numberOfTickets,
-          skipTheLineEnabled: !!item.skipTheLine,
-          virtualScheduleData: String(item.schedule._id).startsWith('virtual_') ? {
+          paymentMethod: paymentDetails.type,
+          paymentId: paymentDetails.id,
+          skipTheLineEnabled: item.product?.skipTheLine?.enabled || false,
+          skipTheLinePrice: item.skipTheLine && item.product?.skipTheLine?.enabled 
+            ? Number(item.product.skipTheLine.additionalPrice) * item.numberOfTickets 
+            : 0,
+          ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
+        };
+
+        if (String(item.schedule._id).startsWith('virtual_')) {
+          payload.virtualScheduleData = {
             productId: item.product._id,
             date: item.schedule.date,
             time: item.schedule.time,
@@ -88,73 +102,34 @@ const CheckoutPage = () => {
             price: item.product.price || 0,
             capacity: 100,
             currency: 'EUR'
-          } : undefined
-        }));
-
-        const payload = {
-          items: itemsPayload,
-          paymentMethod: paymentDetails.type,
-          paymentId: paymentDetails.id,
-          ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
-        };
-
-        console.log('📤 Sending bulk booking request:', payload);
-        const { data } = await api.post('/api/bookings/bulk-manual-checkout', payload);
-        console.log('✅ Bulk booking created successfully:', data);
-        
-        clearCircuit();
-        navigate('/booking-success', { state: { bookings: data.bookings, isCircuit: true, paymentReference: data.paymentReference } });
-
-      } else {
-        // Mode Classique: Single Booking
-        if (bookingId) {
-          const { data } = await api.put(`/api/bookings/${bookingId}`, {
-            paymentMethod: paymentDetails.type,
-            paymentId: paymentDetails.id,
-            ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
-          });
-          navigate('/booking-success', { state: { booking: data } });
-        } else {
-          if (!schedule._id) {
-            setError('Erreur: Créneau horaire invalide.');
-            setLoading(false);
-            return;
-          }
-
-          const payload = {
-            scheduleId: schedule._id,
-            numberOfTickets: numberOfTickets,
-            paymentMethod: paymentDetails.type,
-            paymentId: paymentDetails.id,
-            skipTheLineEnabled: product?.skipTheLine?.enabled || false,
-            skipTheLinePrice: skipTheLine && product?.skipTheLine?.enabled ? Number(product.skipTheLine.additionalPrice) * numberOfTickets : 0,
-            ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
           };
-
-          if (String(schedule._id).startsWith('virtual_')) {
-            payload.virtualScheduleData = {
-              productId: product._id,
-              date: schedule.date,
-              time: schedule.time,
-              endTime: schedule.endTime || '',
-              price: product.price || 0,
-              capacity: 100,
-              currency: 'EUR'
-            };
-          }
-
-          console.log('📤 Sending booking request:', payload);
-          const { data } = await api.post('/api/bookings', payload);
-          console.log('✅ Booking created successfully:', data);
-          navigate('/booking-success', { state: { booking: data } });
         }
+
+        console.log('📤 Sending booking request for item:', payload);
+        const { data } = await api.post('/api/bookings', payload);
+        console.log('✅ Booking created successfully:', data);
+        createdBookings.push(data);
       }
+
+      // Si le panier était utilisé, on le vide
+      if (!product || !schedule) {
+        clearCart();
+      }
+
+      // Rediriger vers BookingSuccess avec soit un tableau (si plusieurs) soit un seul (si unique)
+      if (createdBookings.length > 1) {
+        // Optionnel : adapter BookingSuccessPage pour gérer un array ou utiliser le même comportement qu'avant
+        navigate('/booking-success', { state: { bookings: createdBookings, isCircuit: true } });
+      } else {
+        navigate('/booking-success', { state: { booking: createdBookings[0] } });
+      }
+      
     } catch (err) {
       console.error('❌ Booking creation failed:', err.response?.data || err.message);
       if (err.response?.data?.errors) {
         setError(JSON.stringify(err.response.data.errors));
       } else {
-        setError(err.response?.data?.message || 'Booking failed. Please try again.');
+        setError(err.response?.data?.message || err.message || 'Booking failed. Please try again.');
       }
       setLoading(false);
     }
@@ -169,7 +144,7 @@ const CheckoutPage = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h1 id="checkout-title" className="text-3xl font-bold text-gray-900 mb-8">
-            {isCircuit ? 'Validation de votre circuit' : 'Complete your booking'}
+            {checkoutItems.length > 1 ? 'Validation de votre commande' : 'Complete your booking'}
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -178,7 +153,7 @@ const CheckoutPage = () => {
               {/* Items List */}
               <section className="bg-white rounded-xl border border-gray-200 p-6" aria-labelledby="booking-details-heading">
                 <h2 id="booking-details-heading" className="text-xl font-bold mb-4">
-                  {isCircuit ? 'Détails du circuit' : 'Booking Details'}
+                  {checkoutItems.length > 1 ? 'Détails de la commande' : 'Booking Details'}
                 </h2>
                 
                 <div className="space-y-6">
@@ -247,6 +222,7 @@ const CheckoutPage = () => {
                   amount={totalPrice} 
                   onPaymentComplete={handlePaymentComplete}
                   bookingId={bookingId}
+                  disabled={loading}
                 />
               </section>
             </div>
@@ -256,7 +232,7 @@ const CheckoutPage = () => {
               <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
                 <h2 id="price-summary-heading" className="text-xl font-bold mb-4">Price Summary</h2>
                 
-                {isCircuit ? (
+                {checkoutItems.length > 1 ? (
                   <div className="space-y-3 mb-6">
                     {checkoutItems.map((item, idx) => (
                       <div key={idx} className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0">

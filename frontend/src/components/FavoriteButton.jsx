@@ -1,60 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
-import api from '../config/axios';
-import { useAuth } from '../context/AuthContext';
 import { trackFavorite } from '../utils/analytics';
+import { useWishlist } from '../context/WishlistContext';
 
 const FavoriteButton = ({ productId, product, listName = 'default', size = 24, showText = false }) => {
-  const { isAuthenticated } = useAuth();
-  const [isFavorited, setIsFavorited] = useState(false);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [loading, setLoading] = useState(false);
-  const [favoriteId, setFavoriteId] = useState(null);
-
+  const [isFavorited, setIsFavorited] = useState(false);
+  
+  // Keep local state in sync with context
   useEffect(() => {
-    if (isAuthenticated && productId) {
-      checkFavorite();
+    if (productId) {
+      setIsFavorited(isInWishlist(productId));
     }
-  }, [isAuthenticated, productId]);
+  }, [productId, isInWishlist]);
 
-  const checkFavorite = async () => {
-    try {
-      const { data } = await api.get(`/api/favorites/check/${productId}`);
-      setIsFavorited(data.isFavorited);
-      setFavoriteId(data.favorite?._id || null);
-    } catch (error) {
-      // Silently fail - favorites are optional
-    }
-  };
-
-  const handleToggle = async (e) => {
+  const handleToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated) {
-      alert('Veuillez vous connecter pour ajouter aux favoris');
-      return;
-    }
+    if (!productId) return;
 
     setLoading(true);
 
     try {
-      if (isFavorited && favoriteId) {
-        // Remove from favorites
-        await api.delete(`/api/favorites/${favoriteId}`);
+      if (isFavorited) {
+        removeFromWishlist(productId);
         setIsFavorited(false);
-        setFavoriteId(null);
         // Track favorite removal
         if (product) {
           trackFavorite(product, false);
         }
       } else {
-        // Add to favorites
-        const { data } = await api.post('/api/favorites', {
-          productId,
-          listName,
-        });
+        addToWishlist(productId);
         setIsFavorited(true);
-        setFavoriteId(data._id);
         // Track favorite addition
         if (product) {
           trackFavorite(product, true);
@@ -62,15 +41,10 @@ const FavoriteButton = ({ productId, product, listName = 'default', size = 24, s
       }
     } catch (error) {
       console.error('Toggle favorite error:', error);
-      alert(error.response?.data?.message || 'Erreur lors de l\'ajout aux favoris');
     } finally {
       setLoading(false);
     }
   };
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <button
@@ -81,11 +55,11 @@ const FavoriteButton = ({ productId, product, listName = 'default', size = 24, s
           ? 'text-red-600 hover:text-red-700'
           : 'text-gray-400 hover:text-red-600'
       } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-      title={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      title={isFavorited ? 'Retirer des coups de cœur' : 'Ajouter aux coups de cœur'}
     >
       <Heart
         size={size}
-        className={isFavorited ? 'fill-current' : ''}
+        className={isFavorited ? 'fill-current text-red-600' : 'text-gray-400'}
       />
       {showText && (
         <span className="text-sm font-medium">
@@ -97,4 +71,3 @@ const FavoriteButton = ({ productId, product, listName = 'default', size = 24, s
 };
 
 export default FavoriteButton;
-
