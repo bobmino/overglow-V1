@@ -14,5 +14,48 @@
     "when": "When",
     "searchPlaceholder": "Search for a place or activity",
     "search": "Search"
+  },
+  "cart": {
+    "title": "My Cart",
+    "empty": "Your cart is empty",
+    "empty_subtitle": "Discover our amazing experiences and add them here.",
+    "explore": "Explore",
+    "tickets": "Ticket(s)",
+    "total": "Total",
+    "taxes_included": "Taxes included",
+    "checkout": "Proceed to Checkout",
+    "remove": "Remove"
+  },
+  "catalog": {
+    "title": "All Experiences",
+    "searchPlaceholder": "Search by keyword, city or activity...",
+    "filters": "Filters",
+    "clear_all": "Clear filters",
+    "category": "Category",
+    "city": "City",
+    "price_range": "Price Range",
+    "results_found": "activity/activities found",
+    "sort_by": "Sort by",
+    "sort_popular": "Popular first",
+    "sort_price_asc": "Price: low to high",
+    "sort_price_desc": "Price: high to low",
+    "sort_rating": "Best rated"
+  },
+  "product": {
+    "add_to_cart": "Add to Cart",
+    "book_now": "Book Now",
+    "description": "Description",
+    "highlights": "Highlights",
+    "included": "What's Included",
+    "requirements": "Requirements",
+    "duration": "Duration",
+    "rating": "Rating",
+    "location": "Location",
+    "select_date": "Select Date",
+    "select_time": "Select Time",
+    "tickets_count": "Number of tickets",
+    "skip_line": "Skip the Line",
+    "skip_line_desc": "Priority access, no waiting",
+    "price_per_ticket": "per person"
   }
 }

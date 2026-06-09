@@ -9,8 +9,10 @@ import SearchSuggestions from '../components/SearchSuggestions';
 import { Filter, X, Search, Heart, MapPin } from 'lucide-react';
 import { trackSearch } from '../utils/analytics';
 import { normalizeCategory } from '../utils/categoryMapping';
+import { useTranslation } from 'react-i18next';
 
 const SearchPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -375,7 +377,7 @@ const SearchPage = () => {
               type="text"
               id="search-query"
               name="search-query"
-              placeholder="Rechercher des expériences, destinations..."
+              placeholder={t('catalog.searchPlaceholder', 'Rechercher des expériences, destinations...')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -387,7 +389,7 @@ const SearchPage = () => {
                 setTimeout(() => setShowSuggestions(false), 200);
               }}
               className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              aria-label="Rechercher des expériences, destinations"
+              aria-label={t('catalog.searchPlaceholder', 'Rechercher des expériences, destinations')}
               aria-autocomplete="list"
               aria-expanded={showSuggestions}
             />
@@ -410,17 +412,17 @@ const SearchPage = () => {
           <button
             onClick={handleSaveSearch}
             className="px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center space-x-2"
-            title="Sauvegarder cette recherche"
+            title={t('catalog.save_search_tooltip', 'Sauvegarder cette recherche')}
           >
             <Heart size={20} />
-            <span className="hidden md:inline">Sauvegarder</span>
+            <span className="hidden md:inline">{t('catalog.save_btn', 'Sauvegarder')}</span>
           </button>
           {savedSearches.length > 0 && (
             <button
               onClick={() => setShowSavedSearches(!showSavedSearches)}
               className="px-4 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center space-x-2"
             >
-              <span className="hidden md:inline">Recherches ({savedSearches.length})</span>
+              <span className="hidden md:inline">{t('catalog.saved_searches', 'Recherches')} ({savedSearches.length})</span>
               <span className="md:hidden">{savedSearches.length}</span>
             </button>
           )}
@@ -429,7 +431,7 @@ const SearchPage = () => {
         {/* Saved Searches Dropdown */}
         {showSavedSearches && savedSearches.length > 0 && (
           <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-4 mb-4">
-            <h3 className="font-semibold mb-3">Recherches sauvegardées</h3>
+            <h3 className="font-semibold mb-3">{t('catalog.saved_searches_list', 'Recherches sauvegardées')}</h3>
             <div className="space-y-2">
               {savedSearches.map((saved) => (
                 <div key={saved.id} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
@@ -463,7 +465,7 @@ const SearchPage = () => {
           <div className="bg-white p-6 rounded-xl border border-slate-200 sticky top-24">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-bold text-lg flex items-center">
-                <Filter size={20} className="mr-2" /> Filtres
+                <Filter size={20} className="mr-2" /> {t('catalog.filters', 'Filtres')}
                 {activeFiltersCount > 0 && (
                   <span className="ml-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {activeFiltersCount}
@@ -474,13 +476,13 @@ const SearchPage = () => {
                 onClick={handleResetFilters}
                 className="text-sm text-primary-600 hover:underline font-medium"
               >
-                Réinitialiser
+                {t('catalog.clear_all', 'Réinitialiser')}
               </button>
             </div>
 
             {/* Category Filter */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-slate-900">Catégorie</h3>
+              <h3 className="font-semibold mb-3 text-slate-900">{t('catalog.category', 'Catégorie')}</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {Array.isArray(categories) && categories.map((cat) => {
                   const categoryName = typeof cat === 'object' ? (cat.name || cat.slug) : cat;
@@ -505,16 +507,16 @@ const SearchPage = () => {
 
             {/* City Filter */}
             <div className="mb-6">
-              <label htmlFor="city-filter" className="font-semibold mb-3 text-slate-900 block">Destination</label>
+              <label htmlFor="city-filter" className="font-semibold mb-3 text-slate-900 block">{t('catalog.city', 'Destination')}</label>
               <select
                 id="city-filter"
                 name="city-filter"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                aria-label="Filtrer par destination"
+                aria-label={t('catalog.city', 'Filtrer par destination')}
               >
-                <option value="">Toutes les destinations</option>
+                <option value="">{t('catalog.all_destinations', 'Toutes les destinations')}</option>
                 {Array.isArray(cities) && cities.map(city => (
                   <option key={city} value={city}>{city}</option>
                 ))}
@@ -523,7 +525,7 @@ const SearchPage = () => {
 
             {/* Price Filter */}
             <div className="mb-6">
-              <label className="font-semibold mb-3 text-slate-900 block">Fourchette de prix (MAD)</label>
+              <label className="font-semibold mb-3 text-slate-900 block">{t('catalog.price_range', 'Fourchette de prix (MAD)')}</label>
               <div className="flex items-center space-x-2">
                 <label htmlFor="price-min" className="sr-only">Prix minimum</label>
                 <input 
@@ -609,24 +611,24 @@ const SearchPage = () => {
 
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-slate-900">
-              {loading ? 'Searching...' : `${Array.isArray(filteredProducts) ? filteredProducts.length : 0} experiences found`}
+              {loading ? t('common.loading', 'Recherche en cours...') : `${Array.isArray(filteredProducts) ? filteredProducts.length : 0} ${t('catalog.results_found', 'expériences trouvées')}`}
             </h1>
             <div className="flex items-center space-x-2 text-sm text-slate-600">
-              <span className="font-medium">Sort by:</span>
-              <label htmlFor="sort-by" className="sr-only">Trier par</label>
+              <span className="font-medium">{t('catalog.sort_by', 'Trier par')}:</span>
+              <label htmlFor="sort-by" className="sr-only">{t('catalog.sort_by', 'Trier par')}</label>
               <select 
                 id="sort-by"
                 name="sort-by"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="border-none bg-transparent font-semibold text-slate-900 focus:ring-0 cursor-pointer"
-                aria-label="Trier les résultats"
+                aria-label={t('catalog.sort_by', 'Trier les résultats')}
               >
-                <option value="recommended">Recommandé</option>
-                <option value="price-low">Prix: Croissant</option>
-                <option value="price-high">Prix: Décroissant</option>
-                <option value="rating">Note</option>
-                <option value="popularity">Popularité</option>
+                <option value="recommended">{t('catalog.sort_recommended', 'Recommandé')}</option>
+                <option value="price-low">{t('catalog.sort_price_asc', 'Prix: Croissant')}</option>
+                <option value="price-high">{t('catalog.sort_price_desc', 'Prix: Décroissant')}</option>
+                <option value="rating">{t('catalog.sort_rating', 'Note')}</option>
+                <option value="popularity">{t('catalog.sort_popular', 'Popularité')}</option>
               </select>
             </div>
           </div>
@@ -643,12 +645,12 @@ const SearchPage = () => {
             </div>
           ) : !Array.isArray(filteredProducts) || filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600 text-lg mb-4">No experiences found matching your filters</p>
+              <p className="text-slate-600 text-lg mb-4">{t('catalog.no_results', 'Aucune expérience ne correspond à vos filtres')}</p>
               <button 
                 onClick={handleResetFilters}
                 className="text-primary-600 hover:underline font-medium"
               >
-                Clear all filters
+                {t('catalog.clear_all', 'Effacer tous les filtres')}
               </button>
               <div className="mt-3">
                 <button

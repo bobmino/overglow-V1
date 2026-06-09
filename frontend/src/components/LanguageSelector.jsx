@@ -27,6 +27,10 @@ const LanguageSelector = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
+
   const changeLanguage = (langCode) => {
     i18n.changeLanguage(langCode);
     setIsOpen(false);

@@ -23,8 +23,10 @@ import TrustBar from '../components/TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 const ProductDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -233,11 +235,11 @@ const ProductDetailPage = () => {
 
   const handleBookNow = () => {
     if (!selectedDate) {
-      alert('Veuillez sélectionner une date');
+      alert(t('product.select_date_error', 'Veuillez sélectionner une date'));
       return;
     }
     if (!selectedTimeSlot) {
-      alert('Veuillez sélectionner une plage horaire');
+      alert(t('product.select_time_error', 'Veuillez sélectionner une plage horaire'));
       return;
     }
     
@@ -267,11 +269,11 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     if (!selectedDate) {
-      alert('Veuillez sélectionner une date');
+      alert(t('product.select_date_error', 'Veuillez sélectionner une date'));
       return;
     }
     if (!selectedTimeSlot) {
-      alert('Veuillez sélectionner une plage horaire');
+      alert(t('product.select_time_error', 'Veuillez sélectionner une plage horaire'));
       return;
     }
 
@@ -427,19 +429,19 @@ const ProductDetailPage = () => {
           <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
             <p className="text-sm font-medium text-slate-800 flex items-center gap-2">
               <Shield size={18} className="text-slate-600" />
-              Vous êtes l'organisateur de cette activité ?
+              {t('product.claim_question', "Vous êtes l'organisateur de cette activité ?")}
             </p>
             <Link
               to={`/partners/signup?activity=${encodeURIComponent(product?.title || '')}`}
               className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
             >
-              Prenez le contrôle de votre fiche
+              {t('product.claim_action', "Prenez le contrôle de votre fiche")}
             </Link>
           </div>
         )}
         {/* Breadcrumb */}
         <nav className="text-sm text-slate-600 mb-4">
-          <Link to="/" className="hover:text-primary-600">Accueil</Link>
+          <Link to="/" className="hover:text-primary-600">{t('common.home', 'Accueil')}</Link>
           <ChevronRight size={14} className="inline mx-2" />
           <Link to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</Link>
           <ChevronRight size={14} className="inline mx-2" />
@@ -447,13 +449,13 @@ const ProductDetailPage = () => {
           <ChevronRight size={14} className="inline mx-2" />
           <span className="text-slate-900 font-medium truncate">{product.title}</span>
         </nav>
-
+ 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
             <ImageGallery images={normalizedImages} />
-
+ 
             {/* Product Header */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               {/* Badges */}
@@ -465,7 +467,7 @@ const ProductDetailPage = () => {
                   <BadgeDisplay badges={operatorBadges} size="md" showLabel={true} />
                 )}
               </div>
-
+ 
               <div className="flex items-center text-slate-600 text-sm mb-2">
                 <MapPin size={16} className="mr-1" />
                 {product.city} • {product.category}
@@ -473,7 +475,7 @@ const ProductDetailPage = () => {
               
               <div className="flex items-center gap-2 mb-4 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full text-sm font-semibold">
                 <CheckCircle size={16} />
-                Vérifié par Overglow
+                {t('product.verified_by', 'Vérifié par Overglow')}
               </div>
               
               <div className="flex items-start justify-between mb-4">
@@ -485,32 +487,32 @@ const ProductDetailPage = () => {
                   <FavoriteButton productId={product._id} size={28} />
                 </div>
               </div>
-
+ 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
                     <span className="font-bold">4.8</span>
-                    <span className="text-slate-500 ml-1">(2,451 avis)</span>
+                    <span className="text-slate-500 ml-1">({product.reviews?.length || 0} {t('product.reviews_suffix', 'avis')})</span>
                   </div>
                   <div className="flex items-center text-slate-600">
                     <Clock size={16} className="mr-1" />
-                    <span>3-4 heures</span>
+                    <span>{product.duration || t('product.duration_fallback', '3-4 heures')}</span>
                   </div>
                 </div>
               </div>
-
+ 
               {/* Urgency Message */}
               <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <p className="text-sm text-orange-700">
-                  <span className="font-bold">Populaire :</span> Réservé 127 fois ces dernières 24 heures
+                  <span className="font-bold">{t('product.popular_badge', 'Populaire :')}</span> {t('product.booked_urgency', 'Réservé 127 fois ces dernières 24 heures')}
                 </p>
               </div>
             </div>
-
+ 
             {/* Description */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">À propos de cette expérience</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.about', 'À propos de cette expérience')}</h2>
               <p className="text-slate-700 leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
@@ -518,7 +520,7 @@ const ProductDetailPage = () => {
 
             {/* What's Included */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Ce qui est inclus</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.included', 'Ce qui est inclus')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Array.isArray(included) && included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
@@ -537,7 +539,7 @@ const ProductDetailPage = () => {
 
             {/* Highlights */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Points forts</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.highlights', 'Points forts')}</h2>
               <ul className="space-y-3">
                 {Array.isArray(highlights) && highlights.map((highlight, index) => (
                   <li key={index} className="flex items-start">
@@ -550,7 +552,7 @@ const ProductDetailPage = () => {
 
             {/* Itinerary */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Itinéraire</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.itinerary', 'Itinéraire')}</h2>
               <div className="space-y-4">
                 {Array.isArray(itinerary) && itinerary.map((stop, idx) => (
                   <div key={idx} className="flex gap-4 pb-4 border-b border-slate-200 last:border-0">
@@ -572,34 +574,34 @@ const ProductDetailPage = () => {
 
             {/* Trust & Guarantees */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Garanties et Certifications</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.guarantees_title', 'Garanties et Certifications')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                   <Shield size={24} className="text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-green-900 mb-1">Garantie Prix Bas</h3>
-                    <p className="text-sm text-green-700">Meilleur prix garanti ou remboursement de la différence</p>
+                    <h3 className="font-bold text-green-900 mb-1">{t('product.guarantee_low_price', 'Garantie Prix Bas')}</h3>
+                    <p className="text-sm text-green-700">{t('product.guarantee_low_price_desc', 'Meilleur prix garanti ou remboursement de la différence')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <CheckCircle size={24} className="text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-blue-900 mb-1">Annulation Gratuite</h3>
-                    <p className="text-sm text-blue-700">Annulez jusqu'à 24h avant pour un remboursement complet</p>
+                    <h3 className="font-bold text-blue-900 mb-1">{t('product.guarantee_free_cancel', 'Annulation Gratuite')}</h3>
+                    <p className="text-sm text-blue-700">{t('product.guarantee_free_cancel_desc', "Annulez jusqu'à 24h avant pour un remboursement complet")}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                   <Award size={24} className="text-purple-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-purple-900 mb-1">Opérateur Vérifié</h3>
-                    <p className="text-sm text-purple-700">Tous nos opérateurs sont vérifiés et certifiés</p>
+                    <h3 className="font-bold text-purple-900 mb-1">{t('product.guarantee_verified_operator', 'Opérateur Vérifié')}</h3>
+                    <p className="text-sm text-purple-700">{t('product.guarantee_verified_operator_desc', 'Tous nos opérateurs sont vérifiés et certifiés')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <TrendingUp size={24} className="text-orange-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-orange-900 mb-1">Support 24/7</h3>
-                    <p className="text-sm text-orange-700">Assistance client disponible à tout moment</p>
+                    <h3 className="font-bold text-orange-900 mb-1">{t('product.guarantee_support', 'Support 24/7')}</h3>
+                    <p className="text-sm text-orange-700">{t('product.guarantee_support_desc', 'Assistance client disponible à tout moment')}</p>
                   </div>
                 </div>
               </div>
@@ -607,7 +609,7 @@ const ProductDetailPage = () => {
 
             {/* Cancellation Policy */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Politique d'Annulation</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.cancellation_policy', "Politique d'Annulation")}</h2>
               <CancellationPolicy 
                 policy={product.cancellationPolicy}
               />
@@ -615,7 +617,7 @@ const ProductDetailPage = () => {
 
             {/* FAQ */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Foire aux questions</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.faq', 'Foire aux questions')}</h2>
               <div className="space-y-3">
                 {Array.isArray(faqs) && faqs.map((faq, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
@@ -642,15 +644,15 @@ const ProductDetailPage = () => {
             {/* Inquiry Section */}
             {product.requiresInquiry && product.inquiryType !== 'none' && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-2xl font-bold mb-4">Questions ou validation requise</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('product.inquiry_title', 'Questions ou validation requise')}</h2>
                 <p className="text-slate-700 mb-4">
-                  Ce produit nécessite une inquiry {product.inquiryType === 'manual' ? '(question/réponse)' : '(validation automatique)'}.
+                  {t('product.inquiry_required', 'Ce produit nécessite une inquiry')} {product.inquiryType === 'manual' ? '(question/réponse)' : '(validation automatique)'}.
                 </p>
                 <button
                   onClick={() => setShowInquiryModal(true)}
                   className="px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
                 >
-                  Envoyer une inquiry
+                  {t('product.send_inquiry', 'Envoyer une inquiry')}
                 </button>
               </div>
             )}
@@ -663,7 +665,7 @@ const ProductDetailPage = () => {
             {/* Related Products */}
             {Array.isArray(relatedProducts) && relatedProducts.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6">Produits similaires</h2>
+                <h2 className="text-2xl font-bold mb-6">{t('product.related_products', 'Produits similaires')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {relatedProducts.map(relatedProduct => (
                     <ProductCard key={relatedProduct._id} product={relatedProduct} />
@@ -683,23 +685,23 @@ const ProductDetailPage = () => {
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center text-green-700 mb-1">
                   <CheckCircle size={18} className="mr-2" />
-                  <span className="font-bold">Annulation gratuite</span>
+                  <span className="font-bold">{t('product.free_cancellation', 'Annulation gratuite')}</span>
                 </div>
                 <p className="text-sm text-green-600">
-                  Annulez jusqu'à 24h à l'avance pour un remboursement complet
+                  {t('product.free_cancellation_desc', "Annulez jusqu'à 24h à l'avance pour un remboursement complet")}
                 </p>
               </div>
 
               {/* Price Display */}
               <div className="mb-6">
-                <p className="text-sm text-slate-600 mb-1">À partir de</p>
+                <p className="text-sm text-slate-600 mb-1">{t('product.starting_from', 'À partir de')}</p>
                 {hasValidPrice ? (
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-slate-900">{formattedMinPrice}</span>
-                    <span className="text-slate-600">par personne</span>
+                    <span className="text-slate-600">{t('product.price_per_ticket', 'par personne')}</span>
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-sm">Prix non disponible. Veuillez contacter le support.</p>
+                  <p className="text-slate-500 text-sm">{t('product.price_unavailable_contact', 'Prix non disponible. Veuillez contacter le support.')}</p>
                 )}
               </div>
 
@@ -725,7 +727,7 @@ const ProductDetailPage = () => {
               <div className="mb-6">
                 <label className="block text-sm font-bold text-slate-700 mb-3">
                   <Users size={16} className="inline mr-2" />
-                  Billets
+                  {t('product.tickets_count', 'Billets')}
                 </label>
                 <div className="flex items-center justify-between border-2 border-slate-300 rounded-xl p-3">
                   <button
@@ -748,20 +750,22 @@ const ProductDetailPage = () => {
               {selectedDate && selectedTimeSlot && hasValidPrice && (
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-600">{formattedMinPrice} × {numberOfTickets} billet{numberOfTickets > 1 ? 's' : ''}</span>
+                    <span className="text-slate-600">
+                      {formattedMinPrice} × {numberOfTickets} {numberOfTickets > 1 ? t('product.tickets', 'billets') : t('product.ticket', 'billet')}
+                    </span>
                     <span className="font-bold">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
                   </div>
                   {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                     <div className="flex justify-between items-center mb-2 text-sm">
                       <span className="text-slate-600 flex items-center gap-1">
                         <span>⚡</span>
-                        Coupe-file ({product.skipTheLine.type})
+                        {t('product.skip_line', 'Coupe-file')} ({product.skipTheLine.type})
                       </span>
                       <span className="font-bold">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                    <span className="font-bold text-slate-900">Total</span>
+                    <span className="font-bold text-slate-900">{t('cart.total', 'Total')}</span>
                     <span className="font-bold text-lg text-primary-700">
                       {formatPrice(
                         (minPrice * numberOfTickets) + 
@@ -782,12 +786,12 @@ const ProductDetailPage = () => {
                 className="w-full py-4 bg-emerald-600 text-white font-bold text-lg rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
               >
                 {!hasValidPrice
-                  ? 'Prix non disponible'
+                  ? t('product.price_unavailable', 'Prix non disponible')
                   : !selectedDate
-                  ? 'Sélectionner une date'
+                  ? t('product.select_date', 'Sélectionner une date')
                   : !selectedTimeSlot
-                  ? 'Sélectionner une plage horaire'
-                  : 'Réserver maintenant'}
+                  ? t('product.select_time', 'Sélectionner une plage horaire')
+                  : t('product.book_now', 'Réserver maintenant')}
               </button>
 
               <button
@@ -796,12 +800,12 @@ const ProductDetailPage = () => {
                 className="w-full mt-3 py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span>🛒</span>
-                Ajouter au panier
+                {t('product.add_to_cart', 'Ajouter au panier')}
               </button>
 
               <p className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4 font-medium">
                 <Shield size={14} className="text-emerald-600" />
-                Paiement sécurisé et crypté
+                {t('product.secure_payment', 'Paiement sécurisé et crypté')}
               </p>
             </div>
           </div>
@@ -813,14 +817,14 @@ const ProductDetailPage = () => {
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-600">À partir de</p>
+              <p className="text-xs text-slate-600">{t('product.starting_from', 'À partir de')}</p>
               <p className="text-2xl font-bold">
-                {hasValidPrice ? formattedMinPrice : 'Prix non disponible'}
+                {hasValidPrice ? formattedMinPrice : t('product.price_unavailable', 'Prix non disponible')}
               </p>
             </div>
             <div className="text-xs text-slate-500 font-medium flex items-center gap-1">
               <Shield size={12} className="text-emerald-600" />
-              Sécurisé
+              {t('product.secure', 'Sécurisé')}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -830,7 +834,7 @@ const ProductDetailPage = () => {
               className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1"
             >
               <span>🛒</span>
-              Au panier
+              {t('product.to_cart', 'Au panier')}
             </button>
             <button 
               onClick={handleBookNow}
@@ -838,12 +842,12 @@ const ProductDetailPage = () => {
               className="py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
             >
               {!hasValidPrice
-                ? 'Non dispo.'
+                ? t('product.not_available', 'Non dispo.')
                 : !selectedDate
-                ? 'Date'
+                ? t('product.date', 'Date')
                 : !selectedTimeSlot
-                ? 'Horaire'
-                : 'Réserver'}
+                ? t('product.time', 'Horaire')
+                : t('product.book', 'Réserver')}
             </button>
           </div>
         </div>

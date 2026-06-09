@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmation de votre réservation</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      padding: 32px 24px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin: 8px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 32px 24px;
+    }
+    .welcome {
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #1e3a8a;
+    }
+    .intro {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #475569;
+      margin-bottom: 24px;
+    }
+    .details-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .details-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: #0f172a;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .details-table td {
+      padding: 8px 0;
+      font-size: 14px;
+      color: #475569;
+    }
+    .details-table td.label {
+      font-weight: 600;
+      color: #0f172a;
+      width: 30%;
+    }
+    .details-table td.value {
+      text-align: right;
+      font-weight: 500;
+    }
+    .total-row td {
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 12px;
+      margin-top: 8px;
+    }
+    .total-row td.total-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #059669;
+    }
+    .total-row td.total-value {
+      font-size: 20px;
+      font-weight: 850;
+      color: #059669;
+      text-align: right;
+    }
+    .action-btn {
+      display: block;
+      text-align: center;
+      background-color: #059669;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      margin: 28px 0;
+      box-shadow: 0 4px 6px -1px rgb(5 150 105 / 0.2);
+    }
+    .footer {
+      background-color: #f1f5f9;
+      padding: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer p {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>OVERGLOW</h1>
+      <p>Votre E-Ticket de Confirmation</p>
+    </div>
+    
+    <div class="content">
+      <h2 class="welcome">Votre réservation est confirmée !</h2>
+      <p class="intro">Bonjour <strong>{{customerName}}</strong>,</p>
+      <p class="intro">Nous avons le plaisir de vous confirmer que votre paiement a été validé avec succès. Votre réservation est désormais confirmée. Veuillez trouver les détails ci-dessous :</p>
+      
+      <div class="details-box">
+        <h3 class="details-title">Récapitulatif de la réservation</h3>
+        <table class="details-table">
+          <tr>
+            <td class="label">Activité</td>
+            <td class="value"><strong>{{title}}</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Date</td>
+            <td class="value">{{date}}</td>
+          </tr>
+          <tr>
+            <td class="label">Horaire</td>
+            <td class="value">{{time}}</td>
+          </tr>
+          <tr>
+            <td class="label">Billets</td>
+            <td class="value">{{tickets}}</td>
+          </tr>
+          <tr>
+            <td class="label">Référence</td>
+            <td class="value">#{{bookingId}}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="total-label">Montant Payé</td>
+            <td class="total-value">{{price}}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <a href="https://overglow-v1-3jqp.vercel.app/dashboard" class="action-btn">Gérer mes réservations</a>
+      
+      <p class="intro" style="font-size: 13px; margin-bottom: 0;">
+        Si vous avez des questions, n'hésitez pas à répondre directement à cet e-mail ou à nous contacter via notre service client.
+      </p>
+    </div>
+    
+    <div class="footer">
+      <p>© 2026 Overglow Trip. Tous droits réservés.</p>
+      <p>Ce message vous a été envoyé automatiquement suite à la confirmation de votre réservation.</p>
+    </div>
+  </div>
+</body>
+</html>

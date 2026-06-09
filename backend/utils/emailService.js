@@ -57,13 +57,13 @@ if (isEmailEnabled()) {
 }
 
 // Send booking confirmation email
-export const sendBookingConfirmation = async (booking, user) => {
+export const sendBookingConfirmation = async (booking, user, customHtml) => {
   const premium = getBookingConfirmationPremiumTemplate({ booking, user });
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
     subject: premium.subject || '✅ Réservation confirmée - Overglow Trip',
-    html: premium.html || getBookingConfirmationTemplate(booking, user),
+    html: customHtml || premium.html || getBookingConfirmationTemplate(booking, user),
   };
 
   // Skip if email is disabled or transporter not available

@@ -14,5 +14,48 @@
     "when": "Quand",
     "searchPlaceholder": "Rechercher un lieu ou une activité",
     "search": "Rechercher"
+  },
+  "cart": {
+    "title": "Mon Panier",
+    "empty": "Votre panier est vide",
+    "empty_subtitle": "Découvrez nos expériences incroyables et ajoutez-les ici.",
+    "explore": "Explorer",
+    "tickets": "Billet(s)",
+    "total": "Total",
+    "taxes_included": "Taxes incluses",
+    "checkout": "Valider la commande",
+    "remove": "Supprimer"
+  },
+  "catalog": {
+    "title": "Toutes les Expériences",
+    "searchPlaceholder": "Rechercher par mot-clé, ville ou activité...",
+    "filters": "Filtres",
+    "clear_all": "Effacer les filtres",
+    "category": "Catégorie",
+    "city": "Ville",
+    "price_range": "Gamme de prix",
+    "results_found": "activité(s) trouvée(s)",
+    "sort_by": "Trier par",
+    "sort_popular": "Populaires en premier",
+    "sort_price_asc": "Prix : croissant",
+    "sort_price_desc": "Prix : décroissant",
+    "sort_rating": "Mieux notés"
+  },
+  "product": {
+    "add_to_cart": "Ajouter au panier",
+    "book_now": "Réserver maintenant",
+    "description": "Description",
+    "highlights": "Points forts",
+    "included": "Inclus",
+    "requirements": "Prérequis",
+    "duration": "Durée",
+    "rating": "Note",
+    "location": "Lieu",
+    "select_date": "Choisir le jour",
+    "select_time": "Choisir l'heure",
+    "tickets_count": "Nombre de billets",
+    "skip_line": "Option Coupe-file",
+    "skip_line_desc": "Accès prioritaire sans attente",
+    "price_per_ticket": "par personne"
   }
 }

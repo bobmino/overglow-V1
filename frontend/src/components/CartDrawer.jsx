@@ -1,16 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Trash2, Calendar, Clock, MapPin, CheckCircle } from 'lucide-react';
+import { X, Trash2, Calendar, Clock, MapPin, CheckCircle, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatImageUrl } from '../utils/formatImage';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const CartDrawer = () => {
   const { cartItems, isCartOpen, setIsCartOpen, removeFromCart } = useCart();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
-
-  if (!isCartOpen) return null;
+  const { t, i18n } = useTranslation();
 
   const handleCheckout = () => {
     setIsCartOpen(false);
@@ -18,125 +19,170 @@ const CartDrawer = () => {
   };
 
   const totalPrice = cartItems.reduce((acc, item) => acc + (item.priceBreakdown?.subtotal || 0), 0);
+  const isRTL = i18n.language === 'ar';
 
   return (
-    <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 transition-opacity"
-        onClick={() => setIsCartOpen(false)}
-      />
-
-      {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-xl z-50 flex flex-col transform transition-transform">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Mon Panier ({cartItems.length})</h2>
-          <button 
+    <AnimatePresence>
+      {isCartOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             onClick={() => setIsCartOpen(false)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-6 h-6 text-gray-500" />
-          </button>
-        </div>
+          />
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {cartItems.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
-                <span className="text-4xl">🛒</span>
+          {/* Drawer Container */}
+          <motion.div
+            initial={{ x: isRTL ? '-100%' : '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: isRTL ? '-100%' : '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+            className={`fixed inset-y-0 ${
+              isRTL ? 'left-0' : 'right-0'
+            } max-w-md w-full bg-white/90 backdrop-blur-md shadow-2xl border-l border-white/20 z-50 flex flex-col`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white/80">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-xl font-bold text-slate-800">
+                  {t('cart.title', 'Mon Panier')} ({cartItems.length})
+                </h2>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Votre panier est vide</h3>
-              <p className="text-gray-500 text-sm">Découvrez nos expériences incroyables et ajoutez-les ici.</p>
-              <button 
-                onClick={() => { setIsCartOpen(false); navigate('/'); }}
-                className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition"
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="p-2 rounded-full hover:bg-slate-100/80 active:scale-95 transition-all text-slate-500 hover:text-slate-800"
               >
-                Explorer
+                <X className="w-5 h-5" />
               </button>
             </div>
-          ) : (
-            cartItems.map((item) => {
-              const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
-              const image = item.product?.images?.[0] ? formatImageUrl(item.product.images[0]) : fallbackImage;
-              
-              return (
-                <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100 relative group">
-                  <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-gray-200">
-                    <img 
-                      src={image} 
-                      alt={item.product?.title} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = fallbackImage; }}
-                    />
+
+            {/* Cart Items Area */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {cartItems.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-5">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center shadow-inner">
+                    <span className="text-3xl">🛒</span>
                   </div>
-                  
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-gray-900 text-sm truncate pr-6">{item.product?.title}</h4>
-                      <button 
-                        onClick={() => removeFromCart(item.id)}
-                        className="absolute top-3 right-3 text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors"
-                        aria-label="Supprimer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-1 text-xs text-gray-600">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <MapPin className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                        <span className="truncate">{item.product?.city}</span>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">{t('cart.empty', 'Votre panier est vide')}</h3>
+                    <p className="text-slate-500 text-sm mt-1">
+                      {t('cart.empty_subtitle', 'Découvrez nos expériences incroyables et ajoutez-les ici.')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      navigate('/');
+                    }}
+                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 active:scale-95 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all text-sm"
+                  >
+                    {t('cart.explore', 'Explorer')}
+                  </button>
+                </div>
+              ) : (
+                cartItems.map((item) => {
+                  const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
+                  const image = item.product?.images?.[0] ? formatImageUrl(item.product.images[0]) : fallbackImage;
+
+                  return (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      key={item.id}
+                      className="flex gap-4 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm relative group hover:shadow-md transition-all duration-300"
+                    >
+                      <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 shadow-sm">
+                        <img
+                          src={image}
+                          alt={item.product?.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-550"
+                          onError={(e) => {
+                            e.target.src = fallbackImage;
+                          }}
+                        />
                       </div>
-                      {item.schedule?.date && (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                          <span>{new Date(item.schedule.date).toLocaleDateString('fr-FR')}</span>
+
+                      <div className="flex-1 min-w-0 flex flex-col">
+                        <div className="flex justify-between items-start mb-1.5">
+                          <h4 className="font-bold text-slate-800 text-sm truncate pr-6">
+                            {item.product?.title}
+                          </h4>
+                          <button
+                            onClick={() => removeFromCart(item.id)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg transition-colors border border-slate-100"
+                            aria-label={t('cart.remove', 'Supprimer')}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      )}
-                      {item.schedule?.time && (
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                          <span>{item.schedule.time}</span>
+
+                        <div className="space-y-1 text-xs text-slate-500">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate">{item.product?.city}</span>
+                          </div>
+                          {item.schedule?.date && (
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span>{new Date(item.schedule.date).toLocaleDateString(i18n.language === 'ar' ? 'ar-MA' : 'fr-FR')}</span>
+                            </div>
+                          )}
+                          {item.schedule?.time && (
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span>{item.schedule.time}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    
-                    <div className="mt-auto pt-2 flex items-center justify-between">
-                      <span className="text-xs font-medium bg-white px-2 py-1 rounded text-gray-700 border border-gray-200">
-                        {item.numberOfTickets}x Billet(s)
-                      </span>
-                      <span className="font-bold text-emerald-600 text-sm">
-                        {formatPrice(item.priceBreakdown?.subtotal || 0)}
-                      </span>
-                    </div>
+
+                        <div className="mt-3 pt-2 flex items-center justify-between border-t border-slate-50">
+                          <span className="text-xs font-semibold bg-slate-100/80 px-2 py-1 rounded-lg text-slate-600">
+                            {item.numberOfTickets} × {t('cart.tickets', 'Billet(s)')}
+                          </span>
+                          <span className="font-extrabold text-emerald-600 text-sm">
+                            {formatPrice(item.priceBreakdown?.subtotal || 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            {cartItems.length > 0 && (
+              <div className="p-5 border-t border-slate-100 bg-white/90 backdrop-blur-md">
+                <div className="flex justify-between items-end mb-5">
+                  <span className="text-slate-500 font-semibold text-sm">{t('cart.total', 'Total')}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-slate-800 block leading-tight">
+                      {formatPrice(totalPrice)}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium">{t('cart.taxes_included', 'Taxes incluses')}</span>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
 
-        {cartItems.length > 0 && (
-          <div className="p-4 border-t border-gray-100 bg-white">
-            <div className="flex justify-between items-end mb-4">
-              <span className="text-gray-600 font-medium">Total</span>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-emerald-600 block">{formatPrice(totalPrice)}</span>
-                <span className="text-xs text-gray-400">Taxes incluses</span>
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-2.5"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  {t('cart.checkout', 'Valider la commande')}
+                </button>
               </div>
-            </div>
-            
-            <button
-              onClick={handleCheckout}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(5,150,105,0.4)] transition-all flex items-center justify-center gap-2"
-            >
-              <CheckCircle className="w-5 h-5" />
-              Valider la commande
-            </button>
-          </div>
-        )}
-      </div>
-    </>
+            )}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
