@@ -28,6 +28,7 @@ const DestinationPage = lazy(() => import('./pages/DestinationPage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const CircuitPage = lazy(() => import('./pages/CircuitPage'));
 const BookingPage = lazy(() => import('./pages/BookingPage'));
 const BookingSuccessPage = lazy(() => import('./pages/BookingSuccessPage'));
 const OperatorDashboardPage = lazy(() => import('./pages/OperatorDashboardPage'));
@@ -351,6 +352,11 @@ function App() {
                 <AdminBadgeRequestsPage />
               </Suspense>
             </PrivateRoute>
+          } />
+          <Route path="circuit" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CircuitPage />
+            </Suspense>
           } />
         </Route>
         

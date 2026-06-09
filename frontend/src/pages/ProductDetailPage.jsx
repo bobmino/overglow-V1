@@ -21,6 +21,8 @@ import OthersAlsoBooked from '../components/OthersAlsoBooked';
 import ShareButtons from '../components/ShareButtons';
 import TrustBar from '../components/TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -38,6 +40,8 @@ const ProductDetailPage = () => {
   const [productBadges, setProductBadges] = useState([]);
   const [operatorBadges, setOperatorBadges] = useState([]);
   const { formatPrice } = useCurrency();
+  const { addToCircuit } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -259,6 +263,52 @@ const ProductDetailPage = () => {
         skipTheLine: product?.skipTheLine || null
       }
     });
+  };
+
+  const handleAddToCircuit = () => {
+    if (!selectedDate) {
+      alert('Veuillez sélectionner une date');
+      return;
+    }
+    if (!selectedTimeSlot) {
+      alert('Veuillez sélectionner une plage horaire');
+      return;
+    }
+
+    const dateStr = selectedDate instanceof Date ? selectedDate.toISOString() : String(selectedDate);
+    const timeStr = selectedTimeSlot.startTime || selectedTimeSlot.time || String(selectedTimeSlot);
+
+    const matchingSchedule = availableSchedules.find(s => {
+      const sDate = new Date(s.date);
+      sDate.setHours(0, 0, 0, 0);
+      const selDate = new Date(selectedDate);
+      selDate.setHours(0, 0, 0, 0);
+      return sDate.getTime() === selDate.getTime() && s.time === timeStr;
+    });
+
+    const scheduleId = matchingSchedule?._id || `virtual_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    const newItem = {
+      product,
+      schedule: {
+        _id: scheduleId,
+        date: dateStr,
+        time: timeStr,
+        endTime: selectedTimeSlot.endTime || '',
+        price: matchingSchedule?.price || selectedTimeSlot.price || getMinPrice() || product.price || 0,
+      },
+      numberOfTickets,
+      skipTheLine: product?.skipTheLine?.enabled || false,
+    };
+
+    addToCircuit(newItem);
+
+    toast(
+      <span>
+        Activité ajoutée à votre circuit ! <Link to="/circuit" className="underline font-bold text-white hover:text-slate-100 ml-1">Voir mon circuit</Link>
+      </span>,
+      { type: 'success', duration: 4000 }
+    );
   };
 
   if (loading) {
@@ -746,6 +796,15 @@ const ProductDetailPage = () => {
                   : 'Réserver maintenant'}
               </button>
 
+              <button
+                onClick={handleAddToCircuit}
+                disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
+                className="w-full mt-3 py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <span>➕</span>
+                Ajouter à mon circuit
+              </button>
+
               <p className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4 font-medium">
                 <Shield size={14} className="text-emerald-600" />
                 Paiement sécurisé et crypté
@@ -757,31 +816,47 @@ const ProductDetailPage = () => {
 
       {/* Mobile Sticky Footer */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 p-4 shadow-lg z-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-slate-600">À partir de</p>
-            <p className="text-2xl font-bold">
-              {hasValidPrice ? formattedMinPrice : 'Prix non disponible'}
-            </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-slate-600">À partir de</p>
+              <p className="text-2xl font-bold">
+                {hasValidPrice ? formattedMinPrice : 'Prix non disponible'}
+              </p>
+            </div>
+            <div className="text-xs text-slate-500 font-medium flex items-center gap-1">
+              <Shield size={12} className="text-emerald-600" />
+              Sécurisé
+            </div>
           </div>
-          <button 
-            onClick={handleBookNow}
-            disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-            className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20"
-          >
-            {!hasValidPrice
-              ? 'Prix non disponible'
-              : !selectedDate
-              ? 'Sélectionner une date'
-              : !selectedTimeSlot
-              ? 'Sélectionner une plage horaire'
-              : 'Réserver maintenant'}
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleAddToCircuit}
+              disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
+              className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1"
+            >
+              <span>➕</span>
+              Mon Circuit
+            </button>
+            <button 
+              onClick={handleBookNow}
+              disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
+              className="py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
+            >
+              {!hasValidPrice
+                ? 'Non dispo.'
+                : !selectedDate
+                ? 'Date'
+                : !selectedTimeSlot
+                ? 'Horaire'
+                : 'Réserver'}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile padding to prevent content being hidden by sticky footer */}
-      <div className="lg:hidden h-20"></div>
+      <div className="lg:hidden h-32"></div>
 
       {/* Inquiry Modal */}
       {showInquiryModal && (

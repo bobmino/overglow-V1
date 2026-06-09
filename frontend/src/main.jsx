@@ -5,6 +5,7 @@ import './index.css'
 import './i18n'; // Import i18n configuration
 import App from './App.jsx'
 import { CurrencyProvider } from './context/CurrencyContext.jsx'
+import { CartProvider } from './context/CartContext.jsx'
 import { setupLazyImages } from './utils/performance.js'
 import { initSentry } from './utils/sentry.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -81,7 +82,9 @@ createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <HelmetProvider>
           <CurrencyProvider>
-            <App />
+            <CartProvider>
+              <App />
+            </CartProvider>
           </CurrencyProvider>
         </HelmetProvider>
       </QueryClientProvider>

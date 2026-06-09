@@ -1,69 +1,72 @@
-// Build: 2026-05-19T02:00 - TDZ fix: priceBreakdown must be declared before useEffect
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../config/axios';
-import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, CreditCard, Lock, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '../context/CartContext';
 import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const { formatPrice, convert } = useCurrency();
+  const { formatPrice } = useCurrency();
+  const { circuitItems, clearCircuit } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
+  const { isCircuit, product, schedule, numberOfTickets, skipTheLine } = location.state || {};
 
-  // Calculate total price with skip-the-line and multi-currency
-  const priceBreakdown = useMemo(() => {
-    if (!schedule || !numberOfTickets) return null;
-    
-    const basePrice = Number(schedule.price) || 0;
-    const baseTotal = basePrice * numberOfTickets;
-    
-    // Skip-the-line price (if enabled)
-    const skipTheLinePrice = (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice) 
-      ? Number(product.skipTheLine.additionalPrice) * numberOfTickets 
-      : 0;
-    
-    const subtotal = baseTotal + skipTheLinePrice;
-    
-    return {
-      basePrice,
-      baseTotal,
-      skipTheLinePrice,
-      subtotal,
-      numberOfTickets,
-    };
-  }, [schedule, numberOfTickets, product]);
+  // Déterminer les items à payer
+  const checkoutItems = useMemo(() => {
+    if (isCircuit) {
+      return circuitItems;
+    } else if (product && schedule) {
+      return [{
+        product,
+        schedule,
+        numberOfTickets,
+        skipTheLine: skipTheLine || false,
+        priceBreakdown: {
+          subtotal: (Number(schedule.price || product.price || 0) * numberOfTickets) + 
+                    (skipTheLine && product?.skipTheLine?.enabled ? Number(product.skipTheLine.additionalPrice) * numberOfTickets : 0)
+        }
+      }];
+    }
+    return [];
+  }, [isCircuit, circuitItems, product, schedule, numberOfTickets, skipTheLine]);
 
-  const totalPrice = priceBreakdown?.subtotal || 0;
+  const totalPrice = useMemo(() => {
+    return checkoutItems.reduce((sum, item) => sum + (item.priceBreakdown?.subtotal || 0), 0);
+  }, [checkoutItems]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location } });
+      return;
     }
-    if (!product || !schedule) {
+    if (checkoutItems.length === 0) {
       navigate('/');
-    } else {
-      // Track begin_checkout event
-      trackBeginCheckout({
-        totalAmount: priceBreakdown?.subtotal || 0,
-        totalPrice: priceBreakdown?.subtotal || 0,
-        items: [{
-          item_id: product._id,
-          item_name: product.title,
-          item_category: product.category,
-          price: schedule.price || product.price || 0,
-          quantity: numberOfTickets || 1,
-        }],
-      });
+      return;
     }
-  }, [isAuthenticated, product, schedule, navigate, location, priceBreakdown, numberOfTickets]);
+
+    // Track begin_checkout event
+    trackBeginCheckout({
+      totalAmount: totalPrice,
+      totalPrice: totalPrice,
+      items: checkoutItems.map(item => ({
+        item_id: item.product._id,
+        item_name: item.product.title,
+        item_category: item.product.category,
+        price: item.schedule?.price || item.product.price || 0,
+        quantity: item.numberOfTickets || 1,
+      })),
+    });
+  }, [isAuthenticated, checkoutItems, navigate, location, totalPrice]);
 
   const [bookingId, setBookingId] = useState(null);
 
@@ -72,61 +75,81 @@ const CheckoutPage = () => {
     setError('');
 
     try {
-      // If booking was already created (for cash payments), update it
-      if (bookingId) {
-        const { data } = await api.put(`/api/bookings/${bookingId}`, {
-          paymentMethod: paymentDetails.type,
-          paymentId: paymentDetails.id,
-          ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
-        });
-        navigate('/booking-success', { state: { booking: data } });
-      } else {
-        // CORRECTION: Validation de schedule._id avant envoi
-        if (!schedule._id) {
-          console.error('❌ Checkout Error: schedule._id is missing', { schedule, product, numberOfTickets });
-          setError('Erreur: Créneau horaire invalide. Veuillez retourner à la page précédente et resélectionner un horaire.');
-          setLoading(false);
-          return;
-        }
+      if (isCircuit) {
+        // Mode Circuit: Bulk Checkout
+        const itemsPayload = checkoutItems.map(item => ({
+          productId: item.product._id,
+          scheduleId: item.schedule._id,
+          numberOfTickets: item.numberOfTickets,
+          skipTheLineEnabled: !!item.skipTheLine,
+          virtualScheduleData: String(item.schedule._id).startsWith('virtual_') ? {
+            productId: item.product._id,
+            date: item.schedule.date,
+            time: item.schedule.time,
+            endTime: item.schedule.endTime || '',
+            price: item.product.price || 0,
+            capacity: 100,
+            currency: 'EUR'
+          } : undefined
+        }));
 
-        // CORRECTION: Log détaillé pour déboguer les erreurs 400
-        console.log('📦 Checkout payload preparation:', {
-          scheduleId: schedule._id,
-          scheduleType: typeof schedule._id,
-          isVirtual: String(schedule._id).startsWith('virtual_'),
-          numberOfTickets,
-          paymentMethod: paymentDetails.type,
-          skipTheLineEnabled: product?.skipTheLine?.enabled || false,
-          skipTheLinePrice: priceBreakdown?.skipTheLinePrice || 0,
-        });
-
-        // Create booking first (include skip-the-line in total)
         const payload = {
-          scheduleId: schedule._id,
-          numberOfTickets: numberOfTickets,
+          items: itemsPayload,
           paymentMethod: paymentDetails.type,
           paymentId: paymentDetails.id,
-          skipTheLineEnabled: product?.skipTheLine?.enabled || false,
-          skipTheLinePrice: priceBreakdown?.skipTheLinePrice || 0,
           ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
         };
 
-        if (schedule._id && String(schedule._id).startsWith('virtual_')) {
-          payload.virtualScheduleData = {
-            productId: product._id,
-            date: schedule.date,
-            time: schedule.time,
-            endTime: schedule.endTime,
-            price: product.price || 0,
-            capacity: 100,
-            currency: 'EUR'
-          };
-        }
+        console.log('📤 Sending bulk booking request:', payload);
+        const { data } = await api.post('/api/bookings/bulk-manual-checkout', payload);
+        console.log('✅ Bulk booking created successfully:', data);
+        
+        clearCircuit();
+        navigate('/booking-success', { state: { bookings: data.bookings, isCircuit: true, paymentReference: data.paymentReference } });
 
-        console.log('📤 Sending booking request:', payload);
-        const { data } = await api.post('/api/bookings', payload);
-        console.log('✅ Booking created successfully:', data);
-        navigate('/booking-success', { state: { booking: data } });
+      } else {
+        // Mode Classique: Single Booking
+        if (bookingId) {
+          const { data } = await api.put(`/api/bookings/${bookingId}`, {
+            paymentMethod: paymentDetails.type,
+            paymentId: paymentDetails.id,
+            ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
+          });
+          navigate('/booking-success', { state: { booking: data } });
+        } else {
+          if (!schedule._id) {
+            setError('Erreur: Créneau horaire invalide.');
+            setLoading(false);
+            return;
+          }
+
+          const payload = {
+            scheduleId: schedule._id,
+            numberOfTickets: numberOfTickets,
+            paymentMethod: paymentDetails.type,
+            paymentId: paymentDetails.id,
+            skipTheLineEnabled: product?.skipTheLine?.enabled || false,
+            skipTheLinePrice: skipTheLine && product?.skipTheLine?.enabled ? Number(product.skipTheLine.additionalPrice) * numberOfTickets : 0,
+            ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress })
+          };
+
+          if (String(schedule._id).startsWith('virtual_')) {
+            payload.virtualScheduleData = {
+              productId: product._id,
+              date: schedule.date,
+              time: schedule.time,
+              endTime: schedule.endTime || '',
+              price: product.price || 0,
+              capacity: 100,
+              currency: 'EUR'
+            };
+          }
+
+          console.log('📤 Sending booking request:', payload);
+          const { data } = await api.post('/api/bookings', payload);
+          console.log('✅ Booking created successfully:', data);
+          navigate('/booking-success', { state: { booking: data } });
+        }
       }
     } catch (err) {
       console.error('❌ Booking creation failed:', err.response?.data || err.message);
@@ -139,7 +162,7 @@ const CheckoutPage = () => {
     }
   };
 
-  if (!product || !schedule) {
+  if (checkoutItems.length === 0) {
     return null;
   }
 
@@ -147,46 +170,65 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 id="checkout-title" className="text-3xl font-bold text-gray-900 mb-8">Complete your booking</h1>
+          <h1 id="checkout-title" className="text-3xl font-bold text-gray-900 mb-8">
+            {isCircuit ? 'Validation de votre circuit' : 'Complete your booking'}
+          </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Booking Summary */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Product Info */}
+              {/* Items List */}
               <section className="bg-white rounded-xl border border-gray-200 p-6" aria-labelledby="booking-details-heading">
-                <h2 id="booking-details-heading" className="text-xl font-bold mb-4">Booking Details</h2>
-                <div className="flex gap-4">
-                  <img 
-                    src={product.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'} 
-                    alt={product.title}
-                    className="w-24 h-24 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-2">{product.title}</h3>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <MapPin size={14} className="mr-2" />
-                        {product.city}
+                <h2 id="booking-details-heading" className="text-xl font-bold mb-4">
+                  {isCircuit ? 'Détails du circuit' : 'Booking Details'}
+                </h2>
+                
+                <div className="space-y-6">
+                  {checkoutItems.map((item, idx) => (
+                    <div key={idx} className={`flex gap-4 ${idx !== 0 ? 'pt-6 border-t border-gray-100' : ''}`}>
+                      <img 
+                        src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'} 
+                        alt={item.product?.title}
+                        className="w-24 h-24 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-2">{item.product?.title}</h3>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <MapPin size={14} className="mr-2 text-emerald-600" />
+                            {item.product?.city}
+                          </div>
+                          {item.schedule?.date && (
+                            <div className="flex items-center">
+                              <Calendar size={14} className="mr-2 text-emerald-600" />
+                              <span className="capitalize">{format(new Date(item.schedule.date), 'EEEE d MMMM yyyy', { locale: fr })}</span>
+                            </div>
+                          )}
+                          {item.schedule?.time && (
+                            <div className="flex items-center">
+                              <Clock size={14} className="mr-2 text-emerald-600" />
+                              {item.schedule.time}
+                            </div>
+                          )}
+                          <div className="flex items-center mt-2">
+                            <span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-800">
+                              {item.numberOfTickets} billet(s)
+                            </span>
+                            {item.skipTheLine && (
+                              <span className="ml-2 flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-md">
+                                <CheckCircle size={12} /> Coupe-file
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Calendar size={14} className="mr-2" />
-                        {new Date(schedule.date).toLocaleDateString('fr-FR', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock size={14} className="mr-2" />
-                        {schedule.time}
-                      </div>
-                      <div className="flex items-center">
-                        <Users size={14} className="mr-2" />
-                        {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}
+                      <div className="text-right">
+                        <span className="font-bold text-gray-900">
+                          {formatPrice(item.priceBreakdown?.subtotal || 0)}
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </section>
 
@@ -216,35 +258,37 @@ const CheckoutPage = () => {
               <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
                 <h2 id="price-summary-heading" className="text-xl font-bold mb-4">Price Summary</h2>
                 
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-gray-700">
-                    <span>{formatPrice(priceBreakdown?.basePrice || 0, 'EUR')} × {numberOfTickets} ticket{numberOfTickets > 1 ? 's' : ''}</span>
-                    <span>{formatPrice(priceBreakdown?.baseTotal || 0, 'EUR')}</span>
+                {isCircuit ? (
+                  <div className="space-y-3 mb-6">
+                    {checkoutItems.map((item, idx) => (
+                      <div key={idx} className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                        <span className="text-gray-800 font-medium mb-1 truncate">{item.product?.title}</span>
+                        <div className="flex justify-between text-gray-500">
+                          <span>{item.numberOfTickets}x Billet(s)</span>
+                          <span className="font-medium text-gray-900">{formatPrice(item.priceBreakdown?.subtotal || 0)}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  {priceBreakdown?.skipTheLinePrice > 0 && (
+                ) : (
+                  <div className="space-y-3 mb-4">
                     <div className="flex justify-between text-gray-700">
-                      <span className="flex items-center gap-1">
-                        <span>⚡</span>
-                        Skip-the-Line ({product?.skipTheLine?.type || 'Fast Track'})
-                      </span>
-                      <span>{formatPrice(priceBreakdown.skipTheLinePrice, 'EUR')}</span>
+                      <span>{checkoutItems[0]?.numberOfTickets} ticket(s)</span>
+                      <span>{formatPrice(checkoutItems[0]?.priceBreakdown?.subtotal || 0)}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between text-gray-700">
-                    <span>Service fee</span>
-                    <span>{formatPrice(0, 'EUR')}</span>
                   </div>
-                </div>
+                )}
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold">Total</span>
-                    <span className="text-2xl font-bold text-green-700">{formatPrice(totalPrice, 'EUR')}</span>
+                    <span className="text-2xl font-bold text-green-700">{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-4" aria-live="polite">
-                  Free cancellation up to 24 hours before the experience starts
+                <p className="text-xs text-gray-500 mt-4 flex items-center gap-1" aria-live="polite">
+                  <Lock size={12} className="text-emerald-600" />
+                  Paiement 100% sécurisé
                 </p>
               </div>
             </aside>

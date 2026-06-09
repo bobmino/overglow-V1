@@ -2,10 +2,12 @@ import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { trackBooking } from '../utils/analytics';
+import { useCurrency } from '../context/CurrencyContext';
 
 const BookingSuccessPage = () => {
   const location = useLocation();
-  const { booking } = location.state || {};
+  const { formatPrice } = useCurrency();
+  const { booking, bookings, isCircuit, paymentReference } = location.state || {};
 
   // Track booking conversion
   useEffect(() => {
@@ -27,31 +29,42 @@ const BookingSuccessPage = () => {
         category: booking.schedule?.product?.category,
         city: booking.schedule?.product?.city,
       });
+    } else if (isCircuit && bookings && bookings.length > 0) {
+      // Pour le circuit, on traque chaque réservation ou un event global
+      bookings.forEach(b => {
+        trackBooking({
+          id: b._id,
+          _id: b._id,
+          totalAmount: b.totalAmount || b.totalPrice,
+          totalPrice: b.totalPrice || b.totalAmount,
+          numberOfTickets: b.numberOfTickets,
+          productId: b.schedule?.product?._id,
+        });
+      });
     }
-  }, [booking]);
+  }, [booking, bookings, isCircuit]);
 
-  if (!booking) {
+  if (!booking && (!bookings || bookings.length === 0)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">No booking information found</p>
-          <Link to="/" className="text-green-700 font-semibold hover:underline">
-            Return to Home
+          <p className="text-gray-600 mb-4">Aucune information de réservation trouvée</p>
+          <Link to="/" className="text-emerald-700 font-semibold hover:underline">
+            Retour à l'accueil
           </Link>
         </div>
       </div>
     );
   }
 
-  const resolvedTotalPrice = typeof booking.totalPrice === 'number'
-    ? booking.totalPrice
-    : (typeof booking.totalAmount === 'number'
-        ? booking.totalAmount
-        : (booking.schedule?.price || 0) * (booking.numberOfTickets || 0));
+  const itemsToDisplay = isCircuit ? bookings : [booking];
+  
+  const totalAmountGlobal = itemsToDisplay.reduce((acc, curr) => {
+    const amount = typeof curr.totalPrice === 'number' ? curr.totalPrice : (typeof curr.totalAmount === 'number' ? curr.totalAmount : ((curr.schedule?.price || 0) * (curr.numberOfTickets || 0)));
+    return acc + amount;
+  }, 0);
 
-  const formattedTotalPrice = Number.isFinite(resolvedTotalPrice)
-    ? resolvedTotalPrice.toFixed(2)
-    : null;
+  const referenceGlobal = paymentReference || booking?._id?.slice(-8).toUpperCase();
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -59,58 +72,62 @@ const BookingSuccessPage = () => {
         <div className="max-w-2xl mx-auto">
           {/* Success Icon */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-              <CheckCircle size={48} className="text-green-700" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 rounded-full mb-4">
+              <CheckCircle size={48} className="text-emerald-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
-            <p className="text-gray-600">Your reservation has been successfully confirmed</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {isCircuit ? 'Circuit Confirmé !' : 'Réservation Confirmée !'}
+            </h1>
+            <p className="text-gray-600">Votre réservation a été confirmée avec succès</p>
           </div>
 
           {/* Booking Details */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6">
-            <h2 className="text-xl font-bold mb-6">Booking Details</h2>
+          <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6 shadow-sm">
+            <h2 className="text-xl font-bold mb-6">Détails de la réservation</h2>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Booking Reference</p>
-                <p className="font-bold text-lg">#{booking._id?.slice(-8).toUpperCase()}</p>
+                <p className="text-sm text-gray-500 mb-1">Référence de paiement</p>
+                <p className="font-bold text-lg text-emerald-700">{referenceGlobal}</p>
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="font-bold text-gray-900 mb-3">
-                  {booking.schedule?.product?.title || 'Experience'}
+              <div className="border-t border-gray-100 pt-6">
+                <h3 className="font-bold text-gray-900 mb-4">
+                  {isCircuit ? 'Votre itinéraire' : 'Votre expérience'}
                 </h3>
                 
-                <div className="space-y-2 text-gray-700">
-                  <div className="flex items-center">
-                    <MapPin size={16} className="mr-2 text-gray-400" />
-                    {booking.schedule?.product?.city}
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar size={16} className="mr-2 text-gray-400" />
-                    {new Date(booking.schedule?.date).toLocaleDateString('fr-FR', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock size={16} className="mr-2 text-gray-400" />
-                    {booking.schedule?.time}
-                  </div>
-                  <div className="flex items-center">
-                    <Users size={16} className="mr-2 text-gray-400" />
-                    {booking.numberOfTickets} ticket{booking.numberOfTickets > 1 ? 's' : ''}
-                  </div>
+                <div className="space-y-6">
+                  {itemsToDisplay.map((item, idx) => (
+                    <div key={item._id || idx} className={`space-y-2 text-gray-700 ${idx !== 0 ? 'pt-4 border-t border-gray-50' : ''}`}>
+                      <p className="font-semibold text-gray-900">{item.schedule?.product?.title || 'Expérience'}</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center">
+                          <MapPin size={14} className="mr-2 text-emerald-500" />
+                          {item.schedule?.product?.city}
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar size={14} className="mr-2 text-emerald-500" />
+                          {new Date(item.schedule?.date).toLocaleDateString('fr-FR')}
+                        </div>
+                        <div className="flex items-center">
+                          <Clock size={14} className="mr-2 text-emerald-500" />
+                          {item.schedule?.time}
+                        </div>
+                        <div className="flex items-center">
+                          <Users size={14} className="mr-2 text-emerald-500" />
+                          {item.numberOfTickets} billet{item.numberOfTickets > 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="border-t pt-4">
+              <div className="border-t border-gray-100 pt-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Paid</span>
-                  <span className="text-2xl font-bold text-green-700">
-                    {formattedTotalPrice ? `€${formattedTotalPrice}` : 'Amount unavailable'}
+                  <span className="text-gray-600">Total à payer</span>
+                  <span className="text-2xl font-bold text-emerald-600">
+                    {formatPrice(totalAmountGlobal, 'EUR')}
                   </span>
                 </div>
               </div>
@@ -118,12 +135,12 @@ const BookingSuccessPage = () => {
           </div>
 
           {/* Next Steps */}
-          <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mb-6">
-            <h3 className="font-bold text-blue-900 mb-3">What's Next?</h3>
+          <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 mb-6">
+            <h3 className="font-bold text-blue-900 mb-3">Et ensuite ?</h3>
             <ul className="space-y-2 text-blue-800 text-sm">
-              <li>• A confirmation email has been sent to your email address</li>
-              <li>• You can view and manage your booking in your dashboard</li>
-              <li>• Free cancellation is available up to 24 hours before the experience</li>
+              <li>• Un email de confirmation a été envoyé à votre adresse</li>
+              <li>• Vous pouvez gérer vos réservations depuis votre tableau de bord</li>
+              <li>• Annulation gratuite jusqu'à 24h avant le début de l'expérience</li>
             </ul>
           </div>
 
@@ -131,15 +148,15 @@ const BookingSuccessPage = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
               to="/dashboard" 
-              className="flex-1 bg-green-700 text-white text-center py-3 rounded-lg font-bold hover:bg-green-800 transition"
+              className="flex-1 bg-emerald-600 text-white text-center py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
             >
-              View My Bookings
+              Voir mes réservations
             </Link>
             <Link 
               to="/" 
-              className="flex-1 bg-white border-2 border-gray-300 text-gray-700 text-center py-3 rounded-lg font-bold hover:bg-gray-50 transition"
+              className="flex-1 bg-white border-2 border-gray-200 text-gray-700 text-center py-3 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-300 transition"
             >
-              Back to Home
+              Retour à l'accueil
             </Link>
           </div>
         </div>

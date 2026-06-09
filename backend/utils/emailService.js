@@ -234,3 +234,64 @@ export const sendOperatorApprovedEmail = async (user) => {
     console.error('❌ Error sending operator approved email:', error.message);
   }
 };
+
+// Send circuit booking confirmation email
+export const sendCircuitBookingConfirmation = async (bookings, user, paymentReference) => {
+  if (!bookings || bookings.length === 0) return;
+
+  // Création du HTML pour le circuit complet (E-ticket Premium)
+  const itemsHtml = bookings.map(b => `
+    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;">
+      <h3 style="margin: 0 0 10px; color: #111827;">${b.schedule?.product?.title}</h3>
+      <p style="margin: 5px 0; color: #4b5563;">📍 ${b.schedule?.product?.city}</p>
+      <p style="margin: 5px 0; color: #4b5563;">📅 ${new Date(b.schedule?.date).toLocaleDateString('fr-FR')} à ${b.schedule?.time}</p>
+      <p style="margin: 5px 0; color: #4b5563;">🎟️ ${b.numberOfTickets} billet(s)</p>
+    </div>
+  `).join('');
+
+  const totalAmount = bookings.reduce((acc, curr) => acc + (curr.totalPrice || curr.totalAmount || 0), 0);
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1>Circuit Confirmé !</h1>
+        <p>Merci pour votre confiance, ${user.name}</p>
+      </div>
+      <div style="padding: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb;">
+        <p>Votre circuit a été enregistré avec succès.</p>
+        <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; color: #6b7280; font-size: 14px;">Référence de paiement globale :</p>
+          <p style="margin: 5px 0 0; font-weight: bold; font-size: 18px; color: #059669;">${paymentReference}</p>
+        </div>
+        <div style="margin-top: 30px;">
+          <h2 style="color: #111827; border-bottom: 2px solid #059669; padding-bottom: 10px;">Votre Itinéraire</h2>
+          ${itemsHtml}
+        </div>
+        <div style="margin-top: 20px; text-align: right;">
+          <h2 style="color: #111827;">Total payé : ${totalAmount.toFixed(2)} €</h2>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '🌍 Votre circuit est confirmé - Overglow Trip',
+    html: htmlContent,
+  };
+
+  if (!transporter || !isEmailEnabled()) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📧 [DEV] Email Circuit would be sent to:', user.email);
+    }
+    return;
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Circuit booking confirmation email sent to:', user.email);
+  } catch (error) {
+    console.error('❌ Error sending circuit booking confirmation email:', error.message);
+  }
+};

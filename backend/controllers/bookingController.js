@@ -5,7 +5,7 @@ import Product from '../models/productModel.js';
 import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
-import { sendBookingConfirmation, sendCancellationEmail, sendOperatorBookingNotification } from '../utils/emailService.js';
+import { sendBookingConfirmation, sendCancellationEmail, sendOperatorBookingNotification, sendCircuitBookingConfirmation } from '../utils/emailService.js';
 import { notifyNewBooking } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
@@ -488,6 +488,236 @@ const markBookingHandled = async (req, res, next) => {
   }
 };
 
+// @desc    Bulk checkout for circuits
+// @route   POST /api/bookings/bulk-manual-checkout
+// @access  Private
+const bulkManualCheckout = async (req, res, next) => {
+  let session = null;
+  let transactionActive = false;
+
+  try {
+    const { items, paymentMethod, paymentId, deliveryAddress } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Le circuit est vide ou invalide.' });
+    }
+
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+      transactionActive = true;
+    } catch (err) {
+      logger.warn('Transactions non supportées. Mode dégradé activé.', { message: err.message });
+      transactionActive = false;
+    }
+
+    // Générer la référence de paiement unique
+    const paymentReference = 'OG-CIRCUIT-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    const createdBookings = [];
+    const operatorsToNotify = new Set();
+    let totalCircuitAmount = 0;
+
+    for (const item of items) {
+      const {
+        scheduleId,
+        numberOfTickets,
+        skipTheLineEnabled,
+        virtualScheduleData
+      } = item;
+
+      let targetScheduleId = scheduleId;
+      const isVirtual = String(scheduleId).startsWith('virtual_');
+
+      // Résoudre les créneaux virtuels
+      if (isVirtual) {
+        if (!virtualScheduleData) {
+          throw new Error('Données de créneau manquantes pour la réservation ouverte');
+        }
+
+        let existingScheduleQuery = Schedule.findOne({
+          product: virtualScheduleData.productId,
+          date: virtualScheduleData.date,
+          time: virtualScheduleData.time,
+        });
+
+        if (transactionActive && session) {
+          existingScheduleQuery = existingScheduleQuery.session(session);
+        }
+        let existingSchedule = await existingScheduleQuery;
+
+        if (!existingSchedule) {
+          const createData = {
+            product: virtualScheduleData.productId,
+            date: virtualScheduleData.date,
+            time: virtualScheduleData.time,
+            endTime: virtualScheduleData.endTime,
+            capacity: virtualScheduleData.capacity || 100,
+            price: virtualScheduleData.price || 0,
+            currency: virtualScheduleData.currency || 'EUR',
+          };
+
+          if (transactionActive && session) {
+            const createdArr = await Schedule.create([createData], { session });
+            existingSchedule = createdArr[0];
+          } else {
+            existingSchedule = await Schedule.create(createData);
+          }
+        }
+        targetScheduleId = existingSchedule._id;
+      }
+
+      // Check disponibilité
+      if (!isVirtual) {
+        const availabilityCheck = await checkAvailability(targetScheduleId, numberOfTickets);
+        if (!availabilityCheck.available) {
+          throw new Error(`Le créneau pour une de vos activités n'est plus disponible: ${availabilityCheck.reason}`);
+        }
+
+        const reservation = await reserveCapacity(targetScheduleId, numberOfTickets);
+        if (!reservation.success) {
+          throw new Error(`Erreur lors de la réservation de capacité: ${reservation.reason}`);
+        }
+      }
+
+      // Récupérer le produit et le schedule
+      let scheduleQuery = Schedule.findById(targetScheduleId).populate('product');
+      if (transactionActive && session) {
+        scheduleQuery = scheduleQuery.session(session);
+      }
+      const scheduleDoc = await scheduleQuery;
+
+      if (!scheduleDoc || !scheduleDoc.product) {
+        throw new Error('Produit ou créneau introuvable.');
+      }
+
+      const productDoc = scheduleDoc.product;
+
+      let operatorId = productDoc.operator;
+      if (!operatorId) {
+        const Operator = (await import('../models/operatorModel.js')).default;
+        const defaultOp = await Operator.findOne();
+        operatorId = defaultOp ? defaultOp._id : null;
+      }
+
+      if (operatorId) {
+        operatorsToNotify.add(operatorId.toString());
+      }
+
+      const tickets = Number(numberOfTickets) || 1;
+      const ticketPrice = Number(scheduleDoc.price || productDoc.price) || 0;
+      const baseTotal = ticketPrice * tickets;
+      
+      const skipLinePrice = skipTheLineEnabled && productDoc.skipTheLine?.enabled 
+        ? Number(productDoc.skipTheLine.additionalPrice) 
+        : 0;
+      const skipTheLineAmount = skipLinePrice * tickets;
+      
+      const totalAmount = baseTotal + skipTheLineAmount;
+      totalCircuitAmount += totalAmount;
+
+      const serviceDate = scheduleDoc.date ? new Date(scheduleDoc.date) : new Date();
+      const payoutDate = new Date(serviceDate);
+      payoutDate.setDate(payoutDate.getDate() + 7);
+
+      const bookingData = {
+        user: req.user._id,
+        schedule: targetScheduleId,
+        operator: operatorId,
+        numberOfTickets: tickets,
+        totalAmount,
+        totalPrice: totalAmount,
+        status: 'Pending', // pending until admin validate the payment
+        paymentIntentId: paymentId || '',
+        paymentStatus: 'pending',
+        paymentMethod: paymentMethod || 'bank_transfer',
+        paymentReference: paymentReference,
+        deliveryAddress: deliveryAddress || '',
+        payoutStatus: 'pending',
+        payoutDate,
+        payoutEligibleDate: payoutDate,
+      };
+
+      let createdBooking;
+      if (transactionActive && session) {
+        const savedArr = await Booking.create([bookingData], { session });
+        createdBooking = savedArr[0];
+      } else {
+        createdBooking = await Booking.create(bookingData);
+      }
+
+      // Add booking to schedule
+      scheduleDoc.bookings.push(createdBooking._id);
+      if (transactionActive && session) {
+        await scheduleDoc.save({ session });
+      } else {
+        await scheduleDoc.save();
+      }
+
+      const populatedBooking = await Booking.findById(createdBooking._id)
+        .populate({
+          path: 'schedule',
+          populate: { path: 'product' },
+        });
+
+      createdBookings.push(populatedBooking);
+    }
+
+    if (transactionActive && session) {
+      await session.commitTransaction();
+      transactionActive = false;
+    }
+
+    if (session) {
+      session.endSession();
+      session = null;
+    }
+
+    // Post-booking notifications (asynchrones)
+    try {
+      if (typeof sendCircuitBookingConfirmation === 'function') {
+        sendCircuitBookingConfirmation(createdBookings, req.user, paymentReference).catch(err => 
+          logger.error('Error sending circuit booking confirmation', { message: err?.message })
+        );
+      }
+
+      // Update loyalty stats
+      updateUserStatsAfterBooking(req.user._id, totalCircuitAmount).catch(err =>
+        logger.error('Error updating user loyalty stats', { message: err?.message })
+      );
+
+      // Mettre à jour les métriques pour chaque produit/opérateur unique
+      const productIds = [...new Set(createdBookings.map(b => b.schedule.product._id.toString()))];
+      productIds.forEach(pid => {
+        updateProductMetrics(pid).catch(err => logger.error('Error updating product metrics', { message: err?.message }));
+      });
+
+      operatorsToNotify.forEach(oid => {
+        updateOperatorMetrics(oid).catch(err => logger.error('Error updating operator metrics', { message: err?.message }));
+        // Optionnel : Notifier les opérateurs
+      });
+
+    } catch (err) {
+      logger.error('Post-booking operations failed', { message: err.message });
+    }
+
+    res.status(201).json({
+      success: true,
+      bookings: createdBookings,
+      paymentReference
+    });
+
+  } catch (error) {
+    if (transactionActive && session) {
+      await session.abortTransaction();
+    }
+    if (session) session.endSession();
+
+    logger.error('Bulk manual checkout error', { message: error.message, stack: error.stack });
+    res.status(400).json({ message: error.message || 'Erreur lors de la création du circuit.' });
+  }
+};
+
 export {
   createPaymentIntent,
   createBooking,
@@ -495,4 +725,5 @@ export {
   updateBookingNote,
   markBookingHandled,
   validateAndConfirmBookingPayment,
+  bulkManualCheckout,
 };

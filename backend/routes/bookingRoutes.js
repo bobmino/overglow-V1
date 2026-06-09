@@ -1,12 +1,14 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled } from '../controllers/bookingController.js';
+import { createPaymentIntent, createBooking, getMyBookings, updateBookingNote, markBookingHandled, bulkManualCheckout } from '../controllers/bookingController.js';
 import { getRefundCalculation, cancelBookingRequest, processRefundRequest } from '../controllers/cancellationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/create-payment-intent', protect, createPaymentIntent);
+
+router.post('/bulk-manual-checkout', protect, bulkManualCheckout);
 
 router.post(
   '/',
