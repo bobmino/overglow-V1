@@ -67,14 +67,21 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
       available: availability.available,
     });
 
-    // Check if schedule date/time has passed
-    const scheduleDateTime = new Date(schedule.date);
+    // FIX TIMEZONE BUG
+    const dateObj = new Date(schedule.date);
+    // Trick: Add 12 hours to bypass any Midnight UTC boundary shift caused by local timezones
+    const midDay = new Date(dateObj.getTime() + 12 * 60 * 60 * 1000);
+    const year = midDay.getUTCFullYear();
+    const month = midDay.getUTCMonth();
+    const date = midDay.getUTCDate();
     
-    // CORRECTION: Vérifier que schedule.time existe avant de le parser
+    let hours = 0, minutes = 0;
     if (schedule.time) {
-      const [hours, minutes] = schedule.time.split(':').map(Number);
-      scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
+      [hours, minutes] = schedule.time.split(':').map(Number);
     }
+    
+    // Create the date in local server time
+    const scheduleDateTime = new Date(year, month, date, hours, minutes || 0, 0, 0);
     
     console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
@@ -155,12 +162,35 @@ export const reserveCapacity = async (scheduleId, numberOfTickets) => {
       };
     }
 
-    // Check if schedule date/time has passed
-    const scheduleDateTime = new Date(schedule.date);
-    const [hours, minutes] = schedule.time.split(':').map(Number);
-    scheduleDateTime.setHours(hours, minutes || 0, 0, 0);
+    // FIX TIMEZONE BUG
+    const dateObj = new Date(schedule.date);
+    // Trick: Add 12 hours to bypass any Midnight UTC boundary shift caused by local timezones
+    const midDay = new Date(dateObj.getTime() + 12 * 60 * 60 * 1000);
+    const year = midDay.getUTCFullYear();
+    const month = midDay.getUTCMonth();
+    const date = midDay.getUTCDate();
+    
+    let hours = 0, minutes = 0;
+    if (schedule.time) {
+      [hours, minutes] = schedule.time.split(':').map(Number);
+    }
+    
+    // Create the date in local server time
+    const scheduleDateTime = new Date(year, month, date, hours, minutes || 0, 0, 0);
 
-    if (scheduleDateTime < new Date()) {
+    const now = new Date();
+    // Buffer de 2 heures pour les réservations de dernière minute
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+
+    console.log('🔒 reserveCapacity Time check:', {
+      scheduleDate: schedule.date,
+      scheduleTime: schedule.time,
+      scheduleDateTime: scheduleDateTime.toISOString(),
+      now: now.toISOString(),
+      twoHoursAgo: twoHoursAgo.toISOString()
+    });
+
+    if (scheduleDateTime < twoHoursAgo) {
       await session.abortTransaction();
       return {
         success: false,
