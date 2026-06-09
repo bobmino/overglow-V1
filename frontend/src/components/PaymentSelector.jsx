@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CreditCard, Building, Wallet, Banknote, Truck, Copy, CheckCircle, AlertCircle, Landmark } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../config/axios';
 
-// Initialize Stripe (replace with your publishable key)
-const stripePromise = loadStripe('pk_test_placeholder').catch(err => {
-  console.warn('Failed to load Stripe.js. This is expected if the client is offline or blocking third-party payment scripts:', err);
-  return null;
-});
+// FIX TDZ : Ne pas appeler loadStripe() au niveau module car cela cause un
+// ReferenceError lors du build Vite si la variable est accédée avant initialisation.
+// On utilise un pattern lazy : la Promise est créée une seule fois, au premier rendu.
+let _stripePromise = null;
+const getStripePromise = () => {
+  if (!_stripePromise) {
+    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder';
+    _stripePromise = loadStripe(key).catch(err => {
+      console.warn('Failed to load Stripe.js. Payments via card will be unavailable:', err.message);
+      return null;
+    });
+  }
+  return _stripePromise;
+};
 
 const StripeForm = ({ amount, onSuccess, onError }) => {
   const stripe = useStripe();
@@ -350,7 +359,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       <div className="mt-8">
         {method === 'stripe' && (
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200">
-            <Elements stripe={stripePromise}>
+            {/* FIX: on passe la Promise lazy pour éviter le crash TDZ au build */}
+            <Elements stripe={getStripePromise()}>
               <StripeForm amount={amount} onSuccess={handleSuccess} onError={handleError} />
             </Elements>
           </div>

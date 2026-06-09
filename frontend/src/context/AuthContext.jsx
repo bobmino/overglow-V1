@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    isLoading: loading, // alias pour compatibilité avec les composants qui utilisent isLoading
     login,
     logout,
     updateUser,

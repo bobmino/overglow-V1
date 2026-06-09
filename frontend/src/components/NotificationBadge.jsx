@@ -5,7 +5,10 @@ import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
 
 const NotificationBadge = () => {
-  const { isAuthenticated } = useAuth();
+  // FIX 401 : on attend que l'état d'auth soit stabilisé avant d'appeler l'API.
+  // Sans ce garde, le composant appelle /api/notifications/unread-count AVANT que
+  // le token soit injecté, ce qui génère un 401 au montage sur CheckoutPage.
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSupported, setIsSupported] = useState(false);
 
@@ -17,7 +20,9 @@ const NotificationBadge = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    // FIX 401 : Ne pas appeler l'API tant que l'auth est en cours de chargement
+    // ou que l'utilisateur n'est pas authentifié.
+    if (authLoading || !isAuthenticated) return;
 
     const fetchUnreadCount = async () => {
       try {
@@ -42,7 +47,7 @@ const NotificationBadge = () => {
       window.removeEventListener('notificationsRead', handleNotificationsRead);
       clearInterval(interval);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
