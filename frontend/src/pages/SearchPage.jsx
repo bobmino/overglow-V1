@@ -158,22 +158,20 @@ const SearchPage = () => {
           data = response.data;
         } else {
           const params = new URLSearchParams();
-          const genericQuery = searchQuery || selectedCity || 'Agadir';
-          params.append('q', genericQuery);
+          if (searchQuery) params.append('q', searchQuery);
+          else if (selectedCity) params.append('city', selectedCity);
           params.append('page', page);
           params.append('limit', 20);
           const response = await api.get(`/api/products?${params.toString()}`);
           data = response.data;
         }
-        
-        // Throw to trigger fallback if empty
-        const productsArray = Array.isArray(data?.products) ? data.products : (Array.isArray(data) ? data : []);
-        if (productsArray.length === 0) {
-          throw new Error('Empty results from API');
-        }
       } catch (err) {
-        console.warn('API returned empty or failed, using mock data fallback:', err.message);
-        data = { products: servicesMock, pagination: { page: 1, totalPages: 1, total: servicesMock.length } };
+        console.warn('API request failed:', err.message);
+        if (import.meta.env.DEV) {
+          data = { products: servicesMock, pagination: { page: 1, totalPages: 1, total: servicesMock.length } };
+        } else {
+          data = { products: [], pagination: { page: 1, totalPages: 0, total: 0 } };
+        }
       }
       return data;
     },

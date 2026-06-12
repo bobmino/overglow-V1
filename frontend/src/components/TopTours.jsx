@@ -7,54 +7,22 @@ const TopTours = () => {
   const [products, setProducts] = useState([]);
   const scrollContainerRef = useRef(null);
 
-  const fallbackProducts = [
-    {
-      _id: 'fallback_1',
-      title: 'Session de Surf Premium',
-      city: 'Taghazout',
-      category: 'Surf',
-      price: 45,
-      averageRating: 4.9,
-      reviews: new Array(124),
-      images: ['https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&q=80'],
-    },
-    {
-      _id: 'fallback_2',
-      title: 'Aventure Quad dans les Dunes',
-      city: 'Agadir',
-      category: 'Aventure',
-      price: 60,
-      averageRating: 4.8,
-      reviews: new Array(89),
-      images: ['https://images.unsplash.com/photo-1518557984649-7b161c230cfa?w=800&q=80'],
-    },
-    {
-      _id: 'fallback_3',
-      title: 'Hammam Traditionnel & Spa Privé',
-      city: 'Marrakech',
-      category: 'Bien-être',
-      price: 85,
-      averageRating: 5.0,
-      reviews: new Array(210),
-      images: ['https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80'],
-    }
-  ];
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await api.get('/api/products');
-        // Backend may return either an array (legacy) or { products, pagination }
+        const { data } = await api.get('/api/products?limit=8');
         const productsArray = Array.isArray(data) ? data : (data?.products || []);
-        
-        if (!productsArray || productsArray.length === 0) {
-          setProducts(fallbackProducts);
-        } else {
-          setProducts(productsArray.slice(0, 8)); // Limit to 8 products
+
+        if (productsArray.length > 0) {
+          setProducts(productsArray.slice(0, 8));
+          return;
         }
+
+        const { data: recommendations } = await api.get('/api/recommendations/new-user?limit=8');
+        setProducts(Array.isArray(recommendations) ? recommendations.slice(0, 8) : []);
       } catch (error) {
         console.error('Failed to fetch products:', error);
-        setProducts(fallbackProducts); // Set fallback on error
+        setProducts([]);
       }
     };
     fetchProducts();
@@ -90,13 +58,7 @@ const TopTours = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex space-x-4">
-              {(!products || products.length === 0) ? fallbackProducts.map((product, index) => (
-                <TourCard 
-                  key={product?._id || index} 
-                  product={product}
-                  isLikelyToSellOut={index % 3 === 0}
-                />
-              )) : products.map((product, index) => (
+              {products.map((product, index) => (
                 <TourCard 
                   key={product?._id || index} 
                   product={product}

@@ -470,9 +470,6 @@ const getPublishedProducts = async (req, res) => {
         { description: regex }
       ];
     }
-    if (!genericQuery && !city) {
-      query.city = new RegExp('^agadir$', 'i');
-    }
 
     if (city && typeof city === 'string') {
       query.city = new RegExp(escapeRegex(city.trim()), 'i');
@@ -525,7 +522,7 @@ const getPublishedProducts = async (req, res) => {
       total = await Product.countDocuments(fallbackQuery);
     }
     
-    console.log('Search Query:', genericQuery || '(fallback:agadir)', 'Found:', Array.isArray(products) ? products.length : 0);
+    console.log('Search Query:', genericQuery || city || '(all)', 'Found:', Array.isArray(products) ? products.length : 0);
 
     // Ensure we always return an array
     res.json({
