@@ -45,7 +45,7 @@ const ProductCard = ({ product }) => {
       onClick={handleClick}
       className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
     >
-      <div className="relative h-64 overflow-hidden bg-slate-200">
+      <div className="relative aspect-[3/4] overflow-hidden bg-slate-200">
         <img 
           src={image} 
           alt={product.title} 

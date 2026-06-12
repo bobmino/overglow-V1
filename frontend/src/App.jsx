@@ -6,15 +6,7 @@ import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
 
 // Critical components (loaded immediately)
-import Hero from './components/Hero';
-import Features from './components/Features';
-import TopDestinations from './components/TopDestinations';
-import FlexibilityBanner from './components/FlexibilityBanner';
-import TopAttractions from './components/TopAttractions';
-import TopTours from './components/TopTours';
-import WarmDestinations from './components/WarmDestinations';
-import AuthCTA from './components/AuthCTA';
-import RecommendedProducts from './components/RecommendedProducts';
+import Home from './pages/Home';
 import PrivateRoute from './components/PrivateRoute';
 import OperatorRoute from './components/OperatorRoute';
 
@@ -98,20 +90,7 @@ function App() {
         <CartDrawer />
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={
-            <>
-              <Hero />
-              <Features />
-              <TopDestinations />
-              <FlexibilityBanner />
-              {/* Sections masquées temporairement car elles contiennent des données factices (Paris, Londres, etc.) */}
-              {/* <TopAttractions /> */}
-              {/* <TopTours /> */}
-              <RecommendedProducts title="Pour vous" type="personalized" limit={8} />
-              {/* <WarmDestinations /> */}
-              <AuthCTA />
-            </>
-          } />
+          <Route index element={<Home />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="destinations/:city" element={
             <Suspense fallback={<LoadingFallback />}>
