@@ -236,7 +236,7 @@ const createProduct = async (req, res) => {
     }
     
     // Invalidate cache for search and product listings
-    clearCache();
+    await clearCache('cache:*');
     
     res.status(201).json(createdProduct);
   } catch (error) {
@@ -398,7 +398,7 @@ const updateProduct = async (req, res) => {
       }
       
       // Invalidate cache
-      clearCache();
+      await clearCache('cache:*');
       
       res.json(updatedProduct);
   } catch (error) {
@@ -439,7 +439,7 @@ const deleteProduct = async (req, res) => {
       await product.deleteOne();
       
       // Invalidate cache
-      clearCache();
+      await clearCache('cache:*');
       
       res.json({ message: 'Product removed' });
     } else {
@@ -763,7 +763,7 @@ const webhookImportProduct = async (req, res) => {
     }
 
     // Clear cache upon successful import
-    clearCache();
+    await clearCache('cache:*');
 
     return res.status(201).json({
       success: true,
@@ -781,14 +781,14 @@ const webhookImportProduct = async (req, res) => {
 // @desc    Clear cache manually via webhook
 // @route   POST /api/products/webhook/clear-cache
 // @access  Private via X-API-KEY
-const clearCacheWebhook = (req, res) => {
+const clearCacheWebhook = async (req, res) => {
   const apiKey = req.headers['x-api-key'];
   if (!process.env.IMPORT_WEBHOOK_API_KEY || apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
     return res.status(401).json({ success: false, message: 'Unauthorized webhook key' });
   }
 
   try {
-    clearCache();
+    await clearCache('cache:*');
     return res.json({ success: true, message: 'Cache cleared successfully' });
   } catch (error) {
     console.error('Clear cache error:', error);

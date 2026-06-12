@@ -1,88 +1,82 @@
-import NodeCache from 'node-cache';
-import { logger } from '../utils/logger.js';
+// backend/middleware/cacheMiddleware.js
+import { Redis } from '@upstash/redis';
+import dotenv from 'dotenv';
 
-// Initialize the cache with default settings
-// stdTTL: standard time to live in seconds (default 0 = unlimited)
-// checkperiod: period in seconds for the automatic delete check interval
-const cache = new NodeCache({ stdTTL: 0, checkperiod: 120 });
+dotenv.config();
+
+// Initialisation du client Upstash Redis via HTTP (Stateless pour Serverless)
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
 /**
- * Cache middleware generator
- * @param {number} duration - Cache duration in seconds
- * @returns {Function} Express middleware function
+ * Middleware de Cache global avec Fallback automatique
+ * @param {number} duration - Durée de vie du cache en secondes
  */
-export const cacheMiddleware = (duration) => {
-  return (req, res, next) => {
-    // Only cache GET requests
-    if (req.method !== 'GET') {
-      return next();
-    }
+export const cache = (duration = 900) => {
+  return async (req, res, next) => {
+    // On ne met en cache que les requêtes GET
+    if (req.method !== 'GET') return next();
 
-    // Build the cache key based on original URL (includes query string)
-    const key = `__express__${req.originalUrl || req.url}`;
-    
-    // Check if key exists in cache
-    const cachedBody = cache.get(key);
-    
-    if (cachedBody) {
-      // Cache HIT
-      res.setHeader('X-Cache', 'HIT');
-      return res.json(cachedBody);
-    } else {
-      // Cache MISS
+    // Génération d'une clé unique incluant la langue si disponible dans les headers
+    const lang = req.headers['accept-language'] || 'fr';
+    const cacheKey = `cache:${lang}:${req.originalUrl}`;
+
+    try {
+      // Tentative de récupération dans le cache Upstash
+      const cachedData = await redis.get(cacheKey);
+
+      if (cachedData) {
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cachedData);
+      }
+
+      // Si MISS, on intercepte la méthode res.json pour stocker la réponse avant envoi
       res.setHeader('X-Cache', 'MISS');
-      
-      // Override res.json to intercept the response and cache it
       const originalJson = res.json;
-      res.json = (body) => {
-        // Only cache successful responses
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          cache.set(key, body, duration);
-        }
-        
-        // Restore original res.json and call it
+
+      res.json = function (data) {
         res.json = originalJson;
-        return res.json(body);
+        
+        // Sauvegarde asynchrone dans Redis en arrière-plan sans bloquer la requête
+        redis.set(cacheKey, data, { ex: duration }).catch((err) => {
+          console.error(`[Redis Error] Échec de l'écriture pour la clé ${cacheKey}:`, err);
+        });
+
+        return res.json(data);
       };
-      
+
+      next();
+    } catch (error) {
+      // FAIL-SAFE : Si Upstash est indisponible, on loggue l'erreur et on passe à la DB
+      console.error('[Redis Error] Erreur critique de lecture du cache, fallback vers la DB:', error);
+      res.setHeader('X-Cache', 'BYPASS_ERROR');
       next();
     }
   };
 };
 
 /**
- * Manually clear cache entries that match a prefix or exact key
- * @param {string|RegExp|null} pattern - The pattern to match, or null to clear everything
+ * Invalidation globale des clés de cache par préfixe
+ * @param {string} prefix - Le préfixe à supprimer (ex: "cache:")
  */
-export const clearCache = (pattern = null) => {
+export const clearCache = async (prefix = 'cache:*') => {
   try {
-    if (!pattern) {
-      cache.flushAll();
-      logger.info('Cache completely flushed');
-      return;
-    }
+    // Recherche et suppression des clés correspondantes au pattern
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await redis.scan(cursor, { match: prefix, count: 100 });
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } while (cursor !== "0");
     
-    const keys = cache.keys();
-    let keysToDelete = [];
-    
-    if (pattern instanceof RegExp) {
-      keysToDelete = keys.filter(k => pattern.test(k));
-    } else if (typeof pattern === 'string') {
-      // Clear exact match or prefix
-      keysToDelete = keys.filter(k => k === pattern || k.startsWith(`__express__${pattern}`));
-    }
-    
-    if (keysToDelete.length > 0) {
-      cache.del(keysToDelete);
-      logger.info(`Cache cleared for ${keysToDelete.length} keys matching ${pattern}`);
-    }
+    console.log(`[Redis Cache] Invalidation réussie pour le pattern: ${prefix}`);
+    return true;
   } catch (error) {
-    logger.error('Error clearing cache:', error);
+    console.error(`[Redis Error] Échec de l'invalidation du cache pour le préfixe ${prefix}:`, error);
+    return false;
   }
-};
-
-export default {
-  cacheMiddleware,
-  clearCache,
-  instance: cache
 };

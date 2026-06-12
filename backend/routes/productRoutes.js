@@ -8,12 +8,11 @@ import {
   getPublishedProducts,
   getProductById,
   webhookImportProduct,
-  clearCacheWebhook,
 } from '../controllers/productController.js';
 import { createSchedule, getSchedules } from '../controllers/scheduleController.js';
 import { createReview, getProductReviews } from '../controllers/reviewController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
+import { cache, clearCache } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
@@ -62,7 +61,7 @@ const productUpdateValidationRules = [
 ];
 
 router.route('/')
-  .get(cacheMiddleware(900), getPublishedProducts)
+  .get(cache(900), getPublishedProducts)
   .post(
     protect,
     authorize('Opérateur', 'Admin'), // Allow both operators and admins
@@ -72,7 +71,15 @@ router.route('/')
 
 router.get('/my-products', protect, authorize('Opérateur'), getMyProducts);
 router.post('/webhook/import', webhookImportProduct);
-router.post('/webhook/clear-cache', clearCacheWebhook);
+
+router.post('/webhook/clear-cache', async (req, res) => {
+  // Appel de notre fonction globale d'invalidation
+  const success = await clearCache('cache:*');
+  if (success) {
+    return res.status(200).json({ message: "Cache global vidé avec succès." });
+  }
+  return res.status(500).json({ error: "Erreur lors du nettoyage du cache Redis." });
+});
 
 router.route('/:id')
   .get(getProductById)
