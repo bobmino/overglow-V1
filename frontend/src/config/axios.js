@@ -135,8 +135,10 @@ api.interceptors.response.use(
       });
     }
     
-    // Handle backend silent failure envelope without breaking UI state.
-    if (response?.data && response.data.success === false) {
+    // Handle backend silent failure envelope for booking/checkout flows only.
+    const requestUrl = response.config?.url || '';
+    const isBookingFlow = requestUrl.includes('/api/bookings') || requestUrl.includes('/api/orders');
+    if (isBookingFlow && response?.data && response.data.success === false) {
       const politeMessage = response.data.message || 'Validation de la réservation en cours...';
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('app-toast', {

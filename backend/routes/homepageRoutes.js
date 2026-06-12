@@ -33,7 +33,8 @@ router.get('/layout', async (req, res) => {
     // Cela évite l'écran blanc ou le crash de l'app Front-End
     if (!res.headersSent) {
       res.status(200).json({
-        success: false,
+        success: true,
+        degraded: true,
         message: "Mode dégradé activé suite à une erreur serveur",
         performance: {
           responseTimeMs: 0,

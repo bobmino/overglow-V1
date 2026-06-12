@@ -18,15 +18,23 @@ const CarouselSkeleton = () => (
   </div>
 );
 
+const EMPTY_LAYOUT = {
+  topDestinations: [],
+  offers: { national: [], international: [], insolite: [] },
+  topCircuits: [],
+  topServices: [],
+  topProducts: [],
+};
+
 const Home = () => {
-  const [layout, setLayout] = useState(null);
+  const [layout, setLayout] = useState(EMPTY_LAYOUT);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLayout = async () => {
       try {
         const { data } = await api.get('/api/homepage/layout');
-        if (data.success) {
+        if (data?.layout) {
           setLayout(data.layout);
         }
       } catch (error) {
@@ -39,7 +47,7 @@ const Home = () => {
     fetchLayout();
   }, []);
 
-  if (loading || !layout) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white pb-20">
         {/* Hero loading skeleton */}

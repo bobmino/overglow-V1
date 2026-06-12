@@ -1,8 +1,28 @@
+import mongoose from 'mongoose';
 import Booking from '../models/bookingModel.js';
 import Product from '../models/productModel.js';
 import CategoryGroup from '../models/categoryGroupModel.js';
 import Badge from '../models/badgeModel.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
+import connectDB from '../../config/db.js';
+
+const ensureDbConnected = async () => {
+  if (mongoose.connection?.readyState === 1) return;
+  console.log('[Homepage] Database not connected. Attempting connection...');
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('[Homepage] Failed to connect to database:', err);
+  }
+};
+
+const EMPTY_LAYOUT = {
+  topDestinations: [],
+  offers: { national: [], international: [], insolite: [] },
+  topCircuits: [],
+  topServices: [],
+  topProducts: [],
+};
 
 // Lightweight projection — only the fields the frontend actually needs
 const CARD_PROJECTION = {
@@ -28,6 +48,16 @@ const CARD_PROJECTION = {
 export const getHomepageLayout = async (req, res) => {
   const startTime = Date.now();
   try {
+    await ensureDbConnected();
+    if (mongoose.connection?.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        degraded: true,
+        performance: { responseTimeMs: Date.now() - startTime, cached: false },
+        layout: EMPTY_LAYOUT,
+      });
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // SINGLE parallel batch — every DB round-trip happens here
     // ═══════════════════════════════════════════════════════════════════
@@ -226,10 +256,13 @@ export const getHomepageLayout = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
+    console.error('[Homepage] Layout generation error:', error);
+    res.status(200).json({
+      success: true,
+      degraded: true,
       message: "Erreur lors de la génération du layout de la page d'accueil",
-      error: error.message,
+      performance: { responseTimeMs: Date.now() - startTime, cached: false },
+      layout: EMPTY_LAYOUT,
     });
   }
 };
