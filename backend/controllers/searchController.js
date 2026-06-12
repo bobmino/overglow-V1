@@ -309,8 +309,10 @@ export const advancedSearch = async (req, res) => {
     if (tags) {
       const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
       if (tagsArray.length > 0) {
-        // Find products that have ALL requested tags
-        query.tags = { $all: tagsArray };
+        // Find products that have ALL requested tags case-insensitively
+        query.tags = { 
+          $all: tagsArray.map(tag => new RegExp(`^${escapeRegex(tag)}$`, 'i')) 
+        };
       }
     }
 

@@ -22,6 +22,11 @@ const categoryGroupSchema = mongoose.Schema({
     default: true,
     index: true,
   },
+  isApproved: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
 }, {
   timestamps: true,
 });

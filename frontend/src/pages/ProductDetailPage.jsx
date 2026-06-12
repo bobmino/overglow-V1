@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
 import { trackProductView, trackEvent } from '../utils/analytics';
@@ -39,6 +40,7 @@ const ProductDetailPage = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [productBadges, setProductBadges] = useState([]);
   const [operatorBadges, setOperatorBadges] = useState([]);
   const { formatPrice } = useCurrency();
@@ -813,48 +815,177 @@ const ProductDetailPage = () => {
       </div>
 
       {/* Mobile Sticky Footer */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 p-4 shadow-lg z-50">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-600">{t('product.starting_from', 'À partir de')}</p>
-              <p className="text-2xl font-bold">
-                {hasValidPrice ? formattedMinPrice : t('product.price_unavailable', 'Prix non disponible')}
-              </p>
-            </div>
-            <div className="text-xs text-slate-500 font-medium flex items-center gap-1">
-              <Shield size={12} className="text-emerald-600" />
-              {t('product.secure', 'Sécurisé')}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={handleAddToCart}
-              disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-              className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1"
-            >
-              <span>🛒</span>
-              {t('product.to_cart', 'Au panier')}
-            </button>
-            <button 
-              onClick={handleBookNow}
-              disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-              className="py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
-            >
-              {!hasValidPrice
-                ? t('product.not_available', 'Non dispo.')
-                : !selectedDate
-                ? t('product.date', 'Date')
-                : !selectedTimeSlot
-                ? t('product.time', 'Horaire')
-                : t('product.book', 'Réserver')}
-            </button>
-          </div>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] z-40 flex justify-between items-center">
+        <div>
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{t('product.starting_from', 'À partir de')}</p>
+          <p className="text-xl font-black text-slate-900">
+            {hasValidPrice ? formattedMinPrice : t('product.price_unavailable', 'Prix non disponible')}
+          </p>
         </div>
+        <button
+          onClick={() => setIsMobileDrawerOpen(true)}
+          className="px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition duration-300 shadow-md shadow-emerald-600/10"
+        >
+          {selectedDate && selectedTimeSlot 
+            ? t('product.view_details', 'Modifier / Réserver')
+            : t('product.select_date_btn', 'Sélectionner une date')
+          }
+        </button>
       </div>
 
+      {/* Mobile Booking Drawer */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileDrawerOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black z-50"
+            />
+            {/* Drawer Content */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl p-6 border-t border-slate-100"
+            >
+              {/* Header of Drawer */}
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900">{t('product.booking_options', 'Options de réservation')}</h3>
+                  <p className="text-xs text-slate-500">{product.title}</p>
+                </div>
+                <button
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Booking Widget contents replicated here for Mobile */}
+              <div className="space-y-4">
+                {/* Cancellation Info */}
+                <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center text-green-700 mb-1">
+                    <CheckCircle size={16} className="mr-2" />
+                    <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
+                  </div>
+                  <p className="text-xs text-green-600 leading-tight">
+                    {t('product.free_cancellation_desc', "Annulez jusqu'à 24h à l'avance pour un remboursement complet")}
+                  </p>
+                </div>
+
+                {/* Date Picker */}
+                <div>
+                  <DatePicker 
+                    onDateSelect={setSelectedDate}
+                    selectedDate={selectedDate}
+                  />
+                </div>
+
+                {/* Time Slot Picker */}
+                <div>
+                  <TimeSlotPicker
+                    product={product}
+                    selectedTimeSlot={selectedTimeSlot}
+                    onTimeSlotSelect={setSelectedTimeSlot}
+                    required={true}
+                  />
+                </div>
+
+                {/* Tickets Selector */}
+                <div>
+                  <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+                    <Users size={12} className="inline mr-1" />
+                    {t('product.tickets_count', 'Billets')}
+                  </label>
+                  <div className="flex items-center justify-between border border-slate-300 rounded-xl p-2">
+                    <button
+                      onClick={() => setNumberOfTickets(Math.max(1, numberOfTickets - 1))}
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-lg transition flex items-center justify-center"
+                    >
+                      -
+                    </button>
+                    <span className="text-base font-bold text-slate-800">{numberOfTickets}</span>
+                    <button
+                      onClick={() => setNumberOfTickets(numberOfTickets + 1)}
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-lg transition flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Total Price & Skip the line details */}
+                {selectedDate && selectedTimeSlot && hasValidPrice && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-150">
+                    <div className="flex justify-between items-center mb-1 text-xs">
+                      <span className="text-slate-600">
+                        {formattedMinPrice} × {numberOfTickets} {numberOfTickets > 1 ? t('product.tickets', 'billets') : t('product.ticket', 'billet')}
+                      </span>
+                      <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
+                    </div>
+                    {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
+                      <div className="flex justify-between items-center mb-1.5 text-xs">
+                        <span className="text-slate-500 flex items-center gap-1">
+                          <span>⚡</span>
+                          {t('product.skip_line', 'Coupe-file')}
+                        </span>
+                        <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                      <span className="font-bold text-xs text-slate-800">{t('cart.total', 'Total')}</span>
+                      <span className="font-black text-sm text-emerald-600">
+                        {formatPrice(
+                          (minPrice * numberOfTickets) + 
+                          (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
+                            ? product.skipTheLine.additionalPrice * numberOfTickets 
+                            : 0),
+                          'EUR'
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom Actions inside Drawer */}
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      handleAddToCart();
+                      setIsMobileDrawerOpen(false);
+                    }}
+                    disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
+                    className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1.5"
+                  >
+                    <span>🛒</span>
+                    {t('product.add_to_cart', 'Ajouter au panier')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleBookNow();
+                      setIsMobileDrawerOpen(false);
+                    }}
+                    disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
+                    className="py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
+                  >
+                    {t('product.book_now', 'Réserver maintenant')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Mobile padding to prevent content being hidden by sticky footer */}
-      <div className="lg:hidden h-32"></div>
+      <div className="lg:hidden h-28"></div>
 
       {/* Inquiry Modal */}
       {showInquiryModal && (

@@ -14,9 +14,13 @@ const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
+  const [showLuxuryMenu, setShowLuxuryMenu] = useState(false);
+  const [showServicesMenu, setShowServicesMenu] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const userMenuRef = React.useRef(null);
   const discoverMenuRef = React.useRef(null);
+  const luxuryMenuRef = React.useRef(null);
+  const servicesMenuRef = React.useRef(null);
   const mobileMenuRef = React.useRef(null);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -35,6 +39,16 @@ const Header = () => {
       if (showDiscoverMenu && discoverMenuRef.current && !discoverMenuRef.current.contains(event.target)) {
         setShowDiscoverMenu(false);
       }
+
+      // Close luxury menu if clicked outside
+      if (showLuxuryMenu && luxuryMenuRef.current && !luxuryMenuRef.current.contains(event.target)) {
+        setShowLuxuryMenu(false);
+      }
+
+      // Close services menu if clicked outside
+      if (showServicesMenu && servicesMenuRef.current && !servicesMenuRef.current.contains(event.target)) {
+        setShowServicesMenu(false);
+      }
       
       // Close mobile menu if clicked outside
       if (isMobileMenuOpen) {
@@ -49,7 +63,7 @@ const Header = () => {
     };
 
     // Only add listener if any menu is open
-    if (showUserMenu || showDiscoverMenu || isMobileMenuOpen) {
+    if (showUserMenu || showDiscoverMenu || showLuxuryMenu || showServicesMenu || isMobileMenuOpen) {
       // Use a small delay to avoid immediate closure when opening
       const timeoutId = setTimeout(() => {
         document.addEventListener('mousedown', handleClickOutside);
@@ -60,7 +74,7 @@ const Header = () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [showUserMenu, showDiscoverMenu, isMobileMenuOpen]);
+  }, [showUserMenu, showDiscoverMenu, showLuxuryMenu, showServicesMenu, isMobileMenuOpen]);
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -117,16 +131,57 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
+          {/* Découvrir Dropdown */}
           <div className="relative" ref={discoverMenuRef}>
             <button
-              onClick={() => setShowDiscoverMenu(!showDiscoverMenu)}
+              onClick={() => {
+                setShowDiscoverMenu(!showDiscoverMenu);
+                setShowLuxuryMenu(false);
+                setShowServicesMenu(false);
+              }}
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
               {t('header.discover')}
               <ChevronDown size={16} className={`transition-transform duration-200 ${showDiscoverMenu ? 'rotate-180' : ''}`} />
             </button>
             {showDiscoverMenu && (
-              <DiscoverMenu isOpen={showDiscoverMenu} onClose={() => setShowDiscoverMenu(false)} />
+              <DiscoverMenu isOpen={showDiscoverMenu} onClose={() => setShowDiscoverMenu(false)} menuType="discover" />
+            )}
+          </div>
+
+          {/* Résidences de Luxe Dropdown */}
+          <div className="relative" ref={luxuryMenuRef}>
+            <button
+              onClick={() => {
+                setShowLuxuryMenu(!showLuxuryMenu);
+                setShowDiscoverMenu(false);
+                setShowServicesMenu(false);
+              }}
+              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
+            >
+              Résidences de Luxe
+              <ChevronDown size={16} className={`transition-transform duration-200 ${showLuxuryMenu ? 'rotate-180' : ''}`} />
+            </button>
+            {showLuxuryMenu && (
+              <DiscoverMenu isOpen={showLuxuryMenu} onClose={() => setShowLuxuryMenu(false)} menuType="luxury" />
+            )}
+          </div>
+
+          {/* Services Extras Dropdown */}
+          <div className="relative" ref={servicesMenuRef}>
+            <button
+              onClick={() => {
+                setShowServicesMenu(!showServicesMenu);
+                setShowDiscoverMenu(false);
+                setShowLuxuryMenu(false);
+              }}
+              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
+            >
+              Services Extras
+              <ChevronDown size={16} className={`transition-transform duration-200 ${showServicesMenu ? 'rotate-180' : ''}`} />
+            </button>
+            {showServicesMenu && (
+              <DiscoverMenu isOpen={showServicesMenu} onClose={() => setShowServicesMenu(false)} menuType="services" />
             )}
           </div>
           
