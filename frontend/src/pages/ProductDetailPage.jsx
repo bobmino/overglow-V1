@@ -54,6 +54,14 @@ const ProductDetailPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    const isValidProductId = /^[a-f\d]{24}$/i.test(id);
+    if (!isValidProductId) {
+      setError('Produit introuvable');
+      setLoading(false);
+      navigate('/search', { replace: true });
+      return;
+    }
+
     const fetchProduct = async () => {
       try {
         const { data } = await api.get(`/api/products/${id}`);
@@ -205,7 +213,7 @@ const ProductDetailPage = () => {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id, navigate]);
 
   // Track product view when product is loaded
   useEffect(() => {

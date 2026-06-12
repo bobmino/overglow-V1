@@ -10,8 +10,6 @@ import { X, SlidersHorizontal } from 'lucide-react';
 import { trackSearch } from '../utils/analytics';
 import { normalizeCategory } from '../utils/categoryMapping';
 import { useTranslation } from 'react-i18next';
-import { servicesMock } from '../data/servicesMock';
-
 const SearchPage = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -167,11 +165,7 @@ const SearchPage = () => {
         }
       } catch (err) {
         console.warn('API request failed:', err.message);
-        if (import.meta.env.DEV) {
-          data = { products: servicesMock, pagination: { page: 1, totalPages: 1, total: servicesMock.length } };
-        } else {
-          data = { products: [], pagination: { page: 1, totalPages: 0, total: 0 } };
-        }
+        data = { products: [], pagination: { page: 1, totalPages: 0, total: 0 } };
       }
       return data;
     },
