@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { Users, Building2, Package, Calendar, DollarSign, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import AdminAnalytics from '../components/AdminAnalytics';
 
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
   <div 
@@ -59,10 +60,14 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 bg-slate-50 min-h-screen">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 font-heading">Admin Dashboard</h1>
         <DashboardNavBar />
+      </div>
+
+      <div className="mb-10">
+        <AdminAnalytics />
       </div>
 
       <div className="flex flex-wrap gap-3 mb-8">

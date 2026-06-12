@@ -54,7 +54,7 @@ const DatePicker = ({ onDateSelect, selectedDate = null }) => {
 
     // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-3"></div>);
+      days.push(<div key={`empty-${i}`} className="p-1"></div>);
     }
 
     // Actual days
@@ -69,12 +69,12 @@ const DatePicker = ({ onDateSelect, selectedDate = null }) => {
           type="button"
           disabled={isPast}
           onClick={() => !isPast && handleDateClick(day)}
-          className={`p-3 rounded-lg text-center transition-all text-base font-semibold min-h-[44px] flex items-center justify-center border ${
+          className={`p-1.5 rounded-lg text-center transition-all text-sm font-semibold min-h-[36px] flex items-center justify-center border ${
             isPast
-              ? 'text-slate-300 cursor-not-allowed bg-slate-50 border-slate-200'
+              ? 'text-slate-300 cursor-not-allowed bg-slate-50 border-slate-100'
               : isSelected
               ? 'bg-primary-600 text-white font-bold ring-2 ring-primary-600 border-primary-600'
-              : 'hover:bg-slate-100 text-slate-700 bg-white border-slate-300 hover:border-primary-400'
+              : 'hover:bg-slate-100 text-slate-700 bg-white border-slate-200 hover:border-primary-400'
           }`}
         >
           {day}
@@ -95,51 +95,51 @@ const DatePicker = ({ onDateSelect, selectedDate = null }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl text-left flex items-center justify-between hover:border-primary-500 transition"
+        className="w-full px-3 py-2 border-2 border-slate-300 rounded-xl text-left flex items-center justify-between hover:border-primary-500 transition"
       >
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Date</label>
-          <span className={`text-base font-medium ${selectedDay ? 'text-slate-800' : 'text-slate-400'}`}>
+          <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-0.5">Date</label>
+          <span className={`text-sm font-medium ${selectedDay ? 'text-slate-800' : 'text-slate-400'}`}>
             {formatDisplayDate()}
           </span>
         </div>
-        <Calendar size={20} className="text-slate-400" />
+        <Calendar size={18} className="text-slate-400" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-[9999] w-full min-w-[400px] animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full min-w-[300px] md:min-w-[340px] animate-in fade-in slide-in-from-top-2">
           {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-2 hover:bg-slate-100 rounded-lg transition"
+              className="p-1 hover:bg-slate-100 rounded-lg transition"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-slate-900">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h3>
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-2 hover:bg-slate-100 rounded-lg transition"
+              className="p-1 hover:bg-slate-100 rounded-lg transition"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={18} />
             </button>
           </div>
 
           {/* Day Headers */}
-          <div className="grid grid-cols-7 gap-2 mb-3">
+          <div className="grid grid-cols-7 gap-1 mb-1.5">
             {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
-              <div key={day} className="text-center text-sm font-bold text-slate-600 p-2">
+              <div key={day} className="text-center text-xs font-bold text-slate-500 p-1">
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 min-h-[300px] max-h-[400px] overflow-y-auto">
+          <div className="grid grid-cols-7 gap-1 min-h-[220px] max-h-[300px] overflow-y-auto">
             {renderCalendar()}
           </div>
         </div>

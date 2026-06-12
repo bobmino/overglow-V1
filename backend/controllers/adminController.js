@@ -1066,7 +1066,86 @@ const getOperatorsByBadge = async (req, res) => {
     }
   };
   
-  export {
+  // @desc    Get analytics data for admin dashboard
+// @route   GET /api/admin/analytics
+// @access  Private/Admin
+const getAnalytics = async (req, res) => {
+  try {
+    const Booking = (await import('../models/bookingModel.js')).default;
+    
+    // Revenue per month (last 12 months)
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+    const revenueByMonthRaw = await Booking.aggregate([
+      { 
+        $match: { 
+          createdAt: { $gte: twelveMonthsAgo },
+          status: { $ne: 'Cancelled' }
+        } 
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          revenue: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    const monthsMap = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const revenueByMonth = revenueByMonthRaw.map(item => ({
+      name: `${monthsMap[item._id.month - 1]} ${item._id.year}`,
+      revenue: item.revenue
+    }));
+
+    // Sales by city
+    const recentBookings = await Booking.find({ status: { $ne: 'Cancelled' } })
+      .populate({
+        path: 'schedule',
+        populate: { path: 'product', select: 'city' }
+      });
+
+    const cityCountMap = {};
+    let totalRevenue = 0;
+    
+    recentBookings.forEach(booking => {
+      const city = booking.schedule?.product?.city || 'Autre';
+      if (!cityCountMap[city]) cityCountMap[city] = 0;
+      cityCountMap[city] += 1;
+      totalRevenue += booking.totalPrice || 0;
+    });
+
+    const salesByCity = Object.keys(cityCountMap).map(city => ({
+      name: city,
+      value: cityCountMap[city]
+    }));
+
+    const totalBookings = recentBookings.length;
+    const averageCart = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+
+    res.json({
+      revenueByMonth,
+      salesByCity,
+      kpis: {
+        totalRevenue,
+        totalBookings,
+        averageCart
+      }
+    });
+
+  } catch (error) {
+    console.error('Get analytics error:', error);
+    res.status(500).json({ message: 'Failed to fetch analytics' });
+  }
+};
+
+export {
   getAdminStats,
   getOperators, 
   updateOperatorStatus, 
@@ -1088,4 +1167,5 @@ const getOperatorsByBadge = async (req, res) => {
   getPendingPaymentBookings,
   confirmPayment,
   rejectPayment,
+  getAnalytics,
 };

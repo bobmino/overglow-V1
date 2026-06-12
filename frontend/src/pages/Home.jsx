@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import HeroSection from '../components/HeroSection';
 import DynamicCarousel from '../components/DynamicCarousel';
 import DestinationCard from '../components/DestinationCard';
-import ProductCard from '../components/ProductCard';
+import Features from '../components/Features';
+import FlexibilityBanner from '../components/FlexibilityBanner';
+import AuthCTA from '../components/AuthCTA';
 import api from '../config/axios';
 
 const CarouselSkeleton = () => (
   <div className="w-full px-4 md:px-8 mb-16 animate-pulse">
-    <div className="h-8 bg-slate-200 rounded w-48 mb-8"></div>
+    <div className="h-8 bg-slate-200 rounded-lg w-56 mb-8"></div>
     <div className="flex gap-6 overflow-hidden">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="min-w-[280px] md:min-w-[320px] h-[400px] bg-slate-200 rounded-2xl flex-none"></div>
+        <div key={i} className="min-w-[280px] md:min-w-[320px] h-[400px] bg-slate-100 rounded-2xl flex-none border border-slate-200/50"></div>
       ))}
     </div>
   </div>
@@ -40,7 +42,14 @@ const Home = () => {
   if (loading || !layout) {
     return (
       <div className="min-h-screen bg-white pb-20">
-        <div className="h-[80vh] min-h-[600px] bg-slate-200 animate-pulse mb-16"></div>
+        {/* Hero loading skeleton */}
+        <div className="h-[80vh] min-h-[600px] bg-slate-100 animate-pulse mb-16 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 max-w-lg w-full px-6">
+            <div className="h-12 bg-slate-200 rounded-xl w-3/4"></div>
+            <div className="h-6 bg-slate-200 rounded-lg w-1/2 mb-8"></div>
+            <div className="h-16 bg-slate-200 rounded-full w-full"></div>
+          </div>
+        </div>
         <CarouselSkeleton />
         <CarouselSkeleton />
         <CarouselSkeleton />
@@ -48,55 +57,91 @@ const Home = () => {
     );
   }
 
-  // Extract the first active national and international groups if they exist
-  const exploreMaroc = layout.offers?.national?.[0];
-  const evasionIntl = layout.offers?.international?.[0];
+  // Pick up national groups, international groups, and insolite groups
+  const nationalGroups = layout.offers?.national || [];
+  const internationalGroups = layout.offers?.international || [];
+  const insoliteGroups = layout.offers?.insolite || [];
 
   return (
-    <div className="min-h-screen bg-white pb-20 flex flex-col gap-y-16">
+    <div className="min-h-screen bg-white pb-24 flex flex-col gap-y-20 overflow-x-hidden">
+      {/* 1. Hero Header */}
       <HeroSection />
 
-      {/* Top Destinations */}
+      {/* Trust & Value Add Props */}
+      <Features />
+
+      {/* 2. Top Destinations (Confirmed reservations flow) */}
       {layout.topDestinations && layout.topDestinations.length > 0 && (
-        <DynamicCarousel
-          title="Top Destinations"
-          items={layout.topDestinations}
-          renderCard={(dest) => (
-            <DestinationCard
-              name={dest.city}
-              image={dest.image}
-              toursCount={dest.bookingCount}
+        <div className="w-full">
+          <DynamicCarousel
+            title="Top Destinations"
+            items={layout.topDestinations}
+            renderCard={(dest) => (
+              <DestinationCard
+                name={dest.city}
+                image={dest.image}
+                toursCount={dest.bookingCount}
+              />
+            )}
+          />
+        </div>
+      )}
+
+      {/* 3. Explorez le Maroc (National category groups) */}
+      {nationalGroups.map((group) => (
+        group.products?.length > 0 && (
+          <div className="w-full" key={group._id}>
+            <DynamicCarousel
+              title={group.name}
+              items={group.products}
+              categoryId={group._id}
             />
-          )}
-        />
-      )}
+          </div>
+        )
+      ))}
 
-      {/* Explorez le Maroc (National) */}
-      {exploreMaroc && exploreMaroc.products?.length > 0 && (
-        <DynamicCarousel
-          title={exploreMaroc.name}
-          items={exploreMaroc.products}
-          categoryId={exploreMaroc._id}
-        />
-      )}
+      {/* Flexibility/Trust Banner */}
+      <FlexibilityBanner />
 
-      {/* Évasions Internationales */}
-      {evasionIntl && evasionIntl.products?.length > 0 && (
-        <DynamicCarousel
-          title={evasionIntl.name}
-          items={evasionIntl.products}
-          categoryId={evasionIntl._id}
-        />
-      )}
+      {/* 4. Évasions Internationales (International category groups) */}
+      {internationalGroups.map((group) => (
+        group.products?.length > 0 && (
+          <div className="w-full" key={group._id}>
+            <DynamicCarousel
+              title={group.name}
+              items={group.products}
+              categoryId={group._id}
+            />
+          </div>
+        )
+      ))}
 
-      {/* Expériences & Circuits */}
+      {/* 5. insolite category groups */}
+      {insoliteGroups.map((group) => (
+        group.products?.length > 0 && (
+          <div className="w-full" key={group._id}>
+            <DynamicCarousel
+              title={group.name}
+              items={group.products}
+              categoryId={group._id}
+            />
+          </div>
+        )
+      ))}
+
+      {/* 6. Expériences & Circuits */}
       {layout.topCircuits && layout.topCircuits.length > 0 && (
-        <DynamicCarousel
-          title="Expériences & Circuits"
-          items={layout.topCircuits}
-          searchTag="circuit"
-        />
+        <div className="w-full">
+          <DynamicCarousel
+            title="Expériences & Circuits"
+            items={layout.topCircuits}
+            searchTag="Top Circuit"
+          />
+        </div>
       )}
+
+      {/* Join/Login Call To Action */}
+      <AuthCTA />
     </div>
   );
 };

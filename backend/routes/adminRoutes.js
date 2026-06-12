@@ -21,12 +21,14 @@ import {
   getPendingPaymentBookings,
   confirmPayment,
   rejectPayment,
+  getAnalytics,
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.get('/stats', protect, authorize('Admin'), getAdminStats);
+router.get('/analytics', protect, authorize('Admin'), getAnalytics);
 router.get('/operators', protect, authorize('Admin'), getOperators);
 router.put('/operators/:id/status', protect, authorize('Admin'), updateOperatorStatus);
 router.get('/products', protect, authorize('Admin'), getProducts);

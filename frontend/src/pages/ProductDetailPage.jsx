@@ -679,34 +679,34 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Booking Widget (Sidebar) - Desktop */}
-          <div className="lg:col-span-1 hidden lg:block">
-            <div className="sticky top-28 bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <div className="col-span-12 lg:col-span-4 hidden lg:block">
+            <div className="sticky top-28 h-fit bg-white border border-slate-100 rounded-2xl p-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
               {/* Cancellation Policy */}
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center text-green-700 mb-1">
-                  <CheckCircle size={18} className="mr-2" />
-                  <span className="font-bold">{t('product.free_cancellation', 'Annulation gratuite')}</span>
+              <div className="mb-2.5 p-2.5 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center text-green-700 mb-0.5">
+                  <CheckCircle size={16} className="mr-2" />
+                  <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
                 </div>
-                <p className="text-sm text-green-600">
+                <p className="text-[11px] text-green-600 leading-tight">
                   {t('product.free_cancellation_desc', "Annulez jusqu'à 24h à l'avance pour un remboursement complet")}
                 </p>
               </div>
 
               {/* Price Display */}
-              <div className="mb-6">
-                <p className="text-sm text-slate-600 mb-1">{t('product.starting_from', 'À partir de')}</p>
+              <div className="mb-2.5">
+                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">{t('product.starting_from', 'À partir de')}</p>
                 {hasValidPrice ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">{formattedMinPrice}</span>
-                    <span className="text-slate-600">{t('product.price_per_ticket', 'par personne')}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-slate-900">{formattedMinPrice}</span>
+                    <span className="text-[11px] text-slate-500">{t('product.price_per_ticket', 'par personne')}</span>
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-sm">{t('product.price_unavailable_contact', 'Prix non disponible. Veuillez contacter le support.')}</p>
+                  <p className="text-slate-500 text-xs">{t('product.price_unavailable_contact', 'Prix non disponible. Veuillez contacter le support.')}</p>
                 )}
               </div>
 
               {/* Date Picker */}
-              <div className="mb-4">
+              <div className="mb-2.5">
                 <DatePicker 
                   onDateSelect={setSelectedDate}
                   selectedDate={selectedDate}
@@ -714,7 +714,7 @@ const ProductDetailPage = () => {
               </div>
 
               {/* Time Slot Picker */}
-              <div className="mb-6">
+              <div className="mb-2.5">
                 <TimeSlotPicker
                   product={product}
                   selectedTimeSlot={selectedTimeSlot}
@@ -724,22 +724,22 @@ const ProductDetailPage = () => {
               </div>
 
               {/* Tickets Selector */}
-              <div className="mb-6">
-                <label className="block text-sm font-bold text-slate-700 mb-3">
-                  <Users size={16} className="inline mr-2" />
+              <div className="mb-2.5">
+                <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+                  <Users size={12} className="inline mr-1" />
                   {t('product.tickets_count', 'Billets')}
                 </label>
-                <div className="flex items-center justify-between border-2 border-slate-300 rounded-xl p-3">
+                <div className="flex items-center justify-between border border-slate-300 rounded-xl p-1.5">
                   <button
                     onClick={() => setNumberOfTickets(Math.max(1, numberOfTickets - 1))}
-                    className="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xl transition"
+                    className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-base transition flex items-center justify-center"
                   >
                     -
                   </button>
-                  <span className="text-xl font-bold">{numberOfTickets}</span>
+                  <span className="text-sm font-bold text-slate-800">{numberOfTickets}</span>
                   <button
                     onClick={() => setNumberOfTickets(numberOfTickets + 1)}
-                    className="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xl transition"
+                    className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-base transition flex items-center justify-center"
                   >
                     +
                   </button>
@@ -748,25 +748,25 @@ const ProductDetailPage = () => {
 
               {/* Total Price */}
               {selectedDate && selectedTimeSlot && hasValidPrice && (
-                <div className="mb-6 p-4 bg-slate-50 rounded-xl">
-                  <div className="flex justify-between items-center mb-2">
+                <div className="mb-2.5 p-2 bg-slate-50 rounded-xl border border-slate-150">
+                  <div className="flex justify-between items-center mb-0.5 text-xs">
                     <span className="text-slate-600">
                       {formattedMinPrice} × {numberOfTickets} {numberOfTickets > 1 ? t('product.tickets', 'billets') : t('product.ticket', 'billet')}
                     </span>
-                    <span className="font-bold">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
+                    <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
                   </div>
                   {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
-                    <div className="flex justify-between items-center mb-2 text-sm">
-                      <span className="text-slate-600 flex items-center gap-1">
+                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                      <span className="text-slate-500 flex items-center gap-1">
                         <span>⚡</span>
-                        {t('product.skip_line', 'Coupe-file')} ({product.skipTheLine.type})
+                        {t('product.skip_line', 'Coupe-file')}
                       </span>
-                      <span className="font-bold">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
+                      <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                    <span className="font-bold text-slate-900">{t('cart.total', 'Total')}</span>
-                    <span className="font-bold text-lg text-primary-700">
+                  <div className="flex justify-between items-center pt-1.5 border-t border-slate-200">
+                    <span className="font-bold text-xs text-slate-800">{t('cart.total', 'Total')}</span>
+                    <span className="font-black text-sm text-emerald-600">
                       {formatPrice(
                         (minPrice * numberOfTickets) + 
                         (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
@@ -783,7 +783,7 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleBookNow}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                className="w-full py-4 bg-emerald-600 text-white font-bold text-lg rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
+                className="w-full py-2 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {!hasValidPrice
                   ? t('product.price_unavailable', 'Prix non disponible')
@@ -797,14 +797,14 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                className="w-full mt-3 py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full mt-2 py-2 border border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm"
               >
                 <span>🛒</span>
                 {t('product.add_to_cart', 'Ajouter au panier')}
               </button>
 
-              <p className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4 font-medium">
-                <Shield size={14} className="text-emerald-600" />
+              <p className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 mt-3 font-semibold">
+                <Shield size={12} className="text-emerald-500" />
                 {t('product.secure_payment', 'Paiement sécurisé et crypté')}
               </p>
             </div>

@@ -17,9 +17,9 @@ const ProductCard = ({ product }) => {
     ? formatImageUrl(product.images[0])
     : fallbackImage;
 
-  // Calculate average rating (placeholder logic if no reviews yet)
-  const rating = 4.8; 
-  const reviewCount = 124;
+  // Calculate average rating and review counts dynamically from backend metrics
+  const rating = product.metrics?.averageRating ? Number(product.metrics.averageRating).toFixed(1) : '4.8';
+  const reviewCount = product.metrics?.reviewCount !== undefined ? product.metrics.reviewCount : 124;
 
   const schedulePrices = Array.isArray(product.schedules)
     ? product.schedules

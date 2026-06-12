@@ -39,7 +39,7 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-4 py-3 border-2 rounded-xl text-left flex items-center justify-between transition ${
+        className={`w-full px-3 py-2 border-2 rounded-xl text-left flex items-center justify-between transition ${
           required && !selectedTimeSlot
             ? 'border-red-300 bg-red-50'
             : selectedTimeSlot
@@ -48,28 +48,28 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
         }`}
       >
         <div className="flex items-center gap-3">
-          <Clock size={20} className="text-slate-400" />
+          <Clock size={18} className="text-slate-400" />
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-0.5">
               Plage horaire {required && <span className="text-red-500">*</span>}
             </label>
-            <span className={`text-base font-medium ${selectedTimeSlot ? 'text-slate-800' : 'text-slate-400'}`}>
+            <span className={`text-sm font-medium ${selectedTimeSlot ? 'text-slate-800' : 'text-slate-400'}`}>
               {selectedTimeSlot ? formatTimeSlot(selectedTimeSlot) : 'Sélectionner une plage horaire'}
             </span>
           </div>
         </div>
-        <ChevronDown size={20} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={18} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-[9999] w-full">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full">
           <div className="space-y-2">
             {timeSlots.map((slot, index) => (
               <button
                 key={index}
                 type="button"
                 onClick={() => handleSlotSelect(slot)}
-                className={`w-full px-4 py-3 rounded-lg text-left transition ${
+                className={`w-full px-3 py-2 rounded-lg text-left transition text-sm ${
                   selectedTimeSlot &&
                   selectedTimeSlot.startTime === slot.startTime &&
                   selectedTimeSlot.endTime === slot.endTime
