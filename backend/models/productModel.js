@@ -22,6 +22,11 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  categoryGroup: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CategoryGroup',
+    index: true,
+  },
   productType: {
     type: String,
     enum: ['tour', 'luxury_stay', 'service'],
@@ -157,6 +162,13 @@ const productSchema = mongoose.Schema({
     isLocal100: { type: Boolean, default: false },
   },
   
+  // Tags explicites (ex: "Top Produit", "Top Circuit")
+  tags: {
+    type: [String],
+    default: [],
+    index: true,
+  },
+  
   // Badges produits
   badges: [{
     badgeId: {
@@ -205,6 +217,13 @@ const productSchema = mongoose.Schema({
   timestamps: true,
   strict: false,
 });
+
+// Performance compound indexes for Sprint 1
+productSchema.index({ status: 1, productType: 1 });
+productSchema.index({ status: 1, tags: 1 });
+productSchema.index({ status: 1, categoryGroup: 1 });
+productSchema.index({ status: 1, city: 1 });
+productSchema.index({ status: 1, 'metrics.averageRating': -1 });
 
 const Product = mongoose.model('Product', productSchema, 'products');
 
