@@ -6,13 +6,14 @@ const MobileBottomNav = () => {
   const location = useLocation();
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  // Don't show on dashboard routes
+  // Don't show on dashboard routes or product detail pages (where a specific sticky footer exists)
   if (location.pathname.startsWith('/operator') || 
       location.pathname.startsWith('/admin') ||
       location.pathname.startsWith('/dashboard') ||
       location.pathname.startsWith('/profile') ||
       location.pathname.startsWith('/booking') ||
-      location.pathname.startsWith('/checkout')) {
+      location.pathname.startsWith('/checkout') ||
+      location.pathname.startsWith('/products/')) {
     return null;
   }
 
