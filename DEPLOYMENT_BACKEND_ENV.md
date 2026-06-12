@@ -52,7 +52,11 @@ Pour que le backend fonctionne correctement sur Vercel, vous devez configurer le
    - Exemple : `notifications@votredomaine.com`
    - Par défaut : `onboarding@resend.dev`
 
-10. **NODE_ENV**
+10. **CLOUDINARY_CLOUD_NAME**, **CLOUDINARY_API_KEY**, **CLOUDINARY_API_SECRET**
+   - Description : Stockage d'images en production (recommandé)
+   - Sans Cloudinary, les images sont stockées en base64 dans MongoDB (fonctionne mais moins performant)
+
+11. **NODE_ENV**
    - Description : Environnement d'exécution
    - Valeurs : `development` ou `production`
    - Par défaut : `production` sur Vercel

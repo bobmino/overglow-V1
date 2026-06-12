@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../config/axios';
+import { formatImageUrl } from '../utils/formatImage';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -602,7 +603,7 @@ const OperatorProductFormPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               {Array.isArray(formData.images) && formData.images.map((img, index) => (
                 <div key={index} className="relative group">
-                  <img src={img} alt={`Product ${index}`} className="w-full h-24 object-cover rounded-lg" />
+                  <img src={formatImageUrl(img)} alt={`Product ${index}`} className="w-full h-24 object-cover rounded-lg" />
                   <button
                     type="button"
                     onClick={() => {

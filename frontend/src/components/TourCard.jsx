@@ -3,14 +3,16 @@ import { Link } from 'react-router-dom';
 import { Star, MapPin, Heart } from 'lucide-react';
 import BadgeDisplay from './BadgeDisplay';
 import { useCurrency } from '../context/CurrencyContext';
+import { formatImageUrl } from '../utils/formatImage';
 
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
   if (!product) return null;
   const { formatPrice } = useCurrency();
-  
-  const image = Array.isArray(product.images) && product.images.length > 0 
-    ? product.images[0] 
-    : 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
+
+  const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
+  const image = Array.isArray(product.images) && product.images.length > 0
+    ? formatImageUrl(product.images[0])
+    : fallbackImage;
 
   const rating = 4.5 + Math.random() * 0.5;
   const reviewCount = Math.floor(Math.random() * 10000) + 1000;
@@ -25,6 +27,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           src={image} 
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+          onError={(e) => { e.target.src = fallbackImage; }}
         />
         {isLikelyToSellOut && (
           <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
