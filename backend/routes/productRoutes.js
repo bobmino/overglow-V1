@@ -13,6 +13,7 @@ import { createSchedule, getSchedules } from '../controllers/scheduleController.
 import { createReview, getProductReviews } from '../controllers/reviewController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { cache, clearCache } from '../middleware/cacheMiddleware.js';
+import notificationHub from '../services/notificationHub.js';
 
 const router = express.Router();
 
@@ -79,6 +80,40 @@ router.post('/webhook/clear-cache', async (req, res) => {
     return res.status(200).json({ message: "Cache global vidé avec succès." });
   }
   return res.status(500).json({ error: "Erreur lors du nettoyage du cache Redis." });
+});
+
+// Route de Test Automatique pour la synchronisation de notification et envoi d'email
+router.get('/test-sync-notification', (req, res) => {
+  const mockPayload = {
+    to: 'bob.mino@gmail.com',
+    booking: {
+      _id: '66a1a2b3c4d5e6f7a8b9c0d1',
+      totalAmount: 150.00,
+      numberOfTickets: 2,
+      schedule: {
+        date: new Date(),
+        time: '10:00',
+        product: {
+          title: 'Visite VIP du Jardin Majorelle',
+          operatorWhatsapp: '212600000000',
+          operator: 'operator_id_123',
+        }
+      }
+    },
+    user: {
+      name: 'Bob Mino',
+      email: 'bob.mino@gmail.com'
+    },
+    whatsappLink: '212600000000'
+  };
+
+  // Dispatch de l'événement en arrière-plan
+  notificationHub.dispatch('BOOKING_SUCCESS', mockPayload);
+
+  res.status(200).json({
+    success: true,
+    message: "Événement BOOKING_SUCCESS dispatché avec succès pour bob.mino@gmail.com. Vérifiez les logs backend.",
+  });
 });
 
 router.route('/:id')

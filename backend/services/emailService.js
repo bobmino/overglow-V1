@@ -1,7 +1,14 @@
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const resend = new Resend(process.env.RESEND_API_KEY || '');
+
 const formatDate = (rawDate) => {
-  if (!rawDate) return 'Date a confirmer';
+  if (!rawDate) return 'À confirmer';
   const date = new Date(rawDate);
-  if (Number.isNaN(date.getTime())) return 'Date a confirmer';
+  if (Number.isNaN(date.getTime())) return 'À confirmer';
   return date.toLocaleDateString('fr-FR', {
     weekday: 'long',
     year: 'numeric',
@@ -16,61 +23,144 @@ const formatAmount = (value) => {
 };
 
 export const getBookingConfirmationPremiumTemplate = ({ booking, user, whatsappLink }) => {
-  const productTitle = booking?.schedule?.product?.title || 'Votre experience Overglow';
-  const bookingRef = booking?._id ? `#${booking._id.toString().slice(-8).toUpperCase()}` : 'A confirmer';
-  const guideWhatsapp = whatsappLink || booking?.schedule?.product?.operatorWhatsapp || '';
+  const productTitle = booking?.schedule?.product?.title || booking?.product?.title || 'Votre expérience Overglow';
+  const bookingRef = booking?._id ? `#${booking._id.toString().slice(-8).toUpperCase()}` : 'À CONFIRMER';
+  const guideWhatsapp = whatsappLink || booking?.schedule?.product?.operatorWhatsapp || booking?.product?.operatorWhatsapp || '';
   const whatsappUrl = guideWhatsapp
     ? `https://wa.me/${String(guideWhatsapp).replace(/\D+/g, '')}`
     : null;
 
   const html = `
-  <div style="background:#f4f7fb;padding:30px 12px;font-family:Arial,sans-serif;color:#0f172a;">
-    <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
-      <div style="background:linear-gradient(120deg,#0f172a,#1d4ed8);padding:22px 24px;color:#fff;">
-        <div style="font-size:22px;font-weight:800;letter-spacing:.4px;">Overglow</div>
-        <div style="font-size:13px;opacity:.9;margin-top:6px;">E-ticket de confirmation</div>
-      </div>
-      <div style="padding:24px;">
-        <h2 style="margin:0 0 10px 0;font-size:22px;">Reservation confirmee</h2>
-        <p style="margin:0 0 16px 0;font-size:14px;line-height:1.6;">
-          Bonjour ${user?.name || 'voyageur'}, votre reservation est bien enregistree. Retrouvez votre recapitulatif ci-dessous.
-        </p>
-        <div style="border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;background:#f8fafc;">
-          <p style="margin:0 0 8px 0;font-weight:700;">${productTitle}</p>
-          <p style="margin:0 0 6px 0;font-size:14px;"><strong>Date:</strong> ${formatDate(booking?.schedule?.date)}</p>
-          <p style="margin:0 0 6px 0;font-size:14px;"><strong>Heure:</strong> ${booking?.schedule?.time || 'A confirmer'}</p>
-          <p style="margin:0 0 6px 0;font-size:14px;"><strong>Billets:</strong> ${booking?.numberOfTickets || 1}</p>
-          <p style="margin:0 0 6px 0;font-size:14px;"><strong>Total:</strong> ${formatAmount(booking?.totalAmount)}</p>
-          <p style="margin:0;font-size:14px;"><strong>Reference:</strong> ${bookingRef}</p>
-        </div>
-        ${
-          whatsappUrl
-            ? `<div style="margin-top:18px;">
-                <a href="${whatsappUrl}" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700;">
-                  Contacter mon guide sur WhatsApp
-                </a>
-              </div>`
-            : ''
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Votre Confirmation Overglow</title>
+      <style>
+        @media only screen and (max-width: 600px) {
+          .container { width: 100% !important; padding: 20px !important; }
         }
-        <p style="margin-top:18px;font-size:12px;color:#64748b;">
-          Astuce: conservez cet email comme e-ticket. Une version PDF pourra etre ajoutee automatiquement ulterieurement.
-        </p>
-      </div>
-    </div>
-  </div>
+      </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fafafa; padding: 40px 0;">
+        <tr>
+          <td align="center">
+            <table class="container" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border: 1px solid #eaeaea; border-radius: 0px; padding: 40px; text-align: left;">
+              <!-- Header -->
+              <tr>
+                <td style="padding-bottom: 40px; border-bottom: 1px solid #eaeaea;">
+                  <span style="font-size: 24px; font-weight: 800; letter-spacing: 6px; text-transform: uppercase; color: #000000; font-family: Georgia, serif;">OVERGLOW</span>
+                </td>
+              </tr>
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px 0 30px 0;">
+                  <h1 style="margin: 0 0 16px 0; font-size: 26px; font-weight: 400; color: #000000; font-family: Georgia, serif; line-height: 1.3;">Réservation Confirmée.</h1>
+                  <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #404040;">
+                    Bonjour ${user?.name || 'Voyageur'},<br><br>
+                    Votre demande de réservation a été validée avec succès. Vous trouverez ci-dessous votre e-ticket avec tous les détails de votre expérience.
+                  </p>
+                </td>
+              </tr>
+              <!-- Ticket Box -->
+              <tr>
+                <td style="padding-bottom: 30px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fcfcfc; border: 1px solid #000000; padding: 24px;">
+                    <tr>
+                      <td style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #737373; font-weight: 600; padding-bottom: 8px;">
+                        Expérience
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-size: 18px; font-weight: 600; color: #000000; padding-bottom: 20px; font-family: Georgia, serif;">
+                        ${productTitle}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td width="50%" style="padding-bottom: 15px; font-size: 14px; color: #404040;">
+                              <strong style="color: #000000;">Date :</strong><br>
+                              ${formatDate(booking?.schedule?.date || booking?.date)}
+                            </td>
+                            <td width="50%" style="padding-bottom: 15px; font-size: 14px; color: #404040;">
+                              <strong style="color: #000000;">Heure :</strong><br>
+                              ${booking?.schedule?.time || booking?.time || 'À confirmer'}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td width="50%" style="font-size: 14px; color: #404040;">
+                              <strong style="color: #000000;">Billets :</strong><br>
+                              ${booking?.numberOfTickets || 1}
+                            </td>
+                            <td width="50%" style="font-size: 14px; color: #404040;">
+                              <strong style="color: #000000;">Référence :</strong><br>
+                              <span style="font-family: monospace; font-size: 13px; font-weight: bold; background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${bookingRef}</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-top: 25px; border-top: 1px solid #eaeaea; font-size: 16px; font-weight: 600; color: #000000;">
+                        Montant Total : ${formatAmount(booking?.totalAmount)}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!-- Call to action -->
+              ${
+                whatsappUrl
+                  ? `<tr>
+                      <td style="padding: 10px 0 30px 0; align-items: center;">
+                        <a href="${whatsappUrl}" style="display: block; text-align: center; background-color: #000000; color: #ffffff; text-decoration: none; padding: 15px 25px; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; border-radius: 0px;">
+                          Contacter le guide WhatsApp
+                        </a>
+                      </td>
+                    </tr>`
+                  : ''
+              }
+              <!-- Footer Info -->
+              <tr>
+                <td style="padding-top: 30px; border-top: 1px solid #eaeaea; font-size: 12px; line-height: 1.5; color: #737373; text-align: center;">
+                  Cet email fait office de confirmation officielle et d'e-ticket d'embarquement.<br>
+                  Pour toute question, veuillez répondre directement à cet email.<br><br>
+                  <strong style="color: #000000; letter-spacing: 2px; text-transform: uppercase;">Overglow Travel</strong>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
   `;
 
   return {
-    subject: 'Votre e-ticket Overglow - Reservation confirmee',
+    subject: `Votre confirmation Overglow - ${bookingRef}`,
     html,
-    pdf: {
-      enabled: false,
-      // Placeholder for future integration (react-pdf/html-pdf)
-      payload: {
-        title: 'E-ticket Overglow',
-        bookingReference: bookingRef,
-        productTitle,
-      },
-    },
   };
+};
+
+export const sendBookingConfirmationEmail = async ({ to, booking, user, whatsappLink }) => {
+  const { subject, html } = getBookingConfirmationPremiumTemplate({ booking, user, whatsappLink });
+  const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
+
+  try {
+    const data = await resend.emails.send({
+      from: `Overglow <${fromEmail}>`,
+      to: [to],
+      subject: subject,
+      html: html,
+    });
+    console.log(`[Resend Email] Email de confirmation envoyé avec succès à ${to} :`, data);
+    return { success: true, data };
+  } catch (error) {
+    console.error(`[Resend Email Error] Échec de l'envoi de l'email de confirmation à ${to} :`, error);
+    throw error;
+  }
 };
