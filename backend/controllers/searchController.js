@@ -263,6 +263,7 @@ export const advancedSearch = async (req, res) => {
       locationLng,
       radius, // in km
       skipTheLine, // Filter for skip-the-line products
+      tags, // Filter by tags (comma separated)
       sortBy = 'recommended',
       page = 1,
       limit = 20
@@ -302,6 +303,15 @@ export const advancedSearch = async (req, res) => {
     // Skip-the-Line filter
     if (skipTheLine === 'true' || skipTheLine === true) {
       query['skipTheLine.enabled'] = true;
+    }
+
+    // Tags / Reassurance badges filter
+    if (tags) {
+      const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
+      if (tagsArray.length > 0) {
+        // Find products that have ALL requested tags
+        query.tags = { $all: tagsArray };
+      }
     }
 
     // Price filter - we'll filter after getting products with schedules
