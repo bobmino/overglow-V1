@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Music } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-slate-900 text-white">
       {/* Trustpilot Banner */}
@@ -27,10 +29,10 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-sm mb-4">Support</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/help" className="hover:text-white transition">Centre d'aide</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition">Nous contacter</Link></li>
-              <li><Link to="/faq" className="hover:text-white transition">FAQ</Link></li>
-              <li><Link to="/safety" className="hover:text-white transition">Sécurité</Link></li>
+              <li><Link to="/help" className="hover:text-white transition">{t('footer.help_center', "Centre d'aide")}</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition">{t('footer.contact_us', "Nous contacter")}</Link></li>
+              <li><Link to="/faq" className="hover:text-white transition">{t('footer.faq', "FAQ")}</Link></li>
+              <li><Link to="/safety" className="hover:text-white transition">{t('footer.safety', "Sécurité")}</Link></li>
             </ul>
           </div>
 
@@ -38,11 +40,11 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-sm mb-4">À propos</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/about" className="hover:text-white transition">Qui sommes-nous</Link></li>
-              <li><Link to="/culture" className="hover:text-white transition">Découvrir le Maroc</Link></li>
-              <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
-              <li><Link to="/careers" className="hover:text-white transition">Carrières</Link></li>
-              <li><Link to="/press" className="hover:text-white transition">Presse</Link></li>
+              <li><Link to="/about" className="hover:text-white transition">{t('footer.about', "Qui sommes-nous")}</Link></li>
+              <li><Link to="/culture" className="hover:text-white transition">{t('footer.discover_morocco', "Découvrir le Maroc")}</Link></li>
+              <li><Link to="/blog" className="hover:text-white transition">{t('footer.blog', "Blog")}</Link></li>
+              <li><Link to="/careers" className="hover:text-white transition">{t('footer.careers', "Carrières")}</Link></li>
+              <li><Link to="/press" className="hover:text-white transition">{t('footer.press', "Presse")}</Link></li>
             </ul>
           </div>
 
@@ -50,10 +52,10 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-sm mb-4">Pour les opérateurs</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/affiliate" className="hover:text-white transition">Devenir partenaire</Link></li>
-              <li><Link to="/operator/help" className="hover:text-white transition">Centre d'aide opérateur</Link></li>
-              <li><Link to="/operator/resources" className="hover:text-white transition">Ressources</Link></li>
-              <li><Link to="/operator/community" className="hover:text-white transition">Communauté</Link></li>
+              <li><Link to="/affiliate" className="hover:text-white transition">{t('footer.become_partner', "Devenir partenaire")}</Link></li>
+              <li><Link to="/operator/help" className="hover:text-white transition">{t('footer.operator_help', "Centre d'aide opérateur")}</Link></li>
+              <li><Link to="/operator/resources" className="hover:text-white transition">{t('footer.operator_resources', "Ressources")}</Link></li>
+              <li><Link to="/operator/community" className="hover:text-white transition">{t('footer.operator_community', "Communauté")}</Link></li>
             </ul>
           </div>
 
@@ -61,10 +63,10 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-sm mb-4">Légal</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/terms" className="hover:text-white transition">Conditions d'utilisation</Link></li>
-              <li><Link to="/privacy" className="hover:text-white transition">Confidentialité</Link></li>
-              <li><Link to="/cookies" className="hover:text-white transition">Cookies</Link></li>
-              <li><Link to="/accessibility" className="hover:text-white transition">Accessibilité</Link></li>
+              <li><Link to="/terms" className="hover:text-white transition">{t('footer.terms', "Conditions d'utilisation")}</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition">{t('footer.privacy', "Confidentialité")}</Link></li>
+              <li><Link to="/cookies" className="hover:text-white transition">{t('footer.cookies', "Cookies")}</Link></li>
+              <li><Link to="/accessibility" className="hover:text-white transition">{t('footer.accessibility', "Accessibilité")}</Link></li>
             </ul>
           </div>
         </div>
@@ -105,11 +107,11 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between pt-6 border-t border-slate-700 text-xs text-slate-400">
-          <p>© 1997-2025 Overglow-Trip, Inc.</p>
+          <p>© 2022-2026 Overglow</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="/terms" className="hover:text-white transition">Terms & Conditions</Link>
-            <Link to="/how-it-works" className="hover:text-white transition">How Overglow-Trip works</Link>
-            <Link to="/cookie-consent" className="hover:text-white transition">Cookie Consent</Link>
+            <Link to="/terms" className="hover:text-white transition">{t('footer.terms', "Terms & Conditions")}</Link>
+            <Link to="/how-it-works" className="hover:text-white transition">{t('footer.how_it_works', "How Overglow-Trip works")}</Link>
+            <Link to="/cookie-consent" className="hover:text-white transition">{t('footer.cookie_consent', "Cookie Consent")}</Link>
           </div>
         </div>
       </div>

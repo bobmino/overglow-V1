@@ -67,5 +67,39 @@
   },
   "cart": {
     "total": "المجموع"
+  },
+  "footer": {
+    "faq": "الأسئلة الشائعة",
+    "safety": "الأمان",
+    "careers": "الوظائف",
+    "press": "الصحافة",
+    "operator_help": "مركز مساعدة المشغلين",
+    "operator_resources": "الموارد",
+    "operator_community": "المجتمع",
+    "cookies": "ملفات تعريف الارتباط",
+    "accessibility": "إمكانية الوصول",
+    "how_it_works": "كيف يعمل",
+    "cookie_consent": "تفضيلات ملفات تعريف الارتباط",
+    "about": "معلومات عنا",
+    "discover_morocco": "اكتشف المغرب",
+    "blog": "مدونة",
+    "become_partner": "كن شريكاً",
+    "terms": "شروط الاستخدام",
+    "privacy": "الخصوصية",
+    "help_center": "مركز المساعدة",
+    "contact_us": "اتصل بنا"
+  },
+  "mega_menu": {
+    "surf_plage": "ركوب الأمواج والشاطئ",
+    "aventure_nature": "المغامرة والطبيعة",
+    "visites_guidees": "جولات سياحية",
+    "gastronomie": "فن الطهي",
+    "culture_medina": "الثقافة والمدينة",
+    "detente_bien_etre": "الاسترخاء والعافية",
+    "villas_prestige": "فيلات فاخرة",
+    "apparts_vue_ocean": "شقق مطلة على المحيط",
+    "riads_insolites": "رياض فريدة",
+    "mobilite_chauffeurs": "التنقل والسائقين",
+    "services_carte": "خدمات حسب الطلب"
   }
 }

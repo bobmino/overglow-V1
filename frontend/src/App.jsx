@@ -58,6 +58,8 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
 const ViewHistoryPage = lazy(() => import('./pages/ViewHistoryPage'));
 const PartnerSignupPage = lazy(() => import('./pages/PartnerSignupPage'));
+const CulturePage = lazy(() => import('./pages/CulturePage'));
+import PlaceholderPage from './components/PlaceholderPage';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 
 // Loading fallback component
@@ -397,6 +399,25 @@ function App() {
               <PartnerSignupPage />
             </Suspense>
           } />
+          <Route path="culture" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CulturePage />
+            </Suspense>
+          } />
+          
+          {/* Missing Pages Placeholders */}
+          <Route path="faq" element={<PlaceholderPage titleKey="footer.faq" defaultTitle="FAQ" />} />
+          <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
+          <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
+          <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
+          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
+          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
+          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
+          <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
+          <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
+          <Route path="how-it-works" element={<PlaceholderPage titleKey="footer.how_it_works" defaultTitle="Comment ça marche" />} />
+          <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
+          
         <Route path="operator/register" element={<RegisterPage />} />
       </Routes>
     </Router>

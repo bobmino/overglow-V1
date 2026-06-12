@@ -67,5 +67,39 @@
   },
   "cart": {
     "total": "Total"
+  },
+  "footer": {
+    "faq": "FAQ",
+    "safety": "Safety",
+    "careers": "Careers",
+    "press": "Press",
+    "operator_help": "Operator Help Center",
+    "operator_resources": "Resources",
+    "operator_community": "Community",
+    "cookies": "Cookies",
+    "accessibility": "Accessibility",
+    "how_it_works": "How it works",
+    "cookie_consent": "Cookie Preferences",
+    "about": "About Us",
+    "discover_morocco": "Discover Morocco",
+    "blog": "Blog",
+    "become_partner": "Become a partner",
+    "terms": "Terms of Service",
+    "privacy": "Privacy",
+    "help_center": "Help Center",
+    "contact_us": "Contact Us"
+  },
+  "mega_menu": {
+    "surf_plage": "Surf & Beach",
+    "aventure_nature": "Adventure & Nature",
+    "visites_guidees": "Guided Tours",
+    "gastronomie": "Gastronomy",
+    "culture_medina": "Culture & Medina",
+    "detente_bien_etre": "Relaxation & Wellness",
+    "villas_prestige": "Luxury Villas",
+    "apparts_vue_ocean": "Ocean View Apartments",
+    "riads_insolites": "Unique Riads",
+    "mobilite_chauffeurs": "Mobility & Drivers",
+    "services_carte": "A la Carte Services"
   }
 }

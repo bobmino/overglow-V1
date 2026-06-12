@@ -67,6 +67,39 @@
     "cuisine": "Cocina",
     "music": "Música",
     "regions": "Regiones"
+  },
+  "footer": {
+    "faq": "FAQ",
+    "safety": "Seguridad",
+    "careers": "Carreras",
+    "press": "Prensa",
+    "operator_help": "Centro de ayuda para operadores",
+    "operator_resources": "Recursos",
+    "operator_community": "Comunidad",
+    "cookies": "Cookies",
+    "accessibility": "Accesibilidad",
+    "how_it_works": "Cómo funciona",
+    "cookie_consent": "Preferencias de cookies",
+    "about": "Sobre nosotros",
+    "discover_morocco": "Descubre Marruecos",
+    "blog": "Blog",
+    "become_partner": "Conviértete en socio",
+    "terms": "Términos de servicio",
+    "privacy": "Privacidad",
+    "help_center": "Centro de ayuda",
+    "contact_us": "Contáctenos"
+  },
+  "mega_menu": {
+    "surf_plage": "Surf y Playa",
+    "aventure_nature": "Aventura y Naturaleza",
+    "visites_guidees": "Visitas Guiadas",
+    "gastronomie": "Gastronomía",
+    "culture_medina": "Cultura y Medina",
+    "detente_bien_etre": "Relajación y Bienestar",
+    "villas_prestige": "Villas de Lujo",
+    "apparts_vue_ocean": "Apartamentos con Vista al Océano",
+    "riads_insolites": "Riads Únicos",
+    "mobilite_chauffeurs": "Movilidad y Conductores",
+    "services_carte": "Servicios a la Carta"
   }
 }
-

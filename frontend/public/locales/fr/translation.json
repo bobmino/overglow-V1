@@ -67,5 +67,39 @@
   },
   "cart": {
     "total": "Total"
+  },
+  "footer": {
+    "faq": "FAQ",
+    "safety": "Sécurité",
+    "careers": "Carrières",
+    "press": "Presse",
+    "operator_help": "Centre d'aide opérateur",
+    "operator_resources": "Ressources",
+    "operator_community": "Communauté",
+    "cookies": "Cookies",
+    "accessibility": "Accessibilité",
+    "how_it_works": "Comment ça marche",
+    "cookie_consent": "Préférences de cookies",
+    "about": "Qui sommes-nous",
+    "discover_morocco": "Découvrir le Maroc",
+    "blog": "Blog",
+    "become_partner": "Devenir partenaire",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Confidentialité",
+    "help_center": "Centre d'aide",
+    "contact_us": "Nous contacter"
+  },
+  "mega_menu": {
+    "surf_plage": "Surf & Plage",
+    "aventure_nature": "Aventure & Nature",
+    "visites_guidees": "Visites Guidées",
+    "gastronomie": "Gastronomie",
+    "culture_medina": "Culture & Médina",
+    "detente_bien_etre": "Détente & Bien-être",
+    "villas_prestige": "Villas de Prestige",
+    "apparts_vue_ocean": "Appartements Vue Océan",
+    "riads_insolites": "Riads Insolites",
+    "mobilite_chauffeurs": "Mobilité & Chauffeurs",
+    "services_carte": "Services À la Carte"
   }
 }

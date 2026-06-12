@@ -263,6 +263,17 @@ const SearchPage = () => {
       filtered = filtered.filter(p => p.city === selectedCity);
     }
 
+    // Text search filter (if using local data)
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        (p.title && p.title.toLowerCase().includes(query)) ||
+        (p.city && p.city.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query)) ||
+        (p.category && p.category.toLowerCase().includes(query))
+      );
+    }
+
     // Price range filter
     if (priceRange.min || priceRange.max) {
       filtered = filtered.filter(matchesPriceRange);

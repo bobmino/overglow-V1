@@ -138,7 +138,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   return (
     <div 
-      className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 z-[100] w-[95vw] max-w-7xl min-h-[400px] flex flex-col animate-in fade-in slide-in-from-top-4 duration-300"
+      className="fixed top-[80px] left-1/2 -translate-x-1/2 mt-2 bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 z-[100] w-[95vw] max-w-7xl min-h-[400px] flex flex-col animate-in fade-in slide-in-from-top-4 duration-300"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <div className="grid grid-cols-4 gap-12 flex-grow">
@@ -152,6 +152,23 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
             {data.categories.map((category, idx) => {
               const Icon = category.icon;
               const isActive = activeCategory === category.name;
+              
+              // Try to map to translation key
+              const transKeyMap = {
+                'Surf & Plage': 'surf_plage',
+                'Aventure & Nature': 'aventure_nature',
+                'Visites Guidées': 'visites_guidees',
+                'Gastronomie': 'gastronomie',
+                'Culture & Médina': 'culture_medina',
+                'Détente & Bien-être': 'detente_bien_etre',
+                'Villas de Prestige': 'villas_prestige',
+                'Appartements Vue Océan': 'apparts_vue_ocean',
+                'Riads Insolites': 'riads_insolites',
+                'Mobilité & Chauffeurs': 'mobilite_chauffeurs',
+                'Services À la Carte': 'services_carte'
+              };
+              const tKey = transKeyMap[category.name] ? `mega_menu.${transKeyMap[category.name]}` : category.name;
+              
               return (
                 <div
                   key={idx}
@@ -164,7 +181,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                     <Icon size={20} className={category.color} strokeWidth={1.5} />
                   </div>
                   <span className={`text-sm font-semibold transition-colors ${isActive ? 'text-emerald-700' : 'group-hover:text-emerald-600'}`}>
-                    {category.name}
+                    {t(tKey, category.name)}
                   </span>
                 </div>
               );
