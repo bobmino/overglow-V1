@@ -138,10 +138,10 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   return (
     <div 
-      className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 z-[100] w-[95vw] max-w-7xl animate-in fade-in slide-in-from-top-4 duration-300"
+      className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 z-[100] w-[95vw] max-w-7xl min-h-[400px] flex flex-col animate-in fade-in slide-in-from-top-4 duration-300"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="grid grid-cols-4 gap-12">
+      <div className="grid grid-cols-4 gap-12 flex-grow">
         {/* Top Categories */}
         <div className="col-span-1">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">

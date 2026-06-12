@@ -37,9 +37,28 @@ export const CurrencyProvider = ({ children }) => {
   };
 
   const formatPrice = (amount, from = 'EUR', opts = {}) => {
-    const value = convert(amount, from, selectedCurrency);
+    let value = convert(amount, from, selectedCurrency);
     const currencyDisplay = selectedCurrency === 'MAD' ? 'MAD' : selectedCurrency;
     const minimumFractionDigits = selectedCurrency === 'MAD' ? 0 : 2;
+
+    function getPsychologicalPrice(price, currency) {
+      if (currency === 'MAD') {
+        return Math.round(price);
+      }
+      if (currency === 'EUR' || currency === 'USD') {
+        const intPart = Math.floor(price);
+        const decPart = price - intPart;
+        let roundedDec = 0.99;
+        if (decPart <= 0.15) roundedDec = 0.00;
+        else if (decPart <= 0.55) roundedDec = 0.49;
+        else roundedDec = 0.99;
+        return intPart + roundedDec;
+      }
+      return price;
+    }
+
+    value = getPsychologicalPrice(value, selectedCurrency);
+
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: currencyDisplay,

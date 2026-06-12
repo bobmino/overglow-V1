@@ -830,7 +830,7 @@ const ProductDetailPage = () => {
         </div>
         <button
           onClick={() => setIsMobileDrawerOpen(true)}
-          className="px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition duration-300 shadow-md shadow-emerald-600/10"
+          className="flex-shrink-0 px-3 py-2 sm:px-6 sm:py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition duration-300 shadow-md shadow-emerald-600/10"
         >
           {selectedDate && selectedTimeSlot 
             ? t('product.view_details', 'Modifier / Réserver')

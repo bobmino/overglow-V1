@@ -65,7 +65,7 @@ const ImageGallery = ({ images }) => {
             <img 
               src={displayImages[currentIndex]} 
               alt={`Product image ${currentIndex + 1}`}
-              className="max-w-full max-h-[90vh] object-contain"
+              className="max-w-full max-h-[90vh] object-cover"
               onClick={(e) => e.stopPropagation()}
             />
             {displayImages.length > 1 && (
