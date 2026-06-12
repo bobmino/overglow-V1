@@ -104,7 +104,7 @@ const ProductCard = ({ product }) => {
             <span className="text-xs text-slate-400 block mb-0.5">À partir de</span>
             <div className="flex items-baseline gap-1">
               <span className="font-bold text-2xl text-emerald-600">
-                {formatPrice(price, 'EUR')}
+                {formatPrice(price, 'MAD')}
               </span>
               <span className="text-xs text-slate-500 font-medium">/ pers.</span>
             </div>

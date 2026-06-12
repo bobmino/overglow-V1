@@ -458,9 +458,9 @@ const ProductDetailPage = () => {
           <span className="text-slate-900 font-medium truncate">{product.title}</span>
         </nav>
  
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-8 space-y-6">
             {/* Image Gallery */}
             <ImageGallery images={normalizedImages} />
  
@@ -687,7 +687,7 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Booking Widget (Sidebar) - Desktop */}
-          <div className="col-span-12 lg:col-span-4 hidden lg:block">
+          <div className="col-span-1 lg:col-span-4 hidden lg:block">
             <div className="sticky top-28 h-fit bg-white border border-slate-100 rounded-2xl p-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
               {/* Cancellation Policy */}
               <div className="mb-2.5 p-2.5 bg-green-50 border border-green-200 rounded-lg">

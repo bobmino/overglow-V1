@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock, FileText } from 'lucide-react';
+import { Search, Globe, User, Users, ChevronDown, LogOut, Calendar, TrendingUp, Menu, X, Package, Shield, Bell, Building2, Settings, DollarSign, AlertCircle, Heart, Award, Clock, FileText, ShoppingCart } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import CurrencySelector from './CurrencySelector';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
@@ -11,6 +12,7 @@ import NotificationBadge from './NotificationBadge';
 
 const Header = () => {
   const { user, login, logout, isAuthenticated, updateUser } = useAuth();
+  const { cartItems, setIsCartOpen } = useCart();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
@@ -150,7 +152,7 @@ const Header = () => {
             <button
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              Explorer
+              {t('header.discover')}
               <ChevronDown size={16} className={`transition-transform duration-200 ${showDiscoverMenu ? 'rotate-180' : ''}`} />
             </button>
             {showDiscoverMenu && (
@@ -171,8 +173,8 @@ const Header = () => {
             <button
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              Logements
-              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Luxe</span>
+              {t('header.luxury')}
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
               <ChevronDown size={16} className={`transition-transform duration-200 ${showLuxuryMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLuxuryMenu && (
@@ -193,7 +195,7 @@ const Header = () => {
             <button
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              Extras
+              {t('header.extras')}
               <ChevronDown size={16} className={`transition-transform duration-200 ${showServicesMenu ? 'rotate-180' : ''}`} />
             </button>
             {showServicesMenu && (
@@ -203,6 +205,19 @@ const Header = () => {
           
           <LanguageSelector />
           <CurrencySelector />
+
+          {/* Cart Icon */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition"
+          >
+            <ShoppingCart size={20} />
+            {cartItems?.length > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
@@ -405,13 +420,29 @@ const Header = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Icons */}
+        <div className="md:hidden flex items-center gap-2">
+          {/* Cart Icon (Mobile) */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition"
+          >
+            <ShoppingCart size={24} />
+            {cartItems?.length > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                {cartItems.length}
+              </span>
+            )}
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -432,29 +463,29 @@ const Header = () => {
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            Explorer
+            {t('header.discover')}
           </Link>
           <Link 
             to="/search?category=Villas%20de%20Prestige" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            Logements <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Luxe</span>
+            {t('header.luxury')} <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
           </Link>
           <Link 
             to="/search?category=Mobilité%20%26%20Chauffeurs" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            Extras
+            {t('header.extras')}
           </Link>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-            <span className="text-slate-600 font-medium">Language</span>
+            <span className="text-slate-600 font-medium">Langue / Language</span>
             <LanguageSelector />
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-            <span className="text-slate-600 font-medium">Devise</span>
+            <span className="text-slate-600 font-medium">Devise / Currency</span>
             <CurrencySelector />
           </div>
 

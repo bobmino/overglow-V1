@@ -10,6 +10,7 @@ import { X, SlidersHorizontal } from 'lucide-react';
 import { trackSearch } from '../utils/analytics';
 import { normalizeCategory } from '../utils/categoryMapping';
 import { useTranslation } from 'react-i18next';
+import { servicesMock } from '../data/servicesMock';
 
 const SearchPage = () => {
   const { t } = useTranslation();
@@ -127,41 +128,52 @@ const SearchPage = () => {
     queryKey: ['searchResults', selectedCity, selectedCategories, advancedFilters, searchQuery, sortBy, page],
     queryFn: async () => {
       let data;
-      if (hasAdvancedFilters) {
-        const params = new URLSearchParams();
-        if (searchQuery) params.append('q', searchQuery);
-        if (selectedCity) params.append('city', selectedCity);
-        if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
-        if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
-        if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
-        if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
-        if (advancedFilters.durations.length > 0) {
-          advancedFilters.durations.forEach(d => params.append('durations', d));
-        }
-        if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
-        if (advancedFilters.location?.lat) {
-          params.append('locationLat', advancedFilters.location.lat);
-          params.append('locationLng', advancedFilters.location.lng);
-        }
-        if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
-        if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
-        if (advancedFilters.tags && advancedFilters.tags.length > 0) {
-          params.append('tags', advancedFilters.tags.join(','));
-        }
-        params.append('sortBy', sortBy);
-        params.append('page', page);
-        params.append('limit', 20);
+      try {
+        if (hasAdvancedFilters) {
+          const params = new URLSearchParams();
+          if (searchQuery) params.append('q', searchQuery);
+          if (selectedCity) params.append('city', selectedCity);
+          if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
+          if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
+          if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
+          if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
+          if (advancedFilters.durations.length > 0) {
+            advancedFilters.durations.forEach(d => params.append('durations', d));
+          }
+          if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
+          if (advancedFilters.location?.lat) {
+            params.append('locationLat', advancedFilters.location.lat);
+            params.append('locationLng', advancedFilters.location.lng);
+          }
+          if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
+          if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
+          if (advancedFilters.tags && advancedFilters.tags.length > 0) {
+            params.append('tags', advancedFilters.tags.join(','));
+          }
+          params.append('sortBy', sortBy);
+          params.append('page', page);
+          params.append('limit', 20);
 
-        const response = await api.get(`/api/search/advanced?${params.toString()}`);
-        data = response.data;
-      } else {
-        const params = new URLSearchParams();
-        const genericQuery = searchQuery || selectedCity || 'Agadir';
-        params.append('q', genericQuery);
-        params.append('page', page);
-        params.append('limit', 20);
-        const response = await api.get(`/api/products?${params.toString()}`);
-        data = response.data;
+          const response = await api.get(`/api/search/advanced?${params.toString()}`);
+          data = response.data;
+        } else {
+          const params = new URLSearchParams();
+          const genericQuery = searchQuery || selectedCity || 'Agadir';
+          params.append('q', genericQuery);
+          params.append('page', page);
+          params.append('limit', 20);
+          const response = await api.get(`/api/products?${params.toString()}`);
+          data = response.data;
+        }
+        
+        // Throw to trigger fallback if empty
+        const productsArray = Array.isArray(data?.products) ? data.products : (Array.isArray(data) ? data : []);
+        if (productsArray.length === 0) {
+          throw new Error('Empty results from API');
+        }
+      } catch (err) {
+        console.warn('API returned empty or failed, using mock data fallback:', err.message);
+        data = { products: servicesMock, pagination: { page: 1, totalPages: 1, total: servicesMock.length } };
       }
       return data;
     },

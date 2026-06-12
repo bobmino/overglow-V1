@@ -4,6 +4,7 @@ import {
   ChevronRight, MapPin, Compass, Palmtree, Tent, Camera, Utensils, 
   Map as MapIcon, Star, Sparkles, Home, Car, Navigation, Ship
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const MENU_DATA = {
   discover: {
@@ -121,6 +122,7 @@ const MENU_DATA = {
 };
 
 const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
+  const { t } = useTranslation();
   const data = MENU_DATA[menuType] || MENU_DATA.discover;
   const [activeCategory, setActiveCategory] = useState(data.categories[0].name);
 
@@ -144,7 +146,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
         <div className="col-span-1">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <CategoryIcon size={16} strokeWidth={1.5} />
-            Catégories
+            {t('menu.categories')}
           </h3>
           <div className="space-y-2">
             {data.categories.map((category, idx) => {
@@ -174,7 +176,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
         <div className="col-span-1">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <Star size={16} strokeWidth={1.5} />
-            Incontournables
+            {t('menu.incontournables')}
           </h3>
           <div className="space-y-3">
             {currentMapping.incontournables.map((activity, index) => (
@@ -197,7 +199,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
         <div className="col-span-2">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
             <MapPin size={16} strokeWidth={1.5} />
-            Destinations Phares
+            {t('menu.destinationsPhares')}
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {currentMapping.destinationsPhares.map((dest, idx) => (
@@ -215,7 +217,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                 <div className="absolute bottom-5 left-5 text-white">
                   <div className="font-bold text-md tracking-wide mb-1">{dest.name}</div>
                   <div className="text-[11px] text-slate-200 flex items-center gap-1 font-medium opacity-80 group-hover:opacity-100 transition-opacity">
-                    Explorer la région <ChevronRight size={12} strokeWidth={2} />
+                    {t('menu.exploreRegion')} <ChevronRight size={12} strokeWidth={2} />
                   </div>
                 </div>
               </Link>
@@ -231,7 +233,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
           onClick={onClose}
           className="inline-flex items-center gap-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40"
         >
-          Voir la catégorie {activeCategory}
+          {t('menu.viewCategory')} {activeCategory}
           <ChevronRight size={16} strokeWidth={2} />
         </Link>
       </div>
