@@ -5,10 +5,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Initialisation du client Upstash Redis via HTTP (Stateless pour Serverless)
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+let redis = null;
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  } else {
+    console.warn('[Redis Init] Variables UPSTASH_REDIS manquantes. Cache désactivé.');
+  }
+} catch (err) {
+  console.error('[Redis Init Error] Échec de l\'initialisation de Redis:', err);
+}
 
 /**
  * Middleware de Cache global avec Fallback automatique
@@ -24,6 +33,11 @@ export const cache = (duration = 900) => {
     const cacheKey = `cache:${lang}:${req.originalUrl}`;
 
     try {
+      if (!redis) {
+        res.setHeader('X-Cache', 'DISABLED');
+        return next();
+      }
+
       // Tentative de récupération dans le cache Upstash
       const cachedData = await redis.get(cacheKey);
 
@@ -62,6 +76,8 @@ export const cache = (duration = 900) => {
  * @param {string} prefix - Le préfixe à supprimer (ex: "cache:")
  */
 export const clearCache = async (prefix = 'cache:*') => {
+  if (!redis) return false;
+  
   try {
     // Recherche et suppression des clés correspondantes au pattern
     let cursor = "0";

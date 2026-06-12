@@ -20,6 +20,8 @@ import { checkAvailability, reserveCapacity } from '../utils/availabilityService
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 import { processPayment } from '../services/paymentService.js';
+import notificationHub from '../services/notificationHub.js';
+import { clearCache } from '../middleware/cacheMiddleware.js';
 
 // @desc    Create payment intent (Placeholder)
 // @route   POST /api/bookings/create-payment-intent
@@ -340,9 +342,21 @@ const createBooking = async (req, res, next) => {
         logger.error('Error updating user loyalty stats', { message: err?.message })
       );
 
-      // Send booking confirmation email to the client
+      // Send booking confirmation email to the client (Nodemailer legacy)
       sendBookingConfirmation(populatedBooking, req.user).catch(err => 
         logger.error('Error sending booking confirmation email to client', { message: err?.message })
+      );
+
+      // ── Resend premium email + Operator alert via NotificationHub ────────
+      notificationHub.dispatch('BOOKING_SUCCESS', {
+        to: req.user.email,
+        booking: populatedBooking,
+        user: req.user,
+      });
+
+      // ── Invalidation du cache Upstash Redis (disponibilités changent) ────
+      clearCache('cache:*').catch((err) =>
+        logger.error('Error clearing Redis cache after booking', { message: err?.message })
       );
 
       return res.status(201).json(bookingObject);
@@ -687,6 +701,18 @@ const bulkManualCheckout = async (req, res, next) => {
           logger.error('Error sending circuit booking confirmation', { message: err?.message })
         );
       }
+
+      // ── Resend premium email + Operator alert via NotificationHub ────────
+      notificationHub.dispatch('BOOKING_SUCCESS', {
+        to: req.user.email,
+        booking: createdBookings[0], // Or handle multi-booking email
+        user: req.user,
+      });
+
+      // ── Invalidation du cache Upstash Redis ──────────────────────────────
+      clearCache('cache:*').catch((err) =>
+        logger.error('Error clearing Redis cache after circuit booking', { message: err?.message })
+      );
 
       // Update loyalty stats
       updateUserStatsAfterBooking(req.user._id, totalCircuitAmount).catch(err =>
