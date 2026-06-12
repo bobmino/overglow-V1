@@ -1,18 +1,20 @@
 import rateLimit from 'express-rate-limit';
 import { logger } from '../utils/logger.js';
 
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+
 // Rate limiter pour authentification (login, register)
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 tentatives max par IP
+  max: isProduction ? 15 : 20,
   message: {
     error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
     retryAfter: 15,
   },
-  standardHeaders: true, // Retourne rate limit info dans headers `RateLimit-*`
-  legacyHeaders: false, // Désactive `X-RateLimit-*` headers
-  skipSuccessfulRequests: false, // Compter aussi les requêtes réussies
-  skipFailedRequests: false, // Compter aussi les requêtes échouées
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  skipFailedRequests: false,
   handler: (req, res) => {
     // Set CORS headers before sending error
     const origin = req.headers.origin;
@@ -43,10 +45,14 @@ export const authLimiter = rateLimit({
   },
 });
 
-// Rate limiter général pour API
+// Rate limiter général pour API (auth et health ont leurs propres limites)
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requêtes max par IP
+  windowMs: 15 * 60 * 1000,
+  max: isProduction ? 500 : 200,
+  skip: (req) => {
+    const path = req.path || '';
+    return path.startsWith('/auth') || path.startsWith('/health');
+  },
   message: {
     error: 'Trop de requêtes. Veuillez réessayer plus tard.',
   },
