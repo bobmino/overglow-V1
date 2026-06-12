@@ -3,7 +3,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+let resend = null;
+
+const getResendClient = () => {
+  if (!process.env.RESEND_API_KEY) {
+    return null;
+  }
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+};
 
 const formatDate = (rawDate) => {
   if (!rawDate) return 'À confirmer';
@@ -147,11 +157,17 @@ export const getBookingConfirmationPremiumTemplate = ({ booking, user, whatsappL
 };
 
 export const sendBookingConfirmationEmail = async ({ to, booking, user, whatsappLink }) => {
+  const client = getResendClient();
+  if (!client) {
+    console.warn('[Resend Email] RESEND_API_KEY not configured — skipping confirmation email');
+    return { success: false, skipped: true };
+  }
+
   const { subject, html } = getBookingConfirmationPremiumTemplate({ booking, user, whatsappLink });
   const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
 
   try {
-    const data = await resend.emails.send({
+    const data = await client.emails.send({
       from: `Overglow <${fromEmail}>`,
       to: [to],
       subject: subject,

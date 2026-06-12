@@ -42,7 +42,17 @@ Pour que le backend fonctionne correctement sur Vercel, vous devez configurer le
    - Valeurs : `true` ou `false`
    - Par défaut : `true` si EMAIL_USER est défini
 
-8. **NODE_ENV**
+8. **RESEND_API_KEY**
+   - Description : Clé API Resend pour les emails de confirmation de réservation
+   - Format : `re_...`
+   - Par défaut : Si absent, les emails Resend sont ignorés (le serveur démarre quand même)
+
+9. **RESEND_FROM**
+   - Description : Adresse expéditeur vérifiée dans Resend
+   - Exemple : `notifications@votredomaine.com`
+   - Par défaut : `onboarding@resend.dev`
+
+10. **NODE_ENV**
    - Description : Environnement d'exécution
    - Valeurs : `development` ou `production`
    - Par défaut : `production` sur Vercel
@@ -68,6 +78,10 @@ Après configuration, vérifiez que :
 - ✅ La connexion à MongoDB fonctionne
 
 ## Dépannage
+
+### Erreur 500 sur toutes les routes API (`Server initialization error`)
+- **Cause** : Variable d'environnement manquante qui fait planter le chargement du serveur (ex. `RESEND_API_KEY` invalide)
+- **Solution** : Vérifiez les logs Vercel du projet `overglow-backend`, configurez les variables manquantes et redéployez
 
 ### Erreur 500 sur `/api/auth/login`
 - **Cause** : `JWT_SECRET` n'est pas défini
