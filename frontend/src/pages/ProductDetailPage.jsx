@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
@@ -33,9 +33,15 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [searchParams] = useSearchParams();
+  
+  // Parse date from URL if it exists
+  const initialDate = searchParams.get('date') ? new Date(searchParams.get('date')) : null;
+  const initialTickets = searchParams.get('guests') ? parseInt(searchParams.get('guests'), 10) : 1;
+
+  const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-  const [numberOfTickets, setNumberOfTickets] = useState(1);
+  const [numberOfTickets, setNumberOfTickets] = useState(initialTickets > 0 ? initialTickets : 1);
   const [availableSchedules, setAvailableSchedules] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);

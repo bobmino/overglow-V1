@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../config/axios';
 import { User, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -9,9 +9,14 @@ import { trackSignUp } from '../utils/analytics';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Capture where the user came from
+  const from = location.state?.from?.pathname || '/';
+  const fromState = location.state?.from?.state || {};
 
   const {
     values: formData,
@@ -63,7 +68,9 @@ const RegisterPage = () => {
       login(userData);
       // Track sign up
       trackSignUp('email');
-      navigate('/');
+      
+      // Redirect back to where the user came from with state
+      navigate(from, { state: fromState, replace: true });
     } catch (err) {
       setSubmitError(err.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
@@ -173,7 +180,7 @@ const RegisterPage = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Vous avez déjà un compte ?{' '}
-              <Link to="/login" className="text-green-700 font-semibold hover:underline">
+              <Link to="/login" state={{ from: location.state?.from }} className="text-green-700 font-semibold hover:underline">
                 Se connecter
               </Link>
             </p>

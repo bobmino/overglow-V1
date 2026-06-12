@@ -25,11 +25,13 @@ const Hero = () => {
 
   const handleAutocompleteSelect = (selection) => {
     if (selection?.type === 'product' && (selection.slug || selection.id)) {
-      navigate(`/experiences/${selection.slug || selection.id}`);
+      const qs = date ? `?date=${encodeURIComponent(date)}` : '';
+      navigate(`/experiences/${selection.slug || selection.id}${qs}`);
       return;
     }
     if (selection?.type === 'city' && selection.city) {
-      navigate(`/search?q=${encodeURIComponent(selection.city)}`);
+      const qs = date ? `&date=${encodeURIComponent(date)}` : '';
+      navigate(`/search?q=${encodeURIComponent(selection.city)}${qs}`);
     }
   };
 

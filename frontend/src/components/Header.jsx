@@ -130,18 +130,27 @@ const Header = () => {
         )}
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8">
-          {/* Découvrir Dropdown */}
-          <div className="relative" ref={discoverMenuRef}>
+        <div 
+          className="hidden md:flex items-center space-x-8 h-full"
+          onMouseLeave={() => {
+            setShowDiscoverMenu(false);
+            setShowLuxuryMenu(false);
+            setShowServicesMenu(false);
+          }}
+        >
+          <div 
+            className="relative" 
+            ref={discoverMenuRef}
+            onMouseEnter={() => {
+              setShowDiscoverMenu(true);
+              setShowLuxuryMenu(false);
+              setShowServicesMenu(false);
+            }}
+          >
             <button
-              onClick={() => {
-                setShowDiscoverMenu(!showDiscoverMenu);
-                setShowLuxuryMenu(false);
-                setShowServicesMenu(false);
-              }}
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              {t('header.discover')}
+              Explorer
               <ChevronDown size={16} className={`transition-transform duration-200 ${showDiscoverMenu ? 'rotate-180' : ''}`} />
             </button>
             {showDiscoverMenu && (
@@ -149,17 +158,21 @@ const Header = () => {
             )}
           </div>
 
-          {/* Résidences de Luxe Dropdown */}
-          <div className="relative" ref={luxuryMenuRef}>
+          {/* Logements Dropdown */}
+          <div 
+            className="relative" 
+            ref={luxuryMenuRef}
+            onMouseEnter={() => {
+              setShowLuxuryMenu(true);
+              setShowDiscoverMenu(false);
+              setShowServicesMenu(false);
+            }}
+          >
             <button
-              onClick={() => {
-                setShowLuxuryMenu(!showLuxuryMenu);
-                setShowDiscoverMenu(false);
-                setShowServicesMenu(false);
-              }}
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              Résidences de Luxe
+              Logements
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Luxe</span>
               <ChevronDown size={16} className={`transition-transform duration-200 ${showLuxuryMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLuxuryMenu && (
@@ -167,17 +180,20 @@ const Header = () => {
             )}
           </div>
 
-          {/* Services Extras Dropdown */}
-          <div className="relative" ref={servicesMenuRef}>
+          {/* Extras Dropdown */}
+          <div 
+            className="relative" 
+            ref={servicesMenuRef}
+            onMouseEnter={() => {
+              setShowServicesMenu(true);
+              setShowDiscoverMenu(false);
+              setShowLuxuryMenu(false);
+            }}
+          >
             <button
-              onClick={() => {
-                setShowServicesMenu(!showServicesMenu);
-                setShowDiscoverMenu(false);
-                setShowLuxuryMenu(false);
-              }}
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
             >
-              Services Extras
+              Extras
               <ChevronDown size={16} className={`transition-transform duration-200 ${showServicesMenu ? 'rotate-180' : ''}`} />
             </button>
             {showServicesMenu && (
@@ -416,7 +432,21 @@ const Header = () => {
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            {t('header.discover')}
+            Explorer
+          </Link>
+          <Link 
+            to="/search?category=Villas%20de%20Prestige" 
+            className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Logements <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Luxe</span>
+          </Link>
+          <Link 
+            to="/search?category=Mobilité%20%26%20Chauffeurs" 
+            className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Extras
           </Link>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">

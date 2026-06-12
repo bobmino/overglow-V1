@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../config/axios';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -9,9 +9,14 @@ import { trackLogin } from '../utils/analytics';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Capture where the user came from
+  const from = location.state?.from?.pathname || '/';
+  const fromState = location.state?.from?.state || {};
 
   const {
     values: formData,
@@ -78,7 +83,9 @@ const LoginPage = () => {
       login(userData);
       // Track login
       trackLogin('email');
-      navigate('/');
+      
+      // Redirect back to where the user came from with state
+      navigate(from, { state: fromState, replace: true });
     } catch (err) {
       // Enhanced error logging (always log for troubleshooting)
       console.error('❌ Login error:', {
@@ -182,7 +189,7 @@ const LoginPage = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="text-green-700 font-semibold hover:underline">
+              <Link to="/register" state={{ from: location.state?.from }} className="text-green-700 font-semibold hover:underline">
                 Sign up
               </Link>
             </p>
