@@ -15,6 +15,17 @@ export default defineConfig({
         target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
+        configure: (proxy) => {
+          proxy.on('error', (err, req, res) => {
+            console.error(`Proxy error: ${err.message}`);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Proxy error');
+          });
+
+          proxy.on('proxyReq', (proxyReq, req, res, options) => {
+            console.log(`Proxying request to ${options.target} for ${req.url}`);
+          });
+        },
       },
     },
   },
