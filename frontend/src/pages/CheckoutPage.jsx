@@ -118,7 +118,6 @@ const CheckoutPage = () => {
 
       // Rediriger vers BookingSuccess avec soit un tableau (si plusieurs) soit un seul (si unique)
       if (createdBookings.length > 1) {
-        // Optionnel : adapter BookingSuccessPage pour gérer un array ou utiliser le même comportement qu'avant
         navigate('/booking-success', { state: { bookings: createdBookings, isCircuit: true } });
       } else {
         navigate('/booking-success', { state: { booking: createdBookings[0] } });
@@ -235,9 +234,9 @@ const CheckoutPage = () => {
                 {checkoutItems.length > 1 ? (
                   <div className="space-y-3 mb-6">
                     {checkoutItems.map((item, idx) => (
-                      <div key={idx} className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                      <div key={idx} className={`flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0`}>
                         <span className="text-gray-800 font-medium mb-1 truncate">{item.product?.title}</span>
-                        <div className="flex justify-between text-gray-500">
+                        <div className="flex justify-between text-gray-600">
                           <span>{item.numberOfTickets}x Billet(s)</span>
                           <span className="font-medium text-gray-900">{formatPrice(item.priceBreakdown?.subtotal || 0)}</span>
                         </div>
@@ -246,7 +245,7 @@ const CheckoutPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-3 mb-4">
-                    <div className="flex justify-between text-gray-700">
+                    <div className="flex justify-between items-center">
                       <span>{checkoutItems[0]?.numberOfTickets} ticket(s)</span>
                       <span>{formatPrice(checkoutItems[0]?.priceBreakdown?.subtotal || 0)}</span>
                     </div>
