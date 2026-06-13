@@ -22,7 +22,11 @@ const getApiUrl = () => {
   }
   
   // En développement, retourner vide pour utiliser le proxy Vite
-  return '';
+  if (import.meta.env.DEV) {
+    return '';
+  }
+
+  return '/api';
 };
 
 const API_URL = getApiUrl();
@@ -159,7 +163,7 @@ api.interceptors.response.use(
     // Log des erreurs pour debug (toujours actif)
     if (error.response) {
       // Le serveur a répondu avec un code d'erreur
-      const contentType = error.response.headers['content-type'] || error.response.headers['Content-Type'] || 'unknown';
+      const contentType = error.response.headers['content-type'] || error.response.headers['ContentType'] || 'unknown';
       console.error('❌ API Error Response:', {
         status: error.response.status,
         statusText: error.response.statusText,
@@ -186,7 +190,7 @@ api.interceptors.response.use(
         message: error.message,
         url: error.config?.url,
         baseURL: error.config?.baseURL,
-        fullURL: error.config?.baseURL ? `${error.config.baseURL}${error.config.url || ''}` : error.config?.url
+        fullURL: error.config.baseURL ? `${error.config.baseURL}${error.config.url || ''}` : error.config?.url
       });
     } else {
       // Erreur lors de la configuration de la requête
@@ -294,4 +298,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
