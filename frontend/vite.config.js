@@ -7,97 +7,48 @@ export default defineConfig({
     react(),
   ],
   server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: false,
     watch: {
       ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**']
     },
+    hmr: {
+      host: '127.0.0.1',
+      protocol: 'ws',
+      port: 5173,
+      clientPort: 5173,
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: 'http://127.0.0.1:5001',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy) => {
           proxy.on('error', (err, req, res) => {
             console.error(`Proxy error: ${err.message}`);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Proxy error');
-          });
-
-          proxy.on('proxyReq', (proxyReq, req, res, options) => {
-            console.log(`Proxying request to ${options.target} for ${req.url}`);
           });
         },
       },
     },
   },
   build: {
-    // Disable module preload completely to prevent data URI issues
     modulePreload: false,
     rollupOptions: {
-      // Externalize packages that shouldn't be bundled
-      external: (id) => {
-        // Don't bundle web-vitals if not installed
-        if (id === 'web-vitals') {
-          return true;
-        }
-        return false;
-      },
+      external: (id) => id === 'web-vitals',
       output: {
         manualChunks: (id) => {
-          // Simplified: Put all vendor dependencies in a single chunk
-          // This prevents loading order issues and compatibility problems between React 19 and Lucide React
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-          
-          // Feature chunks for better code splitting (only app code, not dependencies)
-          if (id.includes('/pages/Admin')) {
-            return 'admin';
-          }
-          if (id.includes('/pages/Operator')) {
-            return 'operator';
-          }
-          if (id.includes('/pages/Booking') || id.includes('/pages/Checkout')) {
-            return 'booking';
-          }
-          if (id.includes('/pages/Login') || id.includes('/pages/Register')) {
-            return 'auth';
-          }
-        },
-        // Ensure proper chunk loading order - React must load before Lucide React
-        format: 'es',
-        generatedCode: {
-          constBindings: true,
-        },
-        // Optimize chunk names
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
-          const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return `assets/img/[name]-[hash][extname]`;
-          }
-          if (/woff2?|eot|ttf|otf/i.test(ext)) {
-            return `assets/fonts/[name]-[hash][extname]`;
-          }
-          return `assets/[ext]/[name]-[hash][extname]`;
+          if (id.includes('node_modules')) return 'vendor';
+          if (id.includes('/pages/Admin')) return 'admin';
+          if (id.includes('/pages/Operator')) return 'operator';
+          if (id.includes('/pages/Booking')) return 'checkout';
+          if (id.includes('/pages/Login')) return 'auth';
         },
       },
     },
-    chunkSizeWarningLimit: 1000, // 1MB
-    minify: 'esbuild', // Use esbuild (default, faster than terser)
-    // Note: To use terser, install it: npm install -D terser
-    // Then change minify to 'terser' and uncomment terserOptions below
-    // terserOptions: {
-    //   compress: {
-    //     drop_console: true,
-    //     drop_debugger: true,
-    //   },
-    // },
-    // Enable source maps for production debugging (optional)
-    sourcemap: false,
-    // Optimize CSS
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
     cssCodeSplit: true,
-    cssMinify: true,
   },
 })

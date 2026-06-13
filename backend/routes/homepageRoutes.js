@@ -1,9 +1,9 @@
 import express from 'express';
+import { getHomepageLayout } from '../controllers/homepageController.js'; // Importez le contrôleur
+
 const router = express.Router();
 
-router.get('/layout', (req, res) => {
-  // Logique pour récupérer la layout de la homepage
-  res.json({ message: 'Homepage layout fetched successfully' });
-});
+// Liez la route à la fonction du contrôleur
+router.get('/layout', getHomepageLayout);
 
 export default router;
