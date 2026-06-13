@@ -13,3 +13,13 @@
 
 ## 🛑 Problèmes bloquants ou alertes
 - Aucun pour le moment.
+
+## Infrastructure et Livrables
+
+### Configuration d'une infrastructure mail professionnelle et d'un système de génération de leads automatique via Resend
+- Configuration d'une infrastructure mail professionnelle.
+- Intégration d'un système de génération de leads automatique via Resend.
+
+### Validation et activation des enregistrements DKIM, SPF et DMARC pour le domaine de l'agence Overcom
+- Validation des enregistrements DKIM, SPF et DMARC.
+- Activation des enregistrements DKIM, SPF et DMARC pour le domaine de l'agence Overcom.
