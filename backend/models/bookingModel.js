@@ -9,7 +9,7 @@ const bookingSchema = mongoose.Schema({
   schedule: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'Schedule',
+    ref: 'Schedule', // Optimisation : Utilisation de l'ID du créneau au lieu d'une chaîne de caractères
   },
   operator: {
     type: mongoose.Schema.Types.ObjectId,
@@ -99,6 +99,12 @@ const bookingSchema = mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+// Performance compound indexes for Sprint 1
+bookingSchema.index({ status: 1, user: 1 });
+bookingSchema.index({ status: 1, schedule: 1 });
+bookingSchema.index({ status: 1, operator: 1 });
+bookingSchema.index({ status: 1, paymentStatus: 1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 

@@ -12,7 +12,7 @@ const productSchema = mongoose.Schema({
   },
   slug: {
     type: String,
-    index: true,
+    index: true, // Optimisation : Ajout d'un index pour les recherches par slug
   },
   description: {
     type: String,
@@ -25,7 +25,7 @@ const productSchema = mongoose.Schema({
   categoryGroup: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'CategoryGroup',
-    index: true,
+    index: true, // Optimisation : Ajout d'un index pour les recherches par groupe de catégories
   },
   productType: {
     type: String,
@@ -57,7 +57,7 @@ const productSchema = mongoose.Schema({
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      index: '2dsphere',
+      index: '2dsphere', // Optimisation : Ajout d'un index géospatial pour les recherches par emplacement
     },
   },
   images: [{
@@ -166,7 +166,7 @@ const productSchema = mongoose.Schema({
   tags: {
     type: [String],
     default: [],
-    index: true,
+    index: true, // Optimisation : Ajout d'un index pour les recherches par tags
   },
   
   // Badges produits
