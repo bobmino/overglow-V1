@@ -1,6 +1,5 @@
 import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
-import Product from '../models/productModel.js';
 
 // @desc    Get operator bookings
 // @route   GET /api/operator/bookings
@@ -98,4 +97,50 @@ const getOperatorAnalytics = async (req, res) => {
   });
 };
 
-export { getOperatorBookings, getOperatorAnalytics };
+// @desc    Get operator dashboard stats
+// @route   GET /api/operator/dashboard-stats
+// @access  Private/Operator
+const getOperatorDashboardStats = async (req, res) => {
+  const operator = await Operator.findOne({ user: req.user._id });
+  if (!operator) {
+    res.status(404);
+    throw new Error('Operator profile not found');
+  }
+
+  const bookings = await Booking.find({
+    operator: operator._id,
+    status: 'Confirmed'
+  });
+
+  const totalRevenue = bookings.reduce(
+    (sum, booking) => sum + (booking.totalPrice ?? booking.totalAmount ?? 0),
+    0
+  );
+  const confirmedBookingsCount = bookings.length;
+
+  const topExperiences = await Booking.aggregate([
+    {
+      $match: { operator: operator._id }
+    },
+    {
+      $group: {
+        _id: '$schedule.product.title',
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { count: -1 }
+    },
+    {
+      $limit: 5
+    }
+  ]);
+
+  res.json({
+    totalRevenue,
+    confirmedBookingsCount,
+    topExperiences
+  });
+};
+
+export { getOperatorBookings, getOperatorAnalytics, getOperatorDashboardStats };
