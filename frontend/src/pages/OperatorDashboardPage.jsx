@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
@@ -6,9 +6,15 @@ import { Package, Calendar, DollarSign, Users, TrendingUp, MessageSquare } from 
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
+import { motion } from 'framer-motion';
 
 const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-6">
+  <motion.div
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5 }}
+    className="bg-white rounded-xl border border-gray-200 p-6"
+  >
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
         <Icon size={24} className="text-white" />
@@ -16,64 +22,54 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
     </div>
     <p className="text-gray-600 text-sm mb-1">{label}</p>
     <p className="text-3xl font-bold text-gray-900">{value}</p>
-  </div>
+  </motion.div>
 );
 
 const OperatorDashboardPage = () => {
   const { toast } = useToast();
 
-  const { data: stats, isLoading, isError } = useQuery({
-    queryKey: ['operatorStats'],
-    queryFn: async () => {
-      // Fetch operator products
-      const { data: products } = await api.get('/api/products/my-products');
-      
-      // Fetch operator bookings
-      const { data: bookings } = await api.get('/api/operator/bookings');
-      
-      const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-      const now = new Date();
-      const paidBookings = bookings.filter((b) => (b.paymentStatus || '').toLowerCase() === 'paid');
-      const pendingBalance = paidBookings
-        .filter((b) => b.payoutDate && new Date(b.payoutDate) > now)
-        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-      const availableBalance = paidBookings
-        .filter((b) => b.payoutDate && new Date(b.payoutDate) <= now)
-        .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-      
-      return {
-        totalProducts: products.length,
-        totalBookings: bookings.length,
-        totalRevenue,
-        activeSchedules: products.reduce((sum, p) => sum + (p.schedules?.length || 0), 0),
-        pendingBalance,
-        availableBalance,
-      };
-    },
-    onError: (error) => {
-      console.error('Failed to fetch stats:', error);
-      toast('Nous mettons a jour vos donnees financieres. Merci de reessayer.', { type: 'error' });
-    }
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    confirmedBookings: 0,
+    topExperiences: [],
   });
 
-  const displayStats = stats || {
-    totalProducts: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-    activeSchedules: 0,
-    pendingBalance: 0,
-    availableBalance: 0,
-  };
+  const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-200 rounded-xl"></div>
-        </div>
-      </div>
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await api.get('/api/operator/dashboard-stats');
+        setStats(data);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+        toast('Nous mettons à jour vos données financières. Merci de reessayer.', { type: 'error' });
+      }
+    };
+
+    const fetchBookings = async () => {
+      try {
+        const { data } = await api.get('/api/operator/bookings');
+        setBookings(data);
+        setFilteredBookings(data);
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        toast('Nous mettons à jour vos réservations. Merci de reessayer.', { type: 'error' });
+      }
+    };
+
+    fetchStats();
+    fetchBookings();
+  }, [toast]);
+
+  const handleFilterChange = (event) => {
+    const query = event.target.value.toLowerCase();
+    const filtered = bookings.filter((booking) =>
+      booking.customerEmail.toLowerCase().includes(query)
     );
-  }
+    setFilteredBookings(filtered);
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -104,56 +100,56 @@ const OperatorDashboardPage = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard
           icon={Package}
-          label="Total Products"
-          value={displayStats.totalProducts}
+          label="Total Sales"
+          value={`€${stats.totalSales.toFixed(2)}`}
           color="bg-blue-600"
         />
         <StatCard
           icon={Calendar}
-          label="Active Schedules"
-          value={displayStats.activeSchedules}
+          label="Confirmed Bookings"
+          value={stats.confirmedBookings}
           color="bg-purple-600"
         />
         <StatCard
           icon={Users}
-          label="Total Bookings"
-          value={displayStats.totalBookings}
+          label="Top Experiences"
+          value={stats.topExperiences.length}
           color="bg-green-600"
-        />
-        <StatCard
-          icon={DollarSign}
-          label="Total Revenue"
-          value={`€${displayStats.totalRevenue.toFixed(2)}`}
-          color="bg-yellow-600"
         />
       </div>
 
-      {/* Finance Section */}
+      {/* Bookings Section */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Portefeuille</h2>
-          <Link
-            to="/operator/withdrawals"
-            className="text-green-700 font-semibold hover:text-green-800 transition"
-          >
-            Gerer les versements
-          </Link>
+          <h2 className="text-xl font-bold text-gray-900">Bookings</h2>
+          <input
+            type="text"
+            placeholder="Search by customer email..."
+            onChange={handleFilterChange}
+            className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none"
+          />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm text-amber-800 font-semibold">Solde en attente</p>
-            <p className="text-2xl font-bold text-amber-900">€{displayStats.pendingBalance.toFixed(2)}</p>
-            <p className="text-xs text-amber-700 mt-1">Paiements encaisses, versement programme</p>
-          </div>
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-sm text-green-800 font-semibold">Solde disponible</p>
-            <p className="text-2xl font-bold text-green-900">€{displayStats.availableBalance.toFixed(2)}</p>
-            <p className="text-xs text-green-700 mt-1">Versements eligibles (payoutDate atteinte)</p>
-          </div>
-        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="px-6 py-3 text-left">Customer Email</th>
+              <th className="px-6 py-3 text-left">Booking Date</th>
+              <th className="px-6 py-3 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBookings.map((booking) => (
+              <tr key={booking.id} className="border-b border-gray-200">
+                <td className="px-6 py-4">{booking.customerEmail}</td>
+                <td className="px-6 py-4">{new Date(booking.date).toLocaleDateString()}</td>
+                <td className="px-6 py-4">{booking.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Quick Actions */}
