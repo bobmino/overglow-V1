@@ -5,9 +5,11 @@
 
 ## 🛠️ Ce qui fonctionne déjà (Fait)
 - Infrastructure de développement IA déportée sur GPU Kaggle (Opérationnelle).
+- Analyse globale du projet par l'IA (En cours).
 
 ## ⏳ Tâche en cours / Là où on s'est arrêté
-- Phase d'initialisation : Analyse globale du projet par l'IA.
+- Phase d'analyse détaillée des fonctionnalités et des exigences.
+- Développement de la couche métier.
 
 ## 🛑 Problèmes bloquants ou alertes
 - Aucun pour le moment.
