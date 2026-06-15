@@ -309,4 +309,3 @@ export const getNewUserRecommendations = async (limit = 10) => {
     return [];
   }
 };
-
