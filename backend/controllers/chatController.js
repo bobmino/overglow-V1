@@ -1,6 +1,7 @@
 import { Chat, Message } from '../models/chatModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
+import { generateAIResponse } from '../services/aiService.js';
 
 // @desc    Get or create chat for inquiry
 // @route   GET /api/chat/inquiry/:inquiryId
@@ -175,11 +176,20 @@ const sendMessage = async (req, res) => {
 
     const { content, type = 'text', attachments = [] } = req.body;
 
-    // Create message
+    // Generate AI response using the new service
+    let aiResponse;
+    try {
+      aiResponse = await generateAIResponse(content);
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      return res.status(500).json({ message: 'Failed to generate AI response' });
+    }
+
+    // Create message with AI response
     const message = await Message.create({
       chat: chat._id,
       sender: req.user._id,
-      content,
+      content: aiResponse.choices[0].message.content,
       type,
       attachments,
     });
