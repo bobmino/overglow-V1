@@ -176,29 +176,51 @@ const sendMessage = async (req, res) => {
 
     const { content, type = 'text', attachments = [] } = req.body;
 
-    // Generate AI response using the new service
+    // MODIFICATION 1 : Sauvegarder d'abord le message réel écrit par l'utilisateur
+    const userMessage = await Message.create({
+      chat: chat._id,
+      sender: req.user._id,
+      content,
+      type,
+      attachments,
+    });
+
+    // Identifie l'autre participant (l'entité censée répondre via l'IA)
+    const receiverId = chat.participants.find(p => p.toString() !== req.user._id.toString());
+
+    // Génération asynchrone de la réponse IA
     let aiResponse;
     try {
       aiResponse = await generateAIResponse(content);
     } catch (error) {
       console.error('Error generating AI response:', error);
-      return res.status(500).json({ message: 'Failed to generate AI response' });
+      // Fallback non bloquant : On retourne au moins le message de l'utilisateur si l'IA échoue
+      chat.lastMessage = userMessage._id;
+      chat.lastMessageAt = new Date();
+      await chat.save();
+      await userMessage.populate('sender', 'name email role');
+      return res.status(210).json({ 
+        userMessage, 
+        warning: 'AI response failed but user message was saved' 
+      });
     }
 
-    // Create message with AI response
-    const message = await Message.create({
+    // MODIFICATION 2 : Extraction sécurisée du texte (gère le format string pur ou l'objet OpenAI choices)
+    const aiTextContent = aiResponse?.choices?.[0]?.message?.content || (typeof aiResponse === 'string' ? aiResponse : 'No response content');
+
+    // MODIFICATION 3 : Création de la réponse de l'IA assignée au destinataire/bot
+    const aiMessage = await Message.create({
       chat: chat._id,
-      sender: req.user._id,
-      content: aiResponse.choices[0].message.content,
-      type,
-      attachments,
+      sender: receiverId || req.user._id, // Attribué au destinataire pour simuler sa réponse
+      content: aiTextContent,
+      type: 'text',
     });
 
-    // Update chat
-    chat.lastMessage = message._id;
+    // Enregistrement du dernier message (celui de l'IA) sur le chat
+    chat.lastMessage = aiMessage._id;
     chat.lastMessageAt = new Date();
 
-    // Update unread count for other participants
+    // Mise à jour des compteurs de messages non lus
     chat.participants.forEach((participantId) => {
       if (participantId.toString() !== req.user._id.toString()) {
         const currentCount = chat.unreadCount.get(participantId.toString()) || 0;
@@ -207,10 +229,11 @@ const sendMessage = async (req, res) => {
     });
 
     await chat.save();
+    await userMessage.populate('sender', 'name email role');
+    await aiMessage.populate('sender', 'name email role');
 
-    await message.populate('sender', 'name email role');
-
-    res.status(201).json(message);
+    // On renvoie les deux messages créés pour mettre à jour l'UI correctement
+    res.status(201).json({ userMessage, aiMessage });
   } catch (error) {
     console.error('Send message error:', error);
     res.status(500).json({ message: 'Failed to send message' });
@@ -228,7 +251,6 @@ const markChatAsRead = async (req, res) => {
       return res.status(404).json({ message: 'Chat not found' });
     }
 
-    // Check if user is participant
     if (!chat.participants.some(p => p.toString() === req.user._id.toString())) {
       return res.status(403).json({ message: 'Not authorized' });
     }
