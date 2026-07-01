@@ -9,6 +9,7 @@ import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
 import PrivateRoute from './components/PrivateRoute';
 import OperatorRoute from './components/OperatorRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Critical pages (loaded immediately)
 import SearchPage from './pages/SearchPage';
@@ -232,74 +233,74 @@ function App() {
             </OperatorRoute>
           } />
           <Route path="admin/dashboard" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminDashboardPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/operators" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminOperatorsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/products" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminProductsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/users" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminUsersPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/settings" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminSettingsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/badges" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBadgeManagementPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/blog" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/blog/new" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogFormPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/blog/:id/edit" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogFormPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/pending-payments" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminPendingPaymentsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="notifications" element={
             <PrivateRoute>
@@ -316,25 +317,25 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="admin/withdrawals" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminWithdrawalsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/approval-requests" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <ApprovalRequestsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="admin/badge-requests" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBadgeRequestsPage />
               </Suspense>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           {/*
           <Route path="circuit" element={
