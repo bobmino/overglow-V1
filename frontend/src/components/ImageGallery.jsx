@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { formatImageUrls, getPlaceholderImage } from '../utils/formatImage';
 
 const ImageGallery = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  
-  const displayImages = images && images.length > 0 
-    ? images 
-    : ['https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1200'];
+
+  const displayImages = useMemo(() => {
+    const formatted = formatImageUrls(images);
+    return formatted.length > 0 ? formatted : [getPlaceholderImage()];
+  }, [images]);
 
   const openLightbox = (index) => {
     setCurrentIndex(index);

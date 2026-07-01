@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { Package, MapPin, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { formatImageUrl } from '../utils/formatImage';
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -156,7 +157,7 @@ const AdminProductsPage = () => {
             <div key={product._id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition">
               {product.images && product.images.length > 0 && (
                 <img
-                  src={product.images[0]}
+                  src={formatImageUrl(product.images[0])}
                   alt={product.title}
                   className="w-full h-48 object-cover"
                 />

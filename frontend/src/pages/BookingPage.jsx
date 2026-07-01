@@ -5,6 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { trackBookingPageView } from '../utils/analytics';
+import { formatImageUrlWithFallback } from '../utils/formatImage';
 
 const BookingPage = () => {
   const location = useLocation();
@@ -261,7 +262,7 @@ const BookingPage = () => {
                 
                 <div className="flex gap-3 mb-4 pb-4 border-b border-slate-100">
                   <img 
-                    src={product.images[0]} 
+                    src={formatImageUrlWithFallback(product.images?.[0])} 
                     alt={product.title} 
                     className="w-16 h-16 rounded-lg object-cover"
                   />

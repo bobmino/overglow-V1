@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle, Awa
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import BadgeRequestModal from '../components/BadgeRequestModal';
+import { formatImageUrlWithFallback } from '../utils/formatImage';
 
 const OperatorProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -109,7 +110,7 @@ const OperatorProductsPage = () => {
             <div key={product._id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition">
               <div className="flex gap-6">
                 <img
-                  src={product.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'}
+                  src={formatImageUrlWithFallback(product.images?.[0])}
                   alt={product.title}
                   className="w-32 h-32 rounded-lg object-cover"
                 />

@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { Trash2 as FiTrash2, Clock as FiClock, Calendar as FiCalendar, MapPin as FiMapPin, CheckCircle as FiCheckCircle } from 'lucide-react';
+import { formatImageUrl } from '../utils/formatImage';
 
 const CircuitPage = () => {
   const { circuitItems, removeFromCircuit } = useCart();
@@ -46,7 +47,7 @@ const CircuitPage = () => {
                   <div className="sm:w-48 h-48 sm:h-auto bg-gray-200">
                     {item.product?.images?.[0] ? (
                       <img 
-                        src={item.product.images[0]} 
+                        src={formatImageUrl(item.product.images[0])} 
                         alt={item.product.title} 
                         className="w-full h-full object-cover"
                       />

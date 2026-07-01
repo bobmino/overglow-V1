@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Eye, Tag } from 'lucide-react';
+import { formatImageUrlWithFallback, getPlaceholderImage } from '../utils/formatImage';
 
 const BlogCard = ({ post }) => {
   if (!post) return null;
@@ -22,12 +23,12 @@ const BlogCard = ({ post }) => {
       {/* Featured Image */}
       <div className="relative h-64 overflow-hidden bg-slate-200">
         <img 
-          src={post.featuredImage || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800'} 
+          src={formatImageUrlWithFallback(post.featuredImage)} 
           alt={post.title}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-out"
           onError={(e) => {
-            e.target.src = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
+            e.target.src = getPlaceholderImage();
           }}
         />
         {post.featured && (

@@ -6,6 +6,7 @@ import BlogCard from '../components/BlogCard';
 import ShareButtons from '../components/ShareButtons';
 import { Calendar, Clock, Eye, Tag, ArrowLeft, User } from 'lucide-react';
 import { trackBlogView } from '../utils/analytics';
+import { formatImageUrl, formatImageUrlWithFallback } from '../utils/formatImage';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -100,7 +101,7 @@ const BlogPostPage = () => {
         <meta name="description" content={post.metaDescription || post.excerpt} />
         <meta property="og:title" content={post.metaTitle || post.title} />
         <meta property="og:description" content={post.metaDescription || post.excerpt} />
-        <meta property="og:image" content={post.featuredImage || 'https://overglow-v1-3jqp.vercel.app/vite.svg'} />
+        <meta property="og:image" content={formatImageUrlWithFallback(post.featuredImage)} />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="article" />
         <meta name="keywords" content={post.keywords?.join(', ')} />
@@ -122,7 +123,7 @@ const BlogPostPage = () => {
           {post.featuredImage && (
             <div className="mb-8 rounded-xl overflow-hidden">
               <img
-                src={post.featuredImage}
+                src={formatImageUrl(post.featuredImage)}
                 alt={post.title}
                 className="w-full h-96 object-cover"
                 loading="eager"
@@ -226,7 +227,7 @@ const BlogPostPage = () => {
                     className="flex gap-4 p-4 border border-slate-200 rounded-lg hover:border-primary-500 transition"
                   >
                     <img
-                      src={product.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'}
+                      src={formatImageUrlWithFallback(product.images?.[0])}
                       alt={product.title}
                       className="w-24 h-24 object-cover rounded-lg"
                     />

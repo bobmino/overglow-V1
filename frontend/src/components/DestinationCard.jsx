@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { formatImageUrlWithFallback } from '../utils/formatImage';
 
 const DestinationCard = ({ name, image, toursCount }) => {
+  const imageSrc = formatImageUrlWithFallback(image);
+
   return (
     <Link 
       to={`/search?city=${encodeURIComponent(name)}`}
       className="group relative h-48 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
     >
       <img 
-        src={image} 
+        src={imageSrc} 
         alt={name}
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
       />

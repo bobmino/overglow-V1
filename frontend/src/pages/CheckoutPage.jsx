@@ -7,6 +7,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
+import { formatImageUrlWithFallback } from '../utils/formatImage';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -159,7 +160,7 @@ const CheckoutPage = () => {
                   {checkoutItems.map((item, idx) => (
                     <div key={idx} className={`flex gap-4 ${idx !== 0 ? 'pt-6 border-t border-gray-100' : ''}`}>
                       <img 
-                        src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'} 
+                        src={formatImageUrlWithFallback(item.product?.images?.[0])} 
                         alt={item.product?.title}
                         className="w-24 h-24 rounded-lg object-cover"
                       />
