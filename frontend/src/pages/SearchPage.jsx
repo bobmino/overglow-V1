@@ -250,9 +250,10 @@ const SearchPage = () => {
       filtered = filtered.filter((p) => normalizedSelected.includes(normalizeCategory(p.category)));
     }
 
-    // City filter
+    // City filter (insensible à la casse — ex: Agadir vs agadir en BDD)
     if (selectedCity) {
-      filtered = filtered.filter(p => p.city === selectedCity);
+      const cityLower = selectedCity.toLowerCase();
+      filtered = filtered.filter((p) => (p.city || '').toLowerCase() === cityLower);
     }
 
     // Text search filter (if using local data)

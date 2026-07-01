@@ -38,6 +38,7 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
     <div className="relative" ref={pickerRef}>
       <button
         type="button"
+        data-testid="time-slot-picker-trigger"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-3 py-2 border-2 rounded-xl text-left flex items-center justify-between transition ${
           required && !selectedTimeSlot
@@ -62,7 +63,7 @@ const TimeSlotPicker = ({ product, selectedTimeSlot, onTimeSlotSelect, required 
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full">
+        <div data-testid="time-slot-picker-dropdown" className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full">
           <div className="space-y-2">
             {timeSlots.map((slot, index) => (
               <button

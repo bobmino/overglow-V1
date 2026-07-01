@@ -797,6 +797,7 @@ const ProductDetailPage = () => {
 
               {/* Book Button */}
               <button
+                data-testid="book-now-button"
                 onClick={handleBookNow}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
                 className="w-full py-2 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"

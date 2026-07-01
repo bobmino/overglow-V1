@@ -43,6 +43,7 @@ const ProductCard = ({ product }) => {
     <Link 
       to={`/products/${product._id}`} 
       onClick={handleClick}
+      data-testid="product-card"
       className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-slate-200">

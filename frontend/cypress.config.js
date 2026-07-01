@@ -2,7 +2,7 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:5173',
+    baseUrl: 'http://127.0.0.1:5173',
     viewportWidth: 1280,
     viewportHeight: 720,
     video: true,
@@ -14,30 +14,12 @@ export default defineConfig({
       // implement node event listeners here
     },
     env: {
-      apiUrl: 'http://localhost:5001',
+      apiUrl: 'http://127.0.0.1:5001',
       testUser: {
-        email: 'test@example.com',
-        password: 'test123456',
+        email: 'admin@overglow.com',
+        password: 'admin123',
       },
     },
-    // Test configurations for different browsers
-    browsers: [
-      {
-        name: 'chrome',
-        family: 'chromium',
-        channel: 'stable',
-      },
-      {
-        name: 'firefox',
-        family: 'firefox',
-        channel: 'stable',
-      },
-      {
-        name: 'edge',
-        family: 'chromium',
-        channel: 'stable',
-      },
-    ],
   },
   component: {
     devServer: {

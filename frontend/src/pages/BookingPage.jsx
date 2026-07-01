@@ -320,6 +320,7 @@ const BookingPage = () => {
                 </div>
 
                 <button
+                  data-testid="continue-to-checkout"
                   onClick={handleContinue}
                   disabled={!selectedSlot || !travelerDetails.firstName || !travelerDetails.email}
                   className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
