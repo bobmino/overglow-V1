@@ -5,6 +5,7 @@ import CategoryGroup from '../models/categoryGroupModel.js';
 import Badge from '../models/badgeModel.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 import connectDB from '../../config/db.js';
+import { localizeProducts, resolveRequestLang } from '../utils/contentI18n.js';
 
 const ensureDbConnected = async () => {
   if (mongoose.connection?.readyState === 1) return;
@@ -40,6 +41,7 @@ const CARD_PROJECTION = {
   categoryGroup: 1,
   category: 1,
   productType: 1,
+  i18n: 1,
 };
 
 // @desc    Get dynamic homepage layout data (zero hardcoding)
@@ -237,8 +239,16 @@ export const getHomepageLayout = async (req, res) => {
     }
 
     const responseTime = Date.now() - startTime;
+    const lang = resolveRequestLang(req);
+
+    const localizeGroup = (group) => ({
+      ...group,
+      products: localizeProducts(group.products || [], lang),
+    });
+
     res.json({
       success: true,
+      lang,
       performance: {
         responseTimeMs: responseTime,
         cached: false,
@@ -246,13 +256,13 @@ export const getHomepageLayout = async (req, res) => {
       layout: {
         topDestinations: destinations,
         offers: {
-          national: nationalGroups,
-          international: internationalGroups,
-          insolite: insoliteGroups,
+          national: nationalGroups.map(localizeGroup),
+          international: internationalGroups.map(localizeGroup),
+          insolite: insoliteGroups.map(localizeGroup),
         },
-        topCircuits: topCircuits.slice(0, 6),
-        topServices: topServices.slice(0, 6),
-        topProducts: topProducts.slice(0, 8),
+        topCircuits: localizeProducts(topCircuits.slice(0, 6), lang),
+        topServices: localizeProducts(topServices.slice(0, 6), lang),
+        topProducts: localizeProducts(topProducts.slice(0, 8), lang),
       },
     });
   } catch (error) {

@@ -16,6 +16,7 @@ import {
   buildSortOption,
   matchesDurationFilter,
 } from '../services/productFilterService.js';
+import { localizeProducts, localizeProduct, resolveRequestLang } from '../utils/contentI18n.js';
 
 import connectDB from '../../config/db.js';
 
@@ -485,9 +486,10 @@ const getPublishedProducts = async (req, res) => {
 
     const total = products.length;
     const pageProducts = products.slice(skip, skip + filters.limit);
+    const lang = resolveRequestLang(req);
 
     res.json({
-      products: Array.isArray(pageProducts) ? pageProducts : [],
+      products: localizeProducts(pageProducts, lang),
       pagination: {
         page: filters.page,
         limit: filters.limit,
@@ -495,6 +497,7 @@ const getPublishedProducts = async (req, res) => {
         totalPages: Math.ceil(total / filters.limit) || 1,
       },
       appliedFilters: filters,
+      lang,
     });
   } catch (error) {
     console.error('Get published products error:', error);
@@ -600,7 +603,7 @@ const getProductById = async (req, res) => {
     }
     
     res.json({ 
-      ...product, 
+      ...localizeProduct(product, resolveRequestLang(req)), 
       schedules: Array.isArray(schedules) ? schedules : [], 
       reviews: Array.isArray(reviews) ? reviews : [] 
     });

@@ -4,10 +4,12 @@ import { HelpCircle, Mail, MessageSquare, ShieldCheck, HandCoins, Users } from '
 import FAQSection from '../components/FAQSection';
 import ChatWidget from '../components/ChatWidget';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const HelpPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { t, i18n } = useTranslation();
   const [showChat, setShowChat] = useState(false);
 
   return (
@@ -60,7 +62,7 @@ const HelpPage = () => {
         {/* FAQ Section */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions frequentes</h2>
-          <FAQSection language="fr" limit={20} />
+          <FAQSection language={i18n.language?.slice(0, 2) || 'fr'} limit={20} />
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">

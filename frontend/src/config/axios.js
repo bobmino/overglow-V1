@@ -52,6 +52,18 @@ instance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${user.token}`;
     }
 
+    // Pass UI language so APIs can localize product/editorial content
+    try {
+      const lng =
+        localStorage.getItem('i18nextLng') ||
+        (typeof navigator !== 'undefined' ? navigator.language : 'fr');
+      const short = String(lng).slice(0, 2).toLowerCase();
+      config.headers['Accept-Language'] = short;
+      config.params = { ...(config.params || {}), lang: short };
+    } catch {
+      /* ignore */
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

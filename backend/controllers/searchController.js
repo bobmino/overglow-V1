@@ -10,6 +10,7 @@ import {
   buildPublishedProductQuery,
   buildSortOption,
 } from '../services/productFilterService.js';
+import { localizeProducts, resolveRequestLang } from '../utils/contentI18n.js';
 
 // @desc    Get autocomplete suggestions
 // @route   GET /api/search/autocomplete?q=query
@@ -255,6 +256,7 @@ export const advancedSearch = async (req, res) => {
     const total = sorted.length;
     const startIndex = (filters.page - 1) * filters.limit;
     const paginatedProducts = sorted.slice(startIndex, startIndex + filters.limit);
+    const lang = resolveRequestLang(req);
 
     // Facets from current result set (pre-pagination) for UI chips
     const cityMap = new Map();
@@ -274,7 +276,7 @@ export const advancedSearch = async (req, res) => {
     }
 
     res.json({
-      products: paginatedProducts,
+      products: localizeProducts(paginatedProducts, lang),
       total,
       page: filters.page,
       limit: filters.limit,
@@ -295,6 +297,7 @@ export const advancedSearch = async (req, res) => {
         },
       },
       appliedFilters: filters,
+      lang,
     });
   } catch (error) {
     console.error('Advanced search error:', error);

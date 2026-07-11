@@ -18,6 +18,14 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  /**
+   * Optional per-language overrides. Root title/description remain the fallback (usually FR).
+   * Shape: { en: { title, description, highlights, included, ... }, ar: {...}, es: {...} }
+   */
+  i18n: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   category: {
     type: String,
     required: true,
