@@ -1,512 +1,379 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
+import { X, SlidersHorizontal } from 'lucide-react';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import FilterDrawer from '../components/FilterDrawer';
-import { X, SlidersHorizontal } from 'lucide-react';
 import { trackSearch } from '../utils/analytics';
-import { normalizeCategory } from '../utils/categoryMapping';
-import { useTranslation } from 'react-i18next';
+
+/**
+ * URL is the source of truth for catalogue filters.
+ * All filtering happens server-side via /api/search/advanced.
+ */
 const SearchPage = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
 
-  // Filter states
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [selectedCity, setSelectedCity] = useState('');
-  const [sortBy, setSortBy] = useState('recommended');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [advancedFilters, setAdvancedFilters] = useState({
-    minPrice: null,
-    maxPrice: null,
-    minRating: null,
+  const filtersFromUrl = useMemo(() => {
+    const tagsParam = searchParams.get('tags');
+    return {
+      q: searchParams.get('q') || '',
+      city: searchParams.get('city') || '',
+      category: searchParams.get('category') || '',
+      categories: searchParams.get('category')
+        ? searchParams.get('category').split(',').filter(Boolean)
+        : [],
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : null,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : null,
+      minRating: searchParams.get('minRating') ? Number(searchParams.get('minRating')) : null,
+      skipTheLine: searchParams.get('skipTheLine') === 'true',
+      tags: tagsParam ? tagsParam.split(',').filter(Boolean) : [],
+      sortBy: searchParams.get('sortBy') || 'recommended',
+      page: Math.max(1, parseInt(searchParams.get('page') || '1', 10)),
+    };
+  }, [searchParams]);
+
+  const updateParams = useCallback(
+    (patch, { resetPage = true } = {}) => {
+      const next = new URLSearchParams(searchParams);
+      Object.entries(patch).forEach(([key, value]) => {
+        if (
+          value === null ||
+          value === undefined ||
+          value === '' ||
+          (Array.isArray(value) && value.length === 0) ||
+          value === false
+        ) {
+          next.delete(key);
+        } else if (Array.isArray(value)) {
+          next.set(key, value.join(','));
+        } else {
+          next.set(key, String(value));
+        }
+      });
+      if (resetPage) next.delete('page');
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const { data: facetsData } = useQuery({
+    queryKey: ['searchFacets'],
+    queryFn: async () => {
+      const { data } = await api.get('/api/search/facets');
+      return data;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const cities = (facetsData?.cities || []).map((c) => c.name).filter(Boolean);
+  const categories = (facetsData?.categories || []).map((c) => c.name).filter(Boolean);
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filtersFromUrl.q) params.set('q', filtersFromUrl.q);
+    if (filtersFromUrl.city) params.set('city', filtersFromUrl.city);
+    if (filtersFromUrl.categories.length) {
+      params.set('categories', filtersFromUrl.categories.join(','));
+      params.set('category', filtersFromUrl.categories[0]);
+    }
+    if (filtersFromUrl.minPrice != null) params.set('minPrice', String(filtersFromUrl.minPrice));
+    if (filtersFromUrl.maxPrice != null) params.set('maxPrice', String(filtersFromUrl.maxPrice));
+    if (filtersFromUrl.minRating != null) params.set('minRating', String(filtersFromUrl.minRating));
+    if (filtersFromUrl.skipTheLine) params.set('skipTheLine', 'true');
+    if (filtersFromUrl.tags.length) params.set('tags', filtersFromUrl.tags.join(','));
+    params.set('sortBy', filtersFromUrl.sortBy);
+    params.set('page', String(filtersFromUrl.page));
+    params.set('limit', '20');
+    return params.toString();
+  }, [filtersFromUrl]);
+
+  const {
+    data: searchResults,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['searchAdvanced', queryString],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/search/advanced?${queryString}`);
+      return data;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const products = Array.isArray(searchResults?.products) ? searchResults.products : [];
+  const total = searchResults?.total ?? searchResults?.pagination?.total ?? products.length;
+  const totalPages =
+    searchResults?.totalPages ?? searchResults?.pagination?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (products.length >= 0 && (filtersFromUrl.q || filtersFromUrl.city || filtersFromUrl.categories.length)) {
+      trackSearch(
+        filtersFromUrl.q || '',
+        {
+          city: filtersFromUrl.city,
+          category: filtersFromUrl.categories.join(','),
+          minPrice: filtersFromUrl.minPrice,
+          maxPrice: filtersFromUrl.maxPrice,
+          tags: filtersFromUrl.tags.join(','),
+        },
+        total
+      );
+    }
+  }, [searchResults]);
+
+  const advancedFilters = {
+    minPrice: filtersFromUrl.minPrice,
+    maxPrice: filtersFromUrl.maxPrice,
+    minRating: filtersFromUrl.minRating,
+    skipTheLine: filtersFromUrl.skipTheLine,
+    tags: filtersFromUrl.tags,
     durations: [],
     selectedDate: null,
     location: null,
     locationName: '',
     radius: null,
-    skipTheLine: false,
-    tags: []
-  });
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-
-  const [categories, setCategories] = useState([]);
-  const [cities, setCities] = useState(['Marrakech', 'Casablanca', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Meknès', 'Ouarzazate']);
-  
-  // Fetch categories and cities from API
-  const { data: initialData } = useQuery({
-    queryKey: ['searchInitialData'],
-    queryFn: async () => {
-      const [categoriesRes, productsRes] = await Promise.all([
-        api.get('/api/search/categories'),
-        api.get('/api/products')
-      ]);
-      return { categoriesRes, productsRes };
-    },
-    staleTime: 60 * 60 * 1000, // 1 hour
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      try {
-        if (initialData.categoriesRes.data && Array.isArray(initialData.categoriesRes.data.categories)) {
-          const categoryNames = initialData.categoriesRes.data.categories.map(cat => 
-            typeof cat === 'string' ? cat : (cat.name || cat.slug)
-          );
-          setCategories(categoryNames);
-        }
-        
-        const productsData = Array.isArray(initialData.productsRes.data) 
-          ? initialData.productsRes.data 
-          : (initialData.productsRes.data?.products || []);
-          
-        if (Array.isArray(productsData)) {
-          const uniqueCities = [...new Set(productsData.map(p => p.city).filter(Boolean))];
-          if (uniqueCities.length > 0) {
-            setCities(prev => [...new Set([...prev, ...uniqueCities])]);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to parse initial data:', err);
-        setCategories(['Tours', 'Attractions', 'Food & Drink', 'Day Trips', 'Outdoor Activities', 'Shows & Performances', 'Activities']);
-      }
-    }
-  }, [initialData]);
-
-  // Get search query from URL params
-  useEffect(() => {
-    const cityParam = searchParams.get('city');
-    const queryParam = searchParams.get('q');
-    const categoryParam = searchParams.get('category');
-    const tagsParam = searchParams.get('tags');
-    
-    if (cityParam) setSelectedCity(cityParam);
-    if (queryParam) setSearchQuery(queryParam);
-    if (!cityParam && !queryParam) {
-      setSearchQuery('Agadir');
-    }
-    
-    if (categoryParam) {
-      import('../utils/categoryMapping.js').then(({ normalizeCategory }) => {
-        const normalizedCategory = normalizeCategory(categoryParam);
-        if (normalizedCategory && !selectedCategories.includes(normalizedCategory)) {
-          setSelectedCategories([normalizedCategory]);
-        }
-      });
-    }
-
-    if (tagsParam) {
-      const tagsArray = tagsParam.split(',').filter(Boolean);
-      setAdvancedFilters(prev => ({ ...prev, tags: tagsArray }));
-    }
-  }, [searchParams]);
-
-  const hasAdvancedFilters = 
-    advancedFilters.minPrice || 
-    advancedFilters.maxPrice || 
-    advancedFilters.minRating ||
-    (advancedFilters.durations && advancedFilters.durations.length > 0) ||
-    advancedFilters.selectedDate ||
-    advancedFilters.location ||
-    advancedFilters.skipTheLine ||
-    (advancedFilters.tags && advancedFilters.tags.length > 0) ||
-    searchQuery;
-
-  const { data: searchResults, isLoading: isSearchLoading, isError: isSearchError } = useQuery({
-    queryKey: ['searchResults', selectedCity, selectedCategories, advancedFilters, searchQuery, sortBy, page],
-    queryFn: async () => {
-      let data;
-      try {
-        if (hasAdvancedFilters) {
-          const params = new URLSearchParams();
-          if (searchQuery) params.append('q', searchQuery);
-          if (selectedCity) params.append('city', selectedCity);
-          if (selectedCategories.length > 0) params.append('category', selectedCategories[0]);
-          if (advancedFilters.minPrice) params.append('minPrice', advancedFilters.minPrice);
-          if (advancedFilters.maxPrice) params.append('maxPrice', advancedFilters.maxPrice);
-          if (advancedFilters.minRating) params.append('minRating', advancedFilters.minRating);
-          if (advancedFilters.durations.length > 0) {
-            advancedFilters.durations.forEach(d => params.append('durations', d));
-          }
-          if (advancedFilters.selectedDate) params.append('selectedDate', advancedFilters.selectedDate);
-          if (advancedFilters.location?.lat) {
-            params.append('locationLat', advancedFilters.location.lat);
-            params.append('locationLng', advancedFilters.location.lng);
-          }
-          if (advancedFilters.radius) params.append('radius', advancedFilters.radius);
-          if (advancedFilters.skipTheLine) params.append('skipTheLine', 'true');
-          if (advancedFilters.tags && advancedFilters.tags.length > 0) {
-            params.append('tags', advancedFilters.tags.join(','));
-          }
-          params.append('sortBy', sortBy);
-          params.append('page', page);
-          params.append('limit', 20);
-
-          const response = await api.get(`/api/search/advanced?${params.toString()}`);
-          data = response.data;
-        } else {
-          const params = new URLSearchParams();
-          if (searchQuery) params.append('q', searchQuery);
-          else if (selectedCity) params.append('city', selectedCity);
-          params.append('page', page);
-          params.append('limit', 20);
-          const response = await api.get(`/api/products?${params.toString()}`);
-          data = response.data;
-        }
-      } catch (err) {
-        console.warn('API request failed:', err.message);
-        data = { products: [], pagination: { page: 1, totalPages: 0, total: 0 } };
-      }
-      return data;
-    },
-    staleTime: 5 * 60 * 1000 // 5 minutes
-  });
-
-  useEffect(() => {
-    if (searchResults) {
-      const productsArray = Array.isArray(searchResults.products) ? searchResults.products : (Array.isArray(searchResults) ? searchResults : []);
-      const pagination = searchResults.pagination || { page: 1, totalPages: 1, total: productsArray.length };
-      
-      setProducts(productsArray);
-      setPage(pagination.page || 1);
-      setTotalPages(pagination.totalPages || 1);
-
-      if (hasAdvancedFilters && productsArray.length > 0) {
-        trackSearch(
-          searchQuery || '',
-          {
-            city: selectedCity || advancedFilters.city,
-            category: selectedCategories.join(','),
-            minPrice: advancedFilters.minPrice,
-            maxPrice: advancedFilters.maxPrice,
-            selectedDate: advancedFilters.selectedDate,
-            tags: advancedFilters.tags?.join(','),
-          },
-          productsArray.length
-        );
-      }
-    }
-  }, [searchResults]);
-
-  useEffect(() => {
-    setLoading(isSearchLoading);
-  }, [isSearchLoading]);
-
-  useEffect(() => {
-    if (isSearchError) setError('Failed to load products');
-    else setError(null);
-  }, [isSearchError]);
-
-  const getProductBasePrice = (product) => {
-    const schedulePrices = Array.isArray(product.schedules)
-      ? product.schedules
-          .map(schedule => Number(schedule.price))
-          .filter(priceValue => Number.isFinite(priceValue) && priceValue >= 0)
-      : [];
-
-    if (schedulePrices.length > 0) {
-      return Math.min(...schedulePrices);
-    }
-
-    const directPrice = Number(product.price);
-    return Number.isFinite(directPrice) && directPrice >= 0 ? directPrice : null;
   };
-
-  const matchesPriceRange = (product) => {
-    const price = getProductBasePrice(product);
-    if (price === null) return false;
-
-    const min = Number(priceRange.min);
-    const max = Number(priceRange.max);
-
-    if (priceRange.min && (!Number.isFinite(min) || price < min)) {
-      return false;
-    }
-
-    if (priceRange.max && (!Number.isFinite(max) || price > max)) {
-      return false;
-    }
-
-    return true;
-  };
-
-  // Apply filters whenever filter states change
-  useEffect(() => {
-    let filtered = Array.isArray(products) ? [...products] : [];
-
-    // Category filter
-    if (selectedCategories.length > 0) {
-      const normalizedSelected = selectedCategories.map((c) => normalizeCategory(c)).filter(Boolean);
-      filtered = filtered.filter((p) => normalizedSelected.includes(normalizeCategory(p.category)));
-    }
-
-    // City filter (insensible à la casse — ex: Agadir vs agadir en BDD)
-    if (selectedCity) {
-      const cityLower = selectedCity.toLowerCase();
-      filtered = filtered.filter((p) => (p.city || '').toLowerCase() === cityLower);
-    }
-
-    // Text search filter (if using local data)
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        (p.title && p.title.toLowerCase().includes(query)) ||
-        (p.city && p.city.toLowerCase().includes(query)) ||
-        (p.description && p.description.toLowerCase().includes(query)) ||
-        (p.category && p.category.toLowerCase().includes(query))
-      );
-    }
-
-    // Price range filter
-    if (priceRange.min || priceRange.max) {
-      filtered = filtered.filter(matchesPriceRange);
-    }
-
-    // Sorting
-    switch (sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => {
-          const priceA = getProductBasePrice(a) ?? Number.POSITIVE_INFINITY;
-          const priceB = getProductBasePrice(b) ?? Number.POSITIVE_INFINITY;
-          return priceA - priceB;
-        });
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => {
-          const priceA = getProductBasePrice(a) ?? 0;
-          const priceB = getProductBasePrice(b) ?? 0;
-          return priceB - priceA;
-        });
-        break;
-      case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      default:
-        // recommended - keep original order
-        break;
-    }
-
-    setFilteredProducts(filtered);
-  }, [products, selectedCategories, selectedCity, priceRange, sortBy, searchParams]);
 
   const handleResetFilters = () => {
-    setSelectedCategories([]);
-    setPriceRange({ min: '', max: '' });
-    setSelectedCity('');
-    setSearchQuery('');
-    setSortBy('recommended');
-    setAdvancedFilters({
-      minPrice: null,
-      maxPrice: null,
-      minRating: null,
-      durations: [],
-      selectedDate: null,
-      location: null,
-      locationName: '',
-      radius: null,
-      skipTheLine: false,
-      tags: []
+    setSearchParams({}, { replace: true });
+  };
+
+  const setSearchQuery = (q) => updateParams({ q });
+  const setSelectedCategories = (updater) => {
+    const next =
+      typeof updater === 'function' ? updater(filtersFromUrl.categories) : updater;
+    updateParams({ category: next });
+  };
+  const setAdvancedFilters = (updater) => {
+    const next = typeof updater === 'function' ? updater(advancedFilters) : updater;
+    updateParams({
+      minPrice: next.minPrice,
+      maxPrice: next.maxPrice,
+      minRating: next.minRating,
+      skipTheLine: next.skipTheLine || null,
+      tags: next.tags || [],
     });
-    setPage(1);
-    setSearchParams({});
   };
 
-  const handleCategoryToggle = (category) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+  const activeChips = [];
+  if (filtersFromUrl.q) activeChips.push({ key: 'q', label: filtersFromUrl.q });
+  if (filtersFromUrl.city) activeChips.push({ key: 'city', label: filtersFromUrl.city });
+  filtersFromUrl.categories.forEach((c) =>
+    activeChips.push({ key: `cat-${c}`, label: c, category: c })
+  );
+  filtersFromUrl.tags.forEach((tag) => {
+    const tagKeyMap = {
+      'annulation-gratuite': 'filters.tag_free_cancel',
+      'confirmation-immediate': 'filters.tag_instant',
+      bestseller: 'filters.tag_bestseller',
+    };
+    activeChips.push({
+      key: `tag-${tag}`,
+      label: t(tagKeyMap[tag] || tag, tag),
+      tag,
+    });
+  });
+  if (filtersFromUrl.minPrice != null || filtersFromUrl.maxPrice != null) {
+    activeChips.push({
+      key: 'price',
+      label: `${filtersFromUrl.minPrice ?? '…'} – ${filtersFromUrl.maxPrice ?? '…'} MAD`,
+    });
+  }
+  if (filtersFromUrl.minRating) {
+    activeChips.push({ key: 'rating', label: `${filtersFromUrl.minRating}+ ★` });
+  }
+
+  const removeChip = (chip) => {
+    if (chip.key === 'q') updateParams({ q: '' });
+    else if (chip.key === 'city') updateParams({ city: '' });
+    else if (chip.category) {
+      setSelectedCategories((prev) => prev.filter((c) => c !== chip.category));
+    } else if (chip.tag) {
+      setAdvancedFilters((prev) => ({
+        ...prev,
+        tags: (prev.tags || []).filter((t) => t !== chip.tag),
+      }));
+    } else if (chip.key === 'price') {
+      updateParams({ minPrice: null, maxPrice: null });
+    } else if (chip.key === 'rating') {
+      updateParams({ minRating: null });
+    }
   };
-
-  const activeFiltersCount = 
-    (Array.isArray(selectedCategories) ? selectedCategories.length : 0) + 
-    (selectedCity ? 1 : 0) + 
-    (priceRange.min || priceRange.max ? 1 : 0) + 
-    (advancedFilters.tags?.length || 0);
-
-  const searchTitle = searchQuery || selectedCity || selectedCategories.length > 0 
-    ? `Recherche: ${searchQuery || selectedCity || selectedCategories.join(', ')} | Overglow Trip`
-    : 'Rechercher des expériences au Maroc | Overglow Trip';
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-20 md:pt-24 min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       <Helmet>
-        <title>{searchTitle}</title>
-        <meta name="description" content="Recherchez et découvrez les meilleures expériences authentiques au Maroc" />
+        <title>{t('catalog.title')} | Overglow</title>
       </Helmet>
 
-      {/* Main Two-Column Layout */}
-      <div className="flex flex-col md:flex-row gap-8 relative">
-        
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block w-1/4 sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto scrollbar-hide pb-10">
-          <FilterSidebar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            filters={advancedFilters}
-            setFilters={setAdvancedFilters}
-            categories={categories}
-            selectedCategories={selectedCategories}
-            setSelectedCategories={setSelectedCategories}
-            onReset={handleResetFilters}
-          />
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="hidden lg:block w-72 flex-shrink-0">
+            <FilterSidebar
+              searchQuery={filtersFromUrl.q}
+              setSearchQuery={setSearchQuery}
+              filters={advancedFilters}
+              setFilters={setAdvancedFilters}
+              categories={categories}
+              selectedCategories={filtersFromUrl.categories}
+              setSelectedCategories={setSelectedCategories}
+              cities={cities}
+              selectedCity={filtersFromUrl.city}
+              setSelectedCity={(city) => updateParams({ city })}
+              onReset={handleResetFilters}
+            />
+          </aside>
 
-        {/* Mobile Drawer */}
-        <FilterDrawer
-          isOpen={isMobileDrawerOpen}
-          onClose={() => setIsMobileDrawerOpen(false)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          filters={advancedFilters}
-          setFilters={setAdvancedFilters}
-          categories={categories}
-          selectedCategories={selectedCategories}
-          setSelectedCategories={setSelectedCategories}
-          onReset={handleResetFilters}
-        />
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900">
+                  {t('catalog.title')}
+                </h1>
+                <p className="text-slate-600 mt-1">
+                  {total === 1
+                    ? `1 ${t('catalog.result_found')}`
+                    : `${total} ${t('catalog.results_found')}`}
+                </p>
+              </div>
 
-        {/* Results Column */}
-        <div className="w-full md:w-3/4 pb-20 md:pb-0">
-          
-          {/* Active Filters Display */}
-          {activeFiltersCount > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {Array.isArray(selectedCategories) && selectedCategories.map(cat => (
-                <span key={cat} className="inline-flex items-center gap-1 bg-primary-100 text-primary-700 px-3 py-1.5 rounded-full text-sm font-medium transition-transform hover:scale-105">
-                  {cat}
-                  <button onClick={() => handleCategoryToggle(cat)} className="hover:bg-primary-200 rounded-full p-0.5 transition-colors">
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-              {advancedFilters.tags && advancedFilters.tags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium transition-transform hover:scale-105">
-                  {tag}
-                  <button 
-                    onClick={() => setAdvancedFilters(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))} 
-                    className="hover:bg-amber-200 rounded-full p-0.5 transition-colors"
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium"
+                  onClick={() => setIsMobileDrawerOpen(true)}
+                >
+                  <SlidersHorizontal size={18} />
+                  {t('catalog.open_filters')}
+                </button>
+
+                <label className="text-sm text-slate-600 flex items-center gap-2">
+                  <span className="hidden sm:inline">{t('catalog.sort_by')}</span>
+                  <select
+                    value={filtersFromUrl.sortBy}
+                    onChange={(e) => updateParams({ sortBy: e.target.value })}
+                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm"
                   >
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-              {(priceRange.min || priceRange.max) && (
-                <span className="inline-flex items-center gap-1 bg-primary-100 text-primary-700 px-3 py-1.5 rounded-full text-sm font-medium transition-transform hover:scale-105">
-                  MAD {priceRange.min || '0'} - {priceRange.max || '∞'}
-                  <button onClick={() => setPriceRange({ min: '', max: '' })} className="hover:bg-primary-200 rounded-full p-0.5 transition-colors">
-                    <X size={14} />
-                  </button>
-                </span>
-              )}
+                    <option value="recommended">{t('catalog.sort_recommended')}</option>
+                    <option value="price-low">{t('catalog.sort_price_low')}</option>
+                    <option value="price-high">{t('catalog.sort_price_high')}</option>
+                    <option value="rating">{t('catalog.sort_rating')}</option>
+                    <option value="popularity">{t('catalog.sort_popularity')}</option>
+                  </select>
+                </label>
+              </div>
             </div>
-          )}
 
-          {/* Header & Sorting */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-            <h1 className="text-2xl font-bold text-slate-900 font-heading">
-              {loading 
-                ? t('common.loading', 'Recherche en cours...') 
-                : `${Array.isArray(filteredProducts) ? filteredProducts.length : 0} ${t('catalog.results_found', 'expériences trouvées')}`
-              }
-            </h1>
-            <div className="flex items-center space-x-2 text-sm text-slate-600">
-              <span className="font-medium hidden sm:inline">{t('catalog.sort_by', 'Trier par')}:</span>
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white border border-slate-300 rounded-lg px-4 py-2 font-semibold text-slate-900 focus:ring-2 focus:ring-primary-500 cursor-pointer shadow-sm hover:border-primary-400 transition-colors"
-              >
-                <option value="recommended">{t('catalog.sort_recommended', 'Recommandé')}</option>
-                <option value="price-low">{t('catalog.sort_price_asc', 'Prix: Croissant')}</option>
-                <option value="price-high">{t('catalog.sort_price_desc', 'Prix: Décroissant')}</option>
-                <option value="rating">{t('catalog.sort_rating', 'Note')}</option>
-                <option value="popularity">{t('catalog.sort_popular', 'Popularité')}</option>
-              </select>
-            </div>
+            {activeChips.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                <span className="text-xs uppercase tracking-wider text-slate-500 self-center mr-1">
+                  {t('catalog.active_filters')}
+                </span>
+                {activeChips.map((chip) => (
+                  <button
+                    key={chip.key}
+                    type="button"
+                    onClick={() => removeChip(chip)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-sm text-slate-700 hover:border-primary-400"
+                  >
+                    {chip.label}
+                    <X size={14} />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-sm text-primary-600 font-medium hover:underline"
+                >
+                  {t('filters.clear_all')}
+                </button>
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="py-20 text-center text-slate-500">{t('common.loading')}</div>
+            ) : isError ? (
+              <div className="py-20 text-center">
+                <p className="text-slate-700 mb-4">{t('catalog.load_error')}</p>
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold"
+                >
+                  {t('common.retry')}
+                </button>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="py-20 text-center bg-white rounded-2xl border border-slate-100">
+                <p className="text-lg font-semibold text-slate-900 mb-2">{t('catalog.no_results')}</p>
+                <p className="text-slate-600 mb-6">{t('catalog.no_results_hint')}</p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-5 py-2.5 rounded-xl bg-primary-600 text-white font-semibold"
+                >
+                  {t('filters.clear_all')}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-10">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .slice(
+                        Math.max(0, filtersFromUrl.page - 3),
+                        Math.min(totalPages, filtersFromUrl.page + 2)
+                      )
+                      .map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => updateParams({ page: p }, { resetPage: false })}
+                          className={`w-10 h-10 rounded-xl text-sm font-semibold ${
+                            p === filtersFromUrl.page
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-white border border-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
-
-          {/* Results Area */}
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="h-[400px] w-full bg-slate-200 rounded-2xl animate-pulse"></div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 text-red-700 p-6 rounded-2xl shadow-sm border border-red-100 flex items-center">
-              {error}
-            </div>
-          ) : !Array.isArray(filteredProducts) || filteredProducts.length === 0 ? (
-            <div className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100">
-              <p className="text-slate-600 text-lg mb-6 font-medium">{t('catalog.no_results', 'Aucune expérience ne correspond à vos filtres')}</p>
-              <button 
-                onClick={handleResetFilters}
-                className="px-6 py-3 bg-white border-2 border-primary-600 text-primary-600 rounded-xl font-bold hover:bg-primary-50 transition-colors shadow-sm"
-              >
-                {t('catalog.clear_all', 'Effacer tous les filtres')}
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product?._id || Math.random()} product={product} />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="flex items-center justify-center space-x-4 mt-12 mb-8">
-              <button
-                onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                disabled={page === 1}
-                className="px-6 py-2.5 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
-              >
-                Précédent
-              </button>
-              <span className="px-4 py-2 text-slate-600 font-medium bg-slate-50 rounded-lg">
-                Page {page} sur {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={page === totalPages}
-                className="px-6 py-2.5 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
-              >
-                Suivant
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Mobile Floating Filter Button */}
-      <div className="md:hidden fixed bottom-6 left-0 right-0 flex justify-center z-40 px-4">
-        <button
-          onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex items-center space-x-2 bg-slate-900 text-white px-8 py-4 rounded-full font-bold shadow-2xl hover:bg-slate-800 transition-transform active:scale-95"
-        >
-          <SlidersHorizontal size={20} />
-          <span>Filtrer / Trier</span>
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 bg-primary-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </button>
-      </div>
-
+      <FilterDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        filters={advancedFilters}
+        setFilters={setAdvancedFilters}
+        categories={categories}
+        selectedCategories={filtersFromUrl.categories}
+        setSelectedCategories={setSelectedCategories}
+        cities={cities}
+        selectedCity={filtersFromUrl.city}
+        setSelectedCity={(city) => updateParams({ city })}
+        searchQuery={filtersFromUrl.q}
+        setSearchQuery={setSearchQuery}
+        onReset={handleResetFilters}
+      />
     </div>
   );
 };

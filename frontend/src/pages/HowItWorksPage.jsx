@@ -1,47 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Search, CalendarCheck, CreditCard, Compass } from 'lucide-react';
-
-const steps = [
-  {
-    icon: Search,
-    title: 'Explorez',
-    text: 'Parcourez le catalogue d’expériences authentiques au Maroc : villes, catégories, dates et filtres skip-the-line.',
-  },
-  {
-    icon: CalendarCheck,
-    title: 'Réservez',
-    text: 'Choisissez un créneau disponible, le nombre de voyageurs, puis confirmez vos coordonnées.',
-  },
-  {
-    icon: CreditCard,
-    title: 'Payez en sécurité',
-    text: 'Carte (Stripe / PayPal) pour une confirmation automatique, ou virement / espèces avec validation Overglow.',
-  },
-  {
-    icon: Compass,
-    title: 'Vivez l’expérience',
-    text: 'Recevez votre confirmation, contactez votre opérateur si besoin, et profitez de votre activité.',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 const HowItWorksPage = () => {
+  const { t } = useTranslation();
+
+  const steps = [
+    { icon: Search, titleKey: 'how_it_works.step1_title', textKey: 'how_it_works.step1_text' },
+    { icon: CalendarCheck, titleKey: 'how_it_works.step2_title', textKey: 'how_it_works.step2_text' },
+    { icon: CreditCard, titleKey: 'how_it_works.step3_title', textKey: 'how_it_works.step3_text' },
+    { icon: Compass, titleKey: 'how_it_works.step4_title', textKey: 'how_it_works.step4_text' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-16">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-14">
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-4">
-            Comment ça marche
+            {t('how_it_works.title')}
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Overglow Trip connecte voyageurs et opérateurs locaux pour réserver des expériences touristiques en quelques minutes.
-          </p>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{t('how_it_works.subtitle')}</p>
         </div>
 
         <div className="space-y-8 mb-14">
-          {steps.map(({ icon: Icon, title, text }, index) => (
+          {steps.map(({ icon: Icon, titleKey, textKey }, index) => (
             <div
-              key={title}
+              key={titleKey}
               className="flex gap-6 items-start bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm"
             >
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
@@ -50,9 +35,9 @@ const HowItWorksPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Icon className="text-primary-600" size={22} />
-                  <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{t(titleKey)}</h2>
                 </div>
-                <p className="text-gray-600 leading-relaxed">{text}</p>
+                <p className="text-gray-600 leading-relaxed">{t(textKey)}</p>
               </div>
             </div>
           ))}
@@ -63,13 +48,13 @@ const HowItWorksPage = () => {
             to="/search"
             className="inline-flex justify-center px-8 py-3 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700"
           >
-            Voir les expériences
+            {t('how_it_works.cta_explore')}
           </Link>
           <Link
             to="/partners/signup"
             className="inline-flex justify-center px-8 py-3 rounded-lg border border-primary-600 text-primary-700 font-semibold hover:bg-primary-50"
           >
-            Devenir partenaire
+            {t('how_it_works.cta_partner')}
           </Link>
         </div>
       </div>

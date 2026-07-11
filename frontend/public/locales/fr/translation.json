@@ -18,7 +18,55 @@
     "viewCategory": "Voir toute la catégorie"
   },
   "common": {
-    "home": "Accueil"
+    "home": "Accueil",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "clear": "Effacer",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "see_all": "Tout voir",
+    "back": "Retour",
+    "search": "Rechercher",
+    "close": "Fermer",
+    "and": "et",
+    "from": "À partir de",
+    "per_person": "par personne"
+  },
+  "catalog": {
+    "title": "Expériences",
+    "filters": "Filtres",
+    "category": "Catégories",
+    "city": "Ville",
+    "cities": "Villes",
+    "price": "Prix",
+    "price_mad": "Prix (MAD)",
+    "min_price": "Min",
+    "max_price": "Max",
+    "min_rating": "Note minimum",
+    "popular": "Populaires",
+    "skip_the_line": "Coupe-file",
+    "sort_by": "Trier par",
+    "sort_recommended": "Recommandés",
+    "sort_price_low": "Prix croissant",
+    "sort_price_high": "Prix décroissant",
+    "sort_rating": "Mieux notés",
+    "sort_popularity": "Popularité",
+    "results_found": "expériences trouvées",
+    "result_found": "expérience trouvée",
+    "no_results": "Aucune expérience ne correspond à vos critères",
+    "no_results_hint": "Modifiez vos filtres ou élargissez votre recherche.",
+    "open_filters": "Filtres",
+    "active_filters": "Filtres actifs",
+    "search_placeholder": "Rechercher (ex: quad, médina…)",
+    "all_cities": "Toutes les villes",
+    "load_error": "Impossible de charger les expériences"
+  },
+  "filters": {
+    "tag_free_cancel": "Annulation gratuite",
+    "tag_instant": "Confirmation immédiate",
+    "tag_bestseller": "Bestseller",
+    "clear_all": "Tout effacer"
   },
   "product": {
     "claim_question": "Vous êtes l'organisateur de cette activité ?",
@@ -67,6 +115,44 @@
   },
   "cart": {
     "total": "Total"
+  },
+  "legal": {
+    "terms_title": "Conditions générales d'utilisation",
+    "terms_updated": "Dernière mise à jour",
+    "terms_s1_title": "1. Objet",
+    "terms_s1_body": "Overglow Trip est une plateforme de réservation d'expériences touristiques au Maroc. Ces conditions régissent l'accès et l'utilisation du site par les voyageurs, les opérateurs et les administrateurs.",
+    "terms_s2_title": "2. Compte utilisateur",
+    "terms_s2_body": "Vous êtes responsable de la confidentialité de vos identifiants. Les informations fournies doivent être exactes. Overglow peut suspendre un compte en cas d'usage frauduleux.",
+    "terms_s3_title": "3. Réservations et paiements",
+    "terms_s3_li1": "Une réservation n'est confirmée qu'après paiement validé (carte) ou validation manuelle (virement / espèces).",
+    "terms_s3_li2": "Les prix affichés incluent les taxes indiquées sur la fiche produit.",
+    "terms_s3_li3": "Les politiques d'annulation sont propres à chaque expérience et affichées avant paiement.",
+    "terms_s4_title": "4. Obligations des opérateurs",
+    "terms_s4_body": "Les opérateurs s'engagent à fournir des expériences conformes à la description publiée et à respecter capacités et horaires.",
+    "terms_s5_title": "5. Responsabilité",
+    "terms_s5_body": "Overglow agit comme intermédiaire technique. La réalisation de l'expérience incombe à l'opérateur, dans les limites prévues par la loi.",
+    "terms_s6_title": "6. Contact",
+    "privacy_link": "politique de confidentialité",
+    "help_link": "Centre d'aide"
+  },
+  "how_it_works": {
+    "title": "Comment ça marche",
+    "subtitle": "Overglow Trip connecte voyageurs et opérateurs locaux pour réserver des expériences touristiques en quelques minutes.",
+    "step1_title": "Explorez",
+    "step1_text": "Parcourez le catalogue d'expériences authentiques au Maroc : villes, catégories, dates et filtres.",
+    "step2_title": "Réservez",
+    "step2_text": "Choisissez un créneau disponible, le nombre de voyageurs, puis confirmez vos coordonnées.",
+    "step3_title": "Payez en sécurité",
+    "step3_text": "Carte pour une confirmation automatique, ou virement / espèces avec validation Overglow.",
+    "step4_title": "Vivez l'expérience",
+    "step4_text": "Recevez votre confirmation, contactez votre opérateur si besoin, et profitez de votre activité.",
+    "cta_explore": "Voir les expériences",
+    "cta_partner": "Devenir partenaire"
+  },
+  "faq_page": {
+    "title": "FAQ",
+    "subtitle": "Réponses aux questions les plus fréquentes.",
+    "help_link": "Centre d'aide complet"
   },
   "footer": {
     "faq": "FAQ",

@@ -10,6 +10,12 @@ import { notifyProductPending, notifyProductApproved } from '../utils/notificati
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import crypto from 'crypto';
 import { clearCache } from '../middleware/cacheMiddleware.js';
+import {
+  parseFilterParams,
+  buildPublishedProductQuery,
+  buildSortOption,
+  matchesDurationFilter,
+} from '../services/productFilterService.js';
 
 import connectDB from '../../config/db.js';
 
@@ -458,87 +464,42 @@ const getPublishedProducts = async (req, res) => {
   try {
     await ensureDbConnected();
 
-    const { city, category, q, search, date } = req.query;
-    let query = { status: { $regex: /^published$/i } };
+    const filters = parseFilterParams(req.query);
+    const mongoQuery = buildPublishedProductQuery(filters);
+    const sort = buildSortOption(filters.sortBy);
+    const skip = (filters.page - 1) * filters.limit;
 
-    const genericQuery = typeof (q || search) === 'string' ? (q || search).trim() : '';
-    if (genericQuery) {
-      const regex = new RegExp(escapeRegex(genericQuery), 'i');
-      query.$or = [
-        { title: regex },
-        { city: regex },
-        { description: regex }
-      ];
-    }
+    // Duration filter requires post-fetch when present
+    const needsDurationFilter = filters.durations.length > 0;
 
-    if (city && typeof city === 'string') {
-      query.city = new RegExp(escapeRegex(city.trim()), 'i');
-    }
-    if (category && typeof category === 'string') {
-      // Normalize category for case-insensitive matching
-      const normalizedCategory = category.trim();
-      query.category = { $regex: new RegExp(`^${normalizedCategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
-    }
-
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
-
-    console.log('Mongoose Query Filter:', JSON.stringify(query));
-
-    // Select only necessary fields for list view
-    let products = await Product.find(query)
-      .select('title images city category price operator badges skipTheLine metrics createdAt')
+    let products = await Product.find(mongoQuery)
+      .select('title images city category price duration operator badges skipTheLine metrics tags createdAt')
       .populate('operator', 'companyName status')
       .populate('badges.badgeId', 'name icon color')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      .sort(sort)
       .lean();
 
-    console.log('DB Query Result:', products.length);
-      
-    // Get total count for pagination
-    let total = await Product.countDocuments(query);
-
-    // Fallback: If no results found for a specific city query, fetch popular activities in that city
-    if (products.length === 0 && city && typeof city === 'string') {
-      console.log(`No results for query in ${city.trim()}. Falling back to popular activities.`);
-      const fallbackQuery = { 
-        status: { $regex: /^published$/i },
-        city: new RegExp(escapeRegex(city.trim()), 'i')
-      };
-      
-      products = await Product.find(fallbackQuery)
-        .select('title images city category price operator badges skipTheLine metrics createdAt')
-        .populate('operator', 'companyName status')
-        .populate('badges.badgeId', 'name icon color')
-        .sort({ 'metrics.rating': -1, 'metrics.totalReviews': -1 }) // Sort by popularity
-        .skip(skip)
-        .limit(limit)
-        .lean();
-        
-      total = await Product.countDocuments(fallbackQuery);
+    if (needsDurationFilter) {
+      products = products.filter((p) => matchesDurationFilter(p.duration, filters.durations));
     }
-    
-    console.log('Search Query:', genericQuery || city || '(all)', 'Found:', Array.isArray(products) ? products.length : 0);
 
-    // Ensure we always return an array
+    const total = products.length;
+    const pageProducts = products.slice(skip, skip + filters.limit);
+
     res.json({
-      products: Array.isArray(products) ? products : [],
+      products: Array.isArray(pageProducts) ? pageProducts : [],
       pagination: {
-        page,
-        limit,
+        page: filters.page,
+        limit: filters.limit,
         total,
-        totalPages: Math.ceil(total / limit) || 1
-      }
+        totalPages: Math.ceil(total / filters.limit) || 1,
+      },
+      appliedFilters: filters,
     });
   } catch (error) {
     console.error('Get published products error:', error);
-    // Return empty payload (200) so frontend doesn't break on transient issues
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
     return res.json({
       products: [],
       pagination: { page, limit, total: 0, totalPages: 0 },
