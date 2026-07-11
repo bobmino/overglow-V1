@@ -60,6 +60,9 @@ const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
 const ViewHistoryPage = lazy(() => import('./pages/ViewHistoryPage'));
 const PartnerSignupPage = lazy(() => import('./pages/PartnerSignupPage'));
 const CulturePage = lazy(() => import('./pages/CulturePage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
+const FAQPage = lazy(() => import('./pages/FAQPage'));
 import PlaceholderPage from './components/PlaceholderPage';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 
@@ -167,7 +170,6 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
-          {/* 
           <Route path="operator/wizard" element={
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
@@ -182,7 +184,6 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
-          */}
           <Route path="operator/dashboard" element={
             <OperatorRoute>
               <Suspense fallback={<LoadingFallback />}>
@@ -387,7 +388,7 @@ function App() {
           } />
           <Route path="terms" element={
             <Suspense fallback={<LoadingFallback />}>
-              <PrivacyPage />
+              <TermsPage />
             </Suspense>
           } />
           <Route path="contact" element={
@@ -407,7 +408,11 @@ function App() {
           } />
           
           {/* Missing Pages Placeholders */}
-          <Route path="faq" element={<PlaceholderPage titleKey="footer.faq" defaultTitle="FAQ" />} />
+          <Route path="faq" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <FAQPage />
+            </Suspense>
+          } />
           <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
           <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
           <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
@@ -416,7 +421,11 @@ function App() {
           <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
           <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
           <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
-          <Route path="how-it-works" element={<PlaceholderPage titleKey="footer.how_it_works" defaultTitle="Comment ça marche" />} />
+          <Route path="how-it-works" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HowItWorksPage />
+            </Suspense>
+          } />
           <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
           
         <Route path="operator/register" element={<RegisterPage />} />

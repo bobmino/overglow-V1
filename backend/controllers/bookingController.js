@@ -20,19 +20,52 @@ import { checkAvailability, reserveCapacity } from '../utils/availabilityService
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 import { processPayment } from '../services/paymentService.js';
+import { validateAndConfirmBookingPayment } from '../services/bookingPaymentService.js';
 import notificationHub from '../services/notificationHub.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 
-// @desc    Create payment intent (Placeholder)
+// @desc    Create payment intent (delegates to payment service / Stripe)
 // @route   POST /api/bookings/create-payment-intent
 // @access  Private
-const createPaymentIntent = async (req, res) => {
-  const { amount, currency } = req.body;
-  
-  // Placeholder for Stripe or other payment gateway logic
-  // const paymentIntent = await stripe.paymentIntents.create({ amount, currency });
-  
-  res.json({ clientSecret: 'fake_client_secret_' + Date.now() });
+const createPaymentIntent = async (req, res, next) => {
+  try {
+    const { amount, currency, bookingId } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: 'Montant invalide' });
+    }
+
+    const paymentResult = await processPayment({
+      provider: 'stripe',
+      amount: Number(amount),
+      currency: currency || 'EUR',
+      metadata: {
+        bookingId: bookingId ? String(bookingId) : '',
+        userId: req.user?._id?.toString() || '',
+      },
+    });
+
+    if (!paymentResult.clientSecret && paymentResult.simulated) {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({ message: 'Stripe n\'est pas configuré en production' });
+      }
+      return res.json({
+        clientSecret: `mock_secret_${Date.now()}`,
+        paymentIntentId: paymentResult.transactionId,
+        simulated: true,
+      });
+    }
+
+    return res.json({
+      clientSecret: paymentResult.clientSecret,
+      paymentIntentId: paymentResult.transactionId,
+      status: paymentResult.status,
+      simulated: Boolean(paymentResult.simulated),
+    });
+  } catch (error) {
+    logger.error('createPaymentIntent error', { message: error?.message });
+    next(error);
+  }
 };
 
 const createBooking = async (req, res, next) => {
@@ -217,6 +250,9 @@ const createBooking = async (req, res, next) => {
       const payoutDate = new Date(serviceDate);
       payoutDate.setDate(payoutDate.getDate() + 7);
 
+      const resolvedMethod = paymentMethod || 'stripe';
+      const isOfflinePaymentMethod = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(resolvedMethod);
+
       const bookingData = {
         user: req.user._id,
         schedule: targetScheduleId,
@@ -224,10 +260,11 @@ const createBooking = async (req, res, next) => {
         numberOfTickets: tickets,
         totalAmount,
         totalPrice: totalAmount,
-        status: 'Pending',
+        // Offline methods wait for admin validation; card methods wait for webhook / PSP success
+        status: isOfflinePaymentMethod ? 'PENDING_PAYMENT' : 'Pending',
         paymentIntentId: paymentIntentId || paymentId,
         paymentStatus: 'pending',
-        paymentMethod: paymentMethod || 'stripe',
+        paymentMethod: resolvedMethod,
         deliveryAddress: deliveryAddress || '',
         payoutStatus: 'pending',
         payoutDate,
@@ -280,13 +317,30 @@ const createBooking = async (req, res, next) => {
         });
 
         createdBooking.paymentIntentId = paymentResult.transactionId || createdBooking.paymentIntentId;
-        const isOfflinePayment = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(paymentMethod);
-        createdBooking.paymentStatus = isOfflinePayment 
-          ? 'pending' 
-          : (paymentResult.status === 'succeeded' ? 'paid' : 'pending');
-        
-        createdBooking.payoutStatus = 'scheduled';
-        await createdBooking.save();
+
+        const isOfflinePayment = ['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(
+          paymentMethod || createdBooking.paymentMethod
+        );
+
+        if (isOfflinePayment) {
+          createdBooking.status = 'PENDING_PAYMENT';
+          createdBooking.paymentStatus = 'pending';
+          createdBooking.payoutStatus = 'pending';
+          await createdBooking.save();
+        } else if (paymentResult.status === 'succeeded') {
+          // Capacity already reserved at create time — confirm only (no second decrement)
+          await validateAndConfirmBookingPayment({
+            bookingId: createdBooking._id,
+            paymentIntentId: createdBooking.paymentIntentId,
+            source: 'create_booking',
+            notify: false, // emails dispatched below
+          });
+          createdBooking = await Booking.findById(createdBooking._id);
+        } else {
+          createdBooking.paymentStatus = 'pending';
+          createdBooking.payoutStatus = 'pending';
+          await createdBooking.save();
+        }
       } catch (paymentError) {
         createdBooking.paymentStatus = 'failed';
         await createdBooking.save();
@@ -394,30 +448,6 @@ const createBooking = async (req, res, next) => {
       break;
     }
   }
-};
-
-// Designed for Stripe webhook usage (or future PSP webhooks)
-const validateAndConfirmBookingPayment = async ({ bookingId, paymentIntentId }) => {
-  const booking = await Booking.findById(bookingId);
-  if (!booking) {
-    throw new Error('Booking not found for payment confirmation');
-  }
-
-  if (paymentIntentId && booking.paymentIntentId && booking.paymentIntentId !== paymentIntentId) {
-    throw new Error('Payment intent mismatch');
-  }
-
-  if (booking.status === 'Confirmed') {
-    return booking;
-  }
-
-  booking.status = 'Confirmed';
-  booking.paymentStatus = 'paid';
-  if (!booking.payoutStatus || booking.payoutStatus === 'pending') {
-    booking.payoutStatus = 'scheduled';
-  }
-  await booking.save();
-  return booking;
 };
 
 // @desc    Get my bookings
@@ -771,17 +801,23 @@ const updateBookingStatus = async (req, res) => {
 
     const { status } = req.body;
     
-    // Map CONFIRMED to Confirmed
+    // Map CONFIRMED to Confirmed — used for admin validation of bank transfer / cash
     if (status === 'CONFIRMED' || status === 'Confirmed') {
+      await validateAndConfirmBookingPayment({
+        bookingId: booking._id,
+        source: 'admin',
+        notify: false, // confirmation email sent below
+      });
       booking.status = 'Confirmed';
       booking.paymentStatus = 'paid';
+      booking.paidAt = booking.paidAt || new Date();
       booking.isHandled = true;
       booking.handledAt = new Date();
+      await booking.save();
     } else {
       booking.status = status;
+      await booking.save();
     }
-
-    await booking.save();
 
     // Optionally send email
     if (booking.status === 'Confirmed' && booking.user && booking.user.email) {

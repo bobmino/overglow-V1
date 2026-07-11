@@ -1,11 +1,23 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const configureCloudinary = () => {
+  if (
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  ) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure: true,
+    });
+    return true;
+  }
+  return false;
+};
+
+configureCloudinary();
 
 /**
  * Upload image buffer to Cloudinary
@@ -14,6 +26,10 @@ cloudinary.config({
  * @returns {Promise<String>} Cloudinary URL
  */
 export const uploadToCloudinary = async (buffer, options = {}) => {
+  if (!isCloudinaryConfigured()) {
+    throw new Error('Cloudinary is not configured (CLOUDINARY_* env vars required)');
+  }
+
   const {
     folder = 'overglow-trip',
     publicId = null,
@@ -27,11 +43,9 @@ export const uploadToCloudinary = async (buffer, options = {}) => {
   } = options;
 
   return new Promise((resolve, reject) => {
-    // Convert buffer to data URI for Cloudinary
     const base64String = buffer.toString('base64');
     const dataUri = `data:image/webp;base64,${base64String}`;
 
-    // Upload using upload_stream with data URI
     cloudinary.uploader.upload(
       dataUri,
       {
@@ -60,7 +74,6 @@ export const uploadToCloudinary = async (buffer, options = {}) => {
  */
 export const deleteFromCloudinary = async (url) => {
   try {
-    // Extract public_id from URL
     const publicId = extractPublicId(url);
     if (!publicId) {
       throw new Error('Invalid Cloudinary URL');
@@ -81,22 +94,19 @@ export const deleteFromCloudinary = async (url) => {
  */
 const extractPublicId = (url) => {
   if (!url || typeof url !== 'string') return null;
-  
-  // If it's already a public_id (no http), return as is
+
   if (!url.startsWith('http')) return url;
-  
-  // Extract from URL pattern: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+
   const match = url.match(/\/v\d+\/(.+)\.(jpg|jpeg|png|webp|gif)/i);
   if (match) {
     return match[1];
   }
-  
-  // Try to extract from folder structure
-  const folderMatch = url.match(/\/upload\/(.+?)\.(jpg|jpeg|png|webp|gif)/i);
+
+  const folderMatch = url.match(/\/upload\/(?:[^/]+\/)*?(.+?)\.(jpg|jpeg|png|webp|gif)/i);
   if (folderMatch) {
     return folderMatch[1];
   }
-  
+
   return null;
 };
 
@@ -113,4 +123,3 @@ export const isCloudinaryConfigured = () => {
 };
 
 export default cloudinary;
-

@@ -1,10 +1,21 @@
 # Documentation Overglow V1
 
-**Dernière mise à jour :** 2025-02-XX
+**Dernière mise à jour :** 2026-07-11
 
 ---
 
-## 📚 Vue d'Ensemble
+## Documents production (prioritaires)
+
+| Doc | Rôle |
+|-----|------|
+| [`GO_LIVE_CHECKLIST.md`](GO_LIVE_CHECKLIST.md) | Checklist avant soft launch |
+| [`OPS_MEDIA_EMAIL_SENTRY.md`](OPS_MEDIA_EMAIL_SENTRY.md) | Cloudinary, Resend, Sentry, webhooks |
+| [`E2E_CRITICAL_FLOW.md`](E2E_CRITICAL_FLOW.md) | Cypress parcours critique |
+| [`.env.example`](../.env.example) | Variables d'environnement |
+
+---
+
+## Vue d'Ensemble
 
 Cette documentation complète couvre tous les aspects de la plateforme Overglow V1 :
 - Plan de test détaillé
@@ -15,7 +26,7 @@ Cette documentation complète couvre tous les aspects de la plateforme Overglow 
 
 ---
 
-## 📄 Documents Disponibles
+## Documents Disponibles
 
 ### 1. Plan de Test (`TEST_PLAN.md`)
 **Description :** Plan de test exhaustif couvrant toutes les fonctionnalités de l'application.

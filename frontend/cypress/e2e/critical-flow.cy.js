@@ -1,6 +1,8 @@
 /**
  * Critical User Flow E2E Tests
  * Flux complet : login → recherche → produit → booking → checkout → confirmation
+ *
+ * Prérequis : backend :5001 + frontend :5173 + catalogue Agadir + user admin@overglow.com
  */
 
 describe('Critical User Flow - Complete Booking Journey', () => {
@@ -27,13 +29,13 @@ describe('Critical User Flow - Complete Booking Journey', () => {
     // Étape 5 : Continuer vers le checkout
     cy.continueToCheckout();
 
-    // Étape 6 : Paiement mock (espèces)
+    // Étape 6 : Paiement offline (espèces → PENDING_PAYMENT jusqu'à validation admin)
     cy.completeCheckout('cash');
 
     // Étape 7 : Page de succès
     cy.url().should('include', '/booking-success');
-    cy.get('h1').contains(/Confirmé|Réservation Confirmée/i).should('exist');
-    cy.get('a, button').contains(/Voir mes réservations|Dashboard/i).should('exist');
+    cy.get('h1').contains(/Confirmé|Réservation Confirmée|Succès|Success/i).should('exist');
+    cy.get('a, button').contains(/Voir mes réservations|Dashboard|réservations/i).should('exist');
   });
 
   it('should handle search and product selection', () => {

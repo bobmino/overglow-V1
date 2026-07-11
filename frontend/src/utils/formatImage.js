@@ -30,6 +30,11 @@ export const formatImageUrl = (value) => {
   const trimmed = value.trim();
   if (!trimmed) return '';
 
+  // Protocol-relative Cloudinary / CDN URLs
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+
   if (/^(https?:\/\/|data:image\/)/i.test(trimmed)) {
     return trimmed;
   }
@@ -64,6 +69,15 @@ export const formatImageUrlWithFallback = (value, fallback = PLACEHOLDER_IMAGE) 
 export const formatImageUrls = (images) => {
   if (!Array.isArray(images)) return [];
   return images.map((img) => formatImageUrl(img)).filter(Boolean);
+};
+
+/**
+ * Handler onError pour <img> — bascule sur le placeholder.
+ */
+export const handleImageError = (event) => {
+  if (event?.target && event.target.src !== PLACEHOLDER_IMAGE) {
+    event.target.src = PLACEHOLDER_IMAGE;
+  }
 };
 
 export default formatImageUrl;

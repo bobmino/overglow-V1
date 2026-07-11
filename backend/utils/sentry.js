@@ -9,7 +9,9 @@ const SENTRY_DSN = process.env.SENTRY_DSN || '';
 
 export const initSentry = () => {
   if (!SENTRY_DSN) {
-    console.warn('Sentry DSN not configured. Set SENTRY_DSN in .env');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Sentry DSN not configured. Set SENTRY_DSN in .env');
+    }
     return;
   }
 

@@ -9,7 +9,9 @@ const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
 export const initSentry = () => {
   if (!SENTRY_DSN) {
-    console.warn('Sentry DSN not configured. Set VITE_SENTRY_DSN in .env');
+    if (import.meta.env.DEV) {
+      console.warn('Sentry DSN not configured. Set VITE_SENTRY_DSN in .env');
+    }
     return;
   }
 

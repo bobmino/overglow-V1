@@ -15,16 +15,11 @@ export const getScheduleAvailability = async (scheduleId) => {
       throw new Error('Schedule not found');
     }
 
-    // Count only confirmed bookings (not cancelled)
-    const confirmedBookings = await Booking.countDocuments({
-      schedule: scheduleId,
-      status: { $in: ['Pending', 'Confirmed'] },
-    });
-
-    // Calculate total tickets booked (sum of numberOfTickets for confirmed bookings)
+    // Count active holds: Pending, awaiting offline payment, and Confirmed
+    // (PENDING_PAYMENT must hold capacity until admin confirms or rejects)
     const bookings = await Booking.find({
       schedule: scheduleId,
-      status: { $in: ['Pending', 'Confirmed'] },
+      status: { $in: ['Pending', 'PENDING_PAYMENT', 'Confirmed'] },
     }).select('numberOfTickets');
 
     const totalTicketsBooked = bookings.reduce((sum, booking) => {

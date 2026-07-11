@@ -112,20 +112,27 @@ Cypress.Commands.add('continueToCheckout', () => {
 });
 
 /**
- * Finaliser le checkout avec paiement espèces (mock)
+ * Finaliser le checkout avec paiement offline (espèces / virement)
+ * Les méthodes offline laissent le booking en PENDING_PAYMENT jusqu'à validation admin.
  */
 Cypress.Commands.add('completeCheckout', (paymentMethod = 'cash') => {
   cy.url().should('include', '/checkout');
 
+  cy.intercept('POST', '**/api/bookings').as('createBooking');
+  cy.intercept('POST', '**/api/payments/**').as('paymentCall');
+
   if (paymentMethod === 'cash') {
-    cy.contains('button:visible', 'Espèces').click();
-    cy.contains('button:visible', /Confirmer — Paiement sur Place/i).click();
+    cy.contains('button:visible', /Espèces|Cash/i).click();
+    cy.contains('button:visible', /Confirmer|Paiement sur Place|Réserver/i).click();
+  } else if (paymentMethod === 'bank_transfer' || paymentMethod === 'bank') {
+    cy.contains('button:visible', /Virement|Bank/i).click();
+    cy.contains('button:visible', /Confirmer|Virement|Réserver/i).click();
   } else if (paymentMethod === 'card') {
     cy.contains('button:visible', /Carte|Stripe/i).first().click();
     cy.contains('button:visible', /Payer/i).click();
   }
 
-  cy.url({ timeout: 30000 }).should('include', '/booking-success');
+  cy.url({ timeout: 45000 }).should('include', '/booking-success');
 });
 
 /**

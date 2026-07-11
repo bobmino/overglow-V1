@@ -9,7 +9,7 @@ const bookingSchema = mongoose.Schema({
   schedule: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'Schedule', // Optimisation : Utilisation de l'ID du créneau au lieu d'une chaîne de caractères
+    ref: 'Schedule',
   },
   operator: {
     type: mongoose.Schema.Types.ObjectId,
@@ -49,6 +49,14 @@ const bookingSchema = mongoose.Schema({
     enum: ['stripe', 'paypal', 'cmi', 'cash_pickup', 'cash_delivery', 'bank_transfer'],
     default: 'stripe',
   },
+  /** Timestamp when payment was confirmed (webhook or admin) */
+  paidAt: {
+    type: Date,
+  },
+  /** Last PSP webhook event id processed (idempotence) */
+  lastWebhookEventId: {
+    type: String,
+  },
   deliveryAddress: {
     type: String,
     default: '',
@@ -70,7 +78,6 @@ const bookingSchema = mongoose.Schema({
   },
   paymentReference: {
     type: String,
-    // Format: OG-XXXXXXXX (8 derniers caractères de l'ID booking)
   },
   isHandled: {
     type: Boolean,
@@ -79,7 +86,7 @@ const bookingSchema = mongoose.Schema({
   handledAt: {
     type: Date,
   },
-  
+
   // Cancellation fields
   cancelledAt: {
     type: Date,
@@ -100,11 +107,12 @@ const bookingSchema = mongoose.Schema({
   timestamps: true,
 });
 
-// Performance compound indexes for Sprint 1
 bookingSchema.index({ status: 1, user: 1 });
 bookingSchema.index({ status: 1, schedule: 1 });
 bookingSchema.index({ status: 1, operator: 1 });
 bookingSchema.index({ status: 1, paymentStatus: 1 });
+bookingSchema.index({ paymentIntentId: 1 });
+bookingSchema.index({ lastWebhookEventId: 1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 

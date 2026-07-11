@@ -74,21 +74,33 @@ router.get('/my-products', protect, authorize('Opérateur'), getMyProducts);
 router.post('/webhook/import', webhookImportProduct);
 
 router.post('/webhook/clear-cache', async (req, res) => {
-  // Appel de notre fonction globale d'invalidation
+  const apiKey = req.headers['x-api-key'] || req.query.key;
+  if (!process.env.IMPORT_WEBHOOK_API_KEY || apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const success = await clearCache('cache:*');
   if (success) {
-    return res.status(200).json({ message: "Cache global vidé avec succès." });
+    return res.status(200).json({ message: 'Cache global vidé avec succès.' });
   }
-  return res.status(500).json({ error: "Erreur lors du nettoyage du cache Redis." });
+  return res.status(500).json({ error: 'Erreur lors du nettoyage du cache Redis.' });
 });
 
-// Route de Test Automatique pour la synchronisation de notification et envoi d'email
-router.get('/test-sync-notification', (req, res) => {
+// Test notification route disabled in production — admin-only in non-production
+router.get('/test-sync-notification', protect, authorize('Admin'), (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ message: 'Not found' });
+  }
+
+  const targetEmail = req.user?.email || process.env.ADMIN_EMAIL;
+  if (!targetEmail) {
+    return res.status(400).json({ message: 'No target email for test notification' });
+  }
+
   const mockPayload = {
-    to: 'bob.mino@gmail.com',
+    to: targetEmail,
     booking: {
       _id: '66a1a2b3c4d5e6f7a8b9c0d1',
-      totalAmount: 150.00,
+      totalAmount: 150.0,
       numberOfTickets: 2,
       schedule: {
         date: new Date(),
@@ -97,22 +109,21 @@ router.get('/test-sync-notification', (req, res) => {
           title: 'Visite VIP du Jardin Majorelle',
           operatorWhatsapp: '212600000000',
           operator: 'operator_id_123',
-        }
-      }
+        },
+      },
     },
     user: {
-      name: 'Bob Mino',
-      email: 'bob.mino@gmail.com'
+      name: req.user?.name || 'Admin Test',
+      email: targetEmail,
     },
-    whatsappLink: '212600000000'
+    whatsappLink: '212600000000',
   };
 
-  // Dispatch de l'événement en arrière-plan
   notificationHub.dispatch('BOOKING_SUCCESS', mockPayload);
 
   res.status(200).json({
     success: true,
-    message: "Événement BOOKING_SUCCESS dispatché avec succès pour bob.mino@gmail.com. Vérifiez les logs backend.",
+    message: `Événement BOOKING_SUCCESS dispatché pour ${targetEmail} (dev only).`,
   });
 });
 

@@ -4,6 +4,8 @@ import { captureException } from '../utils/sentry.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const isProduction = () => process.env.NODE_ENV === 'production';
+
 const providerHasKeys = (provider) => {
   switch (provider) {
     case 'stripe':
@@ -42,10 +44,36 @@ export const processPayment = async ({
       throw new Error('Simulated payment failure');
     }
 
-    const isMockId = paymentIntentId && (paymentIntentId.startsWith('mock_') || paymentIntentId.startsWith('sim_'));
+    const isMockId =
+      paymentIntentId &&
+      (paymentIntentId.startsWith('mock_') || paymentIntentId.startsWith('sim_'));
+
+    // Offline methods are never processed by a card PSP
+    if (['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(provider)) {
+      return {
+        success: true,
+        simulated: false,
+        provider,
+        transactionId: paymentIntentId || `offline_${provider}_${Date.now()}`,
+        amount,
+        currency,
+        status: 'pending',
+        metadata,
+        processedAt: new Date().toISOString(),
+      };
+    }
+
     if (!providerHasKeys(provider) || isMockId) {
+      if (isProduction() && provider === 'stripe') {
+        throw new Error('Stripe is not configured in production — refusing mock payment');
+      }
       await sleep(1000);
-      logger.info('Payment simulated due to missing provider keys or mock ID', { provider, amount, currency, paymentIntentId });
+      logger.info('Payment simulated due to missing provider keys or mock ID', {
+        provider,
+        amount,
+        currency,
+        paymentIntentId,
+      });
       return buildSimulatedTransaction({ amount, currency, provider, metadata });
     }
 
@@ -78,8 +106,19 @@ export const processPayment = async ({
       };
     }
 
-    await sleep(1000);
-    return buildSimulatedTransaction({ amount, currency, provider, metadata });
+    // PayPal / CMI without dedicated capture path here: leave pending for webhook
+    await sleep(200);
+    return {
+      success: true,
+      simulated: false,
+      provider,
+      transactionId: paymentIntentId || `${provider}_${Date.now()}`,
+      amount,
+      currency,
+      status: 'pending',
+      metadata,
+      processedAt: new Date().toISOString(),
+    };
   } catch (error) {
     logger.error('Payment processing failed', {
       provider,

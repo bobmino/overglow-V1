@@ -66,22 +66,48 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
 ];
 
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+}
+
 const corsOptions = {
   origin(origin, callback) {
+    // Allow non-browser clients (webhooks, health checks, server-to-server)
     if (!origin) return callback(null, true);
-    if (
+
+    const isAllowed =
       allowedOrigins.includes(origin) ||
-      origin.includes('vercel.app') ||
+      origin.endsWith('.vercel.app') ||
       origin.includes('localhost') ||
-      origin.includes('127.0.0.1')
-    ) {
+      origin.includes('127.0.0.1');
+
+    if (isAllowed) {
       return callback(null, true);
     }
+
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(`CORS blocked origin: ${origin}`);
+      return callback(new Error(`CORS: origin ${origin} not allowed`), false);
+    }
+
+    // Dev: permissive for local tooling
     return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'stripe-signature',
+    'paypal-transmission-id',
+    'paypal-transmission-time',
+    'paypal-cert-url',
+    'paypal-auth-algo',
+    'paypal-transmission-sig',
+  ],
   maxAge: 86400,
 };
 
@@ -105,7 +131,17 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '10mb' }));
+// Preserve raw body for Stripe webhook signature verification
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+      if (req.originalUrl && req.originalUrl.includes('/api/payments/webhook/stripe')) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ─── Fichiers statiques (images uploadées localement) ───────────────────────

@@ -950,9 +950,16 @@ const getOperatorsByBadge = async (req, res) => {
         return res.status(400).json({ message: 'Cette réservation n\'est pas en attente de paiement' });
       }
   
-      // Update booking status
+      // Confirm via shared service (idempotent, sets paidAt, no capacity double-decrement)
+      const { validateAndConfirmBookingPayment } = await import('../services/bookingPaymentService.js');
+      await validateAndConfirmBookingPayment({
+        bookingId: booking._id,
+        source: 'admin_offline',
+        notify: false, // sendBookingConfirmation below
+      });
       booking.status = 'Confirmed';
       booking.paymentStatus = 'paid';
+      booking.paidAt = booking.paidAt || new Date();
       booking.isHandled = true;
       booking.handledAt = new Date();
       await booking.save();
