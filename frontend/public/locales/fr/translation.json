@@ -242,5 +242,14 @@
     "cta_title": "Vivez l'authenticité marocaine",
     "cta_text": "Découvrez nos expériences immersives au cœur de la culture marocaine.",
     "cta_button": "Explorer les expériences"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Conseils, guides et actualités pour voyager autrement au Maroc.",
+    "meta_title": "Blog - Conseils et guides",
+    "meta_description": "Articles destinations, culture et conseils de voyage.",
+    "empty": "Aucun article pour cette langue",
+    "empty_hint": "Revenez bientôt ou explorez nos expériences.",
+    "cta_explore": "Voir les expériences"
   }
 }

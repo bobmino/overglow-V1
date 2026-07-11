@@ -17,6 +17,7 @@ import {
   matchesDurationFilter,
 } from '../services/productFilterService.js';
 import { localizeProducts, localizeProduct, resolveRequestLang } from '../utils/contentI18n.js';
+import { buildProductI18n } from '../utils/catalogLexicon.js';
 
 import connectDB from '../../config/db.js';
 
@@ -233,6 +234,9 @@ const createProduct = async (req, res) => {
       user: req.user._id,
     });
 
+    // Auto-generate catalogue i18n from FR source (lexicon-based)
+    product.i18n = buildProductI18n(product);
+
     const createdProduct = await product.save();
     
     // Notify admin if product is pending review
@@ -394,6 +398,11 @@ const updateProduct = async (req, res) => {
         }
       }
       product.status = nextStatus;
+
+      // Rebuild multilingual fields when core copy changes
+      if (title !== undefined || description !== undefined || highlights !== undefined || included !== undefined || requirements !== undefined) {
+        product.i18n = buildProductI18n(product);
+      }
 
       // Validate before saving
       const updatedProduct = await product.save();

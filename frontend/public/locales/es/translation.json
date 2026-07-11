@@ -242,5 +242,14 @@
     "cta_title": "Vive la autenticidad marroquí",
     "cta_text": "Descubre experiencias inmersivas en el corazón de la cultura marroquí.",
     "cta_button": "Explorar experiencias"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Consejos, guías y noticias para viajar Marruecos de otra forma.",
+    "meta_title": "Blog - Consejos y guías",
+    "meta_description": "Artículos de destinos, cultura y consejos de viaje.",
+    "empty": "No hay artículos en este idioma",
+    "empty_hint": "Vuelve pronto o explora experiencias.",
+    "cta_explore": "Ver experiencias"
   }
 }

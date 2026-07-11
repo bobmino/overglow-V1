@@ -77,6 +77,13 @@ const blogSchema = mongoose.Schema({
     type: Number, // in minutes
     default: 5,
   },
+  /** Document language — one post per language (same pattern as FAQ) */
+  language: {
+    type: String,
+    enum: ['fr', 'en', 'ar', 'es'],
+    default: 'fr',
+    index: true,
+  },
   featured: {
     type: Boolean,
     default: false,

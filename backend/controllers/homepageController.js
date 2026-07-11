@@ -5,7 +5,13 @@ import CategoryGroup from '../models/categoryGroupModel.js';
 import Badge from '../models/badgeModel.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 import connectDB from '../../config/db.js';
-import { localizeProducts, resolveRequestLang } from '../utils/contentI18n.js';
+import { localizeProducts, resolveRequestLang, normalizeLang } from '../utils/contentI18n.js';
+
+const localizeGroupName = (group, lang) => {
+  const locale = normalizeLang(lang);
+  const i18n = group.nameI18n || {};
+  return i18n[locale] || i18n.fr || group.name;
+};
 
 const ensureDbConnected = async () => {
   if (mongoose.connection?.readyState === 1) return;
@@ -243,6 +249,8 @@ export const getHomepageLayout = async (req, res) => {
 
     const localizeGroup = (group) => ({
       ...group,
+      name: localizeGroupName(group, lang),
+      displayName: localizeGroupName(group, lang),
       products: localizeProducts(group.products || [], lang),
     });
 

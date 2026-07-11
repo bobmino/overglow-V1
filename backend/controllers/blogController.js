@@ -42,12 +42,34 @@ export const getBlogPosts = async (req, res) => {
       tag,
       featured,
       search,
+      language,
       page = 1,
       limit = 10,
       sortBy = 'publishedAt',
     } = req.query;
 
     const query = { isPublished: true };
+
+    // Language filter (FAQ-style). Missing language treated as FR for legacy posts.
+    const headerLang = (req.headers['accept-language'] || 'fr').toString().slice(0, 2).toLowerCase();
+    const langRaw = typeof language === 'string' && language.trim()
+      ? language.trim().toLowerCase().slice(0, 2)
+      : headerLang;
+    const lang = ['fr', 'en', 'ar', 'es'].includes(langRaw) ? langRaw : 'fr';
+
+    if (lang === 'fr') {
+      query.$and = [
+        {
+          $or: [
+            { language: 'fr' },
+            { language: { $exists: false } },
+            { language: null },
+          ],
+        },
+      ];
+    } else {
+      query.language = lang;
+    }
 
     // Category filter
     if (category) {
@@ -68,12 +90,18 @@ export const getBlogPosts = async (req, res) => {
 
     // Search filter (only if text index exists)
     if (search) {
-      // Use regex search instead of $text to avoid index requirement
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { excerpt: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } }
-      ];
+      const searchClause = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { excerpt: { $regex: search, $options: 'i' } },
+          { tags: { $in: [new RegExp(search, 'i')] } },
+        ],
+      };
+      if (query.$and) {
+        query.$and.push(searchClause);
+      } else {
+        Object.assign(query, searchClause);
+      }
     }
 
     // Pagination
@@ -96,7 +124,7 @@ export const getBlogPosts = async (req, res) => {
     }
 
     const posts = await Blog.find(query)
-      .select('title slug excerpt featuredImage category tags publishedAt views readingTime featured createdAt')
+      .select('title slug excerpt featuredImage category tags publishedAt views readingTime featured createdAt language')
       .populate({
         path: 'author',
         select: 'name',

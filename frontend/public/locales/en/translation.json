@@ -242,5 +242,14 @@
     "cta_title": "Live Moroccan authenticity",
     "cta_text": "Explore immersive experiences at the heart of Moroccan culture.",
     "cta_button": "Browse experiences"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Tips, guides and news for traveling Morocco differently.",
+    "meta_title": "Blog - Tips and guides",
+    "meta_description": "Destination articles, culture and travel tips.",
+    "empty": "No articles for this language yet",
+    "empty_hint": "Check back soon or browse experiences.",
+    "cta_explore": "Browse experiences"
   }
 }

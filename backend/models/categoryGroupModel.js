@@ -7,6 +7,11 @@ const categoryGroupSchema = mongoose.Schema({
     unique: true,
     trim: true,
   },
+  /** Localized display names — fallback to `name` if missing */
+  nameI18n: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   type: {
     type: String,
     enum: ['National', 'International', 'Insolite'],
