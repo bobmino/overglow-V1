@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import { generateAIResponse } from '../services/aiService.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import { logger } from '../utils/logger.js';
+import { sanitizeText } from '../utils/sanitizer.js';
 
 // @desc    Get or create chat for inquiry
 // @route   GET /api/chat/inquiry/:inquiryId
@@ -176,12 +177,13 @@ const sendMessageHandler = async (req, res) => {
     }
 
     const { content, type = 'text', attachments = [] } = req.body;
+    const safeContent = sanitizeText(content || '');
 
     // MODIFICATION COMMENTÃ‰E : On enregistre d'abord le message de l'utilisateur pour ne pas perdre son historique
     const userMessage = await Message.create({
       chat: chat._id,
       sender: req.user._id,
-      content,
+      content: safeContent,
       type,
       attachments,
     });
@@ -192,7 +194,7 @@ const sendMessageHandler = async (req, res) => {
     // MODIFICATION COMMENTÃ‰E : Appel sÃ©curisÃ© au service d'IA externe (Tunnel localtunnel Ollama)
     let aiResponse;
     try {
-      aiResponse = await generateAIResponse(content);
+      aiResponse = await generateAIResponse(safeContent);
     } catch (error) {
       logger.error('Error generating AI response:', error);
       // Fallback non bloquant : On enregistre au moins l'action utilisateur sur le chat
@@ -204,7 +206,10 @@ const sendMessageHandler = async (req, res) => {
     }
 
     // MODIFICATION COMMENTÃ‰E : Parsing sÃ©curisÃ© pour accepter le format texte brut ou le format d'objet OpenAI/Ollama choices
-    const aiTextContent = aiResponse?.choices?.[0]?.message?.content || (typeof aiResponse === 'string' ? aiResponse : 'No response content');
+    const aiTextContent = sanitizeText(
+      aiResponse?.choices?.[0]?.message?.content ||
+        (typeof aiResponse === 'string' ? aiResponse : 'No response content')
+    );
 
     // MODIFICATION COMMENTÃ‰E : CrÃ©ation du message de rÃ©ponse IA, assignÃ© Ã  l'autre participant
     const aiMessage = await Message.create({

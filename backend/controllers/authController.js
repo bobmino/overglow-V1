@@ -10,6 +10,7 @@ import { randomBytes } from 'crypto';
 import { sendWelcomeEmail } from '../utils/emailService.js';
 import connectDB from '../../config/db.js';
 import { setCORSHeaders } from '../config/cors.js';
+import { sanitizeText, sanitizeName } from '../utils/sanitizer.js';
 
 
 // Normalize roles to avoid issues with older data / accent variants
@@ -551,11 +552,11 @@ const updateProfile = async (req, res) => {
       user.email = email;
     }
 
-    // Update fields
-    if (name !== undefined) user.name = name;
+    // Update fields (sanitize UGC)
+    if (name !== undefined) user.name = sanitizeName(name);
     if (phone !== undefined) user.phone = phone;
-    if (bio !== undefined) user.bio = bio;
-    if (location !== undefined) user.location = location;
+    if (bio !== undefined) user.bio = sanitizeText(bio || '');
+    if (location !== undefined) user.location = sanitizeText(location || '');
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
     if (website !== undefined) user.website = website;
     if (socialLinks !== undefined) {

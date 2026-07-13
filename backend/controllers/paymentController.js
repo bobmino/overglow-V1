@@ -11,6 +11,7 @@ import { validatePaymentAmount } from '../utils/paymentAmount.js';
 import { getCmiStoreKey, getBankCredentials } from '../config/paymentEnv.js';
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
+import { getRateToMAD } from '../utils/currencyCache.js';
 
 // Lazy initialization to prevent crashes if keys are not set
 let stripe = null;
@@ -594,20 +595,18 @@ const createCashDeliveryPayment = async (req, res) => {
 // @access  Public
 const convertToMAD = async (req, res) => {
   const { amount, from = 'EUR' } = req.query;
+  const parsedAmount = parseFloat(amount);
 
-  const exchangeRates = {
-    EUR: 10.8,
-    USD: 10.0,
-    GBP: 13.5,
-    MAD: 1.0,
-  };
+  if (!Number.isFinite(parsedAmount)) {
+    return res.status(400).json({ message: 'amount must be a valid number' });
+  }
 
-  const rate = exchangeRates[from.toUpperCase()] || 1.0;
-  const madAmount = parseFloat(amount) * rate;
+  const rate = await getRateToMAD(from);
+  const madAmount = parsedAmount * rate;
 
   res.json({
-    originalAmount: parseFloat(amount),
-    originalCurrency: from.toUpperCase(),
+    originalAmount: parsedAmount,
+    originalCurrency: String(from).toUpperCase(),
     madAmount: Math.round(madAmount * 100) / 100,
     currency: 'MAD',
     exchangeRate: rate,

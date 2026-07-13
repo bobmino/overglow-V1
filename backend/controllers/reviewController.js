@@ -7,6 +7,7 @@ import Settings from '../models/settingsModel.js';
 import { validationResult } from 'express-validator';
 import { notifyReviewPending, notifyReviewApproved } from '../utils/notificationService.js';
 import { logger } from '../utils/logger.js';
+import { sanitizeText } from '../utils/sanitizer.js';
 
 // @desc    Create a review
 // @route   POST /api/products/:productId/reviews
@@ -68,7 +69,7 @@ const createReview = async (req, res) => {
     product: productId,
     user: req.user._id,
     rating,
-    comment,
+    comment: sanitizeText(comment || ''),
     status: reviewStatus,
     approvedAt: reviewStatus === 'Approved' ? new Date() : undefined,
     isVerified: hasConfirmedBooking,

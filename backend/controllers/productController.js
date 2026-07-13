@@ -10,8 +10,8 @@ import { notifyProductPending, notifyProductApproved } from '../utils/notificati
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import crypto from 'crypto';
 import { clearCache } from '../middleware/cacheMiddleware.js';
-import {
 import { logger } from '../utils/logger.js';
+import {
   parseFilterParams,
   buildPublishedProductQuery,
   buildSortOption,
@@ -19,7 +19,7 @@ import { logger } from '../utils/logger.js';
 } from '../services/productFilterService.js';
 import { localizeProducts, localizeProduct, resolveRequestLang } from '../utils/contentI18n.js';
 import { buildProductI18n } from '../utils/catalogLexicon.js';
-
+import { sanitizeHtml, sanitizeText, sanitizeName } from '../utils/sanitizer.js';
 import connectDB from '../../config/db.js';
 
 const ensureDbConnected = async () => {
@@ -216,18 +216,18 @@ const createProduct = async (req, res) => {
 
     const product = new Product({
       operator: operator._id,
-      title,
-      description,
+      title: sanitizeName(title),
+      description: sanitizeHtml(description || ''),
       category,
-      city,
-      address,
+      city: sanitizeText(city || ''),
+      address: sanitizeText(address || ''),
       duration,
       price: normalizedPrice,
       location,
       images,
-      highlights: Array.isArray(highlights) ? highlights : [],
-      included: Array.isArray(included) ? included : [],
-      requirements: Array.isArray(requirements) ? requirements : [],
+      highlights: Array.isArray(highlights) ? highlights.map((h) => sanitizeText(String(h))) : [],
+      included: Array.isArray(included) ? included.map((h) => sanitizeText(String(h))) : [],
+      requirements: Array.isArray(requirements) ? requirements.map((h) => sanitizeText(String(h))) : [],
       requiresInquiry: requiresInquiry || false,
       inquiryType: inquiryType || 'none',
       timeSlots: Array.isArray(timeSlots) ? timeSlots : [],
@@ -367,18 +367,30 @@ const updateProduct = async (req, res) => {
       }
 
       // Update fields only if provided, otherwise keep existing values
-      if (title !== undefined) product.title = title;
-      if (description !== undefined) product.description = description;
+      if (title !== undefined) product.title = sanitizeName(title);
+      if (description !== undefined) product.description = sanitizeHtml(description || '');
       if (category !== undefined) product.category = category;
-      if (city !== undefined) product.city = city;
-      if (address !== undefined) product.address = address;
+      if (city !== undefined) product.city = sanitizeText(city || '');
+      if (address !== undefined) product.address = sanitizeText(address || '');
       if (duration !== undefined) product.duration = duration;
       product.price = nextPrice;
       if (location !== undefined) product.location = location;
       if (images !== undefined) product.images = images;
-      if (highlights !== undefined) product.highlights = Array.isArray(highlights) ? highlights : product.highlights;
-      if (included !== undefined) product.included = Array.isArray(included) ? included : product.included;
-      if (requirements !== undefined) product.requirements = Array.isArray(requirements) ? requirements : product.requirements;
+      if (highlights !== undefined) {
+        product.highlights = Array.isArray(highlights)
+          ? highlights.map((h) => sanitizeText(String(h)))
+          : product.highlights;
+      }
+      if (included !== undefined) {
+        product.included = Array.isArray(included)
+          ? included.map((h) => sanitizeText(String(h)))
+          : product.included;
+      }
+      if (requirements !== undefined) {
+        product.requirements = Array.isArray(requirements)
+          ? requirements.map((h) => sanitizeText(String(h)))
+          : product.requirements;
+      }
       if (requiresInquiry !== undefined) product.requiresInquiry = requiresInquiry;
       if (inquiryType !== undefined) product.inquiryType = inquiryType;
       if (timeSlots !== undefined) {

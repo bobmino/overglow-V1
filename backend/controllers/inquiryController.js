@@ -8,6 +8,7 @@ import {
   notifyInquiryAnswered,
 } from '../utils/notificationService.js'; // [BUG-02] Missing imports caused ReferenceError
 import { sanitizeBody } from '../utils/sanitizeBody.js';
+import { sanitizeText } from '../utils/sanitizer.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
 const INQUIRY_CREATE_FIELDS = ['productId', 'question', 'type'];
@@ -41,7 +42,7 @@ const createInquiry = asyncHandler(async (req, res) => {
     user: req.user._id,
     operator: product.operator,
     type,
-    question: type === 'manual' ? question : undefined,
+    question: type === 'manual' ? sanitizeText(question || '') : undefined,
     status: type === 'automatic' ? 'pending' : undefined,
   });
 
@@ -114,7 +115,7 @@ const answerInquiry = asyncHandler(async (req, res) => {
   }
 
   const { answer } = sanitizeBody(req.body, INQUIRY_ANSWER_FIELDS);
-  inquiry.answer = answer;
+  inquiry.answer = sanitizeText(answer || '');
   inquiry.answeredAt = new Date();
   const updatedInquiry = await inquiry.save();
 
@@ -182,7 +183,7 @@ const rejectInquiry = asyncHandler(async (req, res) => {
 
   const { reason } = sanitizeBody(req.body, INQUIRY_REJECT_FIELDS);
   inquiry.status = 'rejected';
-  inquiry.rejectionReason = reason || '';
+  inquiry.rejectionReason = sanitizeText(reason || '');
   const updatedInquiry = await inquiry.save();
 
   res.json(updatedInquiry);

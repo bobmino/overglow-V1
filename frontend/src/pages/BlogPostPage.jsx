@@ -10,6 +10,7 @@ import { trackBlogView } from '../utils/analytics';
 import { formatImageUrl, formatImageUrlWithFallback } from '../utils/formatImage';
 import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
+import { sanitizeHtml } from '../utils/sanitizer.js';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -199,7 +200,7 @@ const BlogPostPage = () => {
           <div className="bg-white rounded-xl p-8 mb-8 shadow-sm">
             <div
               className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary-600 prose-strong:text-slate-900 prose-img:rounded-lg"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
             />
           </div>
 

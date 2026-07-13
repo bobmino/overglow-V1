@@ -8,6 +8,7 @@ import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
+import { sanitizeHtml } from '../utils/sanitizer.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -426,7 +427,11 @@ const AdminBlogPage = () => {
               )}
               <div
                 className="prose prose-sm sm:prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary-600 prose-strong:text-slate-900 prose-img:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: previewPost.content || `<p><em>${t('admin.blog.no_content')}</em></p>` }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(
+                    previewPost.content || `<p><em>${t('admin.blog.no_content')}</em></p>`
+                  ),
+                }}
               />
             </div>
 

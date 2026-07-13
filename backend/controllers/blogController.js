@@ -3,6 +3,18 @@ import mongoose from 'mongoose';
 import { validationResult } from 'express-validator';
 import connectDB from '../../config/db.js';
 import { logger } from '../utils/logger.js';
+import { sanitizeHtml, sanitizeText, sanitizeName } from '../utils/sanitizer.js';
+
+/** Sanitize UGC fields on blog create/update payloads. */
+const sanitizeBlogPayload = (body = {}) => {
+  const next = { ...body };
+  if (next.title !== undefined) next.title = sanitizeName(next.title);
+  if (next.content !== undefined) next.content = sanitizeHtml(next.content || '');
+  if (next.excerpt !== undefined) next.excerpt = sanitizeText(next.excerpt || '');
+  if (next.metaDescription !== undefined) next.metaDescription = sanitizeText(next.metaDescription || '');
+  if (Array.isArray(next.tags)) next.tags = next.tags.map((t) => sanitizeText(String(t)));
+  return next;
+};
 
 const ensureDbConnected = async () => {
   if (mongoose.connection && mongoose.connection.readyState === 1) {
@@ -332,8 +344,9 @@ export const createBlogPost = async (req, res) => {
       }
     }
 
+    const sanitized = sanitizeBlogPayload(req.body);
     const post = new Blog({
-      ...req.body,
+      ...sanitized,
       slug: slug || `article-${Date.now()}`,
       author: req.user._id,
     });
@@ -404,10 +417,11 @@ export const updateBlogPost = async (req, res) => {
       return res.status(404).json({ message: 'Article non trouvé' });
     }
 
-    // Update fields
-    Object.keys(req.body).forEach(key => {
-      if (req.body[key] !== undefined) {
-        post[key] = req.body[key];
+    // Update fields (sanitize UGC before persistence)
+    const sanitized = sanitizeBlogPayload(req.body);
+    Object.keys(sanitized).forEach((key) => {
+      if (sanitized[key] !== undefined) {
+        post[key] = sanitized[key];
       }
     });
 
