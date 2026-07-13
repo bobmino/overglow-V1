@@ -15,6 +15,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 7 — Notifications Temps Réel
 - [x] PROMPT 8 — Page Finances Admin
 - [x] PROMPT 9 — Opérateur Sidebar + Navigation
+- [x] PROMPT 10 — Guide Utilisateur + Documentation API
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
