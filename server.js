@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { corsOptions } from './backend/config/cors.js';
+import { validatePaymentEnvAtStartup } from './backend/config/paymentEnv.js';
 import { initSentry } from './backend/utils/sentry.js';
 import { apiLimiter } from './backend/middleware/rateLimiter.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
@@ -51,6 +52,9 @@ const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
 
 // Initialisation Sentry (non bloquante si DSN absent)
 initSentry();
+
+// [TASK-3] Valide CMI_STORE_KEY + BANK_IBAN/BANK_SWIFT au démarrage (fail en prod)
+validatePaymentEnvAtStartup();
 
 const app = express();
 

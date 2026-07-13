@@ -519,28 +519,31 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Banque</span>
-                        <span className="font-semibold text-gray-800">{bankDetails?.bankName || 'Attijariwafa Bank'}</span>
+                        <span className="font-semibold text-gray-800">{bankDetails?.bankName || '—'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Titulaire</span>
-                        <span className="font-semibold text-gray-800">{bankDetails?.accountName || 'Overglow Trip SARL'}</span>
+                        <span className="font-semibold text-gray-800">{bankDetails?.accountName || '—'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-sm text-gray-500">IBAN</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || 'MA64 0077 8800 0000 1111 2222 33'}</span>
-                          <button
-                            onClick={() => copyToClipboard(bankDetails?.iban || 'MA64 0077 8800 0000 1111 2222 33')}
-                            className="p-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
-                            aria-label="Copier l'IBAN"
-                          >
-                            {copied ? <CheckCircle size={16} className="text-green-600" /> : <Copy size={16} className="text-indigo-600" />}
-                          </button>
+                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || 'Non configuré'}</span>
+                          {bankDetails?.iban ? (
+                            <button
+                              onClick={() => copyToClipboard(bankDetails.iban)}
+                              className="p-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                              aria-label="Copier l'IBAN"
+                              type="button"
+                            >
+                              {copied ? <CheckCircle size={16} className="text-green-600" /> : <Copy size={16} className="text-indigo-600" />}
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-sm text-gray-500">SWIFT/BIC</span>
-                        <span className="font-mono font-semibold text-gray-800">{bankDetails?.swift || 'OVGLMAMC'}</span>
+                        <span className="font-mono font-semibold text-gray-800">{bankDetails?.swift || 'Non configuré'}</span>
                       </div>
                     </div>
                   </div>

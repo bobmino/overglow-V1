@@ -8,6 +8,7 @@ import {
   extractPaypalWebhookAmount,
 } from '../services/paypalWebhookService.js';
 import { validatePaymentAmount } from '../utils/paymentAmount.js';
+import { getCmiStoreKey, getBankCredentials } from '../config/paymentEnv.js';
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 
@@ -515,19 +516,29 @@ const initCmiPayment = async (req, res) => {
       requireReceived: Boolean(amount != null && amount !== ''),
     });
 
-    const CMI_STORE_KEY = process.env.CMI_STORE_KEY || 'your_cmi_store_key';
+    // [TASK-3] Pas de fallback hardcodé — clé obligatoire depuis l'env
+    let CMI_STORE_KEY;
+    try {
+      CMI_STORE_KEY = getCmiStoreKey();
+    } catch (envErr) {
+      return res.status(503).json({ message: envErr.message });
+    }
+
     const CMI_URL = process.env.CMI_URL || 'https://payment.cmi.co.ma/payment/init';
-
     const amountInCents = Math.round(chargeAmount * 100);
+    const timestamp = Date.now().toString();
 
-    const hashString = `${CMI_STORE_KEY}${amountInCents}${currency}${bookingId}`;
+    // [TASK-3] Séparateur '|' obligatoire : sans séparateur, "12"+"3" == "1"+"23" (collision de hash).
+    // Chaque champ est délimité pour que le hash soit injectif sur les paramètres.
+    const hashString = [amountInCents, currency, bookingId, CMI_STORE_KEY, timestamp].join('|');
     const hash = crypto.createHash('sha256').update(hashString).digest('hex');
 
     res.json({
-      redirectUrl: `${CMI_URL}?amount=${amountInCents}&currency=${currency}&orderId=${bookingId}&hash=${hash}`,
+      redirectUrl: `${CMI_URL}?amount=${amountInCents}&currency=${currency}&orderId=${bookingId}&timestamp=${timestamp}&hash=${hash}`,
       amount: chargeAmount,
       currency: currency,
       bookingId: bookingId,
+      timestamp,
       hash: hash,
       message: 'Redirecting to CMI secure payment gateway...',
     });
@@ -610,15 +621,25 @@ const convertToMAD = async (req, res) => {
 const getBankDetails = async (req, res) => {
   const { bookingId } = req.query;
 
+  let credentials;
+  try {
+    credentials = getBankCredentials();
+  } catch (envErr) {
+    // Ne jamais logger IBAN/SWIFT
+    logger.error('Bank credentials not configured');
+    return res.status(503).json({ message: envErr.message });
+  }
+
   const paymentReference = bookingId
     ? `OG-${bookingId.toString().slice(-8).toUpperCase()}`
     : `OG-${Date.now().toString(36).toUpperCase()}`;
 
+  // [TASK-3] IBAN/SWIFT depuis l'environnement uniquement
   const bankDetails = {
-    bankName: 'Attijariwafa Bank',
-    accountName: 'Overglow Trip SARL',
-    iban: 'MA64 0077 8800 0000 1111 2222 33',
-    swift: 'OVGLMAMC',
+    bankName: credentials.bankName,
+    accountName: credentials.accountName,
+    iban: credentials.iban,
+    swift: credentials.swift,
     paymentReference: paymentReference,
     message: `Veuillez inclure la référence "${paymentReference}" dans le motif du virement.`,
   };
@@ -661,11 +682,20 @@ const createBankTransferPayment = async (req, res) => {
     booking.paymentReference = paymentReference;
     await booking.save();
 
+    let credentials;
+    try {
+      credentials = getBankCredentials();
+    } catch (envErr) {
+      logger.error('Bank credentials not configured');
+      return res.status(503).json({ message: envErr.message });
+    }
+
+    // [TASK-3] IBAN/SWIFT depuis l'environnement — jamais hardcodés
     const bankDetails = {
-      bankName: 'Attijariwafa Bank',
-      accountName: 'Overglow Trip SARL',
-      iban: 'MA64 0077 8800 0000 1111 2222 33',
-      swift: 'OVGLMAMC',
+      bankName: credentials.bankName,
+      accountName: credentials.accountName,
+      iban: credentials.iban,
+      swift: credentials.swift,
       paymentReference: paymentReference,
       amount: chargeAmount,
       currency: 'MAD',
