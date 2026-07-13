@@ -122,7 +122,7 @@ const AdminBadgeRequestsPage = () => {
             >
               <div className="flex gap-6">
                 <img
-                  src={request.product?.images?.[0] || 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=200'}
+                  src={request.product?.images?.[0] || '/images/placeholder.webp'}
                   alt={request.product?.title}
                   className="w-32 h-32 rounded-lg object-cover"
                 />

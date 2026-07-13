@@ -84,7 +84,7 @@ const CartDrawer = () => {
                 </div>
               ) : (
                 cartItems.map((item) => {
-                  const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
+                  const fallbackImage = '/images/placeholder.webp';
                   const image = item.product?.images?.[0] ? formatImageUrl(item.product.images[0]) : fallbackImage;
 
                   return (

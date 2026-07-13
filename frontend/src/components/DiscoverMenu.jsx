@@ -109,15 +109,15 @@ const MENU_DATA = {
       'Mobilité & Chauffeurs': {
         incontournables: ["Transferts aéroport VIP", "Location SUV avec chauffeur", "Yachts & Bateaux privés", "Hélicoptère & Jet Privé", "Mise à disposition 24h/24"],
         destinationsPhares: [
-          { name: 'Aéroport Agadir', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Marina Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Aéroport Agadir', image: cityImg('Agadir') },
+          { name: 'Marina Agadir', image: cityImg('Agadir') }
         ]
       },
       'Services À la Carte': {
         incontournables: ["Fast-track aéroport & douane", "Réservation de tables VIP", "Guides certifiés multilingues", "Photographe professionnel", "Organisation d'événements privés"],
         destinationsPhares: [
-          { name: 'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Taghazout', image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Agadir', image: cityImg('Agadir') },
+          { name: 'Taghazout', image: cityImg('Taghazout') }
         ]
       }
     }

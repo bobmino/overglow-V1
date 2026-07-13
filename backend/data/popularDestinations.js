@@ -18,13 +18,13 @@ export const popularDestinations = [
   { city: 'Las Vegas', country: 'USA', region: 'Americas', image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=400' },
   { city: 'Cancun', country: 'Mexico', region: 'Americas', image: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400' },
   
-  // Africa — Morocco (unique city photos, TASK-24)
-  { city: 'Marrakech', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=400&q=80' },
-  { city: 'Fès', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=400&q=80' },
-  { city: 'Chefchaouen', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1555881403-64995e0e8154?auto=format&fit=crop&w=400&q=80' },
-  { city: 'Essaouira', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1570197788417-0e0233416baf?auto=format&fit=crop&w=400&q=80' },
-  { city: 'Agadir', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=400&q=80' },
-  { city: 'Casablanca', country: 'Morocco', region: 'Africa', image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=400&q=80' },
+  // Africa — Morocco (local WebP, TASK-24 + Core Web Vitals)
+  { city: 'Marrakech', country: 'Morocco', region: 'Africa', image: '/images/cities/marrakech-card.webp' },
+  { city: 'Fès', country: 'Morocco', region: 'Africa', image: '/images/cities/fes-card.webp' },
+  { city: 'Chefchaouen', country: 'Morocco', region: 'Africa', image: '/images/cities/chefchaouen-card.webp' },
+  { city: 'Essaouira', country: 'Morocco', region: 'Africa', image: '/images/cities/essaouira-card.webp' },
+  { city: 'Agadir', country: 'Morocco', region: 'Africa', image: '/images/cities/agadir-card.webp' },
+  { city: 'Casablanca', country: 'Morocco', region: 'Africa', image: '/images/cities/casablanca-card.webp' },
 ];
 
 export const activityCategories = [

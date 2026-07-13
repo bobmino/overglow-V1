@@ -6,13 +6,15 @@ import DatePicker from './DatePicker';
 import SearchAutocomplete from './SearchAutocomplete';
 import TrustBar from './TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
+import { HOME_HERO_IMAGE } from '../config/cityMedia.js';
 
 const Hero = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
-  const heroBackground = formatImageUrl('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+  // [WebP migration] Local optimized hero asset
+  const heroBackground = formatImageUrl(HOME_HERO_IMAGE);
 
   const handleSearch = (e) => {
     e.preventDefault();

@@ -116,7 +116,7 @@ export const getHomepageLayout = async (req, res) => {
             image: {
               $ifNull: [
                 '$image',
-                'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=600&q=80',
+                '/images/placeholder.webp',
               ],
             },
             _id: 0,
@@ -143,7 +143,7 @@ export const getHomepageLayout = async (req, res) => {
             image: {
               $ifNull: [
                 '$image',
-                'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=600&q=80',
+                '/images/placeholder.webp',
               ],
             },
             _id: 0,

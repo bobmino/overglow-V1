@@ -4,8 +4,8 @@ import { logger } from './logger.js';
  * La bascule backend / VPS se fait uniquement via VITE_API_URL dans le fichier .env
  */
 
-const PLACEHOLDER_IMAGE =
-  'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
+// [WebP migration] Local optimized placeholder (was remote Unsplash JPG)
+const PLACEHOLDER_IMAGE = '/images/placeholder.webp';
 
 /**
  * Retourne la base URL de l'API configurée dans .env (sans slash final).
@@ -24,6 +24,7 @@ export const getPlaceholderImage = () => PLACEHOLDER_IMAGE;
 /**
  * Transforme un chemin relatif (/uploads/...) en URL absolue via VITE_API_URL.
  * Les URLs absolues (http, https, Cloudinary) et les data URI sont retournées telles quelles.
+ * Les chemins /images/... (assets publics Vite) restent relatifs au frontend.
  */
 export const formatImageUrl = (value) => {
   if (!value || typeof value !== 'string') return '';
@@ -41,6 +42,12 @@ export const formatImageUrl = (value) => {
   }
 
   const normalizedPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+
+  // [WebP migration] Static frontend assets served by Vite / CDN (not API uploads)
+  if (normalizedPath.startsWith('/images/')) {
+    return normalizedPath;
+  }
+
   const base = getApiBaseUrl();
 
   if (!base) {

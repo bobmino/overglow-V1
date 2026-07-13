@@ -5,14 +5,14 @@ import BadgeDisplay from './BadgeDisplay';
 import { useCurrency } from '../context/CurrencyContext';
 import FavoriteButton from './FavoriteButton';
 import { trackProductClick } from '../utils/analytics';
-import { formatImageUrl } from '../utils/formatImage';
+import { formatImageUrl, getPlaceholderImage } from '../utils/formatImage';
 
 const ProductCard = ({ product }) => {
   if (!product) return null;
   const { formatPrice } = useCurrency();
   
-  // Use first image or placeholder
-  const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+  // [WebP migration] Local placeholder
+  const fallbackImage = getPlaceholderImage();
   const image = Array.isArray(product.images) && product.images.length > 0
     ? formatImageUrl(product.images[0])
     : fallbackImage;

@@ -1,25 +1,28 @@
 import React from 'react';
-import DestinationCard from './DestinationCard';
+import { getCityImage } from '../config/cityMedia.js';
 
+/** [WebP migration] Morocco destinations only — local WebP assets. */
 const WarmDestinations = () => {
   const destinations = [
-    { name: "Rio de Janeiro", image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800", toursCount: 1488 },
-    { name: "Bali", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800", toursCount: 6799 },
-    { name: "Cancun", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800", toursCount: 3721 },
-    { name: "Miami", image: "https://images.unsplash.com/photo-1506966953602-c20cc11f75e3?w=800", toursCount: 1079 },
-    { name: "Siem Reap", image: "https://images.unsplash.com/photo-1528127269322-539801943592?w=800", toursCount: 2397 },
-    { name: "Punta Cana", image: "https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800", toursCount: 2521 }
+    { name: 'Marrakech', image: getCityImage('Marrakech', 'card'), toursCount: null },
+    { name: 'Fès', image: getCityImage('Fès', 'card'), toursCount: null },
+    { name: 'Chefchaouen', image: getCityImage('Chefchaouen', 'card'), toursCount: null },
+    { name: 'Essaouira', image: getCityImage('Essaouira', 'card'), toursCount: null },
+    { name: 'Agadir', image: getCityImage('Agadir', 'card'), toursCount: null },
+    { name: 'Taghazout', image: getCityImage('Taghazout', 'card'), toursCount: null },
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Warm Destinations</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {destinations.map((dest, index) => (
-            <DestinationCard key={index} {...dest} />
-          ))}
-        </div>
+    <section className="py-12">
+      <div className="container mx-auto px-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+        {destinations.map((dest) => (
+          <div key={dest.name} className="relative h-40 rounded-xl overflow-hidden">
+            <img src={dest.image} alt={dest.name} className="w-full h-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-black/30 flex items-end p-3">
+              <span className="text-white font-semibold">{dest.name}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

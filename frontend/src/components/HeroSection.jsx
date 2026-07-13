@@ -34,9 +34,10 @@ const HeroSection = () => {
     <section className="relative h-[85vh] min-h-[650px] w-full flex items-center justify-center overflow-visible">
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1539650116574-8efeb43e2750?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+          src="/images/hero-home.webp"
           alt={t('home.hero_alt')}
           className="w-full h-full object-cover object-center"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65 mix-blend-multiply" />
       </div>

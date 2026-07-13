@@ -10,7 +10,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
   if (!product) return null;
   const { formatPrice } = useCurrency();
 
-  const fallbackImage = 'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=800';
+  const fallbackImage = '/images/placeholder.webp';
   const image = Array.isArray(product.images) && product.images.length > 0
     ? formatImageUrl(product.images[0])
     : fallbackImage;
