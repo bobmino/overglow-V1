@@ -46,6 +46,28 @@ router.post(
   }
 );
 
+// [PROMPT-6] Chat attachments — any authenticated user
+router.post(
+  '/chat',
+  protect,
+  strictLimiter,
+  upload.single('image'),
+  compressAfterUpload,
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    if (req.file.dataUrl) {
+      return res.json({
+        url: req.file.dataUrl,
+        filename: req.file.originalname || req.file.storedName,
+        message: 'Chat file uploaded successfully',
+      });
+    }
+    return res.status(500).json({ message: 'Error processing image' });
+  }
+);
+
 router.post(
   '/images',
   protect,

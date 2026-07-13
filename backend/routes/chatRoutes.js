@@ -7,20 +7,20 @@ import {
   getChatById,
   sendMessage,
   markChatAsRead,
+  setTyping,
+  getTyping,
+  getUnreadChatCount,
 } from '../controllers/chatController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(protect);
 
-// Validation rules
 const messageValidation = [
   body('content')
+    .optional({ checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage('Le contenu du message est requis')
     .isLength({ max: 5000 })
     .withMessage('Le message ne peut pas dépasser 5000 caractères'),
   body('type')
@@ -29,13 +29,16 @@ const messageValidation = [
     .withMessage('Type de message invalide'),
 ];
 
-// Routes
+// [PROMPT-6] Static paths before :id
+router.get('/conversations', getUserChats);
+router.get('/unread-count', getUnreadChatCount);
 router.get('/', getUserChats);
 router.get('/support', getOrCreateSupportChat);
 router.get('/inquiry/:inquiryId', getOrCreateInquiryChat);
+router.get('/:id/typing', getTyping);
+router.post('/:id/typing', setTyping);
 router.get('/:id', getChatById);
 router.post('/:id/messages', messageValidation, sendMessage);
 router.put('/:id/read', markChatAsRead);
 
 export default router;
-

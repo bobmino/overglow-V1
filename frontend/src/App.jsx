@@ -71,6 +71,7 @@ const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPayments
 const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
 const AdminBookingsPage = lazy(() => import('./pages/AdminBookingsPage'));
 const AdminFinancePage = lazy(() => import('./pages/AdminFinancePage'));
+const AdminChatInbox = lazy(() => import('./pages/AdminChatInbox'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -334,6 +335,11 @@ function App() {
             <Route path="badge-requests" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBadgeRequestsPage />
+              </Suspense>
+            } />
+            <Route path="chat" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminChatInbox />
               </Suspense>
             } />
           </Route>

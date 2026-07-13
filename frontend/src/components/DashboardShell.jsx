@@ -21,6 +21,7 @@ const TITLE_MAP = {
   '/admin/withdrawals': 'Retraits',
   '/admin/finance': 'Finances',
   '/admin/blog': 'Blog',
+  '/admin/chat': 'Messages',
   '/admin/badges': 'Badges',
   '/admin/approval-requests': 'Demandes opérateurs',
   '/admin/badge-requests': 'Demandes badges',

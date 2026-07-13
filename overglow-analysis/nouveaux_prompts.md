@@ -11,6 +11,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 3 — Cloche de Notifications Header
 - [x] PROMPT 4 — Dashboard Admin Pro
 - [x] PROMPT 5 — Settings Complètes & Organisées
+- [x] PROMPT 6 — Chat Pro + Inbox Admin
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
