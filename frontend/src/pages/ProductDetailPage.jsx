@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
 import { trackProductView, trackEvent } from '../utils/analytics';
-import { 
 import { logger } from '../utils/logger.js';
+import { 
   MapPin, Clock, Star, CheckCircle, Users, Calendar as CalendarIcon, 
   X, ChevronDown, ChevronRight, Award, TrendingUp, Shield, Camera
 } from 'lucide-react';
