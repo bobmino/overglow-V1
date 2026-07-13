@@ -1,6 +1,15 @@
 import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
 import Product from '../models/productModel.js'; // [BUG-01] Required by getOperatorAnalytics
+import { sanitizeBody } from '../utils/sanitizeBody.js';
+
+// [TASK-6] Allowlists for future operator mutations (current handlers are read-only)
+export const OPERATOR_UPDATE_FIELDS = ['companyName', 'phone', 'whatsapp', 'description', 'logo'];
+
+/**
+ * Helper exposé pour les mises à jour opérateur (évite mass-assignment).
+ */
+export const sanitizeOperatorUpdate = (body) => sanitizeBody(body, OPERATOR_UPDATE_FIELDS);
 
 // @desc    Get operator bookings
 // @route   GET /api/operator/bookings

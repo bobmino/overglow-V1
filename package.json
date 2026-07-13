@@ -19,6 +19,7 @@
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@sentry/node": "^10.30.0",
     "@sentry/profiling-node": "^10.30.0",
+    "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "axios": "^1.18.1",
     "bcryptjs": "^2.4.3",

@@ -1,5 +1,17 @@
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
+import { sanitizeBody } from '../utils/sanitizeBody.js';
+
+const WIZARD_PROVIDER_FIELDS = ['providerType'];
+const WIZARD_PUBLIC_FIELDS = ['publicName', 'description', 'location'];
+const WIZARD_PHOTO_FIELDS = ['logo', 'gallery'];
+const WIZARD_ADDRESS_FIELDS = ['companyAddress'];
+const WIZARD_EXPERIENCE_FIELDS = ['experiences'];
+const WIZARD_PRIVATE_FIELDS = [
+  'companyInfo',
+  'individualWithStatusInfo',
+  'individualWithoutStatusInfo',
+];
 
 // @desc    Get operator wizard status
 // @route   GET /api/operator/wizard/status
@@ -34,7 +46,7 @@ const saveProviderType = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { providerType } = req.body;
+    const { providerType } = sanitizeBody(req.body, WIZARD_PROVIDER_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -64,7 +76,7 @@ const savePublicInfo = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { publicName, description, location } = req.body;
+    const { publicName, description, location } = sanitizeBody(req.body, WIZARD_PUBLIC_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -100,7 +112,7 @@ const savePublicInfo = async (req, res) => {
 // @access  Private/Operator
 const savePhotos = async (req, res) => {
   try {
-    const { logo, gallery } = req.body;
+    const { logo, gallery } = sanitizeBody(req.body, WIZARD_PHOTO_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -129,7 +141,7 @@ const savePhotos = async (req, res) => {
 // @access  Private/Operator
 const saveAddress = async (req, res) => {
   try {
-    const { companyAddress } = req.body;
+    const { companyAddress } = sanitizeBody(req.body, WIZARD_ADDRESS_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -163,7 +175,7 @@ const saveAddress = async (req, res) => {
 // @access  Private/Operator
 const saveExperiences = async (req, res) => {
   try {
-    const { experiences } = req.body;
+    const { experiences } = sanitizeBody(req.body, WIZARD_EXPERIENCE_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
@@ -199,7 +211,10 @@ const savePrivateInfo = async (req, res) => {
       return res.status(404).json({ message: 'Operator profile not found' });
     }
 
-    const { companyInfo, individualWithStatusInfo, individualWithoutStatusInfo } = req.body;
+    const { companyInfo, individualWithStatusInfo, individualWithoutStatusInfo } = sanitizeBody(
+      req.body,
+      WIZARD_PRIVATE_FIELDS
+    );
 
     // Sauvegarder selon le type de prestataire
     if (operator.providerType === 'company' && companyInfo) {

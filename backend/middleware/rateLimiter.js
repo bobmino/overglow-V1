@@ -1,60 +1,149 @@
+/**
+ * [TASK-6] Rate limiting compatible Vercel (Upstash Redis) + fallback mémoire local.
+ * - Auth: 5 req/min
+ * - API: 60 req/min
+ * - Upload: 10 req/min
+ * - Webhooks: exclus (vérifiés par signature)
+ */
 import rateLimit from 'express-rate-limit';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 import { logger } from '../utils/logger.js';
 import { setCORSHeaders } from '../config/cors.js';
 
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+const hasUpstash =
+  Boolean(process.env.UPSTASH_REDIS_REST_URL) &&
+  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
 
-// Rate limiter pour authentification (login, register)
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 15 : 20,
-  message: {
-    error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
-    retryAfter: 15,
-  },
+let redis = null;
+if (hasUpstash) {
+  try {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  } catch (error) {
+    console.warn('[rateLimiter] Failed to init Upstash Redis:', error.message);
+    redis = null;
+  }
+} else {
+  console.warn(
+    '[rateLimiter] UPSTASH_REDIS_REST_URL/TOKEN missing — using in-memory fallback (not reliable on Vercel).'
+  );
+}
+
+const getClientKey = (req) =>
+  req.ip ||
+  req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
+  req.connection?.remoteAddress ||
+  'unknown';
+
+const sendRateLimitResponse = (req, res, retryAfterSec) => {
+  setCORSHeaders(req, res);
+  logger.security?.rateLimitExceeded?.(getClientKey(req), req.path, retryAfterSec);
+  return res.status(429).json({
+    error: 'Trop de requêtes. Veuillez réessayer plus tard.',
+    retryAfter: retryAfterSec,
+  });
+};
+
+const createUpstashLimiter = ({ prefix, requests, window }) => {
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(requests, window),
+    prefix: `overglow:${prefix}`,
+    analytics: true,
+  });
+};
+
+const upstashAuth = createUpstashLimiter({ prefix: 'auth', requests: 5, window: '1 m' });
+const upstashApi = createUpstashLimiter({ prefix: 'api', requests: 60, window: '1 m' });
+const upstashUpload = createUpstashLimiter({ prefix: 'upload', requests: 10, window: '1 m' });
+
+const createUpstashMiddleware = (limiter, fallback, label) => {
+  if (!limiter) return fallback;
+
+  return async (req, res, next) => {
+    try {
+      const key = getClientKey(req);
+      const result = await limiter.limit(key);
+
+      res.setHeader('X-RateLimit-Limit', String(result.limit));
+      res.setHeader('X-RateLimit-Remaining', String(result.remaining));
+      res.setHeader('X-RateLimit-Reset', String(result.reset));
+
+      if (!result.success) {
+        const retryAfter = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000));
+        res.setHeader('Retry-After', String(retryAfter));
+        return sendRateLimitResponse(req, res, retryAfter);
+      }
+
+      return next();
+    } catch (error) {
+      console.error(`[rateLimiter] ${label} Upstash error — failing open:`, error.message);
+      return next();
+    }
+  };
+};
+
+// ─── Fallback mémoire (dev local uniquement) ─────────────────────────────────
+const memoryAuthLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
-  skipFailedRequests: false,
-  handler: (req, res) => {
-    // CORS allowlist centralisée avant la réponse 429
-    setCORSHeaders(req, res);
-
-    logger.security.rateLimitExceeded(
-      req.ip || req.connection.remoteAddress,
-      req.path,
-      5
-    );
-
-    res.status(429).json({
-      error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
-      retryAfter: 15,
-    });
-  },
+  handler: (req, res) => sendRateLimitResponse(req, res, 60),
 });
 
-// Rate limiter général pour API (auth et health ont leurs propres limites)
-export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: isProduction ? 500 : 200,
+const memoryApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
   skip: (req) => {
     const path = req.path || '';
-    return path.startsWith('/auth') || path.startsWith('/health');
+    // Auth a son propre limiter ; health + webhooks PSP exclus
+    return (
+      path.startsWith('/auth') ||
+      path.startsWith('/health') ||
+      path.includes('/webhook/')
+    );
   },
-  message: {
-    error: 'Trop de requêtes. Veuillez réessayer plus tard.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
+  handler: (req, res) => sendRateLimitResponse(req, res, 60),
 });
 
-// Rate limiter strict pour endpoints sensibles (upload, paiement)
-export const strictLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requêtes max par IP
-  message: {
-    error: 'Trop de requêtes sur cet endpoint. Veuillez réessayer plus tard.',
-  },
+const memoryUploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => sendRateLimitResponse(req, res, 60),
 });
+
+/** Auth endpoints: 5 req/min */
+export const authLimiter = createUpstashMiddleware(upstashAuth, memoryAuthLimiter, 'auth');
+
+/** API globale: 60 req/min — saute auth/health/webhooks */
+export const apiLimiter = (() => {
+  const upstashMw = createUpstashMiddleware(upstashApi, memoryApiLimiter, 'api');
+  return (req, res, next) => {
+    const path = req.path || '';
+    if (
+      path.startsWith('/auth') ||
+      path.startsWith('/health') ||
+      path.includes('/webhook/')
+    ) {
+      return next();
+    }
+    return upstashMw(req, res, next);
+  };
+})();
+
+/** Upload / paiements sensibles: 10 req/min */
+export const strictLimiter = createUpstashMiddleware(
+  upstashUpload,
+  memoryUploadLimiter,
+  'upload'
+);

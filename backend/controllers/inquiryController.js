@@ -7,6 +7,11 @@ import {
   notifyInquiryReceived,
   notifyInquiryAnswered,
 } from '../utils/notificationService.js'; // [BUG-02] Missing imports caused ReferenceError
+import { sanitizeBody } from '../utils/sanitizeBody.js';
+
+const INQUIRY_CREATE_FIELDS = ['productId', 'question', 'type'];
+const INQUIRY_ANSWER_FIELDS = ['answer'];
+const INQUIRY_REJECT_FIELDS = ['reason'];
 
 // @desc    Create manual inquiry (question from client)
 // @route   POST /api/inquiries
@@ -18,7 +23,8 @@ const createInquiry = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { productId, question, type = 'manual' } = req.body;
+    // [TASK-6] Mass-assignment protection
+    const { productId, question, type = 'manual' } = sanitizeBody(req.body, INQUIRY_CREATE_FIELDS);
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -122,7 +128,8 @@ const answerInquiry = async (req, res) => {
       return res.status(400).json({ message: 'This inquiry is not a manual inquiry' });
     }
 
-    inquiry.answer = req.body.answer;
+    const { answer } = sanitizeBody(req.body, INQUIRY_ANSWER_FIELDS);
+    inquiry.answer = answer;
     inquiry.answeredAt = new Date();
     const updatedInquiry = await inquiry.save();
     
@@ -198,8 +205,9 @@ const rejectInquiry = async (req, res) => {
       return res.status(400).json({ message: 'This inquiry is not an automatic inquiry' });
     }
 
+    const { reason } = sanitizeBody(req.body, INQUIRY_REJECT_FIELDS);
     inquiry.status = 'rejected';
-    inquiry.rejectionReason = req.body.reason || '';
+    inquiry.rejectionReason = reason || '';
     const updatedInquiry = await inquiry.save();
 
     res.json(updatedInquiry);
