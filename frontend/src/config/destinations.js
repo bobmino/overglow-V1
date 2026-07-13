@@ -1,52 +1,55 @@
+import { getCityImage } from './cityMedia.js';
+
+/** Morocco-first destinations for homepage / TopDestinations (TASK-24). */
 const destinations = [
+  {
+    name: 'Marrakech',
+    slug: 'marrakech',
+    image: getCityImage('Marrakech', 'card'),
+    description: 'La ville ocre',
+  },
+  {
+    name: 'Fès',
+    slug: 'fes',
+    image: getCityImage('Fès', 'card'),
+    description: 'La capitale spirituelle',
+  },
+  {
+    name: 'Chefchaouen',
+    slug: 'chefchaouen',
+    image: getCityImage('Chefchaouen', 'card'),
+    description: 'La perle bleue',
+  },
+  {
+    name: 'Essaouira',
+    slug: 'essaouira',
+    image: getCityImage('Essaouira', 'card'),
+    description: 'La cité des alizés',
+  },
   {
     name: 'Agadir',
     slug: 'agadir',
-    image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80',
-    description: 'La capitale du Souss'
+    image: getCityImage('Agadir', 'card'),
+    description: 'La capitale du Souss',
   },
   {
     name: 'Taghazout',
     slug: 'taghazout',
-    image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80',
-    description: 'Le paradis des surfeurs'
+    image: getCityImage('Taghazout', 'card'),
+    description: 'Le paradis des surfeurs',
   },
   {
-    name: 'Marrakech',
-    slug: 'marrakech',
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=800&q=80',
-    description: 'La ville ocre'
+    name: 'Casablanca',
+    slug: 'casablanca',
+    image: getCityImage('Casablanca', 'card'),
+    description: 'La métropole atlantique',
   },
   {
-    name: 'Paris',
-    slug: 'paris',
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-    description: 'La Ville Lumière'
+    name: 'Rabat',
+    slug: 'rabat',
+    image: getCityImage('Rabat', 'card'),
+    description: 'La capitale',
   },
-  {
-    name: 'Rome',
-    slug: 'rome',
-    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80',
-    description: 'La Ville Éternelle'
-  },
-  {
-    name: 'Las Vegas',
-    slug: 'las-vegas',
-    image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?auto=format&fit=crop&w=800&q=80',
-    description: 'La capitale mondiale du divertissement'
-  },
-  {
-    name: 'New York',
-    slug: 'new-york',
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80',
-    description: 'La Grosse Pomme'
-  },
-  {
-    name: 'Dubai',
-    slug: 'dubai',
-    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80',
-    description: 'La Cité de l\'Or'
-  }
 ];
 
 export default destinations;

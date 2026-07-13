@@ -5,6 +5,9 @@ import {
   Map as MapIcon, Star, Sparkles, Home, Car, Navigation, Ship
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getCityImage } from '../config/cityMedia.js';
+
+const cityImg = (name) => getCityImage(name, 'card');
 
 const MENU_DATA = {
   discover: {
@@ -22,43 +25,43 @@ const MENU_DATA = {
       'Surf & Plage': {
         incontournables: ["Surf Camp Taghazout", "Sunset Yoga on the Beach", "Jet Ski Adventure Agadir", "Plage sauvage d'Imouran", "Balade en catamaran au coucher du soleil"],
         destinationsPhares: [
-          { name: 'Taghazout', image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Taghazout', image: cityImg('Taghazout') },
+          { name: 'Agadir', image: cityImg('Agadir') }
         ]
       },
       'Aventure & Nature': {
         incontournables: ["Excursion Paradise Valley", "Quad dans les dunes de sable", "Randonnée Atlas & Oasis", "Survol en Montgolfière Agadir", "Buggy Safari & Thé chez l'habitant"],
         destinationsPhares: [
-          { name: 'Paradise Valley', image: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Imouzzer', image: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Paradise Valley', image: cityImg('Agadir') },
+          { name: 'Imouzzer', image: cityImg('Agadir') }
         ]
       },
       'Visites Guidées': {
         incontournables: ["Visite d'Agadir Oufella", "Découverte guidée du Souk El Had", "Journée guidée à Taroudant & Tiout", "Excursion historique Essaouira", "Marrakech Express en 1 jour"],
         destinationsPhares: [
-          { name: 'Essaouira', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Taroudant', image: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Essaouira', image: cityImg('Essaouira') },
+          { name: 'Taroudant', image: cityImg('Taroudant') }
         ]
       },
       'Gastronomie': {
         incontournables: ["Cours de cuisine marocaine traditionnelle", "Dégustation d'Argan & Miel à Amalou", "Dîner spectacle sous tente Caïdale", "Street food tour dans la médina", "Parcours des thés et pâtisseries fines"],
         destinationsPhares: [
-          { name: 'Marrakech', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Marrakech', image: cityImg('Marrakech') },
+          { name: 'Agadir', image: cityImg('Agadir') }
         ]
       },
       'Culture & Médina': {
         incontournables: ["Musée de la Culture Amazighe", "Médina de Coco Polizzi", "Palais de Taroudant et remparts", "Heritage tour & conteurs traditionnels", "Visite des ateliers coopératifs d'artisans"],
         destinationsPhares: [
-          { name: 'La Médina d\'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Taroudant', image: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Fès', image: cityImg('Fès') },
+          { name: 'Chefchaouen', image: cityImg('Chefchaouen') }
         ]
       },
       'Détente & Bien-être': {
         incontournables: ["Spa & Hammam traditionnel privatif", "Massage aux huiles essentielles d'Argan", "Retraite Yoga & Sound Healing", "Bain de boue & enveloppement d'argile", "Thalassothérapie face à l'océan"],
         destinationsPhares: [
-          { name: 'Taghazout Bay', image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Agadir Marina', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Taghazout Bay', image: cityImg('Taghazout') },
+          { name: 'Agadir Marina', image: cityImg('Agadir') }
         ]
       }
     }
@@ -75,22 +78,22 @@ const MENU_DATA = {
       'Villas de Prestige': {
         incontournables: ["Villa avec piscine privée", "Service de conciergerie 24/7", "Chef à domicile", "Transfert VIP inclus", "Accès plage privée"],
         destinationsPhares: [
-          { name: 'Taghazout Bay', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Agadir Marina', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Taghazout Bay', image: cityImg('Taghazout') },
+          { name: 'Agadir Marina', image: cityImg('Agadir') }
         ]
       },
       'Appartements Vue Océan': {
         incontournables: ["Duplex haut standing", "Vue panoramique sur mer", "Jacuzzi sur terrasse", "Accès aux clubs privés", "Service de ménage quotidien"],
         destinationsPhares: [
-          { name: 'Agadir', image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Taghazout', image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Agadir', image: cityImg('Agadir') },
+          { name: 'Taghazout', image: cityImg('Taghazout') }
         ]
       },
       'Riads Insolites': {
         incontournables: ["Riad traditionnel luxueux", "Patio avec fontaine", "Hammam privé", "Dîner gastronomique marocain", "Excursions personnalisées"],
         destinationsPhares: [
-          { name: 'Taroudant', image: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80' },
-          { name: 'Marrakech', image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=800&q=80' }
+          { name: 'Taroudant', image: cityImg('Taroudant') },
+          { name: 'Marrakech', image: cityImg('Marrakech') }
         ]
       }
     }

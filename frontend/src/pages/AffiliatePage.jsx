@@ -14,7 +14,6 @@ import {
   Shield,
   Users,
   BarChart3,
-  Star,
   Headphones as Support,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -97,12 +96,6 @@ const AffiliatePage = () => {
     { titleKey: 'affiliate.step1_title', bodyKey: 'affiliate.step1_body' },
     { titleKey: 'affiliate.step2_title', bodyKey: 'affiliate.step2_body' },
     { titleKey: 'affiliate.step3_title', bodyKey: 'affiliate.step3_body' },
-  ];
-
-  const testimonials = [
-    { nameKey: 'affiliate.t1_name', companyKey: 'affiliate.t1_company', textKey: 'affiliate.t1_text' },
-    { nameKey: 'affiliate.t2_name', companyKey: 'affiliate.t2_company', textKey: 'affiliate.t2_text' },
-    { nameKey: 'affiliate.t3_name', companyKey: 'affiliate.t3_company', textKey: 'affiliate.t3_text' },
   ];
 
   const pricingFeatures = [
@@ -207,33 +200,7 @@ const AffiliatePage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              {t('affiliate.testimonials_title')}
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white p-8 rounded-xl shadow-lg">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="text-yellow-400 fill-current" size={20} />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-6 italic">&ldquo;{t(testimonial.textKey)}&rdquo;</p>
-                <div>
-                  <p className="font-bold text-gray-900">{t(testimonial.nameKey)}</p>
-                  <p className="text-sm text-gray-600">{t(testimonial.companyKey)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* [TASK-24] Fake named testimonials removed until real authorized quotes are available */}
 
       {/* Pricing */}
       <section className="py-20 bg-white">

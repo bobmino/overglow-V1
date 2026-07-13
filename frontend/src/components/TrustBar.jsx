@@ -1,21 +1,22 @@
 import React from 'react';
 import { ShieldCheck, Headphones, BadgeCheck } from 'lucide-react';
 
+/** [TASK-24] Soften unverifiable claims (no fake 24/7 / Trustpilot). */
 const items = [
   {
     icon: ShieldCheck,
-    title: 'Paiement securise',
-    subtitle: 'Transactions chiffrees et controle anti-fraude',
+    title: 'Paiement sécurisé',
+    subtitle: 'Transactions chiffrées et contrôle anti-fraude',
   },
   {
     icon: Headphones,
-    title: 'Support 24/7',
-    subtitle: 'Equipe assistance voyageurs et partenaires',
+    title: 'Support voyageur',
+    subtitle: 'Assistance dédiée aux voyageurs et partenaires',
   },
   {
     icon: BadgeCheck,
-    title: 'Selection qualite',
-    subtitle: 'Experiences verifiees par notre equipe locale',
+    title: 'Sélection qualité',
+    subtitle: 'Expériences vérifiées par notre équipe',
   },
 ];
 

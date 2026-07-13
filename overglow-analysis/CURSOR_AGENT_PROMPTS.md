@@ -22,6 +22,7 @@
 - [x] [21] Final Audit: Security + Quality + Performance (P2, S4)
 - [x] [22] AI Chat Message Flagging + Legal Compliance (P0, S2)
 - [x] [23] Settings Allowlist + Health Endpoint + DB Diagnostics (P1, S2)
+- [x] [24] Duplicate Image Fix + Content Authenticity Audit (P1, S3)
 
 ---
 
@@ -197,6 +198,7 @@ ISSUE 2: Mass Assignment Vulnerability
 You are an Express.js expert.
 
 TASK: Fix two runtime issues affecting stability.
+
 
 ISSUE 1: blogRoutes.js:88-129 - Route Order Bug
 - GET /:slug is defined BEFORE GET /admin/all

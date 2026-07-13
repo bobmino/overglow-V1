@@ -5,6 +5,7 @@ import BadgeDisplay from './BadgeDisplay';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatImageUrl } from '../utils/formatImage';
 
+/** [TASK-24] No fake Math.random ratings — use real product review data only. */
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
   if (!product) return null;
   const { formatPrice } = useCurrency();
@@ -14,8 +15,9 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
     ? formatImageUrl(product.images[0])
     : fallbackImage;
 
-  const rating = 4.5 + Math.random() * 0.5;
-  const reviewCount = Math.floor(Math.random() * 10000) + 1000;
+  const rating = Number(product.rating || product.averageRating || 0);
+  const reviewCount = Number(product.numReviews || product.reviewCount || 0);
+  const hasReviews = reviewCount > 0 && rating > 0;
 
   return (
     <Link 
@@ -27,6 +29,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           src={image} 
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+          loading="lazy"
           onError={(e) => { e.target.src = fallbackImage; }}
         />
         {isLikelyToSellOut && (
@@ -34,7 +37,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
             Likely to Sell Out
           </div>
         )}
-        <button className="absolute top-3 end-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition">
+        <button type="button" className="absolute top-3 end-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition" aria-label="Favorite">
           <Heart size={18} className="text-gray-700" />
         </button>
       </div>
@@ -51,11 +54,15 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           </div>
         )}
         
-        <div className="flex items-center mb-2">
-          <Star size={14} className="text-yellow-500 fill-yellow-500 me-1" />
-          <span className="font-bold text-sm">{rating.toFixed(1)}</span>
-          <span className="text-gray-500 text-xs ms-1">({reviewCount.toLocaleString()})</span>
-        </div>
+        {hasReviews ? (
+          <div className="flex items-center mb-2">
+            <Star size={14} className="text-yellow-500 fill-yellow-500 me-1" />
+            <span className="font-bold text-sm">{rating.toFixed(1)}</span>
+            <span className="text-gray-500 text-xs ms-1">({reviewCount.toLocaleString()})</span>
+          </div>
+        ) : (
+          <div className="mb-2 text-xs text-gray-400">Nouveauté</div>
+        )}
         
         <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-green-700 transition min-h-[48px]">
           {product.title}

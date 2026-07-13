@@ -8,10 +8,11 @@ import DestinationGuide from '../components/DestinationGuide';
 import { MapPin, Star, Filter, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { canonicalUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
+import { getCityImage, getCityAlt } from '../config/cityMedia.js';
 
 const DestinationPage = () => {
   const { city: cityKey } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -52,7 +53,7 @@ const DestinationPage = () => {
       description: 'Découvrez la perle du Sud marocain avec ses souks animés, ses palais historiques et ses expériences authentiques.',
       fullDescription: 'Marrakech, surnommée la "Ville Rouge" en raison de ses murs en terre cuite, est l\'une des destinations les plus emblématiques du Maroc. Fondée en 1062, cette ville impériale allie histoire millénaire et modernité. La place Jemaa el-Fnaa, classée au patrimoine mondial de l\'UNESCO, s\'anime chaque soir avec ses conteurs, charmeurs de serpents et vendeurs de jus d\'orange. Les souks labyrinthiques offrent une expérience sensorielle unique où vous pourrez négocier des tapis berbères, des épices colorées et des objets artisanaux.',
       highlights: ['Place Jemaa el-Fnaa', 'Palais Bahia', 'Jardin Majorelle', 'Souks traditionnels', 'Médina historique', 'Tombeaux Saadiens'],
-      image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200',
+      image: getCityImage('Marrakech', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Mars à mai et septembre à novembre (températures agréables)',
@@ -105,7 +106,7 @@ const DestinationPage = () => {
       description: 'Explorez la capitale économique du Maroc, mélange de modernité et de tradition.',
       fullDescription: 'Casablanca est la plus grande ville du Maroc et son principal centre économique. Contrairement aux autres villes impériales, Casablanca offre une expérience plus moderne avec ses buildings, ses plages et sa vie nocturne animée. La mosquée Hassan II, l\'une des plus grandes au monde, domine le front de mer avec son minaret de 210 mètres.',
       highlights: ['Mosquée Hassan II', 'Corniche', 'Médina', 'Art déco', 'Place Mohammed V', 'Mahkama du Pacha'],
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1200',
+      image: getCityImage('Casablanca', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Toute l\'année (climat océanique tempéré)',
@@ -153,7 +154,7 @@ const DestinationPage = () => {
       description: 'Plongez dans l\'histoire millénaire de la capitale spirituelle du Maroc.',
       fullDescription: 'Fès est la plus ancienne des villes impériales et la capitale spirituelle du Maroc. Sa médina, classée au patrimoine mondial de l\'UNESCO, est un dédale de 9 000 ruelles où le temps semble s\'être arrêté. Les tanneries traditionnelles, l\'université Al Quaraouiyine (la plus ancienne au monde) et les médersas ornées font de Fès un véritable musée à ciel ouvert.',
       highlights: ['Médina de Fès', 'Tanneries', 'Université Al Quaraouiyine', 'Palais Royal', 'Médersa Bou Inania', 'Mausolée de Moulay Idriss'],
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1200',
+      image: getCityImage('Fès', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Avril à juin et septembre à novembre',
@@ -202,7 +203,7 @@ const DestinationPage = () => {
       description: 'Visitez la capitale administrative avec ses monuments historiques et sa modernité.',
       fullDescription: 'Rabat, capitale administrative du Maroc, allie harmonieusement histoire et modernité. La ville offre une atmosphère plus calme que les autres grandes villes marocaines, avec ses larges boulevards, ses jardins et ses monuments historiques bien préservés.',
       highlights: ['Kasbah des Oudayas', 'Tour Hassan', 'Chellah', 'Médina', 'Palais Royal', 'Musée Mohammed VI'],
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1200',
+      image: getCityImage('Rabat', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Toute l\'année',
@@ -249,7 +250,7 @@ const DestinationPage = () => {
       description: 'Découvrez la porte de l\'Afrique avec ses influences méditerranéennes.',
       fullDescription: 'Tanger, située à la pointe nord du Maroc, est une ville chargée d\'histoire où se rencontrent l\'Atlantique et la Méditerranée. La ville a longtemps été une zone internationale, attirant artistes et écrivains du monde entier. Aujourd\'hui, Tanger connaît un renouveau avec de nouveaux projets culturels et touristiques.',
       highlights: ['Kasbah', 'Grottes d\'Hercule', 'Cap Spartel', 'Médina', 'Musée de la Kasbah', 'Plage de Tanger'],
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1200',
+      image: getCityImage('Tanger', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Avril à octobre',
@@ -295,7 +296,7 @@ const DestinationPage = () => {
       description: 'Profitez du soleil et des plages de la station balnéaire du Sud.',
       fullDescription: 'Agadir est la principale station balnéaire du Maroc, réputée pour ses plages de sable fin, son climat ensoleillé toute l\'année et ses infrastructures touristiques modernes. Reconstruite après le séisme de 1960, Agadir offre une expérience de vacances détendue avec ses hôtels, ses restaurants et ses activités nautiques.',
       highlights: ['Plage d\'Agadir', 'Kasbah', 'Vallée du Paradis', 'Souk El Had', 'Marina', 'Musée du Patrimoine Amazigh'],
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=1200',
+      image: getCityImage('Agadir', 'hero'),
       guide: {
         practicalInfo: {
           bestTime: 'Toute l\'année (300 jours de soleil)',
@@ -345,7 +346,7 @@ const DestinationPage = () => {
     name: cityKey,
     description: `Découvrez les meilleures expériences et activités à ${cityKey}`,
     highlights: [],
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200',
+    image: getCityImage(cityKey, 'hero'),
   };
 
   const displayName = t(`destination.cities.${cityKey}.name`, { defaultValue: info.name });
@@ -371,8 +372,9 @@ const DestinationPage = () => {
       <div className="relative h-64 md:h-96 overflow-hidden">
         <img 
           src={info.image} 
-          alt={displayName}
+          alt={getCityAlt(cityKey, i18n.language)}
           className="w-full h-full object-cover"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 start-0 end-0 p-8 text-white">
