@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
 import ShareButtons from '../components/ShareButtons';
@@ -11,10 +12,15 @@ import { formatImageUrl, formatImageUrlWithFallback } from '../utils/formatImage
 const BlogPostPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const locale = i18n.language?.slice(0, 2) || 'fr';
+  const dateLocale =
+    locale === 'ar' ? 'ar-MA' : locale === 'es' ? 'es-ES' : locale === 'en' ? 'en-GB' : 'fr-FR';
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -24,8 +30,7 @@ const BlogPostPage = () => {
         const { data } = await api.get(`/api/blog/${slug}`);
         setPost(data);
         setRelatedPosts(data.relatedPosts || []);
-        
-        // Track blog view
+
         if (data) {
           trackBlogView({
             id: data._id,
@@ -37,7 +42,7 @@ const BlogPostPage = () => {
         }
       } catch (err) {
         console.error('Failed to fetch blog post:', err);
-        setError('Article non trouvé');
+        setError(t('blog.not_found_title'));
       } finally {
         setLoading(false);
       }
@@ -46,15 +51,25 @@ const BlogPostPage = () => {
     if (slug) {
       fetchPost();
     }
-  }, [slug]);
+  }, [slug, t]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString(dateLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const translateCategory = (category) => {
+    if (!category) return category;
+    const key = String(category)
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_');
+    const mapped = t(`blog.category_map.${key}`, { defaultValue: '' });
+    return mapped || category;
   };
 
   if (loading) {
@@ -79,20 +94,22 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-slate-50 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">Article non trouvé</h1>
-            <p className="text-slate-600 mb-6">{error || 'Cet article n\'existe pas ou a été supprimé.'}</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">{t('blog.not_found_title')}</h1>
+            <p className="text-slate-600 mb-6">{error || t('blog.not_found_body')}</p>
             <Link
               to="/blog"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
             >
               <ArrowLeft size={18} />
-              Retour au blog
+              {t('blog.back')}
             </Link>
           </div>
         </div>
       </div>
     );
   }
+
+  const authorName = post.author?.name || t('blog.default_author');
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
@@ -109,17 +126,16 @@ const BlogPostPage = () => {
       </Helmet>
 
       <div className="container mx-auto px-4">
-        {/* Back Button */}
         <button
+          type="button"
           onClick={() => navigate('/blog')}
           className="mb-6 flex items-center gap-2 text-slate-600 hover:text-primary-600 transition"
         >
           <ArrowLeft size={18} />
-          Retour au blog
+          {t('blog.back')}
         </button>
 
         <div className="max-w-4xl mx-auto">
-          {/* Featured Image */}
           {post.featuredImage && (
             <div className="mb-8 rounded-xl overflow-hidden">
               <img
@@ -131,50 +147,43 @@ const BlogPostPage = () => {
             </div>
           )}
 
-          {/* Article Header */}
           <div className="bg-white rounded-xl p-8 mb-8 shadow-sm">
-            {/* Category and Featured Badge */}
             <div className="flex items-center gap-3 mb-4">
               <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
-                {post.category}
+                {translateCategory(post.category)}
               </span>
               {post.featured && (
                 <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">
-                  À la une
+                  {t('blog.featured')}
                 </span>
               )}
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-              {post.title}
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">{post.title}</h1>
 
-            {/* Meta Info */}
             <div className="flex flex-wrap items-center gap-6 text-sm text-slate-600 mb-6 pb-6 border-b border-slate-200">
               {post.author && (
                 <div className="flex items-center gap-2">
                   <User size={16} />
-                  <span>{post.author.name || 'Équipe Overglow'}</span>
+                  <span>{t('blog.by', { name: authorName })}</span>
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <Calendar size={16} />
-                <span>{formatDate(post.publishedAt)}</span>
+                <span>{t('blog.published_on', { date: formatDate(post.publishedAt) })}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={16} />
-                <span>{post.readingTime || 5} min de lecture</span>
+                <span>{t('blog.reading_time', { count: post.readingTime || 5 })}</span>
               </div>
               {post.views > 0 && (
                 <div className="flex items-center gap-2">
                   <Eye size={16} />
-                  <span>{post.views} vues</span>
+                  <span>{t('blog.views', { count: post.views })}</span>
                 </div>
               )}
             </div>
 
-            {/* Share Buttons */}
             <ShareButtons
               product={post}
               url={typeof window !== 'undefined' ? window.location.href : ''}
@@ -184,7 +193,7 @@ const BlogPostPage = () => {
             />
           </div>
 
-          {/* Article Content */}
+          {/* Article body stays in the author's original language */}
           <div className="bg-white rounded-xl p-8 mb-8 shadow-sm">
             <div
               className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary-600 prose-strong:text-slate-900 prose-img:rounded-lg"
@@ -192,12 +201,11 @@ const BlogPostPage = () => {
             />
           </div>
 
-          {/* Tags */}
           {post.tags && post.tags.length > 0 && (
             <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <Tag size={20} />
-                Tags
+                {t('blog.tags')}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag, index) => (
@@ -213,12 +221,9 @@ const BlogPostPage = () => {
             </div>
           )}
 
-          {/* Related Products */}
           {post.relatedProducts && post.relatedProducts.length > 0 && (
             <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
-              <h3 className="text-2xl font-bold text-slate-900 mb-6">
-                Expériences liées
-              </h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6">{t('blog.related_experiences')}</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {post.relatedProducts.map((product) => (
                   <Link
@@ -235,7 +240,7 @@ const BlogPostPage = () => {
                       <h4 className="font-bold text-slate-900 mb-1">{product.title}</h4>
                       <p className="text-sm text-slate-600">{product.city}</p>
                       <p className="text-primary-600 font-semibold mt-2">
-                        À partir de {product.price}€
+                        {t('blog.from_price', { price: product.price })}
                       </p>
                     </div>
                   </Link>
@@ -244,12 +249,9 @@ const BlogPostPage = () => {
             </div>
           )}
 
-          {/* Related Posts */}
           {relatedPosts.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-6">
-                Articles similaires
-              </h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6">{t('blog.related_posts')}</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 {relatedPosts.map((relatedPost) => (
                   <BlogCard key={relatedPost._id || relatedPost.slug} post={relatedPost} />
@@ -264,4 +266,3 @@ const BlogPostPage = () => {
 };
 
 export default BlogPostPage;
-
