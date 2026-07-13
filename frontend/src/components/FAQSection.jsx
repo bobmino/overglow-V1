@@ -87,13 +87,13 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
       {/* Search and Filter */}
       <div className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Rechercher dans la FAQ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             aria-label="Rechercher dans la FAQ"
           />
         </div>
@@ -153,11 +153,11 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
             >
               <button
                 onClick={() => toggleFAQ(faq._id)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
+                className="w-full px-6 py-4 flex items-center justify-between text-start focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
                 aria-expanded={expandedId === faq._id}
                 aria-controls={`faq-answer-${faq._id}`}
               >
-                <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
+                <span className="font-semibold text-gray-900 pe-4">{faq.question}</span>
                 {expandedId === faq._id ? (
                   <ChevronUp className="text-primary-600 flex-shrink-0" size={20} />
                 ) : (

@@ -95,25 +95,25 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
           onChange={(e) => safeCall(onChange, e.target.value)}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium text-lg pr-8"
+          className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium text-lg pe-8"
           autoComplete="off"
           aria-label="Rechercher des expériences ou destinations"
         />
         {loading && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          <div className="absolute end-0 top-1/2 -translate-y-1/2">
             <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
       </div>
 
       {isOpen && (hasSuggestions || suggestions?.showNearby) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-[9999] max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full start-0 end-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-[9999] max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Nearby Option */}
           {suggestions?.showNearby && (
             <>
               <button
                 onClick={handleNearby}
-                className="w-full px-4 py-3 hover:bg-slate-50 transition flex items-center gap-3 text-left"
+                className="w-full px-4 py-3 hover:bg-slate-50 transition flex items-center gap-3 text-start"
               >
                 <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
                   <Navigation size={18} className="text-primary-600" />
@@ -137,12 +137,12 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
                 <button
                   key={`city-${index}`}
                   onClick={() => handleSelect({ type: 'city', label: city.name, city: city.name })}
-                  className="w-full px-4 py-2 hover:bg-slate-50 transition flex items-center gap-3 text-left"
+                  className="w-full px-4 py-2 hover:bg-slate-50 transition flex items-center gap-3 text-start"
                 >
                   <MapPin size={16} className="text-slate-400" />
                   <div>
                     <span className="font-medium text-slate-900">{city.name}</span>
-                    {city.country && <span className="text-slate-500 text-sm ml-2">{city.country}</span>}
+                    {city.country && <span className="text-slate-500 text-sm ms-2">{city.country}</span>}
                   </div>
                 </button>
               ))}
@@ -166,7 +166,7 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
                     slug: activity.slug,
                     city: activity.city,
                   })}
-                  className="w-full px-4 py-2 hover:bg-slate-50 transition text-left"
+                  className="w-full px-4 py-2 hover:bg-slate-50 transition text-start"
                 >
                   <div className="flex items-start gap-3">
                     <SearchIcon size={16} className="text-slate-400 mt-1" />

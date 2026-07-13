@@ -30,18 +30,18 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           onError={(e) => { e.target.src = fallbackImage; }}
         />
         {isLikelyToSellOut && (
-          <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+          <div className="absolute top-3 start-3 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
             Likely to Sell Out
           </div>
         )}
-        <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition">
+        <button className="absolute top-3 end-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition">
           <Heart size={18} className="text-gray-700" />
         </button>
       </div>
       
       <div className="p-4">
         <div className="flex items-center text-gray-600 text-xs mb-2">
-          <MapPin size={14} className="mr-1" />
+          <MapPin size={14} className="me-1" />
           {product.city}
         </div>
 
@@ -52,9 +52,9 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
         )}
         
         <div className="flex items-center mb-2">
-          <Star size={14} className="text-yellow-500 fill-yellow-500 mr-1" />
+          <Star size={14} className="text-yellow-500 fill-yellow-500 me-1" />
           <span className="font-bold text-sm">{rating.toFixed(1)}</span>
-          <span className="text-gray-500 text-xs ml-1">({reviewCount.toLocaleString()})</span>
+          <span className="text-gray-500 text-xs ms-1">({reviewCount.toLocaleString()})</span>
         </div>
         
         <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-green-700 transition min-h-[48px]">

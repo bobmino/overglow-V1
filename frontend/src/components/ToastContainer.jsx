@@ -20,7 +20,7 @@ const ToastContainer = () => {
   if (!toasts || toasts.length === 0) return null;
 
   return (
-    <div className="fixed z-[60] top-20 right-4 left-4 sm:left-auto sm:w-[420px] space-y-3">
+    <div className="fixed z-[60] top-20 end-4 start-4 sm:start-auto sm:w-[420px] space-y-3">
       {toasts.map((t) => {
         const Icon = iconByType[t.type] || Info;
         const style = stylesByType[t.type] || stylesByType.info;

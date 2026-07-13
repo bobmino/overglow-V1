@@ -1,14 +1,17 @@
 /** @type {import('tailwindcss').Config} */
+import tailwindcssRtl from 'tailwindcss-rtl';
+
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        heading: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'Noto Sans Arabic', 'sans-serif'],
+        heading: ['Outfit', 'Noto Sans Arabic', 'sans-serif'],
+        arabic: ['Noto Sans Arabic', 'Inter', 'sans-serif'],
       },
       colors: {
         primary: {
@@ -33,14 +36,15 @@ export default {
         border: 'var(--color-border)',
       },
       screens: {
-        'xs': '475px',
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
-        'xl': '1280px',
+        xs: '475px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
         '2xl': '1536px',
       },
     },
   },
-  plugins: [],
-}
+  // [TASK-16] RTL variants (rtl: / ltr:) — with Tailwind 3.4 logical utilities (ms/me/ps/pe)
+  plugins: [tailwindcssRtl],
+};

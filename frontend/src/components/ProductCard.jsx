@@ -61,7 +61,7 @@ const ProductCard = ({ product }) => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/20"></div>
         
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="absolute top-4 end-4 flex items-center gap-2">
           <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center space-x-1">
             <Star size={14} className="text-secondary-500 fill-secondary-500" />
             <span className="text-sm font-bold text-slate-800">{rating}</span>
@@ -73,7 +73,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Product Badges & Prix Garanti */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 max-w-[60%]">
+        <div className="absolute top-4 start-4 flex flex-col gap-2 max-w-[60%]">
           <div className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md w-fit">
             <span className="text-[10px]">✨</span> Prix Garanti
           </div>
@@ -91,7 +91,7 @@ const ProductCard = ({ product }) => {
             {product.category}
           </div>
           <div className="text-xs text-slate-500 flex items-center">
-            <MapPin size={12} className="mr-1" />
+            <MapPin size={12} className="me-1" />
             {product.city}
           </div>
         </div>

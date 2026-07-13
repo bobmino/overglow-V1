@@ -156,7 +156,7 @@ const DestinationGuide = ({ city, guide }) => {
 
       {/* Safety Tips */}
       {guide.safety && (
-        <div className="bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
+        <div className="bg-white rounded-xl p-6 shadow-sm border-s-4 border-green-500">
           <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Shield size={24} />
             {t('guide.safety')}

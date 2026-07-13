@@ -96,7 +96,7 @@ const RegisterPage = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="register-title">
           {submitError && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-              <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+              <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
               <p className="text-red-700 text-sm">{submitError}</p>
             </div>
           )}

@@ -32,7 +32,7 @@ const FormField = ({
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500 ms-1">*</span>}
         </label>
       )}
       
@@ -40,7 +40,7 @@ const FormField = ({
         {Icon && (
           <Icon 
             size={20} 
-            className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+            className={`absolute start-3 top-1/2 -translate-y-1/2 ${
               hasError ? 'text-red-500' : isValid ? 'text-green-500' : 'text-gray-400'
             } transition-colors`} 
           />
@@ -56,7 +56,7 @@ const FormField = ({
           placeholder={placeholder}
           autoComplete={autoComplete}
           required={required}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-4'} pr-10 py-3 border rounded-lg transition-all ${
+          className={`w-full ${Icon ? 'ps-10' : 'ps-4'} pe-10 py-3 border rounded-lg transition-all ${
             hasError
               ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500'
               : isValid
@@ -69,7 +69,7 @@ const FormField = ({
         />
         
         {/* Validation icons */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        <div className="absolute end-3 top-1/2 -translate-y-1/2">
           {hasError && (
             <AlertCircle size={18} className="text-red-500" aria-hidden="true" />
           )}

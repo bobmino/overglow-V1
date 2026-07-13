@@ -83,10 +83,10 @@ const FilterSidebar = ({
     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-heading font-bold text-xl text-slate-900 flex items-center">
-          <FilterIcon size={22} className="mr-2" />
+          <FilterIcon size={22} className="me-2" />
           {t('catalog.filters')}
           {activeFiltersCount > 0 && (
-            <span className="ml-2 bg-primary-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="ms-2 bg-primary-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {activeFiltersCount}
             </span>
           )}
@@ -110,13 +110,13 @@ const FilterSidebar = ({
       <div className="space-y-6 divide-y divide-slate-100">
         <div className="pt-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
               placeholder={t('catalog.search_placeholder')}
               value={localQuery}
               onChange={(e) => setLocalQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-sm"
+              className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-sm"
             />
           </div>
         </div>
@@ -267,7 +267,7 @@ const FilterSidebar = ({
                     {[...Array(rating)].map((_, i) => (
                       <Star key={i} size={14} className="fill-amber-400 text-amber-400" />
                     ))}
-                    <span className="text-slate-600 text-sm ml-1">
+                    <span className="text-slate-600 text-sm ms-1">
                       {rating === 5 ? '5.0' : `${rating}.0+`}
                     </span>
                   </div>

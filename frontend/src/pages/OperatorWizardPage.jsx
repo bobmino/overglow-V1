@@ -188,7 +188,7 @@ const OperatorWizardPage = () => {
                   value="company"
                   checked={formData.providerType === 'company'}
                   onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
-                  className="mt-1 mr-4"
+                  className="mt-1 me-4"
                 />
                 <div>
                   <div className="font-semibold text-gray-900">Personne morale (Société)</div>
@@ -207,7 +207,7 @@ const OperatorWizardPage = () => {
                   value="individual_with_status"
                   checked={formData.providerType === 'individual_with_status'}
                   onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
-                  className="mt-1 mr-4"
+                  className="mt-1 me-4"
                 />
                 <div>
                   <div className="font-semibold text-gray-900">Personne physique avec statut</div>
@@ -226,7 +226,7 @@ const OperatorWizardPage = () => {
                   value="individual_without_status"
                   checked={formData.providerType === 'individual_without_status'}
                   onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
-                  className="mt-1 mr-4"
+                  className="mt-1 me-4"
                 />
                 <div>
                   <div className="font-semibold text-gray-900">Personne physique sans statut</div>
@@ -687,7 +687,7 @@ const OperatorWizardPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-white border-r border-gray-200 p-6">
+        <div className="w-64 bg-white border-e border-gray-200 p-6">
           <div className="mb-8">
             <h3 className="text-sm font-bold text-gray-500 mb-2">Progression : {getProgress()}%</h3>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -739,7 +739,7 @@ const OperatorWizardPage = () => {
           <div className="max-w-3xl mx-auto">
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-                <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}

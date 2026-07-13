@@ -143,7 +143,7 @@ const AdminWithdrawalsPage = () => {
           Rejetés
         </button>
         
-        <div className="ml-4 flex items-center gap-2">
+        <div className="ms-4 flex items-center gap-2">
           <span className="text-sm font-semibold text-gray-700">Type:</span>
           <button
             onClick={() => setTypeFilter('all')}

@@ -128,7 +128,7 @@ const OperatorBookingsPage = () => {
                     {booking.schedule?.product?.title}
                   </h3>
                   <div className="flex items-center text-gray-600 text-sm">
-                    <Mail size={14} className="mr-1" />
+                    <Mail size={14} className="me-1" />
                     {booking.user?.email}
                   </div>
                 </div>
@@ -166,7 +166,7 @@ const OperatorBookingsPage = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div className="flex items-center text-gray-700">
-                  <Calendar size={16} className="mr-2 text-gray-400" />
+                  <Calendar size={16} className="me-2 text-gray-400" />
                   <div>
                     <p className="text-xs text-gray-500">Date</p>
                     <p className="font-semibold">
@@ -175,14 +175,14 @@ const OperatorBookingsPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <Clock size={16} className="mr-2 text-gray-400" />
+                  <Clock size={16} className="me-2 text-gray-400" />
                   <div>
                     <p className="text-xs text-gray-500">Time</p>
                     <p className="font-semibold">{booking.schedule?.time}</p>
                   </div>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <Users size={16} className="mr-2 text-gray-400" />
+                  <Users size={16} className="me-2 text-gray-400" />
                   <div>
                     <p className="text-xs text-gray-500">Tickets</p>
                     <p className="font-semibold">{booking.numberOfTickets}</p>

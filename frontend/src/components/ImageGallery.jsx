@@ -41,7 +41,7 @@ const ImageGallery = ({ images }) => {
         {displayImages.length > 5 && (
           <button 
             onClick={() => openLightbox(0)}
-            className="absolute bottom-4 right-4 md:bottom-6 md:right-6 bg-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-medium text-sm text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105"
+            className="absolute bottom-4 end-4 md:bottom-6 md:end-6 bg-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-medium text-sm text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105"
           >
             <ImageIcon size={18} strokeWidth={1.5} />
             <span className="hidden sm:inline">Afficher toutes les photos</span>
@@ -51,7 +51,7 @@ const ImageGallery = ({ images }) => {
         {displayImages.length <= 5 && displayImages.length > 1 && (
            <button 
             onClick={() => openLightbox(0)}
-            className="absolute bottom-4 right-4 md:hidden bg-white px-4 py-2 rounded-xl font-medium text-sm text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105"
+            className="absolute bottom-4 end-4 md:hidden bg-white px-4 py-2 rounded-xl font-medium text-sm text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105"
           >
             <ImageIcon size={18} strokeWidth={1.5} />
             <span>Plus de photos</span>
@@ -62,7 +62,7 @@ const ImageGallery = ({ images }) => {
       {/* Lightbox Modal */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setIsLightboxOpen(false)}>
-          <button onClick={() => setIsLightboxOpen(false)} className="absolute top-6 right-6 text-white p-2 hover:bg-white/20 rounded-full transition"><X size={28} /></button>
+          <button onClick={() => setIsLightboxOpen(false)} className="absolute top-6 end-6 text-white p-2 hover:bg-white/20 rounded-full transition"><X size={28} /></button>
           <div className="relative max-w-7xl max-h-full flex items-center justify-center w-full">
             <img 
               src={displayImages[currentIndex]} 
@@ -72,8 +72,8 @@ const ImageGallery = ({ images }) => {
             />
             {displayImages.length > 1 && (
               <>
-                <button onClick={(e) => { e.stopPropagation(); goToPrevious(); }} className="absolute left-4 md:left-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition"><ChevronLeft size={32} /></button>
-                <button onClick={(e) => { e.stopPropagation(); goToNext(); }} className="absolute right-4 md:right-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition"><ChevronRight size={32} /></button>
+                <button onClick={(e) => { e.stopPropagation(); goToPrevious(); }} className="absolute start-4 md:start-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition"><ChevronLeft size={32} /></button>
+                <button onClick={(e) => { e.stopPropagation(); goToNext(); }} className="absolute end-4 md:end-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition"><ChevronRight size={32} /></button>
                 <div className="absolute bottom-4 flex space-x-2">
                   {displayImages.map((_, index) => (
                     <button key={index} onClick={(e) => { e.stopPropagation(); setCurrentIndex(index); }} className={`h-1.5 rounded-full transition ${index === currentIndex ? 'bg-white w-8' : 'bg-white/40 w-2 hover:bg-white/60'}`} />

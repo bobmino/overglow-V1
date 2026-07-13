@@ -273,7 +273,7 @@ const SearchPage = () => {
 
             {activeChips.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                <span className="text-xs uppercase tracking-wider text-slate-500 self-center mr-1">
+                <span className="text-xs uppercase tracking-wider text-slate-500 self-center me-1">
                   {t('catalog.active_filters')}
                 </span>
                 {activeChips.map((chip) => (

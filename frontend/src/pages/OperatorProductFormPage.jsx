@@ -428,7 +428,7 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, pool: e.target.checked } },
                       }))}
                     />
-                    <span className="ml-2">Piscine</span>
+                    <span className="ms-2">Piscine</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -439,7 +439,7 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, wifi: e.target.checked } },
                       }))}
                     />
-                    <span className="ml-2">Wifi</span>
+                    <span className="ms-2">Wifi</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -450,7 +450,7 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, jacuzzi: e.target.checked } },
                       }))}
                     />
-                    <span className="ml-2">Jacuzzi</span>
+                    <span className="ms-2">Jacuzzi</span>
                   </label>
                 </div>
               </div>
@@ -526,7 +526,7 @@ const OperatorProductFormPage = () => {
                     }))}
                     className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
-                  <span className="ml-2 text-sm font-semibold text-gray-700">Guide touristique inclus</span>
+                  <span className="ms-2 text-sm font-semibold text-gray-700">Guide touristique inclus</span>
                 </label>
               </div>
               <div className="col-span-2">
@@ -610,7 +610,7 @@ const OperatorProductFormPage = () => {
                       const newImages = formData.images.filter((_, i) => i !== index);
                       setFormData(prev => ({ ...prev, images: newImages }));
                     }}
-                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                    className="absolute top-1 end-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
                   >
                     <X size={12} />
                   </button>
@@ -676,7 +676,7 @@ const OperatorProductFormPage = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, requiresInquiry: e.target.checked, inquiryType: e.target.checked ? 'manual' : 'none' }))}
                   className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                 />
-                <label htmlFor="requiresInquiry" className="ml-2 text-sm font-semibold text-gray-700">
+                <label htmlFor="requiresInquiry" className="ms-2 text-sm font-semibold text-gray-700">
                   Ce produit nécessite une inquiry
                 </label>
               </div>
@@ -717,7 +717,7 @@ const OperatorProductFormPage = () => {
                   }))}
                   className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                 />
-                <label htmlFor="skipTheLineEnabled" className="ml-2 text-sm font-semibold text-gray-700">
+                <label htmlFor="skipTheLineEnabled" className="ms-2 text-sm font-semibold text-gray-700">
                   Activer Skip-the-Line pour ce produit
                 </label>
               </div>
@@ -973,7 +973,7 @@ const OperatorProductFormPage = () => {
             <button
               type="button"
               onClick={() => navigate('/operator/products')}
-              className="mr-4 px-6 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition"
+              className="me-4 px-6 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition"
             >
               Cancel
             </button>
@@ -984,7 +984,7 @@ const OperatorProductFormPage = () => {
             >
               {loading ? 'Saving...' : (
                 <>
-                  <Save size={20} className="mr-2" />
+                  <Save size={20} className="me-2" />
                   Save Product
                 </>
               )}

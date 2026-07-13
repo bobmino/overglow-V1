@@ -135,9 +135,9 @@ const OperatorDashboardPage = () => {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left">Customer Email</th>
-              <th className="px-6 py-3 text-left">Booking Date</th>
-              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-start">Customer Email</th>
+              <th className="px-6 py-3 text-start">Booking Date</th>
+              <th className="px-6 py-3 text-start">Status</th>
             </tr>
           </thead>
           <tbody>

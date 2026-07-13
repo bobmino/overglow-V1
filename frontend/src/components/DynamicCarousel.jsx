@@ -56,7 +56,7 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, renderCard 
         {/* Left Arrow Button */}
         <button
           onClick={() => scroll('left')}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md p-3.5 rounded-full shadow-xl opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-white text-slate-800 hidden md:flex border border-slate-100/50"
+          className="absolute start-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md p-3.5 rounded-full shadow-xl opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-white text-slate-800 hidden md:flex border border-slate-100/50"
           aria-label="Scroll left"
         >
           <ChevronLeft size={22} strokeWidth={2.5} />
@@ -65,7 +65,7 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, renderCard 
         {/* Right Arrow Button */}
         <button
           onClick={() => scroll('right')}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md p-3.5 rounded-full shadow-xl opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-white text-slate-800 hidden md:flex border border-slate-100/50"
+          className="absolute end-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md p-3.5 rounded-full shadow-xl opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-white text-slate-800 hidden md:flex border border-slate-100/50"
           aria-label="Scroll right"
         >
           <ChevronRight size={22} strokeWidth={2.5} />

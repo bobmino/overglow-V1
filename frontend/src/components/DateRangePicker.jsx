@@ -194,7 +194,7 @@ const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl text-left flex items-center justify-between hover:border-primary-500 transition"
+        className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl text-start flex items-center justify-between hover:border-primary-500 transition"
       >
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Date & Time</label>
@@ -211,7 +211,7 @@ const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) =
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-[9999] w-full min-w-[400px] animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-full start-0 end-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-[9999] w-full min-w-[400px] animate-in fade-in slide-in-from-top-2">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-6">
             <button

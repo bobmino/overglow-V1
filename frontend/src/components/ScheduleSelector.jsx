@@ -21,7 +21,7 @@ const ScheduleSelector = ({ schedules, selectedSchedule, onSelectSchedule }) => 
           <button
             key={schedule._id}
             onClick={() => onSelectSchedule(schedule)}
-            className={`w-full text-left p-4 rounded-lg border-2 transition ${
+            className={`w-full text-start p-4 rounded-lg border-2 transition ${
               isSelected 
                 ? 'border-green-700 bg-green-50' 
                 : 'border-gray-200 hover:border-green-300'
@@ -37,15 +37,15 @@ const ScheduleSelector = ({ schedules, selectedSchedule, onSelectSchedule }) => 
                   })}
                 </p>
                 <div className="flex items-center text-sm text-gray-600 mt-1">
-                  <Clock size={14} className="mr-1" />
+                  <Clock size={14} className="me-1" />
                   {schedule.time}
                 </div>
               </div>
               
-              <div className="text-right">
+              <div className="text-end">
                 <p className="font-bold text-lg text-gray-900">€{schedule.price}</p>
                 <div className="flex items-center text-xs text-gray-500 mt-1">
-                  <Users size={12} className="mr-1" />
+                  <Users size={12} className="me-1" />
                   {availableSpots} spots left
                 </div>
               </div>

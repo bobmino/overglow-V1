@@ -47,14 +47,14 @@ const MyInquiryCard = ({ inquiry, onOpenChat }) => {
 
       {inquiry.type === 'automatic' && inquiry.status === 'approved' && (
         <div className="mb-4 p-3 bg-green-50 rounded-lg">
-          <CheckCircle size={16} className="inline mr-2 text-green-700" />
+          <CheckCircle size={16} className="inline me-2 text-green-700" />
           <span className="text-green-700 font-semibold">Votre demande a été approuvée</span>
         </div>
       )}
 
       {inquiry.type === 'automatic' && inquiry.status === 'rejected' && (
         <div className="mb-4 p-3 bg-red-50 rounded-lg">
-          <XCircle size={16} className="inline mr-2 text-red-700" />
+          <XCircle size={16} className="inline me-2 text-red-700" />
           <span className="text-red-700 font-semibold">Votre demande a été rejetée</span>
           {inquiry.rejectionReason && (
             <p className="text-red-600 text-sm mt-1">Raison: {inquiry.rejectionReason}</p>
@@ -64,7 +64,7 @@ const MyInquiryCard = ({ inquiry, onOpenChat }) => {
 
       <div className="mt-4 pt-4 border-t flex items-center justify-between">
         <div className="text-xs text-gray-500">
-          <Clock size={12} className="inline mr-1" />
+          <Clock size={12} className="inline me-1" />
           {new Date(inquiry.createdAt).toLocaleDateString('fr-FR')}
         </div>
         <button

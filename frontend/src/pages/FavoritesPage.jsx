@@ -93,7 +93,7 @@ const FavoritesPage = () => {
               <ProductCard product={product} />
               <button
                 onClick={(e) => handleRemove(e, product._id)}
-                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:bg-white transition z-10"
+                className="absolute top-4 end-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:bg-white transition z-10"
                 title="Retirer des coups de cœur"
               >
                 <X size={18} className="text-red-600" />

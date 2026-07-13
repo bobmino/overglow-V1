@@ -488,7 +488,7 @@ const ProductDetailPage = () => {
               </div>
  
               <div className="flex items-center text-slate-600 text-sm mb-2">
-                <MapPin size={16} className="mr-1" />
+                <MapPin size={16} className="me-1" />
                 {product.city} • {product.category}
               </div>
               
@@ -510,12 +510,12 @@ const ProductDetailPage = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <Star size={18} className="text-yellow-500 fill-yellow-500 mr-1" />
+                    <Star size={18} className="text-yellow-500 fill-yellow-500 me-1" />
                     <span className="font-bold">4.8</span>
-                    <span className="text-slate-500 ml-1">({product.reviews?.length || 0} {t('product.reviews_suffix', 'avis')})</span>
+                    <span className="text-slate-500 ms-1">({product.reviews?.length || 0} {t('product.reviews_suffix', 'avis')})</span>
                   </div>
                   <div className="flex items-center text-slate-600">
-                    <Clock size={16} className="mr-1" />
+                    <Clock size={16} className="me-1" />
                     <span>{product.duration || t('product.duration_fallback', '3-4 heures')}</span>
                   </div>
                 </div>
@@ -544,9 +544,9 @@ const ProductDetailPage = () => {
                 {Array.isArray(included) && included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
                     {item.included ? (
-                      <CheckCircle className="text-green-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
+                      <CheckCircle className="text-green-600 me-3 mt-0.5 flex-shrink-0" size={20} />
                     ) : (
-                      <X className="text-red-500 mr-3 mt-0.5 flex-shrink-0" size={20} />
+                      <X className="text-red-500 me-3 mt-0.5 flex-shrink-0" size={20} />
                     )}
                     <span className={item.included ? 'text-slate-700' : 'text-slate-400 line-through'}>
                       {item.item}
@@ -562,7 +562,7 @@ const ProductDetailPage = () => {
               <ul className="space-y-3">
                 {Array.isArray(highlights) && highlights.map((highlight, index) => (
                   <li key={index} className="flex items-start">
-                    <CheckCircle size={20} className="text-primary-600 mr-3 mt-0.5 flex-shrink-0" />
+                    <CheckCircle size={20} className="text-primary-600 me-3 mt-0.5 flex-shrink-0" />
                     <span className="text-slate-700">{highlight}</span>
                   </li>
                 ))}
@@ -581,7 +581,7 @@ const ProductDetailPage = () => {
                     <div className="flex-1">
                       <h3 className="font-bold text-lg mb-1">{stop.stop}</h3>
                       <p className="text-sm text-slate-600 mb-2 flex items-center">
-                        <Clock size={14} className="inline mr-1" />
+                        <Clock size={14} className="inline me-1" />
                         {stop.duration}
                       </p>
                       <p className="text-slate-700">{stop.description}</p>
@@ -642,7 +642,7 @@ const ProductDetailPage = () => {
                   <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
                     <button
                       onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-                      className="w-full p-4 text-left font-medium flex justify-between items-center hover:bg-slate-50 transition"
+                      className="w-full p-4 text-start font-medium flex justify-between items-center hover:bg-slate-50 transition"
                     >
                       {faq.q}
                       <ChevronDown 
@@ -703,7 +703,7 @@ const ProductDetailPage = () => {
               {/* Cancellation Policy */}
               <div className="mb-2.5 p-2.5 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center text-green-700 mb-0.5">
-                  <CheckCircle size={16} className="mr-2" />
+                  <CheckCircle size={16} className="me-2" />
                   <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
                 </div>
                 <p className="text-[11px] text-green-600 leading-tight">
@@ -745,7 +745,7 @@ const ProductDetailPage = () => {
               {/* Tickets Selector */}
               <div className="mb-2.5">
                 <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-                  <Users size={12} className="inline mr-1" />
+                  <Users size={12} className="inline me-1" />
                   {t('product.tickets_count', 'Billets')}
                 </label>
                 <div className="flex items-center justify-between border border-slate-300 rounded-xl p-1.5">
@@ -833,7 +833,7 @@ const ProductDetailPage = () => {
       </div>
 
       {/* Mobile Sticky Footer */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] z-40 flex justify-between items-center">
+      <div className="lg:hidden fixed bottom-0 start-0 end-0 bg-white border-t border-slate-200 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] z-40 flex justify-between items-center">
         <div>
           <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{t('product.starting_from', 'À partir de')}</p>
           <p className="text-xl font-black text-slate-900">
@@ -869,7 +869,7 @@ const ProductDetailPage = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl p-6 border-t border-slate-100"
+              className="lg:hidden fixed bottom-0 start-0 end-0 bg-white rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl p-6 border-t border-slate-100"
             >
               {/* Header of Drawer */}
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
@@ -890,7 +890,7 @@ const ProductDetailPage = () => {
                 {/* Cancellation Info */}
                 <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
                   <div className="flex items-center text-green-700 mb-1">
-                    <CheckCircle size={16} className="mr-2" />
+                    <CheckCircle size={16} className="me-2" />
                     <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
                   </div>
                   <p className="text-xs text-green-600 leading-tight">
@@ -919,7 +919,7 @@ const ProductDetailPage = () => {
                 {/* Tickets Selector */}
                 <div>
                   <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-                    <Users size={12} className="inline mr-1" />
+                    <Users size={12} className="inline me-1" />
                     {t('product.tickets_count', 'Billets')}
                   </label>
                   <div className="flex items-center justify-between border border-slate-300 rounded-xl p-2">

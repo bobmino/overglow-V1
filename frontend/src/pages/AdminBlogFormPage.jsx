@@ -267,14 +267,14 @@ const AdminBlogFormPage = () => {
 
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+          <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
           <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle size={20} className="text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+          <CheckCircle size={20} className="text-green-600 me-3 mt-0.5 flex-shrink-0" />
           <p className="text-green-700 text-sm">{success}</p>
         </div>
       )}
@@ -373,7 +373,7 @@ const AdminBlogFormPage = () => {
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition"
+                  className="absolute top-2 end-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition"
                 >
                   <X size={16} />
                 </button>

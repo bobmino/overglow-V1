@@ -74,7 +74,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
               <p className="text-xs text-gray-600 mt-1">
                 Temps restant avant le début: {refundInfo.hoursUntilStart.toFixed(1)}h
                 {refundInfo.isFreeCancellation && (
-                  <span className="ml-2 text-green-600 font-semibold">✓ Annulation gratuite</span>
+                  <span className="ms-2 text-green-600 font-semibold">✓ Annulation gratuite</span>
                 )}
               </p>
             )}
@@ -159,7 +159,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
               {booking.schedule?.product?.title || 'Product'}
             </h3>
             <div className="flex items-center text-gray-600 text-sm mb-1">
-              <MapPin size={14} className="mr-1" />
+              <MapPin size={14} className="me-1" />
               {booking.schedule?.product?.city}
             </div>
           </div>
@@ -170,7 +170,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-gray-700">
-            <Calendar size={16} className="mr-2 text-gray-400" />
+            <Calendar size={16} className="me-2 text-gray-400" />
             {new Date(booking.schedule?.date).toLocaleDateString('fr-FR', { 
               weekday: 'long', 
               year: 'numeric', 
@@ -179,11 +179,11 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
             })}
           </div>
           <div className="flex items-center text-gray-700">
-            <Clock size={16} className="mr-2 text-gray-400" />
+            <Clock size={16} className="me-2 text-gray-400" />
             {booking.schedule?.time}
           </div>
           <div className="flex items-center text-gray-700">
-            <Users size={16} className="mr-2 text-gray-400" />
+            <Users size={16} className="me-2 text-gray-400" />
             {booking.numberOfTickets} ticket{booking.numberOfTickets > 1 ? 's' : ''}
           </div>
         </div>
@@ -206,7 +206,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
                   onClick={() => setShowCancelModal(true)}
                   className="flex items-center text-red-600 font-semibold hover:underline"
                 >
-                  <XCircle size={16} className="mr-1" />
+                  <XCircle size={16} className="me-1" />
                   Cancel
                 </button>
               </>
@@ -216,7 +216,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
                 onClick={() => setShowReviewModal(true)}
                 className="flex items-center text-green-700 font-semibold hover:underline"
               >
-                <Star size={16} className="mr-1" />
+                <Star size={16} className="me-1" />
                 Write Review
               </button>
             )}

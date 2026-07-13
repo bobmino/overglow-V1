@@ -138,7 +138,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   return (
     <div 
-      className="fixed top-[80px] left-1/2 -translate-x-1/2 pt-3 bg-transparent z-[100] w-[95vw] max-w-7xl"
+      className="fixed top-[80px] start-1/2 -translate-x-1/2 pt-3 bg-transparent z-[100] w-[95vw] max-w-7xl"
       onMouseEnter={(e) => e.stopPropagation()}
     >
       {/* pt-3 = pont hover invisible (évite l'écart mt qui ferme le menu) */}
@@ -236,7 +236,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                   style={{ backgroundImage: `url('${dest.image}')` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-colors duration-300" />
-                <div className="absolute bottom-5 left-5 text-white">
+                <div className="absolute bottom-5 start-5 text-white">
                   <div className="font-bold text-md tracking-wide mb-1">{dest.name}</div>
                   <div className="text-[11px] text-slate-200 flex items-center gap-1 font-medium opacity-80 group-hover:opacity-100 transition-opacity">
                     {t('menu.exploreRegion')} <ChevronRight size={12} strokeWidth={2} />

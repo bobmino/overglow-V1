@@ -252,7 +252,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold text-gray-900">{t('payment.method_title')}</h3>
         {madAmount && (
-          <div className="text-right backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
+          <div className="text-end backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
             <p className="text-xs text-gray-500 uppercase tracking-wide">{t('payment.total_amount')}</p>
             <p className="text-2xl font-bold text-emerald-700">{formattedMadAmount} MAD</p>
             <p className="text-xs text-gray-400">≈ {formattedEurAmount} €</p>

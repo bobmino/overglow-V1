@@ -41,9 +41,7 @@ const CartDrawer = () => {
             animate={{ x: 0 }}
             exit={{ x: isRTL ? '-100%' : '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className={`fixed inset-y-0 ${
-              isRTL ? 'left-0' : 'right-0'
-            } max-w-md w-full bg-white/90 backdrop-blur-md shadow-2xl border-l border-white/20 z-50 flex flex-col`}
+            className="fixed inset-y-0 end-0 max-w-md w-full bg-white/90 backdrop-blur-md shadow-2xl border-s border-white/20 z-50 flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white/80">
@@ -111,12 +109,12 @@ const CartDrawer = () => {
 
                       <div className="flex-1 min-w-0 flex flex-col">
                         <div className="flex justify-between items-start mb-1.5">
-                          <h4 className="font-bold text-slate-800 text-sm truncate pr-6">
+                          <h4 className="font-bold text-slate-800 text-sm truncate pe-6">
                             {item.product?.title}
                           </h4>
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg transition-colors border border-slate-100"
+                            className="absolute top-4 end-4 text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg transition-colors border border-slate-100"
                             aria-label={t('cart.remove', 'Supprimer')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -162,7 +160,7 @@ const CartDrawer = () => {
               <div className="p-5 border-t border-slate-100 bg-white/90 backdrop-blur-md">
                 <div className="flex justify-between items-end mb-5">
                   <span className="text-slate-500 font-semibold text-sm">{t('cart.total', 'Total')}</span>
-                  <div className="text-right">
+                  <div className="text-end">
                     <span className="text-2xl font-black text-slate-800 block leading-tight">
                       {formatPrice(totalPrice)}
                     </span>

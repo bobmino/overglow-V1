@@ -55,7 +55,7 @@ const HeroSection = () => {
             onSubmit={handleSearch}
             className="bg-white rounded-full p-2 md:p-3 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-2xl backdrop-blur-xl bg-white/95 border border-white/20 transition-transform duration-300 hover:scale-[1.01]"
           >
-            <div className="flex-1 flex flex-col items-start px-6 w-full md:border-r border-slate-200">
+            <div className="flex-1 flex flex-col items-start px-6 w-full md:border-e border-slate-200">
               <label className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                 <MapPin size={12} className="text-primary-500" />
                 {t('home.search_where')}
@@ -68,7 +68,7 @@ const HeroSection = () => {
               />
             </div>
 
-            <div className="flex-1 flex flex-col items-stretch px-6 w-full md:pr-4">
+            <div className="flex-1 flex flex-col items-stretch px-6 w-full md:pe-4">
               <DatePicker selectedDate={date} onDateSelect={setDate} />
             </div>
 

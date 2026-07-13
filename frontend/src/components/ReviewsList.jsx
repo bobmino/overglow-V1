@@ -117,7 +117,7 @@ const ReviewItem = ({ review, onVote }) => {
       
       {/* Operator Response */}
       {review.operatorResponse && review.operatorResponse.message && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-3">
+        <div className="bg-blue-50 border-s-4 border-blue-500 p-4 rounded-e-lg mb-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-semibold text-blue-900">Réponse de l'opérateur</span>
             <span className="text-xs text-blue-600">
@@ -217,11 +217,11 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
         <div className="flex items-center">
-          <h3 className="font-bold text-2xl mr-4">Avis</h3>
+          <h3 className="font-bold text-2xl me-4">Avis</h3>
           <div className="flex items-center">
-            <Star size={20} className="text-yellow-500 fill-yellow-500 mr-1" />
+            <Star size={20} className="text-yellow-500 fill-yellow-500 me-1" />
             <span className="font-bold text-lg">{averageRating}</span>
-            <span className="text-gray-500 ml-2">({reviews.length} avis)</span>
+            <span className="text-gray-500 ms-2">({reviews.length} avis)</span>
           </div>
         </div>
 

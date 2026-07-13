@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * Pointe le <link rel="manifest"> vers le manifeste de la langue active (dir ltr/rtl).
- * Les fichiers sont générés au build : manifest-fr.json … manifest-ar.json
+ * lang/dir HTML sont gérés par RtlDocumentSync.
  */
 const DynamicManifest = () => {
   const { i18n } = useTranslation();
@@ -19,9 +19,6 @@ const DynamicManifest = () => {
       document.head.appendChild(link);
     }
     link.href = href;
-
-    document.documentElement.lang = supported;
-    document.documentElement.dir = supported === 'ar' ? 'rtl' : 'ltr';
   }, [supported]);
 
   return null;

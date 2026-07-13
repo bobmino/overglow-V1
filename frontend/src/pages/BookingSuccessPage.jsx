@@ -108,19 +108,19 @@ const BookingSuccessPage = () => {
                       <p className="font-semibold text-gray-900">{item.schedule?.product?.title || t('booking_success.experience_fallback')}</p>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex items-center">
-                          <MapPin size={14} className="mr-2 text-emerald-500" />
+                          <MapPin size={14} className="me-2 text-emerald-500" />
                           {item.schedule?.product?.city}
                         </div>
                         <div className="flex items-center">
-                          <Calendar size={14} className="mr-2 text-emerald-500" />
+                          <Calendar size={14} className="me-2 text-emerald-500" />
                           {new Date(item.schedule?.date).toLocaleDateString(dateLocale)}
                         </div>
                         <div className="flex items-center">
-                          <Clock size={14} className="mr-2 text-emerald-500" />
+                          <Clock size={14} className="me-2 text-emerald-500" />
                           {item.schedule?.time}
                         </div>
                         <div className="flex items-center">
-                          <Users size={14} className="mr-2 text-emerald-500" />
+                          <Users size={14} className="me-2 text-emerald-500" />
                           {t('booking_success.tickets', { count: item.numberOfTickets })}
                         </div>
                       </div>

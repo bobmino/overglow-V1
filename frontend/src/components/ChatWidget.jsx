@@ -130,7 +130,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
 
   if (loading) {
     return (
-      <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex items-center justify-center">
+      <div className="fixed bottom-4 end-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
@@ -138,7 +138,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
 
   if (error && !chat) {
     return (
-      <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 p-6">
+      <div className="fixed bottom-4 end-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-gray-900">Chat</h3>
           <button
@@ -157,7 +157,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
   const otherParticipant = getOtherParticipant();
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
+    <div className="fixed bottom-4 end-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-primary-600 text-white rounded-t-lg">
         <div className="flex items-center gap-2">

@@ -101,7 +101,7 @@ const CircuitPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right mt-4">
+                    <div className="text-end mt-4">
                       <span className="text-2xl font-bold text-primary-600">
                         {formatPrice(item.priceBreakdown?.subtotal || 0)}
                       </span>
@@ -132,7 +132,7 @@ const CircuitPage = () => {
                     <span className="text-lg font-bold text-gray-900">Total</span>
                     <span className="text-3xl font-bold text-emerald-600">{formatPrice(totalPrice)}</span>
                   </div>
-                  <p className="text-sm text-gray-500 text-right">Taxes incluses</p>
+                  <p className="text-sm text-gray-500 text-end">Taxes incluses</p>
                 </div>
 
                 <button

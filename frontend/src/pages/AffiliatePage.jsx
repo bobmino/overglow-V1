@@ -282,7 +282,7 @@ const AffiliatePage = () => {
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
               {error && (
                 <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-                  <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
                   <p className="text-red-700 text-sm">{error}</p>
                 </div>
               )}
@@ -293,7 +293,7 @@ const AffiliatePage = () => {
                     {t('affiliate.label_name')}
                   </label>
                   <div className="relative">
-                    <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <User size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
                       id="affiliate-name"
@@ -301,7 +301,7 @@ const AffiliatePage = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       autoComplete="name"
                     />
                   </div>
@@ -312,7 +312,7 @@ const AffiliatePage = () => {
                     {t('affiliate.label_email')}
                   </label>
                   <div className="relative">
-                    <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Mail size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="email"
                       id="affiliate-email"
@@ -320,7 +320,7 @@ const AffiliatePage = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       autoComplete="email"
                     />
                   </div>
@@ -331,7 +331,7 @@ const AffiliatePage = () => {
                     {t('affiliate.label_company')}
                   </label>
                   <div className="relative">
-                    <Briefcase size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Briefcase size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
                       id="affiliate-company"
@@ -339,7 +339,7 @@ const AffiliatePage = () => {
                       value={formData.companyName}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       autoComplete="organization"
                     />
                   </div>
@@ -350,7 +350,7 @@ const AffiliatePage = () => {
                     {t('affiliate.label_password')}
                   </label>
                   <div className="relative">
-                    <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Lock size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="password"
                       id="affiliate-password"
@@ -358,7 +358,7 @@ const AffiliatePage = () => {
                       value={formData.password}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       autoComplete="new-password"
                     />
                   </div>
@@ -369,7 +369,7 @@ const AffiliatePage = () => {
                     {t('affiliate.label_confirm')}
                   </label>
                   <div className="relative">
-                    <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Lock size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="password"
                       id="affiliate-confirm-password"
@@ -377,7 +377,7 @@ const AffiliatePage = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full ps-10 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       autoComplete="new-password"
                     />
                   </div>

@@ -92,7 +92,7 @@ const InquiryModal = ({ product, isOpen, onClose, onSubmitted }) => {
 
           {type === 'automatic' && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-              <MessageSquare size={16} className="inline mr-2" />
+              <MessageSquare size={16} className="inline me-2" />
               Vous demandez une validation automatique pour ce produit. L'opérateur devra approuver votre demande.
             </div>
           )}

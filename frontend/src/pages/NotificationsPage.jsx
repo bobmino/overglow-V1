@@ -172,7 +172,7 @@ const NotificationsPage = () => {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="ml-auto px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
+            className="ms-auto px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
           >
             <CheckCheck size={18} />
             Tout marquer comme lu

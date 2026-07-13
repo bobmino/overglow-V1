@@ -283,22 +283,22 @@ const AdminPendingPaymentsPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-200">
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Référence
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Client
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Produit
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="text-right px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-end px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Montant
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Méthode
                     </th>
                     <th className="text-center px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -368,7 +368,7 @@ const AdminPendingPaymentsPage = () => {
                       </td>
 
                       {/* Amount */}
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-end">
                         <p className="text-lg font-bold text-gray-900">
                           {formatAmount(booking.totalAmount)}
                         </p>

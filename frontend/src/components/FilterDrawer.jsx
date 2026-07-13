@@ -49,7 +49,7 @@ const FilterDrawer = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 h-[85vh] bg-white z-50 md:hidden rounded-t-3xl shadow-2xl flex flex-col"
+            className="fixed bottom-0 start-0 end-0 h-[85vh] bg-white z-50 md:hidden rounded-t-3xl shadow-2xl flex flex-col"
           >
             <div className="flex items-center justify-between p-4 border-b border-slate-100">
               <h2 className="font-heading font-bold text-xl text-slate-900">{t('catalog.filters')}</h2>

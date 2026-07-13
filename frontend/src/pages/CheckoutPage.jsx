@@ -179,12 +179,12 @@ const CheckoutPage = () => {
                         <h3 className="font-bold text-gray-900 mb-2">{item.product?.title}</h3>
                         <div className="space-y-1 text-sm text-gray-600">
                           <div className="flex items-center">
-                            <MapPin size={14} className="mr-2 text-emerald-600" />
+                            <MapPin size={14} className="me-2 text-emerald-600" />
                             {item.product?.city}
                           </div>
                           {item.schedule?.date && (
                             <div className="flex items-center">
-                              <Calendar size={14} className="mr-2 text-emerald-600" />
+                              <Calendar size={14} className="me-2 text-emerald-600" />
                               <span className="capitalize">
                                 {new Date(item.schedule.date).toLocaleDateString(dateLocale, {
                                   weekday: 'long',
@@ -197,7 +197,7 @@ const CheckoutPage = () => {
                           )}
                           {item.schedule?.time && (
                             <div className="flex items-center">
-                              <Clock size={14} className="mr-2 text-emerald-600" />
+                              <Clock size={14} className="me-2 text-emerald-600" />
                               {item.schedule.time}
                             </div>
                           )}
@@ -206,14 +206,14 @@ const CheckoutPage = () => {
                               {t('checkout.tickets', { count: item.numberOfTickets })}
                             </span>
                             {item.skipTheLine && (
-                              <span className="ml-2 flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-md">
+                              <span className="ms-2 flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-md">
                                 <CheckCircle size={12} /> {t('checkout.skip_line')}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-end">
                         <span className="font-bold text-gray-900">
                           {formatPrice(item.priceBreakdown?.subtotal || 0)}
                         </span>
@@ -228,7 +228,7 @@ const CheckoutPage = () => {
                 aria-labelledby="payment-heading"
               >
                 <h2 id="payment-heading" className="text-xl font-bold mb-4 flex items-center">
-                  <CreditCard size={24} className="mr-2" aria-hidden="true" />
+                  <CreditCard size={24} className="me-2" aria-hidden="true" />
                   {t('checkout.payment_info')}
                 </h2>
 

@@ -142,14 +142,14 @@ const ProfilePage = () => {
 
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle size={20} className="text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+          <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
           <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle size={20} className="text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+          <CheckCircle size={20} className="text-green-600 me-3 mt-0.5 flex-shrink-0" />
           <p className="text-green-700 text-sm">{success}</p>
         </div>
       )}
@@ -234,14 +234,14 @@ const ProfilePage = () => {
                   </label>
                   {isEditing ? (
                     <div className="relative">
-                      <Phone size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Phone size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="tel"
                         id="profile-phone"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="+33 6 12 34 56 78"
                         autoComplete="tel"
                       />
@@ -281,13 +281,13 @@ const ProfilePage = () => {
                   </label>
                   {isEditing ? (
                     <div className="relative">
-                      <MapPin size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <MapPin size={20} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="text"
                         name="location"
                         value={formData.location}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="Agadir, Maroc"
                       />
                     </div>

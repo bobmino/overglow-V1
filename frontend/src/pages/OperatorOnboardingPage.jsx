@@ -603,7 +603,7 @@ const OperatorOnboardingPage = () => {
                         value="company"
                         checked={formData.providerType === 'company'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
-                        className="mt-1 mr-4"
+                        className="mt-1 me-4"
                         aria-required="true"
                       />
                       <div className="flex-1">
@@ -624,7 +624,7 @@ const OperatorOnboardingPage = () => {
                         value="individual_with_status"
                         checked={formData.providerType === 'individual_with_status'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
-                        className="mt-1 mr-4"
+                        className="mt-1 me-4"
                         aria-required="true"
                       />
                       <div className="flex-1">
@@ -645,7 +645,7 @@ const OperatorOnboardingPage = () => {
                         value="individual_without_status"
                         checked={formData.providerType === 'individual_without_status'}
                         onChange={(e) => handleInputChange('providerType', e.target.value)}
-                        className="mt-1 mr-4"
+                        className="mt-1 me-4"
                         aria-required="true"
                       />
                       <div className="flex-1">
@@ -773,7 +773,7 @@ const OperatorOnboardingPage = () => {
                         <button
                           type="button"
                           onClick={() => removePhoto(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                          className="absolute top-2 end-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
                           aria-label={`Supprimer la photo ${index + 1}`}
                         >
                           <X size={16} />

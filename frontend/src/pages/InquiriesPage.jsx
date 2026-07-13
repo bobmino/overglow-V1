@@ -136,7 +136,7 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
 
       <div className="mt-4 pt-4 border-t flex items-center justify-between">
         <div className="text-xs text-gray-500">
-          <Clock size={12} className="inline mr-1" />
+          <Clock size={12} className="inline me-1" />
           {new Date(inquiry.createdAt).toLocaleDateString('fr-FR')}
         </div>
         <button

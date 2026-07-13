@@ -80,7 +80,6 @@ const Header = () => {
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
-    document.dir = lng === 'ar' ? 'rtl' : 'ltr';
     setIsMobileMenuOpen(false);
   };
 
@@ -176,7 +175,7 @@ const Header = () => {
               className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1 h-full"
             >
               {t('header.luxury')}
-              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
+              <span className="ms-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
               <ChevronDown size={16} className={`transition-transform duration-200 ${showLuxuryMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLuxuryMenu && (
@@ -216,7 +215,7 @@ const Header = () => {
           >
             <ShoppingCart size={20} />
             {cartItems?.length > 0 && (
-              <span className="absolute top-0 right-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+              <span className="absolute top-0 end-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
                 {cartItems.length}
               </span>
             )}
@@ -239,7 +238,7 @@ const Header = () => {
                 </button>
               
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="absolute end-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-slate-50 mb-2">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">{t('header.account', 'Compte')}</p>
                   </div>
@@ -251,7 +250,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Shield size={18} className="mr-3" />
+                        <Shield size={18} className="me-3" />
                         {t('header.admin_dashboard', 'Admin Dashboard')}
                       </Link>
                       <Link 
@@ -259,7 +258,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Building2 size={18} className="mr-3" />
+                        <Building2 size={18} className="me-3" />
                         {t('header.admin_operators', 'Gérer les opérateurs')}
                       </Link>
                       <Link 
@@ -267,7 +266,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-green-50 hover:text-green-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Package size={18} className="mr-3" />
+                        <Package size={18} className="me-3" />
                         {t('header.admin_products', 'Valider les produits')}
                       </Link>
                       <Link 
@@ -275,7 +274,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Users size={18} className="mr-3" />
+                        <Users size={18} className="me-3" />
                         {t('header.admin_users', 'Gérer les utilisateurs')}
                       </Link>
                       <Link 
@@ -283,7 +282,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-gray-50 hover:text-gray-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Settings size={18} className="mr-3" />
+                        <Settings size={18} className="me-3" />
                         {t('header.admin_settings', 'Paramètres')}
                       </Link>
                       <Link 
@@ -291,7 +290,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <DollarSign size={18} className="mr-3" />
+                        <DollarSign size={18} className="me-3" />
                         {t('header.admin_withdrawals', 'Retraits')}
                       </Link>
                       <Link 
@@ -299,7 +298,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <AlertCircle size={18} className="mr-3" />
+                        <AlertCircle size={18} className="me-3" />
                         {t('header.admin_approvals', "Demandes d'approbation")}
                       </Link>
                       <Link 
@@ -307,7 +306,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <FileText size={18} className="mr-3" />
+                        <FileText size={18} className="me-3" />
                         {t('header.admin_blog', 'Gérer le blog')}
                       </Link>
                     </>
@@ -319,7 +318,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Calendar size={18} className="mr-3" />
+                        <Calendar size={18} className="me-3" />
                         {t('header.operatorDashboard')}
                       </Link>
                       <Link 
@@ -327,7 +326,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Package size={18} className="mr-3" />
+                        <Package size={18} className="me-3" />
                         {t('header.products', 'Produits')}
                       </Link>
                       <Link 
@@ -335,7 +334,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Calendar size={18} className="mr-3" />
+                        <Calendar size={18} className="me-3" />
                         {t('header.bookings', 'Réservations')}
                       </Link>
                       <Link 
@@ -343,7 +342,7 @@ const Header = () => {
                         className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <TrendingUp size={18} className="mr-3" />
+                        <TrendingUp size={18} className="me-3" />
                         {t('header.analytics')}
                       </Link>
                     </>
@@ -354,7 +353,7 @@ const Header = () => {
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <Calendar size={18} className="mr-3" />
+                          <Calendar size={18} className="me-3" />
                           {t('header.dashboard')}
                         </Link>
                         <Link 
@@ -362,7 +361,7 @@ const Header = () => {
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <Heart size={18} className="mr-3" />
+                          <Heart size={18} className="me-3" />
                           {t('header.favorites', 'Mes favoris')}
                         </Link>
                         <Link 
@@ -370,7 +369,7 @@ const Header = () => {
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <Clock size={18} className="mr-3" />
+                          <Clock size={18} className="me-3" />
                           {t('header.history', 'Historique')}
                         </Link>
                         <Link 
@@ -378,7 +377,7 @@ const Header = () => {
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-yellow-50 hover:text-yellow-700 transition"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <Award size={18} className="mr-3" />
+                          <Award size={18} className="me-3" />
                           {t('header.loyalty', 'Programme de fidélité')}
                         </Link>
                         <Link 
@@ -386,7 +385,7 @@ const Header = () => {
                           className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <User size={18} className="mr-3" />
+                          <User size={18} className="me-3" />
                           {t('header.profile', 'Mon profil')}
                         </Link>
                   
@@ -397,7 +396,7 @@ const Header = () => {
                         disabled={isUpgrading}
                         className="w-full flex items-center px-4 py-2.5 text-primary-600 hover:bg-primary-50 transition font-medium"
                       >
-                        <Building2 size={18} className="mr-3" />
+                        <Building2 size={18} className="me-3" />
                         {isUpgrading ? t('header.upgrading', 'Création en cours...') : t('header.become_partner', 'Devenir partenaire')}
                       </button>
                     </div>
@@ -408,7 +407,7 @@ const Header = () => {
                       onClick={handleLogout}
                       className="w-full flex items-center px-4 py-2.5 text-red-600 hover:bg-red-50 transition"
                     >
-                      <LogOut size={18} className="mr-3" />
+                      <LogOut size={18} className="me-3" />
                       {t('header.logout')}
                     </button>
                   </div>
@@ -432,7 +431,7 @@ const Header = () => {
           >
             <ShoppingCart size={24} />
             {cartItems?.length > 0 && (
-              <span className="absolute top-0 right-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+              <span className="absolute top-0 end-0 w-4 h-4 bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
                 {cartItems.length}
               </span>
             )}
@@ -460,7 +459,7 @@ const Header = () => {
           {/* Menu Content */}
           <div 
             ref={mobileMenuRef}
-            className="md:hidden fixed top-20 left-0 w-full bg-white border-b border-slate-100 shadow-xl p-4 flex flex-col space-y-4 z-40"
+            className="md:hidden fixed top-20 start-0 w-full bg-white border-b border-slate-100 shadow-xl p-4 flex flex-col space-y-4 z-40"
           >
           <Link 
             to="/search" 
@@ -503,7 +502,7 @@ const Header = () => {
                 className="flex items-center p-3 rounded-lg hover:bg-slate-50 text-slate-700"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Calendar size={18} className="mr-3" />
+                <Calendar size={18} className="me-3" />
                 {t('header.dashboard')}
               </Link>
               {user?.role === 'Opérateur' && (
@@ -512,7 +511,7 @@ const Header = () => {
                   className="flex items-center p-3 rounded-lg hover:bg-slate-50 text-slate-700"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <TrendingUp size={18} className="mr-3" />
+                  <TrendingUp size={18} className="me-3" />
                   {t('header.operatorDashboard')}
                 </Link>
               )}
@@ -525,7 +524,7 @@ const Header = () => {
                   disabled={isUpgrading}
                   className="w-full flex items-center p-3 rounded-lg hover:bg-primary-50 text-primary-600 font-medium"
                 >
-                  <Building2 size={18} className="mr-3" />
+                  <Building2 size={18} className="me-3" />
                   {isUpgrading ? t('header.upgrading_short', 'Création...') : t('header.become_partner', 'Devenir partenaire')}
                 </button>
               )}
@@ -533,7 +532,7 @@ const Header = () => {
                 onClick={handleLogout}
                 className="w-full flex items-center p-3 rounded-lg hover:bg-red-50 text-red-600"
               >
-                <LogOut size={18} className="mr-3" />
+                <LogOut size={18} className="me-3" />
                 {t('header.logout')}
               </button>
             </div>

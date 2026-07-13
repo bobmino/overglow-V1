@@ -393,7 +393,7 @@ const AdminBadgeManagementPage = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          <Award size={20} className="inline mr-2" />
+          <Award size={20} className="inline me-2" />
           Liste des Badges
         </button>
         <button
@@ -404,7 +404,7 @@ const AdminBadgeManagementPage = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          <Package size={20} className="inline mr-2" />
+          <Package size={20} className="inline me-2" />
           Attribuer aux Produits
         </button>
         <button
@@ -415,7 +415,7 @@ const AdminBadgeManagementPage = () => {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          <Building2 size={20} className="inline mr-2" />
+          <Building2 size={20} className="inline me-2" />
           Attribuer aux Opérateurs
         </button>
       </div>
@@ -493,14 +493,14 @@ const AdminBadgeManagementPage = () => {
                     onClick={() => handleEditBadge(badge)}
                     className="text-blue-600 hover:text-blue-700 text-sm font-bold"
                   >
-                    <Edit size={16} className="inline mr-1" />
+                    <Edit size={16} className="inline me-1" />
                     Modifier
                   </button>
                   <button
                     onClick={() => handleDeleteBadge(badge._id)}
                     className="text-red-600 hover:text-red-700 text-sm font-bold"
                   >
-                    <Trash2 size={16} className="inline mr-1" />
+                    <Trash2 size={16} className="inline me-1" />
                     Désactiver
                   </button>
                   <button

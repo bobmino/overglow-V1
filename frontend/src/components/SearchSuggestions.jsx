@@ -100,7 +100,7 @@ const SearchSuggestions = ({
   return (
     <div 
       ref={containerRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-slate-200 z-[9999] max-h-96 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-full start-0 end-0 mt-2 bg-white rounded-lg shadow-2xl border border-slate-200 z-[9999] max-h-96 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Suggestions */}
       {suggestions.length > 0 && (
@@ -112,7 +112,7 @@ const SearchSuggestions = ({
             <button
               key={index}
               onClick={() => handleSelect(suggestion)}
-              className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg flex items-center gap-2 transition"
+              className="w-full px-3 py-2 text-start hover:bg-gray-50 rounded-lg flex items-center gap-2 transition"
             >
               <Search size={16} className="text-gray-400" />
               <span className="text-gray-700">{suggestion}</span>
@@ -141,7 +141,7 @@ const SearchSuggestions = ({
             <button
               key={index}
               onClick={() => handleSelect(item)}
-              className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded-lg flex items-center gap-2 transition"
+              className="w-full px-3 py-2 text-start hover:bg-gray-50 rounded-lg flex items-center gap-2 transition"
             >
               <Clock size={16} className="text-gray-400" />
               <span className="text-gray-700">{item}</span>

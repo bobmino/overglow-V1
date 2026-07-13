@@ -96,7 +96,7 @@ const DatePicker = ({ onDateSelect, selectedDate = null }) => {
         type="button"
         data-testid="date-picker-trigger"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 border-2 border-slate-300 rounded-xl text-left flex items-center justify-between hover:border-primary-500 transition"
+        className="w-full px-3 py-2 border-2 border-slate-300 rounded-xl text-start flex items-center justify-between hover:border-primary-500 transition"
       >
         <div>
           <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-0.5">Date</label>
@@ -108,7 +108,7 @@ const DatePicker = ({ onDateSelect, selectedDate = null }) => {
       </button>
 
       {isOpen && (
-        <div data-testid="date-picker-calendar" className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full min-w-[300px] md:min-w-[340px] animate-in fade-in slide-in-from-top-2">
+        <div data-testid="date-picker-calendar" className="absolute top-full start-0 end-0 mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 z-[9999] w-full min-w-[300px] md:min-w-[340px] animate-in fade-in slide-in-from-top-2">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-3">
             <button

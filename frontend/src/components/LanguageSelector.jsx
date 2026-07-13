@@ -27,14 +27,9 @@ const LanguageSelector = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
-  }, [i18n.language]);
-
   const changeLanguage = (langCode) => {
     i18n.changeLanguage(langCode);
     setIsOpen(false);
-    // Save to localStorage
     localStorage.setItem('i18nextLng', langCode);
   };
 
@@ -42,7 +37,7 @@ const LanguageSelector = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 bg-slate-100/50 px-3 py-1.5 rounded-full border border-slate-200 hover:bg-slate-200/50 transition"
+        className="flex items-center gap-2 bg-slate-100/50 px-3 py-1.5 rounded-full border border-slate-200 hover:bg-slate-200/50 transition"
       >
         <Globe size={16} className="text-slate-500" />
         <span className="text-sm font-medium text-slate-700">
@@ -55,12 +50,12 @@ const LanguageSelector = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute end-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-start transition ${
                 i18n.language === lang.code
                   ? 'bg-primary-50 text-primary-700 font-semibold'
                   : 'text-slate-700 hover:bg-slate-50'
@@ -69,7 +64,7 @@ const LanguageSelector = () => {
               <span className="text-xl">{lang.flag}</span>
               <span className="text-sm">{lang.label}</span>
               {i18n.language === lang.code && (
-                <span className="ml-auto text-primary-600">✓</span>
+                <span className="ms-auto text-primary-600">✓</span>
               )}
             </button>
           ))}

@@ -311,21 +311,21 @@ const AnalyticsPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Produit</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Vues</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Réservations</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Revenu</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Taux Conversion</th>
+                    <th className="text-start py-3 px-4 font-semibold text-gray-700">Produit</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Vues</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Réservations</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Revenu</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Taux Conversion</th>
                   </tr>
                 </thead>
                 <tbody>
                   {productPerformance.map((product) => (
                     <tr key={product.productId} className="border-b border-gray-100">
                       <td className="py-3 px-4">{product.title}</td>
-                      <td className="text-right py-3 px-4">{product.views}</td>
-                      <td className="text-right py-3 px-4">{product.bookings}</td>
-                      <td className="text-right py-3 px-4">€{product.revenue?.toFixed(2) || '0.00'}</td>
-                      <td className="text-right py-3 px-4">
+                      <td className="text-end py-3 px-4">{product.views}</td>
+                      <td className="text-end py-3 px-4">{product.bookings}</td>
+                      <td className="text-end py-3 px-4">€{product.revenue?.toFixed(2) || '0.00'}</td>
+                      <td className="text-end py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           product.conversionRate >= 3 ? 'bg-green-100 text-green-800' :
                           product.conversionRate >= 1 ? 'bg-yellow-100 text-yellow-800' :
@@ -352,22 +352,22 @@ const AnalyticsPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Catégorie</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Prix Moyen Marché</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Votre Prix Moyen</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Différence</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Produits Marché</th>
+                    <th className="text-start py-3 px-4 font-semibold text-gray-700">Catégorie</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Prix Moyen Marché</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Votre Prix Moyen</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Différence</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Produits Marché</th>
                   </tr>
                 </thead>
                 <tbody>
                   {competition.map((cat) => (
                     <tr key={cat.category} className="border-b border-gray-100">
                       <td className="py-3 px-4 font-medium">{cat.category}</td>
-                      <td className="text-right py-3 px-4">€{cat.marketAvgPrice?.toFixed(2) || 'N/A'}</td>
-                      <td className="text-right py-3 px-4">
+                      <td className="text-end py-3 px-4">€{cat.marketAvgPrice?.toFixed(2) || 'N/A'}</td>
+                      <td className="text-end py-3 px-4">
                         {cat.operatorAvgPrice ? `€${cat.operatorAvgPrice.toFixed(2)}` : 'N/A'}
                       </td>
-                      <td className="text-right py-3 px-4">
+                      <td className="text-end py-3 px-4">
                         {cat.priceDifference !== null ? (
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${
                             cat.priceDifference > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
@@ -377,7 +377,7 @@ const AnalyticsPage = () => {
                           </span>
                         ) : 'N/A'}
                       </td>
-                      <td className="text-right py-3 px-4">{cat.marketCount}</td>
+                      <td className="text-end py-3 px-4">{cat.marketCount}</td>
                     </tr>
                   ))}
                 </tbody>

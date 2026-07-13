@@ -61,7 +61,7 @@ const ShareButtons = ({ product, url, title, description, contentType = 'product
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-slate-700 mr-2">Partager :</span>
+      <span className="text-sm font-medium text-slate-700 me-2">Partager :</span>
       
       {/* Native Share API (mobile) */}
       {typeof navigator !== 'undefined' && navigator.share && (

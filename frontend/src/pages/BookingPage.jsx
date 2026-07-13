@@ -135,17 +135,17 @@ const BookingPage = () => {
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8 text-sm font-medium">
             <div className="flex items-center text-primary-600">
-              <span className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center mr-2">1</span>
+              <span className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center me-2">1</span>
               Details
             </div>
             <div className="w-12 h-0.5 bg-slate-200 mx-4"></div>
             <div className="flex items-center text-slate-400">
-              <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-2">2</span>
+              <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center me-2">2</span>
               Payment
             </div>
             <div className="w-12 h-0.5 bg-slate-200 mx-4"></div>
             <div className="flex items-center text-slate-400">
-              <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-2">3</span>
+              <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center me-2">3</span>
               Confirmation
             </div>
           </div>
@@ -157,7 +157,7 @@ const BookingPage = () => {
               {/* Time Selection */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <Clock className="mr-2 text-primary-600" size={20} />
+                  <Clock className="me-2 text-primary-600" size={20} />
                   Select a time
                 </h2>
                 
@@ -171,7 +171,7 @@ const BookingPage = () => {
                       <button
                         key={slot._id}
                         onClick={() => setSelectedSlot(slot)}
-                        className={`p-4 rounded-xl border-2 text-left transition ${
+                        className={`p-4 rounded-xl border-2 text-start transition ${
                           selectedSlot?._id === slot._id
                             ? 'border-primary-600 bg-primary-50 ring-2 ring-primary-600 ring-offset-2'
                             : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50'
@@ -189,7 +189,7 @@ const BookingPage = () => {
                   </div>
                 ) : (
                   <div className="p-4 bg-orange-50 text-orange-700 rounded-lg flex items-start">
-                    <AlertCircle className="mr-2 mt-0.5 flex-shrink-0" size={18} />
+                    <AlertCircle className="me-2 mt-0.5 flex-shrink-0" size={18} />
                     <p>No available time slots found for these dates. Please try selecting different dates.</p>
                   </div>
                 )}
@@ -198,7 +198,7 @@ const BookingPage = () => {
               {/* Traveler Details */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
-                  <Users className="mr-2 text-primary-600" size={20} />
+                  <Users className="me-2 text-primary-600" size={20} />
                   Traveler Details
                 </h2>
                 
@@ -326,7 +326,7 @@ const BookingPage = () => {
                   className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   Continue to Payment
-                  <ChevronRight size={18} className="ml-2" />
+                  <ChevronRight size={18} className="ms-2" />
                 </button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
+import RtlDocumentSync from './components/RtlDocumentSync';
 
 // Critical components (loaded immediately)
 import Home from './pages/Home';
@@ -94,6 +95,7 @@ function App() {
     <AuthProvider>
       <ToastProvider>
       <Router>
+        <RtlDocumentSync />
         <CartDrawer />
       <Routes>
         <Route path="/" element={<Layout />}>

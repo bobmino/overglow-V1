@@ -46,7 +46,7 @@ const TopTours = () => {
         <div className="relative">
           <button 
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition"
+            className="absolute start-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition"
             aria-label="Scroll left"
           >
             <ChevronLeft size={24} />
@@ -70,7 +70,7 @@ const TopTours = () => {
           
           <button 
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition"
+            className="absolute end-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition"
             aria-label="Scroll right"
           >
             <ChevronRight size={24} />

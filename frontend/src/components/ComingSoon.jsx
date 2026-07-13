@@ -10,7 +10,7 @@ const ComingSoon = ({ title = "Bientôt disponible" }) => {
     <div className="min-h-[80vh] flex flex-col items-center justify-center bg-slate-50 px-4 py-12">
       <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 max-w-lg w-full text-center relative overflow-hidden">
         {/* Decor */}
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400"></div>
+        <div className="absolute top-0 start-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400"></div>
         <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
           <Sparkles size={40} strokeWidth={1.5} />
         </div>

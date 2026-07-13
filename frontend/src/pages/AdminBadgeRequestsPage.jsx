@@ -208,14 +208,14 @@ const AdminBadgeRequestsPage = () => {
                       to={`/products/${request.product?._id}`}
                       className="flex items-center text-gray-700 hover:text-primary-600 transition"
                     >
-                      <Eye size={16} className="mr-1" />
+                      <Eye size={16} className="me-1" />
                       Voir le produit
                     </Link>
                     <button
                       onClick={() => setSelectedRequest(request)}
                       className="flex items-center text-blue-600 hover:text-blue-700 transition"
                     >
-                      <FileText size={16} className="mr-1" />
+                      <FileText size={16} className="me-1" />
                       Détails
                     </button>
                     <button
@@ -223,7 +223,7 @@ const AdminBadgeRequestsPage = () => {
                       disabled={processing}
                       className="flex items-center text-green-600 hover:text-green-700 transition disabled:opacity-50"
                     >
-                      <CheckCircle size={16} className="mr-1" />
+                      <CheckCircle size={16} className="me-1" />
                       Approuver
                     </button>
                     <button
@@ -233,7 +233,7 @@ const AdminBadgeRequestsPage = () => {
                       }}
                       className="flex items-center text-red-600 hover:text-red-700 transition"
                     >
-                      <X size={16} className="mr-1" />
+                      <X size={16} className="me-1" />
                       Rejeter
                     </button>
                   </div>
@@ -368,7 +368,7 @@ const AdminBadgeRequestsPage = () => {
                   disabled={processing}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  <CheckCircle size={16} className="inline mr-1" />
+                  <CheckCircle size={16} className="inline me-1" />
                   Approuver
                 </button>
                 <button
@@ -376,7 +376,7 @@ const AdminBadgeRequestsPage = () => {
                   disabled={processing || !rejectionReason.trim()}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                 >
-                  <X size={16} className="inline mr-1" />
+                  <X size={16} className="inline me-1" />
                   Rejeter
                 </button>
               </div>

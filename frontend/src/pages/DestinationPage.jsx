@@ -374,7 +374,7 @@ const DestinationPage = () => {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+        <div className="absolute bottom-0 start-0 end-0 p-8 text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-2">{displayName}</h1>
           <p className="text-lg md:text-xl">{displayDescription}</p>
         </div>
@@ -395,7 +395,7 @@ const DestinationPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {info.highlights.map((highlight, idx) => (
                 <div key={idx} className="flex items-center text-slate-700">
-                  <MapPin size={16} className="text-primary-600 mr-2 flex-shrink-0" />
+                  <MapPin size={16} className="text-primary-600 me-2 flex-shrink-0" />
                   <span className="text-sm">{highlight}</span>
                 </div>
               ))}

@@ -30,7 +30,7 @@ const BookingWidget = ({ product, selectedSchedule, numberOfTickets, onTicketsCh
       <div className="space-y-4 mb-6">
         <div className="border rounded-lg p-3">
           <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
-            <Calendar size={16} className="mr-2" />
+            <Calendar size={16} className="me-2" />
             Date & Time
           </label>
           {selectedSchedule ? (
@@ -49,7 +49,7 @@ const BookingWidget = ({ product, selectedSchedule, numberOfTickets, onTicketsCh
 
         <div className="border rounded-lg p-3">
           <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
-            <Users size={16} className="mr-2" />
+            <Users size={16} className="me-2" />
             Tickets
           </label>
           <div className="flex items-center space-x-3">

@@ -87,7 +87,7 @@ const OperatorProductsPage = () => {
           to="/operator/products/new"
           className="flex items-center bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
         >
-          <Plus size={20} className="mr-2" />
+          <Plus size={20} className="me-2" />
           Create Product
         </Link>
       </div>
@@ -136,14 +136,14 @@ const OperatorProductsPage = () => {
                       to={`/products/${product._id}`}
                       className="flex items-center text-gray-700 hover:text-green-700 transition"
                     >
-                      <Eye size={16} className="mr-1" />
+                      <Eye size={16} className="me-1" />
                       View
                     </Link>
                     <Link
                       to={`/operator/products/${product._id}/edit`}
                       className="flex items-center text-blue-600 hover:text-blue-700 transition"
                     >
-                      <Edit size={16} className="mr-1" />
+                      <Edit size={16} className="me-1" />
                       Edit
                     </Link>
                     {product.status === 'Pending Review' && (
@@ -152,7 +152,7 @@ const OperatorProductsPage = () => {
                         disabled={requestingApproval[product._id]}
                         className="flex items-center text-orange-600 hover:text-orange-700 transition disabled:opacity-50"
                       >
-                        <AlertCircle size={16} className="mr-1" />
+                        <AlertCircle size={16} className="me-1" />
                         {requestingApproval[product._id] ? 'Envoi...' : 'Demander approbation'}
                       </button>
                     )}
@@ -165,12 +165,12 @@ const OperatorProductsPage = () => {
                       >
                         {product.status === 'Published' ? (
                           <>
-                            <PauseCircle size={16} className="mr-1" />
+                            <PauseCircle size={16} className="me-1" />
                             Unpublish
                           </>
                         ) : (
                           <>
-                            <Rocket size={16} className="mr-1" />
+                            <Rocket size={16} className="me-1" />
                             Publish
                           </>
                         )}
@@ -181,14 +181,14 @@ const OperatorProductsPage = () => {
                       className="flex items-center text-purple-600 hover:text-purple-700 transition"
                       title="Demander un badge (Artisan, Éco-responsable, Traditionnel)"
                     >
-                      <Award size={16} className="mr-1" />
+                      <Award size={16} className="me-1" />
                       Demander badge
                     </button>
                     <button
                       onClick={() => handleDelete(product._id)}
                       className="flex items-center text-red-600 hover:text-red-700 transition"
                     >
-                      <Trash2 size={16} className="mr-1" />
+                      <Trash2 size={16} className="me-1" />
                       Delete
                     </button>
                   </div>

@@ -187,7 +187,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
                         key={badge._id}
                         type="button"
                         onClick={() => setSelectedBadge(badge)}
-                        className={`p-4 rounded-lg border-2 transition text-left ${
+                        className={`p-4 rounded-lg border-2 transition text-start ${
                           selectedBadge?._id === badge._id
                             ? 'border-primary-600 bg-primary-50'
                             : 'border-gray-200 hover:border-primary-300'
@@ -243,7 +243,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
                       <button
                         type="button"
                         onClick={() => handleRemovePhoto(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                        className="absolute -top-2 -end-2 bg-red-500 text-white rounded-full p-1"
                         aria-label="Supprimer la photo"
                       >
                         <X size={16} />
@@ -308,7 +308,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
                         <button
                           type="button"
                           onClick={() => handleRemoveLink(index)}
-                          className="text-red-500 hover:text-red-700 ml-2"
+                          className="text-red-500 hover:text-red-700 ms-2"
                           aria-label="Supprimer le lien"
                         >
                           <X size={16} />
