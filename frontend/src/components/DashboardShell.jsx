@@ -14,7 +14,7 @@ import AdminGlobalSearch from './AdminGlobalSearch';
 
 const TITLE_MAP = {
   '/admin/dashboard': 'Tableau de bord',
-  '/admin/analytics': 'Analytics',
+  '/admin/analytics': 'Statistiques',
   '/admin/users': 'Utilisateurs',
   '/admin/operators': 'Opérateurs',
   '/admin/products': 'Produits',
@@ -34,8 +34,8 @@ const TITLE_MAP = {
   '/operator/bookings': 'Mes réservations',
   '/operator/inquiries': 'Messages',
   '/operator/withdrawals': 'Mes revenus',
-  '/operator/analytics': 'Analytics',
-  '/operator/onboarding': 'Onboarding',
+  '/operator/analytics': 'Statistiques',
+  '/operator/onboarding': 'Intégration',
 };
 
 const resolveTitle = (pathname) => {
@@ -55,7 +55,7 @@ const buildBreadcrumbs = (pathname, variant) => {
   const area =
     variant === 'operator'
       ? { label: 'Opérateur', href: '/operator/dashboard' }
-      : { label: 'Admin', href: '/admin/dashboard' };
+      : { label: 'Administration', href: '/admin/dashboard' };
 
   const segments = pathname.split('/').filter(Boolean);
   // e.g. admin / products / :id

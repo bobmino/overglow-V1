@@ -338,7 +338,12 @@
     "favorites": "Favorites",
     "profile": "Profile",
     "menu": "Menu",
-    "mobile_aria": "Mobile navigation"
+    "mobile_aria": "Mobile navigation",
+    "analytics": "Analytics",
+    "dashboard": "Dashboard",
+    "my_products": "My products",
+    "my_bookings": "My bookings",
+    "search": "Search"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -1536,7 +1541,11 @@
       "withdrawals_title": "Withdrawals",
       "withdrawals_desc": "Request payouts and view withdrawal history",
       "error_stats": "We are updating your financial data. Please try again.",
-      "error_bookings": "We are updating your bookings. Please try again."
+      "error_bookings": "We are updating your bookings. Please try again.",
+      "pending_bookings": "{{count}} pending booking",
+      "pending_bookings_plural": "{{count}} pending bookings",
+      "no_recent_bookings": "No recent bookings",
+      "view_all_bookings": "View all bookings →"
     },
     "products": {
       "title": "My Products",

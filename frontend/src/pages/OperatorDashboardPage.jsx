@@ -120,7 +120,7 @@ const OperatorDashboardPage = () => {
           </h1>
           {pendingCount > 0 && (
             <p className="text-amber-700 text-sm font-semibold mt-1">
-              {pendingCount} réservation{pendingCount > 1 ? 's' : ''} en attente
+              {t('operator.dashboard.pending_bookings', { count: pendingCount })}
             </p>
           )}
         </div>
@@ -181,7 +181,7 @@ const OperatorDashboardPage = () => {
               {filteredBookings.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                    Aucune réservation récente
+                    {t('operator.dashboard.no_recent_bookings')}
                   </td>
                 </tr>
               ) : (
@@ -205,7 +205,7 @@ const OperatorDashboardPage = () => {
             to="/operator/bookings"
             className="text-sm font-semibold text-primary-700 hover:text-primary-800"
           >
-            Voir toutes les réservations →
+            {t('operator.dashboard.view_all_bookings')}
           </Link>
         </div>
       </div>

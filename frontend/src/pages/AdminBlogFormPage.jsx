@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Save, Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 import { logger } from '../utils/logger.js';
 
 const CATEGORIES = [
@@ -260,7 +259,6 @@ const AdminBlogFormPage = () => {
         <h1 className="text-3xl font-bold text-gray-900">
           {isEdit ? t('admin.blog_form.edit_title') : t('admin.blog_form.new_title')}
         </h1>
-        <DashboardNavBar />
       </div>
 
       {error && (

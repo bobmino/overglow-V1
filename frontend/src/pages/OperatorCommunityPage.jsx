@@ -28,7 +28,7 @@ const OperatorCommunityPage = () => (
           Espace d’échange entre partenaires — bientôt disponible.
         </p>
         <span className="inline-flex px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-semibold">
-          Coming soon
+          Bientôt disponible
         </span>
       </section>
 
@@ -56,7 +56,7 @@ const OperatorCommunityPage = () => (
 
       <section>
         <h2 className="text-xl font-heading font-bold mb-4 flex items-center gap-2">
-          <Star className="text-amber-500" size={22} /> Success stories
+          <Star className="text-amber-500" size={22} /> Témoignages
         </h2>
         <div className="grid md:grid-cols-2 gap-4">
           {STORIES.map((s) => (

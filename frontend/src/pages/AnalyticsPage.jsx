@@ -12,7 +12,6 @@ import {
   Download, AlertCircle, CheckCircle, Info, Target
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -134,7 +133,6 @@ const AnalyticsPage = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t('analytics.title')}</h1>
         <div className="flex gap-2">
-          <DashboardNavBar />
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"

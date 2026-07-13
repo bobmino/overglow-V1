@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { MessageSquare, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 import ChatWidget from '../components/ChatWidget';
 import { logger } from '../utils/logger.js';
 
@@ -208,7 +207,6 @@ const InquiriesPage = () => {
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t('inquiries.title')}</h1>
-        <DashboardNavBar />
       </div>
 
       {!Array.isArray(inquiries) || inquiries.length === 0 ? (

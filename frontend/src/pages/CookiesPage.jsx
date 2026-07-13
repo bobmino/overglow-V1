@@ -11,7 +11,7 @@ const CATEGORIES = [
   },
   {
     id: 'analytics',
-    title: 'Analytics',
+    title: 'Analytique',
     desc: 'Mesure d’audience (ex. GA4) pour améliorer les parcours. Désactivables via vos préférences navigateur / consentement.',
   },
   {

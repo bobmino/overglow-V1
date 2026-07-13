@@ -18,7 +18,6 @@ import {
   X,
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -213,7 +212,6 @@ const AdminPendingPaymentsPage = () => {
               </p>
             </div>
           </div>
-          <DashboardNavBar />
         </div>
 
         <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">

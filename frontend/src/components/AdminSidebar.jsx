@@ -31,7 +31,7 @@ const ADMIN_SECTIONS = [
     label: 'Vue d’ensemble',
     items: [
       { to: '/admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-      { to: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
+      { to: '/admin/analytics', label: 'Statistiques', icon: TrendingUp },
     ],
   },
   {
@@ -44,7 +44,7 @@ const ADMIN_SECTIONS = [
     ],
   },
   {
-    label: 'Finance',
+    label: 'Finances',
     items: [
       { to: '/admin/pending-payments', label: 'Paiements en attente', icon: CreditCard },
       { to: '/admin/withdrawals', label: 'Retraits', icon: Banknote },

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkIcon } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
@@ -171,7 +170,6 @@ const AdminBlogPage = () => {
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.blog.title')}</h1>
-        <DashboardNavBar />
       </div>
 
       <div className="flex flex-wrap gap-3 mb-6">

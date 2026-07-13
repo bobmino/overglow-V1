@@ -338,7 +338,12 @@
     "favorites": "المفضلة",
     "profile": "الملف",
     "menu": "القائمة",
-    "mobile_aria": "التنقل عبر الجوال"
+    "mobile_aria": "التنقل عبر الجوال",
+    "analytics": "الإحصائيات",
+    "dashboard": "لوحة التحكم",
+    "my_products": "منتجاتي",
+    "my_bookings": "حجوزاتي",
+    "search": "بحث"
   },
   "privacy": {
     "title": "سياسة الخصوصية",
@@ -1536,7 +1541,11 @@
       "withdrawals_title": "السحوبات",
       "withdrawals_desc": "اطلب المدفوعات واطّلع على سجل السحوبات",
       "error_stats": "نقوم بتحديث بياناتك المالية. يُرجى المحاولة مرة أخرى.",
-      "error_bookings": "نقوم بتحديث حجوزاتك. يُرجى المحاولة مرة أخرى."
+      "error_bookings": "نقوم بتحديث حجوزاتك. يُرجى المحاولة مرة أخرى.",
+      "pending_bookings": "حجز واحد قيد الانتظار",
+      "pending_bookings_plural": "{{count}} حجوزات قيد الانتظار",
+      "no_recent_bookings": "لا توجد حجوزات حديثة",
+      "view_all_bookings": "عرض كل الحجوزات ←"
     },
     "products": {
       "title": "منتجاتي",

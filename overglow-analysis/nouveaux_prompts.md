@@ -640,7 +640,7 @@ All pages must:
 - Have a hero section with title
 - Be responsive
 
-PROMPT 14 — 🟡 Nettoyage FR/EN + Dead Code
+[x] PROMPT 14 — 🟡 Nettoyage FR/EN + Dead Code
 You are a code quality engineer.
 
 TASK: Clean up language mixing and dead code across the admin/operator area.

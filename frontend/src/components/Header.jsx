@@ -250,7 +250,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Shield size={18} className="me-3" />
-                        {t('header.admin_dashboard', 'Admin Dashboard')}
+                        {t('header.admin_dashboard', 'Tableau admin')}
                       </Link>
                       <Link 
                         to="/admin/operators" 

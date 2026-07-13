@@ -338,7 +338,12 @@
     "favorites": "Favoritos",
     "profile": "Perfil",
     "menu": "Menú",
-    "mobile_aria": "Navegación móvil"
+    "mobile_aria": "Navegación móvil",
+    "analytics": "Estadísticas",
+    "dashboard": "Panel",
+    "my_products": "Mis productos",
+    "my_bookings": "Mis reservas",
+    "search": "Buscar"
   },
   "privacy": {
     "title": "Política de privacidad",
@@ -1536,7 +1541,11 @@
       "withdrawals_title": "Retiros",
       "withdrawals_desc": "Solicite pagos y consulte el historial de retiros",
       "error_stats": "Estamos actualizando sus datos financieros. Inténtelo de nuevo.",
-      "error_bookings": "Estamos actualizando sus reservas. Inténtelo de nuevo."
+      "error_bookings": "Estamos actualizando sus reservas. Inténtelo de nuevo.",
+      "pending_bookings": "{{count}} reserva pendiente",
+      "pending_bookings_plural": "{{count}} reservas pendientes",
+      "no_recent_bookings": "No hay reservas recientes",
+      "view_all_bookings": "Ver todas las reservas →"
     },
     "products": {
       "title": "Mis productos",
@@ -1923,7 +1932,7 @@
     }
   },
   "analytics": {
-    "title": "Panel de analíticas",
+    "title": "Panel de analítica",
     "export_csv": "Exportar CSV",
     "start_date": "Fecha de inicio",
     "end_date": "Fecha de fin",

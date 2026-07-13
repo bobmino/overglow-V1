@@ -338,7 +338,12 @@
     "favorites": "Favoris",
     "profile": "Profil",
     "menu": "Menu",
-    "mobile_aria": "Navigation mobile"
+    "mobile_aria": "Navigation mobile",
+    "analytics": "Statistiques",
+    "dashboard": "Tableau de bord",
+    "my_products": "Mes produits",
+    "my_bookings": "Mes réservations",
+    "search": "Recherche"
   },
   "privacy": {
     "title": "Politique de confidentialité",
@@ -962,7 +967,7 @@
       "view": "Voir",
       "all": "Tous",
       "confirm": "Confirmer",
-      "na": "N/A",
+      "na": "—",
       "saving": "Enregistrement…",
       "view_details": "Voir détails",
       "filter_status": "Statut :",
@@ -1536,7 +1541,11 @@
       "withdrawals_title": "Retraits",
       "withdrawals_desc": "Demandez des paiements et consultez l'historique des retraits",
       "error_stats": "Nous mettons à jour vos données financières. Merci de réessayer.",
-      "error_bookings": "Nous mettons à jour vos réservations. Merci de réessayer."
+      "error_bookings": "Nous mettons à jour vos réservations. Merci de réessayer.",
+      "pending_bookings": "{{count}} réservation en attente",
+      "pending_bookings_plural": "{{count}} réservations en attente",
+      "no_recent_bookings": "Aucune réservation récente",
+      "view_all_bookings": "Voir toutes les réservations →"
     },
     "products": {
       "title": "Mes produits",
@@ -1923,8 +1932,8 @@
     }
   },
   "analytics": {
-    "title": "Analytics Dashboard",
-    "export_csv": "Export CSV",
+    "title": "Tableau de bord analytique",
+    "export_csv": "Exporter CSV",
     "start_date": "Date de début",
     "end_date": "Date de fin",
     "load_error": "Échec du chargement des données analytiques",
@@ -1941,7 +1950,7 @@
       "avg_revenue": "Revenu Moyen",
       "active_products": "Produits Actifs",
       "views": "Vues",
-      "inquiries": "Inquiries",
+      "inquiries": "Demandes",
       "conversion": "{{rate}}% conversion"
     },
     "charts": {
@@ -1950,7 +1959,7 @@
       "bookings_by_product": "Réservations par Produit",
       "conversion_funnel": "Funnel de Conversion",
       "funnel_views": "Vues",
-      "funnel_inquiries": "Inquiries",
+      "funnel_inquiries": "Demandes",
       "funnel_bookings": "Réservations"
     },
     "table": {
@@ -1971,8 +1980,8 @@
     "affected_products": "Produits concernés:"
   },
   "inquiries": {
-    "title": "Inquiries",
-    "empty_title": "Aucune inquiry pour le moment",
+    "title": "Demandes",
+    "empty_title": "Aucune demande pour le moment",
     "empty_desc": "Les inquiries des clients apparaîtront ici",
     "from": "De: {{name}}",
     "question": "Question:",

@@ -49,7 +49,7 @@ const CookieConsentPage = () => {
       <div className="container mx-auto px-4 py-12 max-w-2xl space-y-4">
         {[
           { key: 'essential', label: 'Essentiels', locked: true, desc: 'Toujours actifs' },
-          { key: 'analytics', label: 'Analytics', locked: false, desc: 'Mesure d’audience' },
+          { key: 'analytics', label: 'Analytique', locked: false, desc: 'Mesure d’audience' },
           { key: 'marketing', label: 'Marketing', locked: false, desc: 'Campagnes & remarketing' },
         ].map((row) => (
           <label
