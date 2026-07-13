@@ -1,11 +1,22 @@
 /**
  * HTML / text sanitization (Node + isomorphic-dompurify).
  * [TASK-19] Apply before persisting UGC to MongoDB.
+ * Soft-init: if jsdom/DOMPurify fails on serverless, fall back to strip-tags.
  */
-import createDOMPurify from 'isomorphic-dompurify';
 import { logger } from './logger.js';
 
-const DOMPurify = createDOMPurify();
+let DOMPurify = null;
+try {
+  const createDOMPurify = (await import('isomorphic-dompurify')).default;
+  DOMPurify = createDOMPurify();
+} catch (err) {
+  logger.warn('[sanitizer] DOMPurify unavailable — using strip-tags fallback', {
+    message: err?.message,
+    code: err?.code,
+  });
+}
+
+const stripTags = (value) => String(value).replace(/<[^>]*>/g, '').trim();
 
 const HTML_CONFIG = {
   ALLOWED_TAGS: [
@@ -24,11 +35,12 @@ const HTML_CONFIG = {
 export const sanitizeHtml = (dirty) => {
   if (dirty == null) return '';
   if (typeof dirty !== 'string') return '';
+  if (!DOMPurify) return stripTags(dirty);
   try {
     return DOMPurify.sanitize(dirty, HTML_CONFIG);
   } catch (err) {
     logger.warn('sanitizeHtml failed — falling back to strip tags', { message: err?.message });
-    return String(dirty).replace(/<[^>]*>/g, '').trim();
+    return stripTags(dirty);
   }
 };
 
@@ -36,7 +48,12 @@ export const sanitizeHtml = (dirty) => {
 export const sanitizeText = (dirty) => {
   if (dirty == null) return '';
   if (typeof dirty !== 'string') return '';
-  return DOMPurify.sanitize(dirty, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+  if (!DOMPurify) return stripTags(dirty);
+  try {
+    return DOMPurify.sanitize(dirty, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+  } catch {
+    return stripTags(dirty);
+  }
 };
 
 export const sanitizeName = (dirty) => sanitizeText(dirty).slice(0, 200);

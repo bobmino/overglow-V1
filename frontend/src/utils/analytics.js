@@ -18,7 +18,10 @@ const isGA4Enabled = () => {
  */
 export const initGA4 = () => {
   if (typeof window === 'undefined' || !GA4_MEASUREMENT_ID) {
-    logger.warn('GA4 Measurement ID not configured. Set VITE_GA4_MEASUREMENT_ID in .env');
+    // Optional analytics — avoid noisy console warnings in production builds
+    if (import.meta.env.DEV) {
+      logger.debug('GA4 Measurement ID not configured. Set VITE_GA4_MEASUREMENT_ID in .env');
+    }
     return;
   }
 

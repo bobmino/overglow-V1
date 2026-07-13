@@ -12,11 +12,27 @@ let appPromise = null;
 const isProduction = () =>
   process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 
+/** Strip absolute paths / home dirs from error messages (safe ops hint). */
+const safeHint = (error) => {
+  const raw = String(error?.message || error || 'unknown');
+  return raw
+    .replace(/[A-Za-z]:\\[^\s'"]+/g, '[path]')
+    .replace(/\/(?:home|Users|var|tmp|opt|app)\/[^\s'"]+/g, '[path]')
+    .replace(/file:\/\/[^\s'"]+/g, '[path]')
+    .slice(0, 240);
+};
+
 /**
- * [TASK-5] Réponse d'erreur sûre — jamais de stack / chemins / détails internes en prod.
+ * [TASK-5] Réponse d'erreur sûre — jamais de stack complète en prod.
+ * Inclut fault.name/code/hint pour diagnostiquer les échecs de cold start.
  */
 const sendSafeError = (req, res, statusCode, publicMessage, error) => {
   const timestamp = new Date().toISOString();
+  const fault = {
+    name: error?.name || 'Error',
+    code: error?.code || undefined,
+    hint: safeHint(error),
+  };
 
   logger.error('[api/index] error', {
     timestamp,
@@ -33,6 +49,7 @@ const sendSafeError = (req, res, statusCode, publicMessage, error) => {
       success: false,
       error: publicMessage,
       statusCode,
+      fault,
     });
   }
 
@@ -40,6 +57,7 @@ const sendSafeError = (req, res, statusCode, publicMessage, error) => {
     success: false,
     error: publicMessage,
     statusCode,
+    fault,
     debug: {
       message: error?.message,
       name: error?.name,
@@ -67,6 +85,8 @@ const loadApp = async () => {
         code: error.code,
         cause: error.cause,
       });
+      // Allow retry on next invocation after a cold-start failure
+      appPromise = null;
       throw error;
     }
   })();

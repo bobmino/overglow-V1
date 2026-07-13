@@ -1,7 +1,24 @@
-import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 import { logger } from './logger.js';
+
+/**
+ * Lazy-load sharp — avoid crashing the whole serverless cold start
+ * if the native binary fails to load on Vercel.
+ */
+let sharpModulePromise = null;
+const getSharp = async () => {
+  if (!sharpModulePromise) {
+    sharpModulePromise = import('sharp')
+      .then((m) => m.default)
+      .catch((err) => {
+        logger.error('Failed to load sharp', { message: err?.message, code: err?.code });
+        sharpModulePromise = null;
+        throw err;
+      });
+  }
+  return sharpModulePromise;
+};
 
 /**
  * Compress and optimize image from buffer (for Vercel/memory storage)
@@ -18,25 +35,22 @@ export const compressImageBuffer = async (inputBuffer, options = {}) => {
   } = options;
 
   try {
-    // Get image metadata
+    const sharp = await getSharp();
     const metadata = await sharp(inputBuffer).metadata();
-    
-    // Calculate resize dimensions
+
     let width = metadata.width;
     let height = metadata.height;
-    
+
     if (width > maxWidth || height > maxHeight) {
       const ratio = Math.min(maxWidth / width, maxHeight / height);
       width = Math.round(width * ratio);
       height = Math.round(height * ratio);
     }
 
-    // Compress and resize
-    let pipeline = sharp(inputBuffer)
-      .resize(width, height, {
-        fit: 'inside',
-        withoutEnlargement: true,
-      });
+    let pipeline = sharp(inputBuffer).resize(width, height, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
 
     if (format === 'webp') {
       pipeline = pipeline.webp({ quality });
@@ -46,17 +60,15 @@ export const compressImageBuffer = async (inputBuffer, options = {}) => {
       pipeline = pipeline.png({ quality: Math.min(quality, 100), compressionLevel: 9 });
     }
 
-    const compressedBuffer = await pipeline.toBuffer();
-    return compressedBuffer;
+    return await pipeline.toBuffer();
   } catch (error) {
     logger.error('Image compression error:', error);
-    // Return original buffer if compression fails
     return inputBuffer;
   }
 };
 
 /**
- * Compress and optimize image
+ * Compress and optimize image on disk
  * @param {String} inputPath - Path to input image
  * @param {Object} options - Compression options
  * @returns {String} Path to compressed image
@@ -66,47 +78,44 @@ export const compressImage = async (inputPath, options = {}) => {
     quality = 85,
     maxWidth = 1920,
     maxHeight = 1080,
-    format = 'webp', // webp, jpeg, png
+    format = 'webp',
   } = options;
 
   try {
+    const sharp = await getSharp();
     const ext = path.extname(inputPath).toLowerCase();
     const baseName = path.basename(inputPath, ext);
     const dir = path.dirname(inputPath);
-    
-    // Determine output format
+
     let outputFormat = format;
     if (format === 'webp' && !inputPath.toLowerCase().endsWith('.webp')) {
-      // Convert to WebP if not already
       outputFormat = 'webp';
     } else if (ext === '.png') {
-      // Keep PNG for transparency
       outputFormat = 'png';
     } else {
       outputFormat = 'jpeg';
     }
 
-    const outputPath = path.join(dir, `${baseName}_compressed.${outputFormat === 'webp' ? 'webp' : outputFormat === 'png' ? 'png' : 'jpg'}`);
+    const outputPath = path.join(
+      dir,
+      `${baseName}_compressed.${outputFormat === 'webp' ? 'webp' : outputFormat === 'png' ? 'png' : 'jpg'}`
+    );
 
-    // Get image metadata
     const metadata = await sharp(inputPath).metadata();
-    
-    // Calculate resize dimensions
+
     let width = metadata.width;
     let height = metadata.height;
-    
+
     if (width > maxWidth || height > maxHeight) {
       const ratio = Math.min(maxWidth / width, maxHeight / height);
       width = Math.round(width * ratio);
       height = Math.round(height * ratio);
     }
 
-    // Compress and resize
-    let pipeline = sharp(inputPath)
-      .resize(width, height, {
-        fit: 'inside',
-        withoutEnlargement: true,
-      });
+    let pipeline = sharp(inputPath).resize(width, height, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
 
     if (outputFormat === 'webp') {
       pipeline = pipeline.webp({ quality });
@@ -118,24 +127,23 @@ export const compressImage = async (inputPath, options = {}) => {
 
     await pipeline.toFile(outputPath);
 
-    // Delete original if compression succeeded and file is smaller
     const originalStats = await fs.stat(inputPath);
     const compressedStats = await fs.stat(outputPath);
-    
+
     if (compressedStats.size < originalStats.size) {
       await fs.unlink(inputPath);
-      // Rename compressed file to original name
-      const finalPath = path.join(dir, `${baseName}.${outputFormat === 'webp' ? 'webp' : outputFormat === 'png' ? 'png' : 'jpg'}`);
+      const finalPath = path.join(
+        dir,
+        `${baseName}.${outputFormat === 'webp' ? 'webp' : outputFormat === 'png' ? 'png' : 'jpg'}`
+      );
       await fs.rename(outputPath, finalPath);
       return finalPath;
-    } else {
-      // Keep original if compressed is larger
-      await fs.unlink(outputPath);
-      return inputPath;
     }
+
+    await fs.unlink(outputPath);
+    return inputPath;
   } catch (error) {
     logger.error('Image compression error:', error);
-    // Return original path if compression fails
     return inputPath;
   }
 };
@@ -158,6 +166,13 @@ export const generateResponsiveImages = async (inputPath) => {
   const baseName = path.basename(inputPath, ext);
   const dir = path.dirname(inputPath);
 
+  let sharp;
+  try {
+    sharp = await getSharp();
+  } catch {
+    return results;
+  }
+
   for (const size of sizes) {
     try {
       const outputPath = path.join(dir, `${baseName}_${size.suffix}.webp`);
@@ -168,7 +183,7 @@ export const generateResponsiveImages = async (inputPath) => {
         })
         .webp({ quality: 85 })
         .toFile(outputPath);
-      
+
       results[size.suffix] = outputPath.replace(/\\/g, '/');
     } catch (error) {
       logger.error(`Error generating ${size.suffix} image:`, error);
@@ -177,4 +192,3 @@ export const generateResponsiveImages = async (inputPath) => {
 
   return results;
 };
-

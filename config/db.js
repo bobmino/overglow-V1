@@ -9,7 +9,14 @@ const connectDB = async () => {
     if (mongoose.connection.readyState === 1) {
       logger.info('MongoDB already connected');
       await createIndexes();
-      await runDbDiagnostics();
+      const isVercelRuntime = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+      if (isVercelRuntime) {
+        runDbDiagnostics().catch((err) => {
+          logger.warn('[dbDiagnostics] async diagnostics failed', { message: err?.message });
+        });
+      } else {
+        await runDbDiagnostics();
+      }
       return;
     }
 
@@ -32,8 +39,15 @@ const connectDB = async () => {
 
     // Create indexes after connection
     await createIndexes();
-    // [TASK-23] Structured diagnostics (ping, collections, indexes, stats, read)
-    await runDbDiagnostics();
+    // [TASK-23] Diagnostics — non-blocking on Vercel to avoid cold-start timeouts
+    const isVercelRuntime = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+    if (isVercelRuntime) {
+      runDbDiagnostics().catch((err) => {
+        logger.warn('[dbDiagnostics] async diagnostics failed', { message: err?.message });
+      });
+    } else {
+      await runDbDiagnostics();
+    }
   } catch (error) {
     logger.error(`MongoDB connection error: ${error.message}`);
     // Don't exit on Vercel, allow serverless function to start
