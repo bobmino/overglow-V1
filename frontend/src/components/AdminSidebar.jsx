@@ -95,19 +95,26 @@ const AdminSidebar = ({
   onCloseMobile,
   variant = 'admin',
   messagesBadge = 0,
+  bookingsBadge = 0,
 }) => {
   const location = useLocation();
   const sections = useMemo(() => {
-    if (variant !== 'operator') return ADMIN_SECTIONS;
-    return OPERATOR_SECTIONS.map((section) => ({
-      ...section,
-      items: section.items.map((item) =>
-        item.to === '/operator/inquiries'
-          ? { ...item, badge: messagesBadge }
-          : item
-      ),
-    }));
-  }, [variant, messagesBadge]);
+    const applyBadges = (secs) =>
+      secs.map((section) => ({
+        ...section,
+        items: section.items.map((item) => {
+          if (item.to === '/operator/inquiries' || item.to === '/admin/chat') {
+            return { ...item, badge: messagesBadge };
+          }
+          if (item.to === '/operator/bookings' || item.to === '/admin/bookings') {
+            return { ...item, badge: bookingsBadge };
+          }
+          return item;
+        }),
+      }));
+
+    return applyBadges(variant === 'operator' ? OPERATOR_SECTIONS : ADMIN_SECTIONS);
+  }, [variant, messagesBadge, bookingsBadge]);
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
 
   const isItemActive = (to) => {
@@ -199,17 +206,12 @@ const AdminSidebar = ({
                             <span className="truncate flex-1">{item.label}</span>
                             {typeof item.badge === 'number' && item.badge > 0 && (
                               <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary-600 text-[10px] font-bold text-white flex items-center justify-center">
-                                {item.badge}
-                              </span>
-                            )}
-                            {typeof item.badge === 'number' && item.badge === 0 && (
-                              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-slate-700 text-[10px] font-bold text-slate-400 flex items-center justify-center">
-                                0
+                                {item.badge > 99 ? '99+' : item.badge}
                               </span>
                             )}
                           </>
                         )}
-                        {collapsed && typeof item.badge === 'number' && (
+                        {collapsed && typeof item.badge === 'number' && item.badge > 0 && (
                           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-500" />
                         )}
                       </NavLink>

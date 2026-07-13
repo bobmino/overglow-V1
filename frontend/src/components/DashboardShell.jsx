@@ -6,6 +6,7 @@ import AdminSidebar, {
   SIDEBAR_COLLAPSED,
   STORAGE_KEY,
 } from './AdminSidebar';
+import Breadcrumbs from './Breadcrumbs';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
@@ -32,6 +33,7 @@ const TITLE_MAP = {
   '/operator/inquiries': 'Messages',
   '/operator/withdrawals': 'Mes revenus',
   '/operator/analytics': 'Analytics',
+  '/operator/onboarding': 'Onboarding',
 };
 
 const resolveTitle = (pathname) => {
@@ -40,6 +42,36 @@ const resolveTitle = (pathname) => {
     (key) => pathname === key || pathname.startsWith(`${key}/`)
   );
   return hit ? TITLE_MAP[hit] : 'Espace pro';
+};
+
+/** Build breadcrumb items from current path for admin/operator shells. */
+const buildBreadcrumbs = (pathname, variant) => {
+  const root =
+    variant === 'operator'
+      ? { label: 'Accueil', href: '/operator/dashboard' }
+      : { label: 'Accueil', href: '/admin/dashboard' };
+  const area =
+    variant === 'operator'
+      ? { label: 'Opérateur', href: '/operator/dashboard' }
+      : { label: 'Admin', href: '/admin/dashboard' };
+
+  const segments = pathname.split('/').filter(Boolean);
+  // e.g. admin / products / :id
+  const items = [root, area];
+  let acc = '';
+  for (let i = 1; i < segments.length; i += 1) {
+    acc += `/${segments[i]}`;
+    const full = `/${segments[0]}${acc}`;
+    const label = TITLE_MAP[full] || decodeURIComponent(segments[i]).replace(/-/g, ' ');
+    const isLast = i === segments.length - 1;
+    items.push(isLast ? { label } : { label, href: full });
+  }
+
+  // Deduplicate consecutive same labels (e.g. Accueil / Admin / Tableau de bord)
+  if (items.length >= 3 && items[1].href === items[2].href) {
+    return [items[0], items[2], ...items.slice(3)];
+  }
+  return items;
 };
 
 /**
@@ -57,6 +89,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [messagesBadge, setMessagesBadge] = useState(0);
+  const [bookingsBadge, setBookingsBadge] = useState(0);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
   );
@@ -81,26 +114,41 @@ const DashboardShell = ({ variant = 'admin' }) => {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  // [PROMPT-3] Unread badge for operator Messages
+  // [PROMPT-9] Badge counts for Messages + Réservations
   useEffect(() => {
-    if (variant !== 'operator' || authLoading || !isAuthenticated) return undefined;
-    const fetchBadge = async () => {
+    if (authLoading || !isAuthenticated) return undefined;
+
+    const fetchBadges = async () => {
       try {
-        const { data } = await api.get('/api/notifications/unread-count');
-        setMessagesBadge(data.count ?? data.unreadCount ?? 0);
+        const chatRes = await api.get('/api/chat/unread-count');
+        setMessagesBadge(chatRes.data.count ?? chatRes.data.unreadCount ?? 0);
       } catch {
-        /* silent */
+        setMessagesBadge(0);
+      }
+
+      try {
+        if (variant === 'admin') {
+          const { data } = await api.get('/api/admin/bookings', {
+            params: { status: 'PENDING_PAYMENT,Pending', limit: 1, page: 1 },
+          });
+          setBookingsBadge(data.pagination?.total ?? data.total ?? 0);
+        } else {
+          const { data } = await api.get('/api/operator/bookings');
+          const list = Array.isArray(data) ? data : data.bookings || [];
+          const pending = list.filter((b) =>
+            ['Pending', 'PENDING', 'PENDING_PAYMENT'].includes(b.status)
+          );
+          setBookingsBadge(pending.length);
+        }
+      } catch {
+        setBookingsBadge(0);
       }
     };
-    fetchBadge();
-    const onRead = () => fetchBadge();
-    window.addEventListener('notificationsRead', onRead);
-    const id = setInterval(fetchBadge, 30000);
-    return () => {
-      window.removeEventListener('notificationsRead', onRead);
-      clearInterval(id);
-    };
-  }, [variant, authLoading, isAuthenticated]);
+
+    fetchBadges();
+    const id = setInterval(fetchBadges, 60000);
+    return () => clearInterval(id);
+  }, [variant, authLoading, isAuthenticated, location.pathname]);
 
   const contentOffset = useMemo(
     () => (collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH),
@@ -108,6 +156,10 @@ const DashboardShell = ({ variant = 'admin' }) => {
   );
 
   const pageTitle = resolveTitle(location.pathname);
+  const crumbItems = useMemo(
+    () => buildBreadcrumbs(location.pathname, variant),
+    [location.pathname, variant]
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -118,6 +170,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
         messagesBadge={messagesBadge}
+        bookingsBadge={bookingsBadge}
       />
 
       <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-3 bg-white border-b border-gray-200 shadow-sm">
@@ -129,14 +182,31 @@ const DashboardShell = ({ variant = 'admin' }) => {
         >
           <Menu size={22} />
         </button>
-        <h1 className="flex-1 text-base font-heading font-bold text-slate-900 truncate">
+        <div className="flex-1 min-w-0">
+          <Breadcrumbs items={crumbItems} />
+          <h1 className="text-base font-heading font-bold text-slate-900 truncate leading-tight">
+            {pageTitle}
+          </h1>
+        </div>
+        <NotificationBell />
+      </div>
+
+      {/* Desktop top bar with breadcrumbs */}
+      <div
+        className="hidden md:flex sticky top-0 z-20 items-center gap-4 h-14 px-6 bg-white/95 backdrop-blur border-b border-gray-200"
+        style={{ marginLeft: isDesktop ? contentOffset : 0 }}
+      >
+        <div className="flex-1 min-w-0">
+          <Breadcrumbs items={crumbItems} />
+        </div>
+        <h1 className="text-sm font-heading font-bold text-slate-800 truncate max-w-xs">
           {pageTitle}
         </h1>
         <NotificationBell />
       </div>
 
       <div
-        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)] md:min-h-screen"
+        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-3.5rem)]"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
         <Outlet />

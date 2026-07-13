@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Package, Calendar, DollarSign, Users, TrendingUp, MessageSquare } from 'lucide-react';
+import { Package, Calendar, Users, Plus } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { logger } from '../utils/logger.js';
@@ -35,6 +33,9 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
   </motion.div>
 );
 
+/**
+ * [PROMPT-9] Operator dashboard — stats + activity (nav via sidebar).
+ */
 const OperatorDashboardPage = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -63,8 +64,9 @@ const OperatorDashboardPage = () => {
     const fetchBookings = async () => {
       try {
         const { data } = await api.get('/api/operator/bookings');
-        setBookings(data);
-        setFilteredBookings(data);
+        const list = Array.isArray(data) ? data : data.bookings || [];
+        setBookings(list);
+        setFilteredBookings(list);
       } catch (error) {
         logger.error('Failed to fetch bookings:', error);
         toast(t('operator.dashboard.error_bookings'), { type: 'error' });
@@ -74,6 +76,14 @@ const OperatorDashboardPage = () => {
     fetchStats();
     fetchBookings();
   }, [toast, t]);
+
+  const pendingCount = useMemo(
+    () =>
+      bookings.filter((b) =>
+        ['Pending', 'PENDING', 'PENDING_PAYMENT'].includes(b.status)
+      ).length,
+    [bookings]
+  );
 
   const getBookingStatusLabel = (status) => {
     switch (status) {
@@ -96,36 +106,30 @@ const OperatorDashboardPage = () => {
   const handleFilterChange = (event) => {
     const query = event.target.value.toLowerCase();
     const filtered = bookings.filter((booking) =>
-      booking.customerEmail.toLowerCase().includes(query)
+      (booking.customerEmail || '').toLowerCase().includes(query)
     );
     setFilteredBookings(filtered);
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('operator.dashboard.title')}</h1>
-        <DashboardNavBar />
-      </div>
-
-      <div className="flex flex-wrap gap-3 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 font-heading">
+            {t('operator.dashboard.title')}
+          </h1>
+          {pendingCount > 0 && (
+            <p className="text-amber-700 text-sm font-semibold mt-1">
+              {pendingCount} réservation{pendingCount > 1 ? 's' : ''} en attente
+            </p>
+          )}
+        </div>
         <Link
           to="/operator/products/new"
-          className="bg-green-700 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-800 transition"
+          className="inline-flex items-center justify-center gap-2 bg-green-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-green-800 transition"
         >
+          <Plus size={18} />
           {t('operator.dashboard.create_product')}
-        </Link>
-        <Link
-          to="/operator/analytics"
-          className="bg-white border border-gray-300 px-4 py-2 rounded-lg font-semibold text-gray-700 hover:border-green-700 transition"
-        >
-          {t('operator.dashboard.view_analytics')}
-        </Link>
-        <Link
-          to="/operator/bookings"
-          className="bg-white border border-gray-300 px-4 py-2 rounded-lg font-semibold text-gray-700 hover:border-green-700 transition"
-        >
-          {t('operator.dashboard.view_bookings')}
         </Link>
       </div>
 
@@ -134,7 +138,7 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={Package}
           label={t('operator.dashboard.total_sales')}
-          value={`€${stats.totalSales.toFixed(2)}`}
+          value={`€${Number(stats.totalSales || 0).toFixed(2)}`}
           color="bg-blue-600"
         />
         <StatCard
@@ -146,87 +150,64 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={Users}
           label={t('operator.dashboard.top_experiences')}
-          value={stats.topExperiences.length}
+          value={stats.topExperiences?.length || 0}
           color="bg-green-600"
         />
       </div>
 
-      {/* Bookings Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">{t('operator.dashboard.bookings_section')}</h2>
+      {/* Recent bookings */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8" id="avis">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h2 className="text-xl font-bold text-gray-900">
+            {t('operator.dashboard.bookings_section')}
+          </h2>
           <input
             type="text"
             placeholder={t('operator.dashboard.search_email_placeholder')}
             onChange={handleFilterChange}
-            className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none"
+            className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-start">{t('operator.dashboard.customer_email')}</th>
-              <th className="px-6 py-3 text-start">{t('operator.dashboard.booking_date')}</th>
-              <th className="px-6 py-3 text-start">{t('operator.dashboard.status')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBookings.map((booking) => (
-              <tr key={booking.id} className="border-b border-gray-200">
-                <td className="px-6 py-4">{booking.customerEmail}</td>
-                <td className="px-6 py-4">{new Date(booking.date).toLocaleDateString(dateLocale)}</td>
-                <td className="px-6 py-4">{getBookingStatusLabel(booking.status)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-6 py-3 text-start">{t('operator.dashboard.customer_email')}</th>
+                <th className="px-6 py-3 text-start">{t('operator.dashboard.booking_date')}</th>
+                <th className="px-6 py-3 text-start">{t('operator.dashboard.status')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link
-          to="/operator/products"
-          className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-700 hover:shadow-lg transition"
-        >
-          <Package size={32} className="text-green-700 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('operator.dashboard.manage_products_title')}</h3>
-          <p className="text-gray-600">{t('operator.dashboard.manage_products_desc')}</p>
-        </Link>
-
-        <Link
-          to="/operator/bookings"
-          className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-700 hover:shadow-lg transition"
-        >
-          <Calendar size={32} className="text-green-700 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('operator.dashboard.view_bookings_title')}</h3>
-          <p className="text-gray-600">{t('operator.dashboard.view_bookings_desc')}</p>
-        </Link>
-
-        <Link
-          to="/operator/analytics"
-          className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-700 hover:shadow-lg transition"
-        >
-          <TrendingUp size={32} className="text-green-700 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('operator.dashboard.analytics_title')}</h3>
-          <p className="text-gray-600">{t('operator.dashboard.analytics_desc')}</p>
-        </Link>
-
-        <Link
-          to="/operator/inquiries"
-          className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-700 hover:shadow-lg transition"
-        >
-          <MessageSquare size={32} className="text-green-700 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('operator.dashboard.inquiries_title')}</h3>
-          <p className="text-gray-600">{t('operator.dashboard.inquiries_desc')}</p>
-        </Link>
-        <Link
-          to="/operator/withdrawals"
-          className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-700 hover:shadow-lg transition"
-        >
-          <DollarSign size={32} className="text-green-700 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('operator.dashboard.withdrawals_title')}</h3>
-          <p className="text-gray-600">{t('operator.dashboard.withdrawals_desc')}</p>
-        </Link>
+            </thead>
+            <tbody>
+              {filteredBookings.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                    Aucune réservation récente
+                  </td>
+                </tr>
+              ) : (
+                filteredBookings.slice(0, 20).map((booking) => (
+                  <tr key={booking.id || booking._id} className="border-b border-gray-200">
+                    <td className="px-6 py-4">{booking.customerEmail || '—'}</td>
+                    <td className="px-6 py-4">
+                      {booking.date
+                        ? new Date(booking.date).toLocaleDateString(dateLocale)
+                        : '—'}
+                    </td>
+                    <td className="px-6 py-4">{getBookingStatusLabel(booking.status)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 text-end">
+          <Link
+            to="/operator/bookings"
+            className="text-sm font-semibold text-primary-700 hover:text-primary-800"
+          >
+            Voir toutes les réservations →
+          </Link>
+        </div>
       </div>
 
       <ScrollToTopButton />
