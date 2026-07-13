@@ -2,6 +2,7 @@ import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
 import Product from '../models/productModel.js'; // [BUG-01] Required by getOperatorAnalytics
 import { sanitizeBody } from '../utils/sanitizeBody.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
 // [TASK-6] Allowlists for future operator mutations (current handlers are read-only)
 export const OPERATOR_UPDATE_FIELDS = ['companyName', 'phone', 'whatsapp', 'description', 'logo'];
@@ -14,7 +15,7 @@ export const sanitizeOperatorUpdate = (body) => sanitizeBody(body, OPERATOR_UPDA
 // @desc    Get operator bookings
 // @route   GET /api/operator/bookings
 // @access  Private/Operator
-const getOperatorBookings = async (req, res) => {
+const getOperatorBookings = asyncHandler(async (req, res) => {
   const operator = await Operator.findOne({ user: req.user._id });
   if (!operator) {
     res.status(404);
@@ -32,12 +33,12 @@ const getOperatorBookings = async (req, res) => {
     });
 
   res.json(bookings);
-};
+});
 
 // @desc    Get operator analytics
 // @route   GET /api/operator/analytics
 // @access  Private/Operator
-const getOperatorAnalytics = async (req, res) => {
+const getOperatorAnalytics = asyncHandler(async (req, res) => {
   const operator = await Operator.findOne({ user: req.user._id });
   if (!operator) {
     res.status(404);
@@ -45,14 +46,14 @@ const getOperatorAnalytics = async (req, res) => {
   }
 
   const products = await Product.find({ operator: operator._id });
-  const activeProducts = products.filter(product => product.status === 'Published').length;
+  const activeProducts = products.filter((product) => product.status === 'Published').length;
 
   const bookings = await Booking.find({
     operator: operator._id,
-    status: { $ne: 'Cancelled' }
+    status: { $ne: 'Cancelled' },
   }).populate({
     path: 'schedule',
-    populate: { path: 'product', select: 'title' }
+    populate: { path: 'product', select: 'title' },
   });
 
   const totalRevenue = bookings.reduce(
@@ -73,7 +74,7 @@ const getOperatorAnalytics = async (req, res) => {
   }, {});
 
   const revenueData = Object.keys(revenueBuckets)
-    .map(key => {
+    .map((key) => {
       const [year, month] = key.split('-').map(Number);
       const dateObj = new Date(year, month);
       return {
@@ -91,7 +92,7 @@ const getOperatorAnalytics = async (req, res) => {
     return acc;
   }, {});
 
-  const productData = Object.keys(productStats).map(title => ({
+  const productData = Object.keys(productStats).map((title) => ({
     name: title,
     bookings: productStats[title],
   }));
@@ -105,12 +106,12 @@ const getOperatorAnalytics = async (req, res) => {
     revenueData,
     productData,
   });
-};
+});
 
 // @desc    Get operator dashboard stats
 // @route   GET /api/operator/dashboard-stats
 // @access  Private/Operator
-const getOperatorDashboardStats = async (req, res) => {
+const getOperatorDashboardStats = asyncHandler(async (req, res) => {
   const operator = await Operator.findOne({ user: req.user._id });
   if (!operator) {
     res.status(404);
@@ -119,7 +120,7 @@ const getOperatorDashboardStats = async (req, res) => {
 
   const bookings = await Booking.find({
     operator: operator._id,
-    status: 'Confirmed'
+    status: 'Confirmed',
   });
 
   const totalRevenue = bookings.reduce(
@@ -130,27 +131,27 @@ const getOperatorDashboardStats = async (req, res) => {
 
   const topExperiences = await Booking.aggregate([
     {
-      $match: { operator: operator._id }
+      $match: { operator: operator._id },
     },
     {
       $group: {
         _id: '$schedule.product.title',
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     },
     {
-      $sort: { count: -1 }
+      $sort: { count: -1 },
     },
     {
-      $limit: 5
-    }
+      $limit: 5,
+    },
   ]);
 
   res.json({
     totalRevenue,
     confirmedBookingsCount,
-    topExperiences
+    topExperiences,
   });
-};
+});
 
 export { getOperatorBookings, getOperatorAnalytics, getOperatorDashboardStats };

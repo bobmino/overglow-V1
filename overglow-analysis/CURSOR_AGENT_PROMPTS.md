@@ -5,7 +5,8 @@
 - [x] [4] Fix 3 Guaranteed Crashes (BUG-01,02,03) (P0, S2)
 - [x] [5] AI Service Credentials + Error Leak Fix (P0, S2)
 - [x] [6] Rate Limiting Migration + Mass Assignment Protection (P1, S2)
-- [ ] [7] Blog Route Order + Async Error Handling (P1, S2)
+- [x] [7] Blog Route Order + Async Error Handling (P1, S2)
+- [ ] [8] DB Indexes + Status Codes + Email Consolidation (P1, S2)
 
 ---
 

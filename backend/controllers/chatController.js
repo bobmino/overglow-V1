@@ -1,12 +1,13 @@
-import { Chat, Message } from '../models/chatModel.js';
+﻿import { Chat, Message } from '../models/chatModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { generateAIResponse } from '../services/aiService.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
 // @desc    Get or create chat for inquiry
 // @route   GET /api/chat/inquiry/:inquiryId
 // @access  Private
-const getOrCreateInquiryChat = async (req, res) => {
+const getOrCreateInquiryChatHandler = async (req, res) => {
   try {
     const { inquiryId } = req.params;
     const userId = req.user._id;
@@ -77,7 +78,7 @@ const getOrCreateInquiryChat = async (req, res) => {
 // @desc    Get user chats
 // @route   GET /api/chat
 // @access  Private
-const getUserChats = async (req, res) => {
+const getUserChatsHandler = async (req, res) => {
   try {
     const userId = req.user._id;
 
@@ -99,7 +100,7 @@ const getUserChats = async (req, res) => {
 // @desc    Get chat by ID
 // @route   GET /api/chat/:id
 // @access  Private
-const getChatById = async (req, res) => {
+const getChatByIdHandler = async (req, res) => {
   try {
     const chat = await Chat.findById(req.params.id)
       .populate('participants', 'name email role');
@@ -156,7 +157,7 @@ const getChatById = async (req, res) => {
 // @desc    Send message
 // @route   POST /api/chat/:id/messages
 // @access  Private
-const sendMessage = async (req, res) => {
+const sendMessageHandler = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -169,14 +170,13 @@ const sendMessage = async (req, res) => {
       return res.status(404).json({ message: 'Chat not found' });
     }
 
-    // Check if user is participant
     if (!chat.participants.some(p => p.toString() === req.user._id.toString())) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
     const { content, type = 'text', attachments = [] } = req.body;
 
-    // MODIFICATION 1 : Sauvegarder d'abord le message réel écrit par l'utilisateur
+    // MODIFICATION COMMENTÃ‰E : On enregistre d'abord le message de l'utilisateur pour ne pas perdre son historique
     const userMessage = await Message.create({
       chat: chat._id,
       sender: req.user._id,
@@ -185,42 +185,38 @@ const sendMessage = async (req, res) => {
       attachments,
     });
 
-    // Identifie l'autre participant (l'entité censée répondre via l'IA)
+    // Extraction du destinataire (l'opÃ©rateur ou le bot)
     const receiverId = chat.participants.find(p => p.toString() !== req.user._id.toString());
 
-    // Génération asynchrone de la réponse IA
+    // MODIFICATION COMMENTÃ‰E : Appel sÃ©curisÃ© au service d'IA externe (Tunnel localtunnel Ollama)
     let aiResponse;
     try {
       aiResponse = await generateAIResponse(content);
     } catch (error) {
       console.error('Error generating AI response:', error);
-      // Fallback non bloquant : On retourne au moins le message de l'utilisateur si l'IA échoue
+      // Fallback non bloquant : On enregistre au moins l'action utilisateur sur le chat
       chat.lastMessage = userMessage._id;
       chat.lastMessageAt = new Date();
       await chat.save();
       await userMessage.populate('sender', 'name email role');
-      return res.status(210).json({ 
-        userMessage, 
-        warning: 'AI response failed but user message was saved' 
-      });
+      return res.status(201).json(userMessage);
     }
 
-    // MODIFICATION 2 : Extraction sécurisée du texte (gère le format string pur ou l'objet OpenAI choices)
+    // MODIFICATION COMMENTÃ‰E : Parsing sÃ©curisÃ© pour accepter le format texte brut ou le format d'objet OpenAI/Ollama choices
     const aiTextContent = aiResponse?.choices?.[0]?.message?.content || (typeof aiResponse === 'string' ? aiResponse : 'No response content');
 
-    // MODIFICATION 3 : Création de la réponse de l'IA assignée au destinataire/bot
+    // MODIFICATION COMMENTÃ‰E : CrÃ©ation du message de rÃ©ponse IA, assignÃ© Ã  l'autre participant
     const aiMessage = await Message.create({
       chat: chat._id,
-      sender: receiverId || req.user._id, // Attribué au destinataire pour simuler sa réponse
+      sender: receiverId || req.user._id,
       content: aiTextContent,
       type: 'text',
     });
 
-    // Enregistrement du dernier message (celui de l'IA) sur le chat
+    // Mises Ã  jour structurelles du Chat finalisÃ©
     chat.lastMessage = aiMessage._id;
     chat.lastMessageAt = new Date();
 
-    // Mise à jour des compteurs de messages non lus
     chat.participants.forEach((participantId) => {
       if (participantId.toString() !== req.user._id.toString()) {
         const currentCount = chat.unreadCount.get(participantId.toString()) || 0;
@@ -232,7 +228,7 @@ const sendMessage = async (req, res) => {
     await userMessage.populate('sender', 'name email role');
     await aiMessage.populate('sender', 'name email role');
 
-    // On renvoie les deux messages créés pour mettre à jour l'UI correctement
+    // Retourne les deux entitÃ©s crÃ©Ã©es pour synchroniser l'UI du chat
     res.status(201).json({ userMessage, aiMessage });
   } catch (error) {
     console.error('Send message error:', error);
@@ -243,7 +239,7 @@ const sendMessage = async (req, res) => {
 // @desc    Mark chat as read
 // @route   PUT /api/chat/:id/read
 // @access  Private
-const markChatAsRead = async (req, res) => {
+const markChatAsReadHandler = async (req, res) => {
   try {
     const chat = await Chat.findById(req.params.id);
 
@@ -285,7 +281,7 @@ const markChatAsRead = async (req, res) => {
 // @desc    Get or create support chat for current user
 // @route   GET /api/chat/support
 // @access  Private
-const getOrCreateSupportChat = async (req, res) => {
+const getOrCreateSupportChatHandler = async (req, res) => {
   try {
     const userId = req.user._id;
 
@@ -336,11 +332,11 @@ const getOrCreateSupportChat = async (req, res) => {
   }
 };
 
-export {
-  getOrCreateInquiryChat,
-  getOrCreateSupportChat,
-  getUserChats,
-  getChatById,
-  sendMessage,
-  markChatAsRead,
-};
+export const getOrCreateInquiryChat = asyncHandler(getOrCreateInquiryChatHandler);
+export const getOrCreateSupportChat = asyncHandler(getOrCreateSupportChatHandler);
+export const getUserChats = asyncHandler(getUserChatsHandler);
+export const getChatById = asyncHandler(getChatByIdHandler);
+export const sendMessage = asyncHandler(sendMessageHandler);
+export const markChatAsRead = asyncHandler(markChatAsReadHandler);
+
+

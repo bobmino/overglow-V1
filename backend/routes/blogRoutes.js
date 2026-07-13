@@ -11,7 +11,7 @@ import {
   initializeBlogPosts,
 } from '../controllers/blogController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
-import { body } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -42,55 +42,74 @@ const fallbackPosts = (req, res) => {
 // Ultra-safe error wrapper - catches EVERYTHING and returns valid responses
 const ultraSafeHandler = (handler, fallback) => {
   return (req, res, next) => {
-    // Wrap in try-catch for sync errors
     try {
-      // Call handler and catch promise rejections
       const result = handler(req, res, next);
-      
-      // If it's a promise, catch errors
+
       if (result && typeof result.catch === 'function') {
         return result.catch((error) => {
           console.error('[BLOG] Handler promise error:', error?.message || error);
-          console.error('[BLOG] Error stack:', error?.stack);
-          // Use fallback - NEVER let error propagate
           try {
             return fallback(req, res);
           } catch (fallbackError) {
             console.error('[BLOG] Even fallback failed!', fallbackError);
-            // Last resort - send minimal valid response
             return res.status(200).json({});
           }
         });
       }
-      
-      // If handler already sent response, return
+
       if (res.headersSent) {
         return;
       }
-      
+
       return result;
     } catch (error) {
       console.error('[BLOG] Handler sync error:', error?.message || error);
-      console.error('[BLOG] Error stack:', error?.stack);
-      // Use fallback - NEVER let error propagate
       try {
         return fallback(req, res);
       } catch (fallbackError) {
         console.error('[BLOG] Even fallback failed!', fallbackError);
-        // Last resort - send minimal valid response
         return res.status(200).json({});
       }
     }
   };
 };
 
-// Public routes - ALWAYS return valid responses, NEVER 500 errors
+const handleValidation = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+  return next();
+};
+
+// [TASK-7] Slug: lowercase alphanumerics + hyphens only (blocks reserved "admin")
+const slugValidation = [
+  param('slug')
+    .matches(/^[a-z0-9-]+$/)
+    .withMessage('Slug invalide')
+    .custom((value) => {
+      if (value === 'admin') {
+        throw new Error('Slug réservé');
+      }
+      return true;
+    }),
+  handleValidation,
+];
+
+// Public static routes
 router.get('/categories', ultraSafeHandler(getBlogCategories, fallbackCategories));
 router.get('/tags', ultraSafeHandler(getBlogTags, fallbackTags));
 router.get('/', ultraSafeHandler(getBlogPosts, fallbackPosts));
-router.get('/:slug', ultraSafeHandler(getBlogPostBySlug, (req, res) => res.status(404).json({ message: 'Article non trouvé' })));
 
-// Admin routes
+// [TASK-7] Admin routes MUST be registered BEFORE /:slug
+router.get('/admin/all', protect, authorize('Admin'), ultraSafeHandler(getAllBlogPosts, fallbackPosts));
+router.post(
+  '/admin/initialize',
+  protect,
+  authorize('Admin'),
+  ultraSafeHandler(initializeBlogPosts, (req, res) => res.status(500).json({ message: 'Service non disponible' }))
+);
+
 router.post(
   '/',
   protect,
@@ -124,8 +143,18 @@ router.put(
   ultraSafeHandler(updateBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' }))
 );
 
-router.delete('/:id', protect, authorize('Admin'), ultraSafeHandler(deleteBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' })));
-router.get('/admin/all', protect, authorize('Admin'), ultraSafeHandler(getAllBlogPosts, fallbackPosts));
-router.post('/admin/initialize', protect, authorize('Admin'), ultraSafeHandler(initializeBlogPosts, (req, res) => res.status(500).json({ message: 'Service non disponible' })));
+router.delete(
+  '/:id',
+  protect,
+  authorize('Admin'),
+  ultraSafeHandler(deleteBlogPost, (req, res) => res.status(500).json({ message: 'Service non disponible' }))
+);
+
+// Public slug route LAST (after /admin/*)
+router.get(
+  '/:slug',
+  slugValidation,
+  ultraSafeHandler(getBlogPostBySlug, (req, res) => res.status(404).json({ message: 'Article non trouvé' }))
+);
 
 export default router;

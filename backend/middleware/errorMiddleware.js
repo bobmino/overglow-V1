@@ -71,12 +71,16 @@ const errorHandler = (err, req, res, next) => {
   if (statusCode >= 500) {
     res.json({
       success: false,
+      error: 'Internal Server Error',
       message: 'Service momentanément indisponible',
+      statusCode,
     });
   } else {
     res.json({
       success: false,
+      error: err.message || 'Request failed',
       message: err.message || 'Service momentanément indisponible',
+      statusCode,
     });
   }
 };
