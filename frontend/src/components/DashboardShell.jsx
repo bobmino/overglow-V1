@@ -131,7 +131,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
           const { data } = await api.get('/api/admin/bookings', {
             params: { status: 'PENDING_PAYMENT,Pending', limit: 1, page: 1 },
           });
-          setBookingsBadge(data.pagination?.total ?? data.total ?? 0);
+          setBookingsBadge(data.total ?? data.pagination?.total ?? 0);
         } else {
           const { data } = await api.get('/api/operator/bookings');
           const list = Array.isArray(data) ? data : data.bookings || [];
