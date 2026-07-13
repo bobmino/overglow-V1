@@ -8,6 +8,46 @@ import { setCORSHeaders } from '../backend/config/cors.js';
 let app = null;
 let appPromise = null;
 
+const isProduction = () =>
+  process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+
+/**
+ * [TASK-5] Réponse d'erreur sûre — jamais de stack / chemins / détails internes en prod.
+ */
+const sendSafeError = (req, res, statusCode, publicMessage, error) => {
+  const timestamp = new Date().toISOString();
+
+  console.error('[api/index] error', {
+    timestamp,
+    method: req?.method,
+    url: req?.url,
+    message: error?.message,
+    name: error?.name,
+    code: error?.code,
+    stack: error?.stack,
+  });
+
+  if (isProduction()) {
+    return res.status(statusCode).json({
+      success: false,
+      error: publicMessage,
+      statusCode,
+    });
+  }
+
+  return res.status(statusCode).json({
+    success: false,
+    error: publicMessage,
+    statusCode,
+    debug: {
+      message: error?.message,
+      name: error?.name,
+      code: error?.code,
+      stack: error?.stack,
+    },
+  });
+};
+
 // Lazy load the app to avoid blocking module initialization
 const loadApp = async () => {
   if (app) return app;
@@ -25,7 +65,6 @@ const loadApp = async () => {
         name: error.name,
         code: error.code,
         cause: error.cause,
-        fullError: error,
       });
       throw error;
     }
@@ -50,23 +89,14 @@ export default async (req, res) => {
       throw new Error('Express app not loaded');
     }
   } catch (loadError) {
-    console.error('Failed to load Express app:', {
-      message: loadError.message,
-      stack: loadError.stack,
-      name: loadError.name,
-      code: loadError.code,
-      cause: loadError.cause,
-    });
-
-    // Set CORS only on error fallback (Express won't handle this)
     setCORSHeaders(req, res);
-    return res.status(500).json({
-      message: 'Server initialization error',
-      error: loadError.message,
-      errorType: loadError.name,
-      errorCode: loadError.code,
-      stack: loadError.stack,
-    });
+    return sendSafeError(
+      req,
+      res,
+      500,
+      'Internal Server Error',
+      loadError
+    );
   }
 
   // Let Express handle the request — Express cors() middleware sets CORS headers.
@@ -74,18 +104,15 @@ export default async (req, res) => {
   try {
     expressApp(req, res);
   } catch (appError) {
-    console.error('Express app error:', {
-      message: appError.message,
-      stack: appError.stack,
-      name: appError.name,
-    });
-
     if (!res.headersSent) {
       setCORSHeaders(req, res);
-      return res.status(500).json({
-        message: 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? appError.message : undefined,
-      });
+      return sendSafeError(
+        req,
+        res,
+        500,
+        'Internal Server Error',
+        appError
+      );
     }
   }
 };

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { corsOptions } from './backend/config/cors.js';
 import { validatePaymentEnvAtStartup } from './backend/config/paymentEnv.js';
+import { validateAiEnvAtStartup } from './backend/services/aiService.js';
 import { initSentry } from './backend/utils/sentry.js';
 import { apiLimiter } from './backend/middleware/rateLimiter.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
@@ -55,6 +56,8 @@ initSentry();
 
 // [TASK-3] Valide CMI_STORE_KEY + BANK_IBAN/BANK_SWIFT au démarrage (fail en prod)
 validatePaymentEnvAtStartup();
+// [TASK-5] AI credentials via env (warning si absents — ne hardcode plus localtunnel)
+validateAiEnvAtStartup();
 
 const app = express();
 
