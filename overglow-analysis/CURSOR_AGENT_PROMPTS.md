@@ -21,6 +21,7 @@
 - [x] [20] Payment Simulator Guard + Vercel Config Cleanup (P2, S4)
 - [x] [21] Final Audit: Security + Quality + Performance (P2, S4)
 - [x] [22] AI Chat Message Flagging + Legal Compliance (P0, S2)
+- [x] [23] Settings Allowlist + Health Endpoint + DB Diagnostics (P1, S2)
 
 ---
 

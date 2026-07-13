@@ -60,6 +60,7 @@ const createUpstashLimiter = ({ prefix, requests, window }) => {
 const upstashAuth = createUpstashLimiter({ prefix: 'auth', requests: 5, window: '1 m' });
 const upstashApi = createUpstashLimiter({ prefix: 'api', requests: 60, window: '1 m' });
 const upstashUpload = createUpstashLimiter({ prefix: 'upload', requests: 10, window: '1 m' });
+const upstashFaqAdmin = createUpstashLimiter({ prefix: 'faq-admin', requests: 20, window: '1 m' });
 
 const createUpstashMiddleware = (limiter, fallback, label) => {
   if (!limiter) return fallback;
@@ -122,6 +123,14 @@ const memoryUploadLimiter = rateLimit({
   handler: (req, res) => sendRateLimitResponse(req, res, 60),
 });
 
+const memoryFaqAdminLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => sendRateLimitResponse(req, res, 60),
+});
+
 /** Auth endpoints: 5 req/min */
 export const authLimiter = createUpstashMiddleware(upstashAuth, memoryAuthLimiter, 'auth');
 
@@ -146,4 +155,11 @@ export const strictLimiter = createUpstashMiddleware(
   upstashUpload,
   memoryUploadLimiter,
   'upload'
+);
+
+/** [TASK-23] FAQ admin CRUD: 20 req/min */
+export const faqAdminLimiter = createUpstashMiddleware(
+  upstashFaqAdmin,
+  memoryFaqAdminLimiter,
+  'faq-admin'
 );

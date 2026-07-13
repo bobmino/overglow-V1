@@ -3,6 +3,7 @@ import { check } from 'express-validator';
 import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup, upgradeToOperator } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { userSelfUpdateAllowlist } from '../middleware/userUpdateAllowlist.js';
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.post(
 );
 
 router.get('/me', protect, getMe);
-router.put('/profile', protect, updateProfile);
+router.put('/profile', protect, userSelfUpdateAllowlist, updateProfile);
 router.post('/refresh', refreshTokenHandler);
 router.post('/logout', protect, logout);
 router.post('/upgrade-to-operator', protect, upgradeToOperator);

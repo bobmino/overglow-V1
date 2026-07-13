@@ -10,6 +10,7 @@ import {
   submitFAQFeedback,
 } from '../controllers/faqController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { faqAdminLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -54,10 +55,10 @@ router.get('/categories', getFAQCategories);
 router.get('/:id', getFAQById);
 router.post('/:id/feedback', submitFAQFeedback);
 
-// Admin routes
-router.post('/', protect, authorize('Admin'), faqValidation, createFAQ);
-router.put('/:id', protect, authorize('Admin'), faqValidation, updateFAQ);
-router.delete('/:id', protect, authorize('Admin'), deleteFAQ);
+// Admin routes — [TASK-23] auth + Admin + dedicated rate limit
+router.post('/', faqAdminLimiter, protect, authorize('Admin'), faqValidation, createFAQ);
+router.put('/:id', faqAdminLimiter, protect, authorize('Admin'), faqValidation, updateFAQ);
+router.delete('/:id', faqAdminLimiter, protect, authorize('Admin'), deleteFAQ);
 
 export default router;
 

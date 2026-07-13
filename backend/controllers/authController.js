@@ -535,7 +535,7 @@ const updateProfile = async (req, res) => {
   setCORSHeaders(req, res);
   
   try {
-    const { name, email, phone, bio, location, dateOfBirth, website, socialLinks } = req.body;
+    const { name, email, phone, bio, location, dateOfBirth, website, socialLinks, password } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -552,7 +552,7 @@ const updateProfile = async (req, res) => {
       user.email = email;
     }
 
-    // Update fields (sanitize UGC)
+    // Update fields (sanitize UGC) — body already allowlisted by middleware
     if (name !== undefined) user.name = sanitizeName(name);
     if (phone !== undefined) user.phone = phone;
     if (bio !== undefined) user.bio = sanitizeText(bio || '');
@@ -564,6 +564,9 @@ const updateProfile = async (req, res) => {
         ...user.socialLinks,
         ...socialLinks,
       };
+    }
+    if (password !== undefined && String(password).length >= 6) {
+      user.password = password;
     }
 
     await user.save();

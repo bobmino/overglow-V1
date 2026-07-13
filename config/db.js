@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 import { createIndexes } from "../backend/utils/dbIndexes.js";
 import { logger } from '../backend/utils/logger.js';
+import { runDbDiagnostics } from '../backend/utils/dbDiagnostics.js';
 
 const connectDB = async () => {
   try {
     // Check if already connected
     if (mongoose.connection.readyState === 1) {
       logger.info('MongoDB already connected');
-      // Create indexes if not already done
       await createIndexes();
+      await runDbDiagnostics();
       return;
     }
 
@@ -28,26 +29,11 @@ const connectDB = async () => {
       socketTimeoutMS: 45000,
     });
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
-    
-    try {
-      // Safety check: ensure mongoose.connection.db exists before accessing it
-      if (mongoose.connection.db) {
-        const count = await mongoose.connection.db.collection('products').countDocuments();
-        const sample = await mongoose.connection.db.collection('products').findOne({});
-        logger.info('--- DIAGNOSTIC DATA ---');
-        logger.info('Nombre total de docs dans "products":', count);
-        logger.info('Exemple de doc:', JSON.stringify(sample, null, 2));
-        logger.info('Nom de la base connectée:', mongoose.connection.name);
-        logger.info('-----------------------');
-      } else {
-        logger.info('⚠️ mongoose.connection.db not available yet, skipping diagnostic');
-      }
-    } catch(err) {
-      logger.error('Diagnostic error:', err);
-    }
-    
+
     // Create indexes after connection
     await createIndexes();
+    // [TASK-23] Structured diagnostics (ping, collections, indexes, stats, read)
+    await runDbDiagnostics();
   } catch (error) {
     logger.error(`MongoDB connection error: ${error.message}`);
     // Don't exit on Vercel, allow serverless function to start
