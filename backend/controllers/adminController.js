@@ -49,42 +49,306 @@ const saveOperatorSafely = async (operator) => {
   }
 };
 
-// @desc    Get admin dashboard stats
-// @route   GET /api/admin/stats
+// @desc    Get admin dashboard stats (period-aware command center)
+// @route   GET /api/admin/stats?period=30d
 // @access  Private/Admin
+const resolvePeriodRange = (period = '30d', dateFrom, dateTo) => {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  let start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  switch (period) {
+    case 'today':
+      break;
+    case '7d':
+      start.setDate(start.getDate() - 6);
+      break;
+    case '90d':
+      start.setDate(start.getDate() - 89);
+      break;
+    case 'thisMonth':
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    case 'lastMonth': {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return { start, end: lastEnd };
+    }
+    case 'custom':
+      if (dateFrom) start = new Date(dateFrom);
+      if (dateTo) {
+        const e = new Date(dateTo);
+        e.setHours(23, 59, 59, 999);
+        return { start, end: e };
+      }
+      break;
+    case '30d':
+    default:
+      start.setDate(start.getDate() - 29);
+      break;
+  }
+
+  return { start, end };
+};
+
+const previousRangeFrom = (start, end) => {
+  const durationMs = end.getTime() - start.getTime();
+  const prevEnd = new Date(start.getTime() - 1);
+  const prevStart = new Date(prevEnd.getTime() - durationMs);
+  return { start: prevStart, end: prevEnd };
+};
+
+const sumBookingMetrics = async (rangeStart, rangeEnd) => {
+  const match = {
+    createdAt: { $gte: rangeStart, $lte: rangeEnd },
+    status: { $ne: 'Cancelled' },
+  };
+  const [bookings, revenueAgg, users] = await Promise.all([
+    Booking.countDocuments(match),
+    Booking.aggregate([
+      { $match: match },
+      { $group: { _id: null, total: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } } } },
+    ]),
+    User.countDocuments({ createdAt: { $gte: rangeStart, $lte: rangeEnd } }),
+  ]);
+  return {
+    bookings,
+    revenue: revenueAgg[0]?.total || 0,
+    users,
+  };
+};
+
 const getAdminStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalOperators = await Operator.countDocuments();
-    const totalProducts = await Product.countDocuments();
-    const totalBookings = await Booking.countDocuments();
-    
-    const pendingProducts = await Product.countDocuments({ status: 'Pending Review' });
-    const publishedProducts = await Product.countDocuments({ status: 'Published' });
-    
-    const totalRevenue = await Booking.aggregate([
-      { $match: { status: { $ne: 'Cancelled' } } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-    ]);
-    
-    const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
-    
-    const operatorsByStatus = await Operator.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
-    ]);
-    
-    res.json({
+    const period = req.query.period || '30d';
+    const { start, end } = resolvePeriodRange(period, req.query.dateFrom, req.query.dateTo);
+    const prev = previousRangeFrom(start, end);
+
+    const [
+      current,
+      previous,
       totalUsers,
       totalOperators,
       totalProducts,
       totalBookings,
       pendingProducts,
       publishedProducts,
-      totalRevenue: revenue,
-      operatorsByStatus: operatorsByStatus.reduce((acc, item) => {
-        acc[item._id] = item.count;
-        return acc;
-      }, {}),
+      lifetimeRevenueAgg,
+      pendingOperators,
+      pendingPayments,
+      pendingApprovals,
+      unreadNotifications,
+      topProductsRaw,
+      recentBookings,
+      recentUsers,
+      recentOperators,
+      recentWithdrawals,
+      revenueSeriesCurrent,
+      revenueSeriesPrevious,
+    ] = await Promise.all([
+      sumBookingMetrics(start, end),
+      sumBookingMetrics(prev.start, prev.end),
+      User.countDocuments(),
+      Operator.countDocuments(),
+      Product.countDocuments(),
+      Booking.countDocuments(),
+      Product.countDocuments({ status: 'Pending Review' }),
+      Product.countDocuments({ status: 'Published' }),
+      Booking.aggregate([
+        { $match: { status: { $ne: 'Cancelled' } } },
+        { $group: { _id: null, total: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } } } },
+      ]),
+      Operator.countDocuments({ status: { $in: ['Pending', 'Under Review'] } }),
+      Booking.countDocuments({ status: 'PENDING_PAYMENT' }),
+      (async () => {
+        try {
+          const ApprovalRequest = (await import('../models/approvalRequestModel.js')).default;
+          return ApprovalRequest.countDocuments({ status: 'pending' });
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const Notification = (await import('../models/notificationModel.js')).default;
+          return Notification.countDocuments({ isRead: false });
+        } catch {
+          return 0;
+        }
+      })(),
+      Booking.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            status: { $ne: 'Cancelled' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'schedules',
+            localField: 'schedule',
+            foreignField: '_id',
+            as: 'scheduleData',
+          },
+        },
+        { $unwind: { path: '$scheduleData', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'scheduleData.product',
+            foreignField: '_id',
+            as: 'productData',
+          },
+        },
+        { $unwind: { path: '$productData', preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: '$productData._id',
+            name: { $first: { $ifNull: ['$productData.title', 'Produit inconnu'] } },
+            bookings: { $sum: 1 },
+            revenue: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+          },
+        },
+        { $sort: { revenue: -1 } },
+        { $limit: 5 },
+      ]),
+      Booking.find({}).sort({ createdAt: -1 }).limit(10).populate('user', 'name').lean(),
+      User.find({}).sort({ createdAt: -1 }).limit(10).select('name email createdAt').lean(),
+      Operator.find({}).sort({ createdAt: -1 }).limit(10).select('companyName publicName createdAt status').lean(),
+      (async () => {
+        try {
+          const Withdrawal = (await import('../models/withdrawalModel.js')).default;
+          return Withdrawal.find({})
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('amount status type createdAt')
+            .lean();
+        } catch {
+          return [];
+        }
+      })(),
+      Booking.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            status: { $ne: 'Cancelled' },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            revenue: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+            bookings: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Booking.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: prev.start, $lte: prev.end },
+            status: { $ne: 'Cancelled' },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            revenue: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+            bookings: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+    ]);
+
+    const conversion = (m) => (m.users > 0 ? Math.round((m.bookings / m.users) * 1000) / 10 : 0);
+
+    const recentActivity = [
+      ...recentBookings.map((b) => ({
+        type: 'booking',
+        description: `Nouvelle réservation${b.user?.name ? ` — ${b.user.name}` : ''}`,
+        timestamp: b.createdAt,
+        link: '/admin/bookings',
+      })),
+      ...recentUsers.map((u) => ({
+        type: 'user',
+        description: `Nouvel utilisateur — ${u.name || u.email}`,
+        timestamp: u.createdAt,
+        link: '/admin/users',
+      })),
+      ...recentOperators.map((o) => ({
+        type: 'operator',
+        description: `Inscription opérateur — ${o.companyName || o.publicName || 'Sans nom'}`,
+        timestamp: o.createdAt,
+        link: '/admin/operators',
+      })),
+      ...recentWithdrawals.map((w) => ({
+        type: 'withdrawal',
+        description: `Demande de retrait — ${Number(w.amount || 0).toFixed(2)} (${w.status})`,
+        timestamp: w.createdAt,
+        link: '/admin/withdrawals',
+      })),
+    ]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10);
+
+    const topProducts = topProductsRaw.map((p) => ({
+      id: p._id,
+      name: p.name,
+      bookings: p.bookings,
+      revenue: p.revenue,
+    }));
+
+    // Align series for chart: label by index day offset
+    const buildAlignedSeries = (currSeries, prevSeries) => {
+      const maxLen = Math.max(currSeries.length, prevSeries.length, 1);
+      const rows = [];
+      for (let i = 0; i < maxLen; i += 1) {
+        rows.push({
+          label: currSeries[i]?._id || prevSeries[i]?._id || `J${i + 1}`,
+          current: currSeries[i]?.revenue || 0,
+          previous: prevSeries[i]?.revenue || 0,
+        });
+      }
+      return rows;
+    };
+
+    res.json({
+      // Backward-compatible lifetime fields
+      totalUsers,
+      totalOperators,
+      totalProducts,
+      totalBookings,
+      pendingProducts,
+      publishedProducts,
+      totalRevenue: lifetimeRevenueAgg[0]?.total || 0,
+      // [PROMPT-4] Period command center
+      period,
+      range: { from: start, to: end },
+      current: {
+        revenue: current.revenue,
+        bookings: current.bookings,
+        users: current.users,
+        conversion: conversion(current),
+      },
+      previous: {
+        revenue: previous.revenue,
+        bookings: previous.bookings,
+        users: previous.users,
+        conversion: conversion(previous),
+      },
+      pendingActions: {
+        operators: pendingOperators,
+        products: pendingProducts,
+        payments: pendingPayments,
+        approvals: pendingApprovals,
+        unreadNotifications,
+      },
+      topProducts,
+      recentActivity,
+      revenueChart: buildAlignedSeries(revenueSeriesCurrent, revenueSeriesPrevious),
     });
   } catch (error) {
     logger.error('Get admin stats error:', error);
