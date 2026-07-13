@@ -66,7 +66,11 @@ const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 const FAQPage = lazy(() => import('./pages/FAQPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 import PlaceholderPage from './components/PlaceholderPage';
+import DashboardShell from './components/DashboardShell';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
+const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
+const AdminBookingsPlaceholderPage = lazy(() => import('./pages/AdminBookingsPlaceholderPage'));
+const AdminFinancePage = lazy(() => import('./pages/AdminFinancePage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -187,159 +191,159 @@ function App() {
               </Suspense>
             </PrivateRoute>
           } />
-          <Route path="operator/dashboard" element={
-            <OperatorRoute>
+          {/* Public operator footer pages — declared before the /operator shell */}
+          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
+          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
+          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
+
+          {/* [PROMPT-1] Operator area with persistent sidebar */}
+          <Route
+            path="operator"
+            element={
+              <OperatorRoute>
+                <DashboardShell variant="operator" />
+              </OperatorRoute>
+            }
+          >
+            <Route path="dashboard" element={
               <Suspense fallback={<LoadingFallback />}>
                 <OperatorDashboardPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/products" element={
-            <OperatorRoute>
+            } />
+            <Route path="products" element={
               <Suspense fallback={<LoadingFallback />}>
                 <OperatorProductsPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/products/new" element={
-            <OperatorRoute>
+            } />
+            <Route path="products/new" element={
               <Suspense fallback={<LoadingFallback />}>
                 <OperatorProductFormPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/products/:id/edit" element={
-            <OperatorRoute>
+            } />
+            <Route path="products/:id/edit" element={
               <Suspense fallback={<LoadingFallback />}>
                 <OperatorProductFormPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/bookings" element={
-            <OperatorRoute>
+            } />
+            <Route path="bookings" element={
               <Suspense fallback={<LoadingFallback />}>
                 <OperatorBookingsPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/analytics" element={
-            <OperatorRoute>
+            } />
+            <Route path="analytics" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AnalyticsPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="operator/inquiries" element={
-            <OperatorRoute>
+            } />
+            <Route path="inquiries" element={
               <Suspense fallback={<LoadingFallback />}>
                 <InquiriesPage />
               </Suspense>
-            </OperatorRoute>
-          } />
-          <Route path="admin/dashboard" element={
-            <AdminRoute>
+            } />
+            <Route path="withdrawals" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <WithdrawalsPage />
+              </Suspense>
+            } />
+          </Route>
+
+          {/* [PROMPT-1] Admin area with persistent sidebar */}
+          <Route
+            path="admin"
+            element={
+              <AdminRoute>
+                <DashboardShell variant="admin" />
+              </AdminRoute>
+            }
+          >
+            <Route path="dashboard" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminDashboardPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/operators" element={
-            <AdminRoute>
+            } />
+            <Route path="analytics" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminAnalyticsPage />
+              </Suspense>
+            } />
+            <Route path="operators" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminOperatorsPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/products" element={
-            <AdminRoute>
+            } />
+            <Route path="products" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminProductsPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/users" element={
-            <AdminRoute>
+            } />
+            <Route path="users" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminUsersPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/settings" element={
-            <AdminRoute>
+            } />
+            <Route path="bookings" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBookingsPlaceholderPage />
+              </Suspense>
+            } />
+            <Route path="settings" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminSettingsPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/badges" element={
-            <AdminRoute>
+            } />
+            <Route path="badges" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBadgeManagementPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/blog" element={
-            <AdminRoute>
+            } />
+            <Route path="blog" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/blog/new" element={
-            <AdminRoute>
+            } />
+            <Route path="blog/new" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogFormPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/blog/:id/edit" element={
-            <AdminRoute>
+            } />
+            <Route path="blog/:id/edit" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminBlogFormPage />
               </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/pending-payments" element={
-            <AdminRoute>
+            } />
+            <Route path="pending-payments" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminPendingPaymentsPage />
               </Suspense>
-            </AdminRoute>
-          } />
+            } />
+            <Route path="withdrawals" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminWithdrawalsPage />
+              </Suspense>
+            } />
+            <Route path="finance" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminFinancePage />
+              </Suspense>
+            } />
+            <Route path="approval-requests" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ApprovalRequestsPage />
+              </Suspense>
+            } />
+            <Route path="badge-requests" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBadgeRequestsPage />
+              </Suspense>
+            } />
+          </Route>
+
           <Route path="notifications" element={
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <NotificationsPage />
               </Suspense>
             </PrivateRoute>
-          } />
-          <Route path="operator/withdrawals" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <WithdrawalsPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="admin/withdrawals" element={
-            <AdminRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminWithdrawalsPage />
-              </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/approval-requests" element={
-            <AdminRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <ApprovalRequestsPage />
-              </Suspense>
-            </AdminRoute>
-          } />
-          <Route path="admin/badge-requests" element={
-            <AdminRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBadgeRequestsPage />
-              </Suspense>
-            </AdminRoute>
           } />
 
           {/* [TASK-10] Pages publiques dans le Layout (header + footer) */}
@@ -396,9 +400,6 @@ function App() {
           <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
           <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
           <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
-          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
-          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
-          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
           <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
           <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
           <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
