@@ -65,7 +65,15 @@ const TermsPage = lazy(() => import('./pages/TermsPage'));
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 const FAQPage = lazy(() => import('./pages/FAQPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-import PlaceholderPage from './components/PlaceholderPage';
+const SafetyPage = lazy(() => import('./pages/SafetyPage'));
+const CareersPage = lazy(() => import('./pages/CareersPage'));
+const PressPage = lazy(() => import('./pages/PressPage'));
+const CookiesPage = lazy(() => import('./pages/CookiesPage'));
+const AccessibilityPage = lazy(() => import('./pages/AccessibilityPage'));
+const CookieConsentPage = lazy(() => import('./pages/CookieConsentPage'));
+const OperatorHelpPage = lazy(() => import('./pages/OperatorHelpPage'));
+const OperatorResourcesPage = lazy(() => import('./pages/OperatorResourcesPage'));
+const OperatorCommunityPage = lazy(() => import('./pages/OperatorCommunityPage'));
 import DashboardShell from './components/DashboardShell';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
@@ -194,9 +202,21 @@ function App() {
             </PrivateRoute>
           } />
           {/* Public operator footer pages — declared before the /operator shell */}
-          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
-          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
-          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
+          <Route path="operator/help" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorHelpPage />
+            </Suspense>
+          } />
+          <Route path="operator/resources" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorResourcesPage />
+            </Suspense>
+          } />
+          <Route path="operator/community" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorCommunityPage />
+            </Suspense>
+          } />
 
           {/* [PROMPT-1] Operator area with persistent sidebar */}
           <Route
@@ -409,12 +429,36 @@ function App() {
               <PartnerSignupPage />
             </Suspense>
           } />
-          <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
-          <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
-          <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
-          <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
-          <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
-          <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
+          <Route path="safety" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SafetyPage />
+            </Suspense>
+          } />
+          <Route path="careers" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CareersPage />
+            </Suspense>
+          } />
+          <Route path="press" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PressPage />
+            </Suspense>
+          } />
+          <Route path="cookies" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CookiesPage />
+            </Suspense>
+          } />
+          <Route path="accessibility" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AccessibilityPage />
+            </Suspense>
+          } />
+          <Route path="cookie-consent" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CookieConsentPage />
+            </Suspense>
+          } />
 
           {/* [TASK-10] 404 catch-all (dans le Layout) */}
           <Route path="*" element={

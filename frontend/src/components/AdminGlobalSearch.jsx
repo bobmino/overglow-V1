@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Building2,
   Loader2,
-  Command,
 } from 'lucide-react';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
@@ -19,8 +18,13 @@ const TYPE_META = {
   operator: { label: 'Opérateurs', Icon: Building2, emoji: '🏢' },
 };
 
+const isApplePlatform = () => {
+  if (typeof navigator === 'undefined') return false;
+  return /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '');
+};
+
 /**
- * [PROMPT-12] Admin global search (debounce + Cmd/Ctrl+K).
+ * [PROMPT-12] Admin global search — Ctrl+K (Windows), ⌘K (Mac), / mobile.
  */
 const AdminGlobalSearch = ({ compact = false }) => {
   const navigate = useNavigate();
@@ -31,6 +35,22 @@ const AdminGlobalSearch = ({ compact = false }) => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isApple, setIsApple] = useState(false);
+
+  useEffect(() => {
+    setIsApple(isApplePlatform());
+  }, []);
+
+  const shortcutLabel = useMemo(() => (isApple ? '⌘K' : 'Ctrl+K'), [isApple]);
+
+  const focusSearch = useCallback(() => {
+    setOpen(true);
+    // rAF: ensure input is visible (mobile compact bar) before focus
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select?.();
+    });
+  }, []);
 
   const runSearch = useCallback(async (term) => {
     if (!term || term.trim().length < 2) {
@@ -53,27 +73,41 @@ const AdminGlobalSearch = ({ compact = false }) => {
     }
   }, []);
 
-  // Debounce 300ms
   useEffect(() => {
     if (!open && !query) return undefined;
     const t = setTimeout(() => runSearch(query), 300);
     return () => clearTimeout(t);
   }, [query, open, runSearch]);
 
-  // Cmd/Ctrl+K
+  // Ctrl+K (Windows/Linux), Meta+K (Mac), and "/" when not typing in a field
   useEffect(() => {
     const onKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      const key = (e.key || '').toLowerCase();
+      const isModK = (e.ctrlKey || e.metaKey) && (key === 'k' || e.code === 'KeyK');
+      if (isModK) {
         e.preventDefault();
-        setOpen(true);
-        inputRef.current?.focus();
+        e.stopPropagation();
+        focusSearch();
+        return;
+      }
+
+      // Mobile / desktop: "/" opens search (skip when already in an editable field)
+      const tag = (e.target?.tagName || '').toLowerCase();
+      const editable =
+        tag === 'input' ||
+        tag === 'textarea' ||
+        tag === 'select' ||
+        e.target?.isContentEditable;
+      if (!editable && key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        focusSearch();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+    // capture: beat browser Ctrl+K (Chrome address bar) when possible
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [focusSearch]);
 
-  // Click outside
   useEffect(() => {
     if (!open) return undefined;
     const onDoc = (e) => {
@@ -127,30 +161,42 @@ const AdminGlobalSearch = ({ compact = false }) => {
 
   return (
     <div className={`relative ${compact ? 'w-full' : 'w-full max-w-md'}`} ref={rootRef}>
-      <div className="relative">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-        />
-        <input
-          ref={inputRef}
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={onKeyDown}
-          placeholder="Rechercher… (Ctrl+K)"
-          className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-          aria-label="Recherche globale admin"
-          aria-expanded={open}
-          autoComplete="off"
-        />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-200 rounded bg-white">
-          <Command size={10} />K
-        </span>
+      <div className="relative flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          />
+          <input
+            ref={inputRef}
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={onKeyDown}
+            placeholder={compact ? 'Rechercher…' : `Rechercher… (${shortcutLabel} ou /)`}
+            className="w-full pl-9 pr-14 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            aria-label="Recherche globale admin"
+            aria-expanded={open}
+            autoComplete="off"
+            enterKeyHint="search"
+          />
+          <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-200 rounded bg-white pointer-events-none">
+            {shortcutLabel}
+          </kbd>
+        </div>
+        {/* Mobile: explicit button to open/focus search */}
+        <button
+          type="button"
+          onClick={focusSearch}
+          className="sm:hidden shrink-0 p-2 rounded-lg bg-slate-100 text-slate-700 border border-slate-200"
+          aria-label="Ouvrir la recherche"
+        >
+          <Search size={18} />
+        </button>
       </div>
 
       {open && (query.trim().length >= 2 || loading) && (

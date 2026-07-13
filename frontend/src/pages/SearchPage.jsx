@@ -213,9 +213,9 @@ const SearchPage = () => {
         <title>{t('catalog.title')} | Overglow</title>
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <aside className="hidden lg:block w-72 flex-shrink-0">
+      <div className="container mx-auto px-4 pt-24 pb-8">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto">
             <FilterSidebar
               searchQuery={filtersFromUrl.q}
               setSearchQuery={setSearchQuery}
