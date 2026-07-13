@@ -12,7 +12,8 @@
     "mass-import": "node --max-old-space-size=1024 -r dotenv/config scripts/massImporter.js",
     "publish-all": "node --max-old-space-size=1024 -r dotenv/config scripts/publishAll.js",
     "seed-product-i18n": "node --max-old-space-size=1024 -r dotenv/config scripts/seedProductI18n.js",
-    "seed-category-i18n": "node --max-old-space-size=1024 -r dotenv/config scripts/seedCategoryGroupI18n.js"
+    "seed-category-i18n": "node --max-old-space-size=1024 -r dotenv/config scripts/seedCategoryGroupI18n.js",
+    "test:payment-amount": "node --max-old-space-size=1024 scripts/test-payment-amount.js"
   },
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",

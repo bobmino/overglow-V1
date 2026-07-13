@@ -3,6 +3,11 @@ import paypal from '@paypal/checkout-server-sdk';
 import crypto from 'crypto';
 import Booking from '../models/bookingModel.js';
 import { validateAndConfirmBookingPayment } from '../services/bookingPaymentService.js';
+import {
+  verifyPaypalWebhookSignature,
+  extractPaypalWebhookAmount,
+} from '../services/paypalWebhookService.js';
+import { validatePaymentAmount } from '../utils/paymentAmount.js';
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 
@@ -49,6 +54,46 @@ const getPaypalClient = () => {
 };
 
 /**
+ * Charge le booking et valide le montant client vs totalAmount (tolérance 0.01).
+ * [TASK-2] Empêche le underpayment via montant manipulé côté client.
+ */
+const loadBookingAndAssertAmount = async (bookingId, clientAmount, { requireReceived = false } = {}) => {
+  if (!bookingId) {
+    const err = new Error('Booking ID is required');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    const err = new Error('Booking not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const check = validatePaymentAmount({
+    expected: booking.totalAmount,
+    received: clientAmount,
+    requireReceived,
+  });
+
+  if (!check.ok) {
+    logger.error('Payment amount validation failed', {
+      bookingId: String(bookingId),
+      reason: check.reason,
+      expected: check.expected,
+      received: check.received,
+    });
+    const err = new Error(check.reason);
+    err.statusCode = 400;
+    err.meta = { expected: check.expected, received: check.received };
+    throw err;
+  }
+
+  return { booking, amount: check.expected };
+};
+
+/**
  * Resolve booking from PaymentIntent metadata or by paymentIntentId field.
  */
 const findBookingForStripeIntent = async (paymentIntent) => {
@@ -69,23 +114,25 @@ const findBookingForStripeIntent = async (paymentIntent) => {
 const createStripeIntent = async (req, res) => {
   const { amount, currency, bookingId } = req.body;
 
-  if (!amount || Number(amount) <= 0) {
-    return res.status(400).json({ message: 'Montant invalide' });
-  }
-
-  if (!isStripeConfigured()) {
-    if (isProduction()) {
-      return res.status(503).json({ message: 'Stripe n\'est pas configuré en production' });
-    }
-    logger.warn('Using mock Stripe PaymentIntent (dev only)');
-    return res.json({
-      clientSecret: `mock_secret_${Date.now()}`,
-      paymentIntentId: `mock_pi_${Date.now()}`,
-      simulated: true,
-    });
-  }
-
   try {
+    // [TASK-2] Montant serveur = booking.totalAmount (pas le montant client)
+    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount, {
+      requireReceived: Boolean(amount != null && amount !== ''),
+    });
+
+    if (!isStripeConfigured()) {
+      if (isProduction()) {
+        return res.status(503).json({ message: 'Stripe n\'est pas configuré en production' });
+      }
+      logger.warn('Using mock Stripe PaymentIntent (dev only)');
+      return res.json({
+        clientSecret: `mock_secret_${Date.now()}`,
+        paymentIntentId: `mock_pi_${Date.now()}`,
+        amount: chargeAmount,
+        simulated: true,
+      });
+    }
+
     const stripeInstance = getStripe();
     if (!stripeInstance) {
       if (isProduction()) {
@@ -94,19 +141,18 @@ const createStripeIntent = async (req, res) => {
       return res.json({
         clientSecret: `mock_secret_${Date.now()}`,
         paymentIntentId: `mock_pi_${Date.now()}`,
+        amount: chargeAmount,
         simulated: true,
       });
     }
 
     const metadata = {
       userId: req.user?._id?.toString() || '',
+      bookingId: String(bookingId),
     };
-    if (bookingId) {
-      metadata.bookingId = String(bookingId);
-    }
 
     const paymentIntent = await stripeInstance.paymentIntents.create({
-      amount: Math.round(Number(amount) * 100),
+      amount: Math.round(Number(chargeAmount) * 100),
       currency: String(currency || 'eur').toLowerCase(),
       automatic_payment_methods: {
         enabled: true,
@@ -114,32 +160,27 @@ const createStripeIntent = async (req, res) => {
       metadata,
     });
 
-    if (bookingId) {
-      try {
-        const booking = await Booking.findById(bookingId);
-        if (booking) {
-          booking.paymentIntentId = paymentIntent.id;
-          booking.paymentMethod = 'stripe';
-          if (booking.status !== 'Confirmed') {
-            booking.status = 'Pending';
-            booking.paymentStatus = 'pending';
-          }
-          await booking.save();
-        }
-      } catch (linkErr) {
-        logger.warn('Could not link PaymentIntent to booking', {
-          bookingId,
-          message: linkErr.message,
-        });
-      }
+    booking.paymentIntentId = paymentIntent.id;
+    booking.paymentMethod = 'stripe';
+    if (booking.status !== 'Confirmed') {
+      booking.status = 'Pending';
+      booking.paymentStatus = 'pending';
     }
+    await booking.save();
 
     res.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
+      amount: chargeAmount,
       simulated: false,
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
     console.error('Stripe error:', error);
     captureException(error, { context: 'createStripeIntent' });
     res.status(500).json({ message: 'Payment initiation failed' });
@@ -157,59 +198,58 @@ const createPaypalOrder = async (req, res) => {
     return res.status(503).json({ message: 'PayPal is not configured' });
   }
 
-  const request = new paypal.orders.OrdersCreateRequest();
-  request.prefer('return=representation');
-  request.requestBody({
-    intent: 'CAPTURE',
-    purchase_units: [
-      {
-        amount: {
-          currency_code: String(currency || 'EUR').toUpperCase(),
-          value: Number(amount).toFixed(2),
-        },
-        custom_id: bookingId ? String(bookingId) : undefined,
-        description: bookingId ? `Overglow booking ${bookingId}` : 'Overglow booking',
-      },
-    ],
-  });
-
   try {
+    // [TASK-2] Montant serveur = booking.totalAmount
+    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount, {
+      requireReceived: Boolean(amount != null && amount !== ''),
+    });
+
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer('return=representation');
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          amount: {
+            currency_code: String(currency || 'EUR').toUpperCase(),
+            value: Number(chargeAmount).toFixed(2),
+          },
+          custom_id: String(bookingId),
+          description: `Overglow booking ${bookingId}`,
+        },
+      ],
+    });
+
     const order = await client.execute(request);
     const orderId = order.result.id;
 
-    if (bookingId) {
-      try {
-        const booking = await Booking.findById(bookingId);
-        if (booking) {
-          booking.paymentIntentId = orderId;
-          booking.paymentMethod = 'paypal';
-          if (booking.status !== 'Confirmed') {
-            booking.status = 'Pending';
-            booking.paymentStatus = 'pending';
-          }
-          await booking.save();
-        }
-      } catch (linkErr) {
-        logger.warn('Could not link PayPal order to booking', {
-          bookingId,
-          message: linkErr.message,
-        });
-      }
+    booking.paymentIntentId = orderId;
+    booking.paymentMethod = 'paypal';
+    if (booking.status !== 'Confirmed') {
+      booking.status = 'Pending';
+      booking.paymentStatus = 'pending';
     }
+    await booking.save();
 
-    res.json({ id: orderId });
+    res.json({ id: orderId, amount: chargeAmount });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
     console.error('PayPal error:', error);
     captureException(error, { context: 'createPaypalOrder' });
     res.status(500).json({ message: 'PayPal order creation failed' });
   }
 };
 
-// @desc    Capture PayPal order after client approval
+// @desc    Capture PayPal order after client approval (verifyPayPalSuccess)
 // @route   POST /api/payments/capture-paypal-order
 // @access  Private
 const capturePaypalOrder = async (req, res) => {
-  const { orderId, bookingId } = req.body;
+  const { orderId, bookingId, amount } = req.body;
 
   if (!orderId) {
     return res.status(400).json({ message: 'orderId is required' });
@@ -230,7 +270,15 @@ const capturePaypalOrder = async (req, res) => {
       capture.result?.purchase_units?.[0]?.payments?.captures?.[0]?.custom_id ||
       capture.result?.purchase_units?.[0]?.custom_id;
 
+    const capturedValue =
+      capture.result?.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value
+      || capture.result?.purchase_units?.[0]?.amount?.value
+      || amount;
+
     if (status === 'COMPLETED' && customId) {
+      // [TASK-2] Revalide le montant capturé vs booking
+      await loadBookingAndAssertAmount(customId, capturedValue, { requireReceived: true });
+
       await validateAndConfirmBookingPayment({
         bookingId: customId,
         paymentIntentId: orderId,
@@ -244,6 +292,12 @@ const capturePaypalOrder = async (req, res) => {
       bookingId: customId || null,
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
     console.error('PayPal capture error:', error);
     captureException(error, { context: 'capturePaypalOrder', orderId });
     res.status(500).json({ message: 'PayPal capture failed' });
@@ -297,6 +351,24 @@ const handleStripeWebhook = async (req, res) => {
           break;
         }
 
+        // [TASK-2] Montant Stripe (cents) vs booking.totalAmount
+        const paidMajor = Number(paymentIntent.amount_received ?? paymentIntent.amount) / 100;
+        const amountCheck = validatePaymentAmount({
+          expected: booking.totalAmount,
+          received: paidMajor,
+          requireReceived: true,
+        });
+        if (!amountCheck.ok) {
+          logger.error('Stripe webhook amount mismatch — refusing confirmation', {
+            bookingId: booking._id.toString(),
+            reason: amountCheck.reason,
+            expected: amountCheck.expected,
+            received: amountCheck.received,
+            paymentIntentId: paymentIntent.id,
+          });
+          break;
+        }
+
         await validateAndConfirmBookingPayment({
           bookingId: booking._id,
           paymentIntentId: paymentIntent.id,
@@ -329,34 +401,39 @@ const handleStripeWebhook = async (req, res) => {
 
 /**
  * PayPal webhook — PAYMENT.CAPTURE.COMPLETED / CHECKOUT.ORDER.APPROVED
- * Verifies transmission with PAYPAL_WEBHOOK_ID when available.
+ * [TASK-2] Vérifie obligatoirement la signature PayPal (headers Transmission-*).
  */
 const handlePaypalWebhook = async (req, res) => {
   try {
+    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+
+    if (!webhookId) {
+      if (isProduction()) {
+        logger.error('PAYPAL_WEBHOOK_ID missing in production — rejecting webhook');
+        return res.status(500).json({ message: 'Webhook not configured' });
+      }
+      logger.warn('PayPal webhook accepted without signature verification (dev only — set PAYPAL_WEBHOOK_ID)');
+    } else {
+      const verification = await verifyPaypalWebhookSignature({
+        headers: req.headers,
+        body: req.body,
+        webhookId,
+      });
+
+      if (!verification.ok) {
+        logger.error('PayPal webhook signature verification failed', {
+          reason: verification.reason,
+        });
+        return res.status(400).json({
+          message: 'Invalid PayPal webhook signature',
+          reason: verification.reason,
+        });
+      }
+    }
+
     const event = req.body;
     const eventType = event?.event_type || event?.eventType;
     const eventId = event?.id;
-
-    // Optional transmission verification
-    if (process.env.PAYPAL_WEBHOOK_ID && process.env.PAYPAL_CLIENT_ID) {
-      const transmissionId = req.headers['paypal-transmission-id'];
-      const transmissionTime = req.headers['paypal-transmission-time'];
-      const certUrl = req.headers['paypal-cert-url'];
-      const authAlgo = req.headers['paypal-auth-algo'];
-      const transmissionSig = req.headers['paypal-transmission-sig'];
-
-      if (!transmissionId || !transmissionSig) {
-        return res.status(400).json({ message: 'Missing PayPal transmission headers' });
-      }
-
-      // Soft verify: log if headers present; full cert chain verify can be added with PayPal SDK verify API
-      logger.info('PayPal webhook headers present', {
-        transmissionId,
-        transmissionTime,
-        authAlgo,
-        certUrl: Boolean(certUrl),
-      });
-    }
 
     const resource = event?.resource || {};
     let bookingId =
@@ -392,12 +469,29 @@ const handlePaypalWebhook = async (req, res) => {
       if (!booking) {
         logger.warn('PayPal webhook: booking not found', { eventType, bookingId, paymentRef });
       } else {
-        await validateAndConfirmBookingPayment({
-          bookingId: booking._id,
-          paymentIntentId: paymentRef || booking.paymentIntentId,
-          webhookEventId: eventId,
-          source: 'paypal_webhook',
+        const paidAmount = extractPaypalWebhookAmount(event);
+        const amountCheck = validatePaymentAmount({
+          expected: booking.totalAmount,
+          received: paidAmount,
+          requireReceived: paidAmount != null,
         });
+
+        if (!amountCheck.ok) {
+          logger.error('PayPal webhook amount mismatch — refusing confirmation', {
+            bookingId: booking._id.toString(),
+            reason: amountCheck.reason,
+            expected: amountCheck.expected,
+            received: amountCheck.received,
+            eventId,
+          });
+        } else {
+          await validateAndConfirmBookingPayment({
+            bookingId: booking._id,
+            paymentIntentId: paymentRef || booking.paymentIntentId,
+            webhookEventId: eventId,
+            source: 'paypal_webhook',
+          });
+        }
       }
     }
 
@@ -409,28 +503,44 @@ const handlePaypalWebhook = async (req, res) => {
   }
 };
 
-// @desc    Handle CMI Payment
+// @desc    Handle CMI Payment (verifyCMISuccess / init)
 // @route   POST /api/payments/cmi-init
 // @access  Private
 const initCmiPayment = async (req, res) => {
   const { amount, bookingId, currency = 'MAD' } = req.body;
 
-  const CMI_STORE_KEY = process.env.CMI_STORE_KEY || 'your_cmi_store_key';
-  const CMI_URL = process.env.CMI_URL || 'https://payment.cmi.co.ma/payment/init';
+  try {
+    // [TASK-2] Montant serveur = booking.totalAmount
+    const { amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount, {
+      requireReceived: Boolean(amount != null && amount !== ''),
+    });
 
-  const amountInCents = Math.round(amount * 100);
+    const CMI_STORE_KEY = process.env.CMI_STORE_KEY || 'your_cmi_store_key';
+    const CMI_URL = process.env.CMI_URL || 'https://payment.cmi.co.ma/payment/init';
 
-  const hashString = `${CMI_STORE_KEY}${amountInCents}${currency}${bookingId}`;
-  const hash = crypto.createHash('sha256').update(hashString).digest('hex');
+    const amountInCents = Math.round(chargeAmount * 100);
 
-  res.json({
-    redirectUrl: `${CMI_URL}?amount=${amountInCents}&currency=${currency}&orderId=${bookingId}&hash=${hash}`,
-    amount: amount,
-    currency: currency,
-    bookingId: bookingId,
-    hash: hash,
-    message: 'Redirecting to CMI secure payment gateway...',
-  });
+    const hashString = `${CMI_STORE_KEY}${amountInCents}${currency}${bookingId}`;
+    const hash = crypto.createHash('sha256').update(hashString).digest('hex');
+
+    res.json({
+      redirectUrl: `${CMI_URL}?amount=${amountInCents}&currency=${currency}&orderId=${bookingId}&hash=${hash}`,
+      amount: chargeAmount,
+      currency: currency,
+      bookingId: bookingId,
+      hash: hash,
+      message: 'Redirecting to CMI secure payment gateway...',
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
+    captureException(error, { context: 'initCmiPayment' });
+    res.status(500).json({ message: 'CMI payment initiation failed' });
+  }
 };
 
 // @desc    Handle Cash on Delivery payment
@@ -439,27 +549,33 @@ const initCmiPayment = async (req, res) => {
 const createCashDeliveryPayment = async (req, res) => {
   const { bookingId, amount, deliveryAddress } = req.body;
 
-  const booking = await Booking.findById(bookingId);
+  try {
+    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount);
 
-  if (!booking) {
-    return res.status(404).json({ message: 'Booking not found' });
+    booking.deliveryAddress = deliveryAddress;
+    booking.paymentMethod = 'cash_delivery';
+    booking.paymentStatus = 'pending';
+    booking.status = 'PENDING_PAYMENT';
+    await booking.save();
+
+    res.json({
+      type: 'cash_delivery',
+      bookingId: bookingId,
+      amount: chargeAmount,
+      status: 'pending',
+      deliveryAddress: deliveryAddress,
+      message: 'Booking awaiting payment collection upon delivery. Admin validation required.',
+      instructions: 'Our delivery agent will collect payment when delivering your booking confirmation.',
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
+    res.status(500).json({ message: 'Failed to process cash delivery payment' });
   }
-
-  booking.deliveryAddress = deliveryAddress;
-  booking.paymentMethod = 'cash_delivery';
-  booking.paymentStatus = 'pending';
-  booking.status = 'PENDING_PAYMENT';
-  await booking.save();
-
-  res.json({
-    type: 'cash_delivery',
-    bookingId: bookingId,
-    amount: amount,
-    status: 'pending',
-    deliveryAddress: deliveryAddress,
-    message: 'Booking awaiting payment collection upon delivery. Admin validation required.',
-    instructions: 'Our delivery agent will collect payment when delivering your booking confirmation.',
-  });
 };
 
 // @desc    Convert currency to MAD
@@ -516,6 +632,8 @@ const getBankDetails = async (req, res) => {
         booking.status = 'PENDING_PAYMENT';
         booking.paymentStatus = 'pending';
         await booking.save();
+        bankDetails.amount = booking.totalAmount;
+        bankDetails.currency = 'MAD';
       }
     } catch (err) {
       console.error('Failed to update booking with payment reference:', err.message);
@@ -531,15 +649,9 @@ const getBankDetails = async (req, res) => {
 const createBankTransferPayment = async (req, res) => {
   const { bookingId, amount } = req.body;
 
-  if (!bookingId) {
-    return res.status(400).json({ message: 'Booking ID is required' });
-  }
-
   try {
-    const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
+    // [TASK-2] Montant serveur = booking.totalAmount
+    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount);
 
     const paymentReference = `OG-${bookingId.toString().slice(-8).toUpperCase()}`;
 
@@ -555,7 +667,7 @@ const createBankTransferPayment = async (req, res) => {
       iban: 'MA64 0077 8800 0000 1111 2222 33',
       swift: 'OVGLMAMC',
       paymentReference: paymentReference,
-      amount: amount || booking.totalAmount,
+      amount: chargeAmount,
       currency: 'MAD',
     };
 
@@ -568,8 +680,14 @@ const createBankTransferPayment = async (req, res) => {
       message: 'Virement bancaire initié. Validation manuelle admin requise après réception.',
       instructions: `Effectuez un virement de ${bankDetails.amount} MAD vers le compte indiqué en utilisant la référence "${paymentReference}". Votre réservation sera confirmée dès validation du virement par l'équipe Overglow.`,
     });
-  } catch (err) {
-    console.error('Bank transfer payment error:', err);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
+    console.error('Bank transfer payment error:', error);
     res.status(500).json({ message: 'Failed to initiate bank transfer payment' });
   }
 };
@@ -581,11 +699,7 @@ const createCashPickupPayment = async (req, res) => {
   const { bookingId, amount } = req.body;
 
   try {
-    const booking = await Booking.findById(bookingId);
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
+    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount);
 
     booking.paymentMethod = 'cash_pickup';
     booking.paymentStatus = 'pending';
@@ -595,13 +709,19 @@ const createCashPickupPayment = async (req, res) => {
     res.json({
       type: 'cash_pickup',
       bookingId: bookingId,
-      amount: amount || booking.totalAmount,
+      amount: chargeAmount,
       status: 'pending',
       message: 'Réservation en attente de paiement espèces. Validation admin après encaissement.',
       instructions: 'Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous.',
     });
-  } catch (err) {
-    console.error('Cash pickup payment error:', err);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+        ...(error.meta || {}),
+      });
+    }
+    console.error('Cash pickup payment error:', error);
     res.status(500).json({ message: 'Failed to process cash pickup payment' });
   }
 };
