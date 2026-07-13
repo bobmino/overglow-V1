@@ -9,7 +9,8 @@
 - [x] [8] DB Indexes + Status Codes + Email Consolidation (P1, S2)
 - [x] [9] CSV Sanitization + Upload Security + Health Endpoint (P1, S2)
 - [x] [10] Layout Integration + 404 Page + Design System (P0, S3)
-- [ ] [11] Header + Footer + Mobile Nav i18n (P1, S3)
+- [x] [11] Header + Footer + Mobile Nav i18n (P1, S3)
+- [ ] [12] Legal + Support Pages i18n (Privacy, Help, BlogPost) (P1, S3)
 
 ---
 

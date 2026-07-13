@@ -1,24 +1,30 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Heart, User, Menu } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const MobileBottomNav = () => {
+  const { t } = useTranslation();
   const location = useLocation();
-  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
 
-  // Don't show on dashboard routes or product detail pages (where a specific sticky footer exists)
-  if (location.pathname.startsWith('/operator') || 
-      location.pathname.startsWith('/admin') ||
-      location.pathname.startsWith('/dashboard') ||
-      location.pathname.startsWith('/profile') ||
-      location.pathname.startsWith('/booking') ||
-      location.pathname.startsWith('/checkout') ||
-      location.pathname.startsWith('/products/')) {
+  if (
+    location.pathname.startsWith('/operator') ||
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/booking') ||
+    location.pathname.startsWith('/checkout') ||
+    location.pathname.startsWith('/products/')
+  ) {
     return null;
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 safe-area-bottom">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 safe-area-bottom"
+      aria-label={t('nav.mobile_aria', 'Navigation mobile')}
+    >
       <div className="flex items-center justify-around h-16 px-2">
         <Link
           to="/"
@@ -29,55 +35,50 @@ const MobileBottomNav = () => {
           }`}
         >
           <Home size={24} className={isActive('/') && location.pathname === '/' ? 'fill-current' : ''} />
-          <span className="text-xs mt-1 font-medium">Accueil</span>
+          <span className="text-xs mt-1 font-medium">{t('common.home')}</span>
         </Link>
 
         <Link
           to="/search"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
-            isActive('/search')
-              ? 'text-primary-600'
-              : 'text-slate-500 hover:text-primary-600'
+            isActive('/search') ? 'text-primary-600' : 'text-slate-500 hover:text-primary-600'
           }`}
         >
           <Search size={24} className={isActive('/search') ? 'fill-current' : ''} />
-          <span className="text-xs mt-1 font-medium">Rechercher</span>
+          <span className="text-xs mt-1 font-medium">{t('common.search')}</span>
         </Link>
 
         <Link
           to="/favorites"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
-            isActive('/favorites')
-              ? 'text-primary-600'
-              : 'text-slate-500 hover:text-primary-600'
+            isActive('/favorites') ? 'text-primary-600' : 'text-slate-500 hover:text-primary-600'
           }`}
         >
           <Heart size={24} className={isActive('/favorites') ? 'fill-current' : ''} />
-          <span className="text-xs mt-1 font-medium">Favoris</span>
+          <span className="text-xs mt-1 font-medium">{t('nav.favorites', 'Favoris')}</span>
         </Link>
 
         <Link
           to="/profile"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
-            isActive('/profile')
-              ? 'text-primary-600'
-              : 'text-slate-500 hover:text-primary-600'
+            isActive('/profile') ? 'text-primary-600' : 'text-slate-500 hover:text-primary-600'
           }`}
         >
           <User size={24} className={isActive('/profile') ? 'fill-current' : ''} />
-          <span className="text-xs mt-1 font-medium">Profil</span>
+          <span className="text-xs mt-1 font-medium">{t('nav.profile', 'Profil')}</span>
         </Link>
 
         <button
-          className="flex flex-col items-center justify-center flex-1 py-2 text-slate-500 hover:text-primary-600 transition-colors"
+          type="button"
+          className="mobile-menu-button flex flex-col items-center justify-center flex-1 py-2 text-slate-500 hover:text-primary-600 transition-colors"
+          aria-label={t('nav.menu', 'Menu')}
           onClick={() => {
-            // Toggle mobile menu - this will be handled by Header
-            const menuButton = document.querySelector('.mobile-menu-button');
+            const menuButton = document.querySelector('.mobile-menu-button-header');
             if (menuButton) menuButton.click();
           }}
         >
           <Menu size={24} />
-          <span className="text-xs mt-1 font-medium">Menu</span>
+          <span className="text-xs mt-1 font-medium">{t('nav.menu', 'Menu')}</span>
         </button>
       </div>
     </nav>
@@ -85,4 +86,3 @@ const MobileBottomNav = () => {
 };
 
 export default MobileBottomNav;
-

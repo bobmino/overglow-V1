@@ -241,7 +241,7 @@ const Header = () => {
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-slate-50 mb-2">
-                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Account</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">{t('header.account', 'Compte')}</p>
                   </div>
                   
                   {user?.role === 'Admin' && (
@@ -252,7 +252,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Shield size={18} className="mr-3" />
-                        Admin Dashboard
+                        {t('header.admin_dashboard', 'Admin Dashboard')}
                       </Link>
                       <Link 
                         to="/admin/operators" 
@@ -260,7 +260,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Building2 size={18} className="mr-3" />
-                        Gérer les Opérateurs
+                        {t('header.admin_operators', 'Gérer les opérateurs')}
                       </Link>
                       <Link 
                         to="/admin/products" 
@@ -268,7 +268,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Package size={18} className="mr-3" />
-                        Valider les Produits
+                        {t('header.admin_products', 'Valider les produits')}
                       </Link>
                       <Link 
                         to="/admin/users" 
@@ -276,7 +276,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Users size={18} className="mr-3" />
-                        Gérer les Utilisateurs
+                        {t('header.admin_users', 'Gérer les utilisateurs')}
                       </Link>
                       <Link 
                         to="/admin/settings" 
@@ -284,7 +284,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Settings size={18} className="mr-3" />
-                        Paramètres
+                        {t('header.admin_settings', 'Paramètres')}
                       </Link>
                       <Link 
                         to="/admin/withdrawals" 
@@ -292,7 +292,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <DollarSign size={18} className="mr-3" />
-                        Retraits
+                        {t('header.admin_withdrawals', 'Retraits')}
                       </Link>
                       <Link 
                         to="/admin/approval-requests" 
@@ -300,7 +300,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <AlertCircle size={18} className="mr-3" />
-                        Demandes d'approbation
+                        {t('header.admin_approvals', "Demandes d'approbation")}
                       </Link>
                       <Link 
                         to="/admin/blog" 
@@ -308,7 +308,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <FileText size={18} className="mr-3" />
-                        Gérer le Blog
+                        {t('header.admin_blog', 'Gérer le blog')}
                       </Link>
                     </>
                   )}
@@ -328,7 +328,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Package size={18} className="mr-3" />
-                        Products
+                        {t('header.products', 'Produits')}
                       </Link>
                       <Link 
                         to="/operator/bookings" 
@@ -336,7 +336,7 @@ const Header = () => {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Calendar size={18} className="mr-3" />
-                        Bookings (Customers)
+                        {t('header.bookings', 'Réservations')}
                       </Link>
                       <Link 
                         to="/operator/analytics" 
@@ -363,7 +363,7 @@ const Header = () => {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Heart size={18} className="mr-3" />
-                          Mes Favoris
+                          {t('header.favorites', 'Mes favoris')}
                         </Link>
                         <Link 
                           to="/view-history" 
@@ -371,7 +371,7 @@ const Header = () => {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Clock size={18} className="mr-3" />
-                          Historique
+                          {t('header.history', 'Historique')}
                         </Link>
                         <Link 
                           to="/loyalty" 
@@ -379,7 +379,7 @@ const Header = () => {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Award size={18} className="mr-3" />
-                          Programme de Fidélité
+                          {t('header.loyalty', 'Programme de fidélité')}
                         </Link>
                         <Link 
                           to="/profile" 
@@ -387,7 +387,7 @@ const Header = () => {
                           onClick={() => setShowUserMenu(false)}
                         >
                           <User size={18} className="mr-3" />
-                          Mon Profil
+                          {t('header.profile', 'Mon profil')}
                         </Link>
                   
                   {user?.role === 'Client' && (
@@ -398,7 +398,7 @@ const Header = () => {
                         className="w-full flex items-center px-4 py-2.5 text-primary-600 hover:bg-primary-50 transition font-medium"
                       >
                         <Building2 size={18} className="mr-3" />
-                        {isUpgrading ? 'Création en cours...' : 'Devenir Partenaire'}
+                        {isUpgrading ? t('header.upgrading', 'Création en cours...') : t('header.become_partner', 'Devenir partenaire')}
                       </button>
                     </div>
                   )}
@@ -440,7 +440,8 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button 
-            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+            className="mobile-menu-button-header p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+            aria-label={t('nav.menu', 'Menu')}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -484,11 +485,11 @@ const Header = () => {
           </Link>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-            <span className="text-slate-600 font-medium">Langue / Language</span>
+            <span className="text-slate-600 font-medium">{t('header.language', 'Langue')}</span>
             <LanguageSelector />
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-            <span className="text-slate-600 font-medium">Devise / Currency</span>
+            <span className="text-slate-600 font-medium">{t('header.currency', 'Devise')}</span>
             <CurrencySelector />
           </div>
 
@@ -512,7 +513,7 @@ const Header = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <TrendingUp size={18} className="mr-3" />
-                  Operator Dashboard
+                  {t('header.operatorDashboard')}
                 </Link>
               )}
               {user?.role === 'Client' && (
@@ -525,7 +526,7 @@ const Header = () => {
                   className="w-full flex items-center p-3 rounded-lg hover:bg-primary-50 text-primary-600 font-medium"
                 >
                   <Building2 size={18} className="mr-3" />
-                  {isUpgrading ? 'Création...' : 'Devenir Partenaire'}
+                  {isUpgrading ? t('header.upgrading_short', 'Création...') : t('header.become_partner', 'Devenir partenaire')}
                 </button>
               )}
               <button 
