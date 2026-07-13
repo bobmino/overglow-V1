@@ -32,7 +32,7 @@ const AboutPage = () => {
   const c = content;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-shell">
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <Globe className="mx-auto h-20 w-20 mb-6" />

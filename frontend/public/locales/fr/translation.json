@@ -251,5 +251,19 @@
     "empty": "Aucun article pour cette langue",
     "empty_hint": "Revenez bientôt ou explorez nos expériences.",
     "cta_explore": "Voir les expériences"
+  },
+  "not_found": {
+    "meta_title": "Page introuvable",
+    "meta_description": "Cette page n’existe pas. Continuez votre exploration au Maroc avec Overglow Trip.",
+    "title": "Vous vous êtes éloigné du sentier",
+    "subtitle": "Cette page n’existe pas ou a été déplacée. Cherchez une expérience, ou revenez à l’accueil.",
+    "search_placeholder": "Surf, médina, désert…",
+    "search_aria": "Rechercher une expérience",
+    "search_cta": "Rechercher",
+    "link_search": "Explorer les expériences",
+    "link_how": "Comment ça marche",
+    "link_culture": "Culture marocaine",
+    "link_faq": "FAQ",
+    "back_home": "Retour à l’accueil"
   }
 }

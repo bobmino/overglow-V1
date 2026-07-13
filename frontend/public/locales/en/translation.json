@@ -251,5 +251,19 @@
     "empty": "No articles for this language yet",
     "empty_hint": "Check back soon or browse experiences.",
     "cta_explore": "Browse experiences"
+  },
+  "not_found": {
+    "meta_title": "Page not found",
+    "meta_description": "This page does not exist. Keep exploring Morocco with Overglow Trip.",
+    "title": "You've wandered off the path",
+    "subtitle": "This page doesn't exist or has moved. Search for an experience, or go back home.",
+    "search_placeholder": "Surf, medina, desert…",
+    "search_aria": "Search experiences",
+    "search_cta": "Search",
+    "link_search": "Browse experiences",
+    "link_how": "How it works",
+    "link_culture": "Moroccan culture",
+    "link_faq": "FAQ",
+    "back_home": "Back to home"
   }
 }

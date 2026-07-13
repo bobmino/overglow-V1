@@ -4,12 +4,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* [TASK-10] Design system — CSS custom properties */
+:root {
+  --color-primary: #059669;
+  --color-primary-dark: #047857;
+  --color-secondary: #f59e0b;
+  --color-accent: #10b981;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #1e293b;
+  --color-muted: #64748b;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+}
+
 /* Safe area for mobile devices */
 @supports (padding: max(0px)) {
   .safe-area-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
-  
+
   .safe-area-top {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
@@ -18,15 +34,42 @@
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
-    @apply text-slate-800 bg-gray-50;
+    color: var(--color-text);
+    background-color: var(--color-background);
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
   }
 }
 
-/* Custom scrollbar utility */
+@layer components {
+  .page-shell {
+    @apply min-h-[60vh] bg-background;
+  }
+  .surface-card {
+    @apply bg-surface border border-border rounded-xl shadow-sm;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 transition;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-primary-400 hover:text-primary-700 transition;
+  }
+}
+
 @layer utilities {
+  .bg-background {
+    background-color: var(--color-background);
+  }
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+  .border-border {
+    border-color: var(--color-border);
+  }
+  .text-muted {
+    color: var(--color-muted);
+  }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

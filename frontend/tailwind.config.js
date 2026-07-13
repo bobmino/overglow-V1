@@ -24,9 +24,13 @@ export default {
           900: '#064e3b',
         },
         secondary: {
-          500: '#fbbf24', // Amber 400
-          600: '#f59e0b', // Amber 500
-        }
+          500: '#fbbf24',
+          600: '#f59e0b',
+        },
+        // [TASK-10] Design tokens aliases
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        border: 'var(--color-border)',
       },
       screens: {
         'xs': '475px',

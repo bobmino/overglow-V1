@@ -63,6 +63,7 @@ const CulturePage = lazy(() => import('./pages/CulturePage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 const FAQPage = lazy(() => import('./pages/FAQPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 import PlaceholderPage from './components/PlaceholderPage';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 
@@ -338,13 +339,74 @@ function App() {
               </Suspense>
             </AdminRoute>
           } />
-          {/*
-          <Route path="circuit" element={
+
+          {/* [TASK-10] Pages publiques dans le Layout (header + footer) */}
+          <Route path="about" element={
             <Suspense fallback={<LoadingFallback />}>
-              <CircuitPage />
+              <AboutPage />
             </Suspense>
           } />
-          */}
+          <Route path="terms" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <TermsPage />
+            </Suspense>
+          } />
+          <Route path="privacy" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PrivacyPage />
+            </Suspense>
+          } />
+          <Route path="help" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HelpPage />
+            </Suspense>
+          } />
+          <Route path="contact" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HelpPage />
+            </Suspense>
+          } />
+          <Route path="faq" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <FAQPage />
+            </Suspense>
+          } />
+          <Route path="culture" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <CulturePage />
+            </Suspense>
+          } />
+          <Route path="how-it-works" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <HowItWorksPage />
+            </Suspense>
+          } />
+          <Route path="affiliate" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AffiliatePage />
+            </Suspense>
+          } />
+          <Route path="partners/signup" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PartnerSignupPage />
+            </Suspense>
+          } />
+          <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
+          <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
+          <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
+          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
+          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
+          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
+          <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
+          <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
+          <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
+
+          {/* [TASK-10] 404 catch-all (dans le Layout) */}
+          <Route path="*" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <NotFoundPage />
+            </Suspense>
+          } />
         </Route>
         
         {/* Checkout routes without layout */}
@@ -366,69 +428,7 @@ function App() {
         {/* Auth routes without layout */}
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
-          <Route path="affiliate" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AffiliatePage />
-            </Suspense>
-          } />
-          <Route path="help" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HelpPage />
-            </Suspense>
-          } />
-          <Route path="privacy" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PrivacyPage />
-            </Suspense>
-          } />
-          <Route path="about" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AboutPage />
-            </Suspense>
-          } />
-          <Route path="terms" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <TermsPage />
-            </Suspense>
-          } />
-          <Route path="contact" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HelpPage />
-            </Suspense>
-          } />
-          <Route path="partners/signup" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PartnerSignupPage />
-            </Suspense>
-          } />
-          <Route path="culture" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CulturePage />
-            </Suspense>
-          } />
-          
-          {/* Missing Pages Placeholders */}
-          <Route path="faq" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <FAQPage />
-            </Suspense>
-          } />
-          <Route path="safety" element={<PlaceholderPage titleKey="footer.safety" defaultTitle="Sécurité" />} />
-          <Route path="careers" element={<PlaceholderPage titleKey="footer.careers" defaultTitle="Carrières" />} />
-          <Route path="press" element={<PlaceholderPage titleKey="footer.press" defaultTitle="Presse" />} />
-          <Route path="operator/help" element={<PlaceholderPage titleKey="footer.operator_help" defaultTitle="Centre d'aide opérateur" />} />
-          <Route path="operator/resources" element={<PlaceholderPage titleKey="footer.operator_resources" defaultTitle="Ressources" />} />
-          <Route path="operator/community" element={<PlaceholderPage titleKey="footer.operator_community" defaultTitle="Communauté" />} />
-          <Route path="cookies" element={<PlaceholderPage titleKey="footer.cookies" defaultTitle="Cookies" />} />
-          <Route path="accessibility" element={<PlaceholderPage titleKey="footer.accessibility" defaultTitle="Accessibilité" />} />
-          <Route path="how-it-works" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HowItWorksPage />
-            </Suspense>
-          } />
-          <Route path="cookie-consent" element={<PlaceholderPage titleKey="footer.cookie_consent" defaultTitle="Préférences de cookies" />} />
-          
-        <Route path="operator/register" element={<RegisterPage />} />
+          <Route path="operator/register" element={<RegisterPage />} />
       </Routes>
     </Router>
       </ToastProvider>
