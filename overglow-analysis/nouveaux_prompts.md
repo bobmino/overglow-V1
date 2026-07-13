@@ -17,6 +17,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 9 — Opérateur Sidebar + Navigation
 - [x] PROMPT 10 — Guide Utilisateur + Documentation API
 - [x] PROMPT 11 — Reviews & Modération
+- [x] PROMPT 12 — Recherche Globale Admin
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 

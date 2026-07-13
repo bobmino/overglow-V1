@@ -1910,6 +1910,163 @@ const getTransactions = async (req, res) => {
   }
 };
 
+/**
+ * [PROMPT-12] Global admin search across users, products, bookings, operators
+ * GET /api/admin/search?q=&type=all|users|products|bookings|operators
+ */
+const getAdminSearch = async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    const type = String(req.query.type || 'all').toLowerCase();
+    if (q.length < 2) {
+      return res.json({ results: [], total: 0, groups: {} });
+    }
+
+    const limit = 10;
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rx = new RegExp(escaped, 'i');
+    const want = (t) => type === 'all' || type === t || type === `${t}s`;
+
+    const results = [];
+    const groups = { users: 0, products: 0, bookings: 0, operators: 0 };
+
+    const tasks = [];
+
+    if (want('user')) {
+      tasks.push(
+        (async () => {
+          const users = await User.find({
+            $or: [{ name: rx }, { email: rx }],
+          })
+            .select('name email role')
+            .limit(limit)
+            .lean();
+          groups.users = users.length;
+          for (const u of users) {
+            results.push({
+              type: 'user',
+              id: u._id,
+              title: u.name || u.email || 'Utilisateur',
+              subtitle: `${u.email || ''}${u.role ? ` · ${u.role}` : ''}`.trim(),
+              url: '/admin/users',
+            });
+          }
+        })()
+      );
+    }
+
+    if (want('product')) {
+      tasks.push(
+        (async () => {
+          const products = await Product.find({
+            $or: [{ title: rx }, { description: rx }, { city: rx }],
+          })
+            .select('title city status')
+            .limit(limit)
+            .lean();
+          groups.products = products.length;
+          for (const p of products) {
+            results.push({
+              type: 'product',
+              id: p._id,
+              title: p.title || 'Produit',
+              subtitle: `${p.city || '—'} · ${p.status || ''}`.trim(),
+              url: '/admin/products',
+            });
+          }
+        })()
+      );
+    }
+
+    if (want('operator')) {
+      tasks.push(
+        (async () => {
+          const emailUsers = await User.find({ email: rx }).select('_id').limit(limit).lean();
+          const emailIds = emailUsers.map((u) => u._id);
+          const operators = await Operator.find({
+            $or: [
+              { companyName: rx },
+              { publicName: rx },
+              ...(emailIds.length ? [{ user: { $in: emailIds } }] : []),
+            ],
+          })
+            .populate('user', 'name email')
+            .select('companyName publicName status user')
+            .limit(limit)
+            .lean();
+          groups.operators = operators.length;
+          for (const o of operators) {
+            results.push({
+              type: 'operator',
+              id: o._id,
+              title: o.companyName || o.publicName || o.user?.name || 'Opérateur',
+              subtitle: `${o.user?.email || ''}${o.status ? ` · ${o.status}` : ''}`.trim(),
+              url: '/admin/operators',
+            });
+          }
+        })()
+      );
+    }
+
+    if (want('booking')) {
+      tasks.push(
+        (async () => {
+          const mongoose = (await import('mongoose')).default;
+          const or = [];
+          if (mongoose.Types.ObjectId.isValid(q) && String(new mongoose.Types.ObjectId(q)) === q) {
+            or.push({ _id: q });
+          }
+          const matchedUsers = await User.find({
+            $or: [{ email: rx }, { name: rx }],
+          })
+            .select('_id')
+            .limit(30)
+            .lean();
+          if (matchedUsers.length) {
+            or.push({ user: { $in: matchedUsers.map((u) => u._id) } });
+          }
+          if (!or.length) {
+            groups.bookings = 0;
+            return;
+          }
+          const bookings = await Booking.find({ $or: or })
+            .populate('user', 'name email')
+            .select('status totalAmount totalPrice createdAt user')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+          groups.bookings = bookings.length;
+          for (const b of bookings) {
+            const amount = b.totalAmount ?? b.totalPrice ?? 0;
+            results.push({
+              type: 'booking',
+              id: b._id,
+              title: `Réservation ${String(b._id).slice(-6)}`,
+              subtitle: `${b.user?.email || b.user?.name || '—'} · ${b.status || ''} · ${amount}`,
+              url: '/admin/bookings',
+            });
+          }
+        })()
+      );
+    }
+
+    await Promise.all(tasks);
+
+    // Stable order: users, products, operators, bookings
+    const order = { user: 0, product: 1, operator: 2, booking: 3 };
+    results.sort((a, b) => (order[a.type] ?? 9) - (order[b.type] ?? 9));
+
+    res.json({
+      results,
+      total: results.length,
+      groups,
+    });
+  } catch (error) {
+    logger.error('Admin search error:', error);
+    res.status(500).json({ message: 'Failed to search' });
+  }
+};
+
 export {
   getAdminStats,
   getOperators, 
@@ -1937,4 +2094,5 @@ export {
   adminCancelBooking,
   getFinanceStats,
   getTransactions,
+  getAdminSearch,
 };

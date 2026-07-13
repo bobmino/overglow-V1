@@ -26,6 +26,7 @@ import {
   adminCancelBooking,
   getFinanceStats,
   getTransactions,
+  getAdminSearch,
 } from '../controllers/adminController.js';
 import {
   getAdminReviews,
@@ -36,6 +37,7 @@ import { protect, authorize } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/stats', protect, authorize('Admin'), getAdminStats);
+router.get('/search', protect, authorize('Admin'), getAdminSearch);
 router.get('/finance/stats', protect, authorize('Admin'), getFinanceStats);
 router.get('/finance/transactions', protect, authorize('Admin'), getTransactions);
 router.get('/reviews', protect, authorize('Admin'), getAdminReviews);

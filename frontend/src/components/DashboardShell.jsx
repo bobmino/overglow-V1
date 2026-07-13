@@ -10,6 +10,7 @@ import Breadcrumbs from './Breadcrumbs';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import AdminGlobalSearch from './AdminGlobalSearch';
 
 const TITLE_MAP = {
   '/admin/dashboard': 'Tableau de bord',
@@ -174,22 +175,25 @@ const DashboardShell = ({ variant = 'admin' }) => {
         bookingsBadge={bookingsBadge}
       />
 
-      <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-3 bg-white border-b border-gray-200 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg text-slate-700 hover:bg-slate-100"
-          aria-label="Ouvrir le menu"
-        >
-          <Menu size={22} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <Breadcrumbs items={crumbItems} />
-          <h1 className="text-base font-heading font-bold text-slate-900 truncate leading-tight">
-            {pageTitle}
-          </h1>
+      <div className="md:hidden sticky top-0 z-30 flex flex-col gap-2 px-3 py-2 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center gap-3 h-10">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-lg text-slate-700 hover:bg-slate-100"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <Breadcrumbs items={crumbItems} />
+            <h1 className="text-base font-heading font-bold text-slate-900 truncate leading-tight">
+              {pageTitle}
+            </h1>
+          </div>
+          <NotificationBell />
         </div>
-        <NotificationBell />
+        {variant === 'admin' && <AdminGlobalSearch compact />}
       </div>
 
       {/* Desktop top bar with breadcrumbs */}
@@ -197,6 +201,11 @@ const DashboardShell = ({ variant = 'admin' }) => {
         className="hidden md:flex sticky top-0 z-20 items-center gap-4 h-14 px-6 bg-white/95 backdrop-blur border-b border-gray-200"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
+        {variant === 'admin' && (
+          <div className="w-72 lg:w-96 shrink-0">
+            <AdminGlobalSearch />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <Breadcrumbs items={crumbItems} />
         </div>
