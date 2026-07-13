@@ -3,6 +3,10 @@ import Product from '../models/productModel.js';
 import Operator from '../models/operatorModel.js';
 import Booking from '../models/bookingModel.js';
 import { validationResult } from 'express-validator';
+import {
+  notifyInquiryReceived,
+  notifyInquiryAnswered,
+} from '../utils/notificationService.js'; // [BUG-02] Missing imports caused ReferenceError
 
 // @desc    Create manual inquiry (question from client)
 // @route   POST /api/inquiries

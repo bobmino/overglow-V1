@@ -1,5 +1,6 @@
 import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
+import Product from '../models/productModel.js'; // [BUG-01] Required by getOperatorAnalytics
 
 // @desc    Get operator bookings
 // @route   GET /api/operator/bookings

@@ -2,7 +2,7 @@
 - [x] [1] Centraliser CORS + Sécuriser routes critiques (P0, S2)
 - [x] [2] PayPal Webhook Signature Verification (P0, S2)
 - [x] [3] CMI Payment Hardening + Bank Details Securing (P0, S2)
-- [ ] [4] Fix 3 Guaranteed Crashes (BUG-01,02,03) (P0, S2)
+- [x] [4] Fix 3 Guaranteed Crashes (BUG-01,02,03) (P0, S2)
 - [ ] [5] AI Service Credentials + Error Leak Fix (P0, S2)
 - [ ] [6] Rate Limiting Migration + Mass Assignment Protection (P1, S2)
 
