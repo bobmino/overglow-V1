@@ -138,9 +138,14 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   return (
     <div 
-      className="fixed top-[80px] left-1/2 -translate-x-1/2 mt-2 bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 z-[100] w-[95vw] max-w-7xl min-h-[400px] flex flex-col animate-in fade-in slide-in-from-top-4 duration-300"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="fixed top-[80px] left-1/2 -translate-x-1/2 pt-3 bg-transparent z-[100] w-[95vw] max-w-7xl"
+      onMouseEnter={(e) => e.stopPropagation()}
     >
+      {/* pt-3 = pont hover invisible (évite l'écart mt qui ferme le menu) */}
+      <div
+        className="bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 p-10 min-h-[400px] flex flex-col animate-in fade-in slide-in-from-top-4 duration-300"
+        style={{ fontFamily: "'Inter', sans-serif" }}
+      >
       <div className="grid grid-cols-4 gap-12 flex-grow">
         {/* Top Categories */}
         <div className="col-span-1">
@@ -253,6 +258,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
           {t('menu.viewCategory')} {activeCategory}
           <ChevronRight size={16} strokeWidth={2} />
         </Link>
+      </div>
       </div>
     </div>
   );

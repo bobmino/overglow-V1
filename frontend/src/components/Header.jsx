@@ -131,7 +131,7 @@ const Header = () => {
           </Link>
         )}
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation — pont hover via pb sur triggers + menu sans gap */}
         <div 
           className="hidden md:flex items-center space-x-8 h-full"
           onMouseLeave={() => {
@@ -141,7 +141,7 @@ const Header = () => {
           }}
         >
           <div 
-            className="relative" 
+            className="relative h-full flex items-center" 
             ref={discoverMenuRef}
             onMouseEnter={() => {
               setShowDiscoverMenu(true);
@@ -150,7 +150,8 @@ const Header = () => {
             }}
           >
             <button
-              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
+              type="button"
+              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1 h-full"
             >
               {t('header.discover')}
               <ChevronDown size={16} className={`transition-transform duration-200 ${showDiscoverMenu ? 'rotate-180' : ''}`} />
@@ -162,7 +163,7 @@ const Header = () => {
 
           {/* Logements Dropdown */}
           <div 
-            className="relative" 
+            className="relative h-full flex items-center" 
             ref={luxuryMenuRef}
             onMouseEnter={() => {
               setShowLuxuryMenu(true);
@@ -171,7 +172,8 @@ const Header = () => {
             }}
           >
             <button
-              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
+              type="button"
+              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1 h-full"
             >
               {t('header.luxury')}
               <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
@@ -184,7 +186,7 @@ const Header = () => {
 
           {/* Extras Dropdown */}
           <div 
-            className="relative" 
+            className="relative h-full flex items-center" 
             ref={servicesMenuRef}
             onMouseEnter={() => {
               setShowServicesMenu(true);
@@ -193,7 +195,8 @@ const Header = () => {
             }}
           >
             <button
-              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1"
+              type="button"
+              className="font-medium text-slate-600 hover:text-primary-600 transition flex items-center gap-1 h-full"
             >
               {t('header.extras')}
               <ChevronDown size={16} className={`transition-transform duration-200 ${showServicesMenu ? 'rotate-180' : ''}`} />

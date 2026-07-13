@@ -3,9 +3,6 @@
  * Ne jamais logger IBAN / SWIFT / CMI_STORE_KEY en clair.
  */
 
-const isProduction = () =>
-  process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
-
 /**
  * Retourne la clé CMI sans fallback hardcodé.
  * @throws {Error} si absente
@@ -41,8 +38,9 @@ export const getBankCredentials = () => {
 
 /**
  * Validation au démarrage (server.js).
- * En production: échec fatal si secrets bancaires / CMI absents.
- * En développement: warning (permet le boot local sans CMI).
+ * Ne JAMAIS crasher le boot : les paiements offline/mock doivent laisser
+ * homepage, search et auth fonctionner. Les endpoints CMI/virement
+ * renvoient 503 via getCmiStoreKey / getBankCredentials si absents.
  */
 export const validatePaymentEnvAtStartup = () => {
   const missing = [];
@@ -58,14 +56,8 @@ export const validatePaymentEnvAtStartup = () => {
     return { ok: true, missing: [] };
   }
 
-  const message = `[paymentEnv] Missing required payment env vars: ${missing.join(', ')}`;
-
-  if (isProduction()) {
-    // [TASK-3] Échec explicite au démarrage en production
-    throw new Error(message);
-  }
-
-  console.warn(`${message} — payment endpoints that need them will return 503 until configured.`);
+  const message = `[paymentEnv] Missing payment env vars: ${missing.join(', ')} — payment endpoints return 503 until configured (app boot continues).`;
+  console.warn(message);
   return { ok: false, missing };
 };
 
