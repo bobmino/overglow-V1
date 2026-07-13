@@ -20,6 +20,7 @@ import { checkAvailability, reserveCapacity } from '../utils/availabilityService
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 import { processPayment } from '../services/paymentService.js';
+import { isPaymentSimAllowed } from '../utils/paymentSimGuard.js';
 import { validateAndConfirmBookingPayment } from '../services/bookingPaymentService.js';
 import notificationHub from '../services/notificationHub.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
@@ -46,8 +47,8 @@ const createPaymentIntent = async (req, res, next) => {
     });
 
     if (!paymentResult.clientSecret && paymentResult.simulated) {
-      if (process.env.NODE_ENV === 'production') {
-        return res.status(503).json({ message: 'Stripe n\'est pas configuré en production' });
+      if (!isPaymentSimAllowed()) {
+        return res.status(403).json({ message: 'Payment simulation disabled' });
       }
       return res.json({
         clientSecret: `mock_secret_${Date.now()}`,
@@ -350,6 +351,14 @@ const createBooking = async (req, res, next) => {
           provider: paymentMethod || 'stripe',
           message: paymentError?.message,
         });
+
+        if (paymentError?.statusCode === 403) {
+          return res.status(403).json({
+            success: false,
+            message: paymentError.message || 'Payment simulation disabled',
+            bookingId: createdBooking._id,
+          });
+        }
         
         return res.status(202).json({
           success: true,

@@ -6,14 +6,25 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
 
+/** [TASK-20] Simulator UI only when explicitly enabled outside production builds. */
+const isPaymentSimEnabled =
+  import.meta.env.PROD !== true &&
+  ['1', 'true', 'yes', 'on'].includes(
+    String(import.meta.env.VITE_ENABLE_PAYMENT_SIM || '').trim().toLowerCase()
+  );
+
 // FIX TDZ : Ne pas appeler loadStripe() au niveau module car cela cause un
 // ReferenceError lors du build Vite si la variable est accédée avant initialisation.
 // On utilise un pattern lazy : la Promise est créée une seule fois, au premier rendu.
 let _stripePromise = null;
 const getStripePromise = () => {
   if (!_stripePromise) {
-    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder';
-    _stripePromise = loadStripe(key).catch(err => {
+    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+    if (!key || key.includes('placeholder')) {
+      _stripePromise = Promise.resolve(null);
+      return _stripePromise;
+    }
+    _stripePromise = loadStripe(key).catch((err) => {
       logger.warn('Failed to load Stripe.js. Payments via card will be unavailable:', err.message);
       return null;
     });
@@ -29,7 +40,8 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!stripe || !elements) return;
+    if (!elements && !isPaymentSimEnabled) return;
+    if (!stripe && !isPaymentSimEnabled) return;
 
     setProcessing(true);
 
@@ -40,12 +52,22 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
         currency: 'eur'
       });
 
-      // Handle Mock Payment
-      if (clientSecret === 'mock_secret_for_testing') {
+      // Handle Mock Payment (dev + VITE_ENABLE_PAYMENT_SIM only)
+      if (
+        isPaymentSimEnabled &&
+        typeof clientSecret === 'string' &&
+        clientSecret.startsWith('mock_secret_')
+      ) {
         setTimeout(() => {
           onSuccess({ type: 'stripe', id: 'mock_payment_id_' + Date.now() });
           setProcessing(false);
-        }, 1500); // Simulate network delay
+        }, 1500);
+        return;
+      }
+
+      if (!stripe) {
+        onError(t('payment.err_payment_failed'));
+        setProcessing(false);
         return;
       }
 
@@ -279,6 +301,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           <span className="text-xs text-gray-500 mt-1">{t('payment.card_hint')}</span>
         </button>
 
+        {import.meta.env.VITE_PAYPAL_CLIENT_ID || isPaymentSimEnabled ? (
         <button
           onClick={() => setMethod('paypal')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
@@ -294,6 +317,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           <span className="font-bold text-gray-800">{t('payment.paypal')}</span>
           <span className="text-xs text-gray-500 mt-1">{t('payment.paypal_hint')}</span>
         </button>
+        ) : null}
 
         <button
           onClick={() => setMethod('cmi')}
@@ -382,12 +406,19 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200 text-center">
             <Wallet size={48} className="mx-auto mb-4 text-blue-600" />
             <p className="mb-6 text-gray-600 text-lg">{t('payment.paypal_redirect')}</p>
-            <button
-              onClick={() => handleSuccess({ type: 'paypal', id: 'mock_paypal_id' })}
-              className="w-full bg-[#0070ba] text-white py-4 rounded-xl font-bold hover:bg-[#003087] transition-all shadow-lg"
-            >
-              {t('payment.pay_paypal')}
-            </button>
+            {isPaymentSimEnabled ? (
+              <button
+                type="button"
+                onClick={() => handleSuccess({ type: 'paypal', id: `mock_paypal_${Date.now()}` })}
+                className="w-full bg-[#0070ba] text-white py-4 rounded-xl font-bold hover:bg-[#003087] transition-all shadow-lg"
+              >
+                {t('payment.pay_paypal')} (sim)
+              </button>
+            ) : (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                {t('payment.err_payment_failed')}
+              </p>
+            )}
           </div>
         )}
 

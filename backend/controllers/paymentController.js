@@ -12,12 +12,13 @@ import { getCmiStoreKey, getBankCredentials } from '../config/paymentEnv.js';
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
 import { getRateToMAD } from '../utils/currencyCache.js';
+import { isPaymentSimAllowed, isProductionEnv } from '../utils/paymentSimGuard.js';
 
 // Lazy initialization to prevent crashes if keys are not set
 let stripe = null;
 let paypalClient = null;
 
-const isProduction = () => process.env.NODE_ENV === 'production';
+const isProduction = () => isProductionEnv();
 
 const isStripeConfigured = () =>
   Boolean(process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('placeholder'));
@@ -123,10 +124,12 @@ const createStripeIntent = async (req, res) => {
     });
 
     if (!isStripeConfigured()) {
-      if (isProduction()) {
-        return res.status(503).json({ message: 'Stripe n\'est pas configuré en production' });
+      if (!isPaymentSimAllowed()) {
+        return res.status(403).json({
+          message: 'Payment simulation disabled — Stripe is not configured',
+        });
       }
-      logger.warn('Using mock Stripe PaymentIntent (dev only)');
+      logger.warn('Using mock Stripe PaymentIntent (sim allowed)');
       return res.json({
         clientSecret: `mock_secret_${Date.now()}`,
         paymentIntentId: `mock_pi_${Date.now()}`,
@@ -137,7 +140,7 @@ const createStripeIntent = async (req, res) => {
 
     const stripeInstance = getStripe();
     if (!stripeInstance) {
-      if (isProduction()) {
+      if (!isPaymentSimAllowed()) {
         return res.status(503).json({ message: 'Stripe indisponible' });
       }
       return res.json({

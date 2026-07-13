@@ -122,6 +122,7 @@ Disallow: /_next/
 Disallow: /login
 Disallow: /register
 Disallow: /checkout
+Disallow: /booking-success
 
 Sitemap: ${baseUrl}/sitemap.xml
 Sitemap: ${baseUrl}/api/sitemap.xml

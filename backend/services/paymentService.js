@@ -1,10 +1,9 @@
 import Stripe from 'stripe';
 import { logger } from '../utils/logger.js';
 import { captureException } from '../utils/sentry.js';
+import { isPaymentSimAllowed, isMockPaymentId } from '../utils/paymentSimGuard.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const isProduction = () => process.env.NODE_ENV === 'production';
 
 const providerHasKeys = (provider) => {
   switch (provider) {
@@ -40,13 +39,14 @@ export const processPayment = async ({
 }) => {
   try {
     if (process.env.SIMULATE_PAYMENT_FAILURE === '1') {
+      if (!isPaymentSimAllowed()) {
+        throw new Error('Payment simulation is disabled');
+      }
       await sleep(1000);
       throw new Error('Simulated payment failure');
     }
 
-    const isMockId =
-      paymentIntentId &&
-      (paymentIntentId.startsWith('mock_') || paymentIntentId.startsWith('sim_'));
+    const isMockId = isMockPaymentId(paymentIntentId);
 
     // Offline methods are never processed by a card PSP
     if (['cash_pickup', 'cash_delivery', 'bank_transfer'].includes(provider)) {
@@ -64,8 +64,12 @@ export const processPayment = async ({
     }
 
     if (!providerHasKeys(provider) || isMockId) {
-      if (isProduction() && provider === 'stripe') {
-        throw new Error('Stripe is not configured in production — refusing mock payment');
+      if (!isPaymentSimAllowed()) {
+        const err = new Error(
+          'Payment simulation is disabled. Configure real payment provider keys or set ENABLE_PAYMENT_SIM=true in non-production.'
+        );
+        err.statusCode = 403;
+        throw err;
       }
       await sleep(1000);
       logger.info('Payment simulated due to missing provider keys or mock ID', {
