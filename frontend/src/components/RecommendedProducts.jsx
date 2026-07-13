@@ -4,6 +4,7 @@ import api from '../config/axios';
 import ProductCard from './ProductCard';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personalized' }) => {
   const { isAuthenticated } = useAuth();
@@ -35,7 +36,7 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
       setProducts(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch recommendations:', error);
+      logger.error('Failed to fetch recommendations:', error);
       setProducts([]);
       setLoading(false);
     }

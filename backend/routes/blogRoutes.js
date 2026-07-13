@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+import { logger } from '../utils/logger.js';
   getBlogPosts,
   getBlogPostBySlug,
   getBlogCategories,
@@ -17,17 +18,17 @@ const router = express.Router();
 
 // Fallback handlers - ALWAYS return valid responses, NEVER throw errors
 const fallbackCategories = (req, res) => {
-  console.warn('[BLOG] Using fallback categories handler');
+  logger.warn('[BLOG] Using fallback categories handler');
   return res.status(200).json({ categories: [] });
 };
 
 const fallbackTags = (req, res) => {
-  console.warn('[BLOG] Using fallback tags handler');
+  logger.warn('[BLOG] Using fallback tags handler');
   return res.status(200).json({ tags: [] });
 };
 
 const fallbackPosts = (req, res) => {
-  console.warn('[BLOG] Using fallback posts handler');
+  logger.warn('[BLOG] Using fallback posts handler');
   return res.status(200).json({
     posts: [],
     pagination: {
@@ -47,11 +48,11 @@ const ultraSafeHandler = (handler, fallback) => {
 
       if (result && typeof result.catch === 'function') {
         return result.catch((error) => {
-          console.error('[BLOG] Handler promise error:', error?.message || error);
+          logger.error('[BLOG] Handler promise error:', error?.message || error);
           try {
             return fallback(req, res);
           } catch (fallbackError) {
-            console.error('[BLOG] Even fallback failed!', fallbackError);
+            logger.error('[BLOG] Even fallback failed!', fallbackError);
             return res.status(200).json({});
           }
         });
@@ -63,11 +64,11 @@ const ultraSafeHandler = (handler, fallback) => {
 
       return result;
     } catch (error) {
-      console.error('[BLOG] Handler sync error:', error?.message || error);
+      logger.error('[BLOG] Handler sync error:', error?.message || error);
       try {
         return fallback(req, res);
       } catch (fallbackError) {
-        console.error('[BLOG] Even fallback failed!', fallbackError);
+        logger.error('[BLOG] Even fallback failed!', fallbackError);
         return res.status(200).json({});
       }
     }

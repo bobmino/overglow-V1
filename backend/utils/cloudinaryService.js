@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { logger } from './logger.js';
 
 const configureCloudinary = () => {
   if (
@@ -57,7 +58,7 @@ export const uploadToCloudinary = async (buffer, options = {}) => {
       },
       (error, result) => {
         if (error) {
-          console.error('Cloudinary upload error:', error);
+          logger.error('Cloudinary upload error:', error);
           reject(error);
         } else {
           resolve(result.secure_url);
@@ -82,7 +83,7 @@ export const deleteFromCloudinary = async (url) => {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    console.error('Cloudinary delete error:', error);
+    logger.error('Cloudinary delete error:', error);
     throw error;
   }
 };

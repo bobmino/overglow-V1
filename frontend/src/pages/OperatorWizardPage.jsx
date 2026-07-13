@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
+import { logger } from '../utils/logger.js';
 
 const OperatorWizardPage = () => {
   const { t } = useTranslation();
@@ -67,7 +68,7 @@ const OperatorWizardPage = () => {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch wizard data:', error);
+        logger.error('Failed to fetch wizard data:', error);
       } finally {
         setLoading(false);
       }

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { logger } from '../utils/logger.js';
 
 /**
  * Custom hook for form validation with real-time feedback
@@ -83,7 +84,7 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
           const rawError = validatorFn(value);
           
           // Log for debugging
-          console.log(`🔍 Validating ${name} with ${rule.type}:`, {
+          logger.info(`🔍 Validating ${name} with ${rule.type}:`, {
             field: name,
             ruleType: rule.type,
             ruleValue: rule.value,
@@ -160,7 +161,7 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
     }, {}));
 
     // Always log validation details for debugging
-    console.log('🔍 Validation result:', {
+    logger.info('🔍 Validation result:', {
       isValid: isValid,
       errors: newErrors,
       errorCount: Object.keys(newErrors).length,

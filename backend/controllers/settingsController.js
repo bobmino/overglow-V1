@@ -1,4 +1,5 @@
 import Settings from '../models/settingsModel.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get all settings
 // @route   GET /api/settings
@@ -17,7 +18,7 @@ const getSettings = async (req, res) => {
     
     res.json(mergedSettings);
   } catch (error) {
-    console.error('Get settings error:', error);
+    logger.error('Get settings error:', error);
     res.status(500).json({ message: 'Failed to fetch settings' });
   }
 };
@@ -38,7 +39,7 @@ const updateSetting = async (req, res) => {
     
     res.json(setting);
   } catch (error) {
-    console.error('Update setting error:', error);
+    logger.error('Update setting error:', error);
     res.status(500).json({ message: 'Failed to update setting' });
   }
 };
@@ -57,7 +58,7 @@ const getSetting = async (req, res) => {
       value: setting ? setting.value : defaultSettings[key] 
     });
   } catch (error) {
-    console.error('Get setting error:', error);
+    logger.error('Get setting error:', error);
     res.status(500).json({ message: 'Failed to fetch setting' });
   }
 };

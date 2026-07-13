@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const NotificationBadge = () => {
   // FIX 401 : on attend que l'état d'auth soit stabilisé avant d'appeler l'API.
@@ -67,10 +68,10 @@ const NotificationBadge = () => {
           try {
             const registration = await navigator.serviceWorker.register('/sw.js');
             if (import.meta.env.DEV) {
-              console.log('Service Worker registered:', registration);
+              logger.info('Service Worker registered:', registration);
             }
           } catch (error) {
-            console.error('Service Worker registration failed:', error);
+            logger.error('Service Worker registration failed:', error);
           }
         }
       }

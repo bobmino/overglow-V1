@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Search as SearchIcon } from 'lucide-react';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Search for a place or activity" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +40,7 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
           setIsOpen(true);
           setLoading(false);
         } catch (error) {
-          console.error('Autocomplete error:', error);
+          logger.error('Autocomplete error:', error);
           setLoading(false);
         }
       }, 300);

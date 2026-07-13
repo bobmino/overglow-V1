@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import {
+import { logger } from '../utils/logger.js';
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, Area, AreaChart
 } from 'recharts';
@@ -86,7 +87,7 @@ const AnalyticsPage = () => {
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error('Export failed:', error);
       alert(t('analytics.export_error'));
     }
   };

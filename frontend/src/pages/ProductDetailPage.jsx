@@ -6,6 +6,7 @@ import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
 import { trackProductView, trackEvent } from '../utils/analytics';
 import { 
+import { logger } from '../utils/logger.js';
   MapPin, Clock, Star, CheckCircle, Users, Calendar as CalendarIcon, 
   X, ChevronDown, ChevronRight, Award, TrendingUp, Shield, Camera
 } from 'lucide-react';
@@ -117,7 +118,7 @@ const ProductDetailPage = () => {
             await api.post('/api/view-history', { productId: data._id });
           } catch (err) {
             // Silently fail - view history is optional
-            console.log('Could not record view:', err);
+            logger.info('Could not record view:', err);
           }
         }
         
@@ -127,7 +128,7 @@ const ProductDetailPage = () => {
             const { data: badgesData } = await api.get(`/api/badges/product/${data._id}`);
             setProductBadges(Array.isArray(badgesData) ? badgesData : []);
           } catch (err) {
-            console.error('Failed to load product badges:', err);
+            logger.error('Failed to load product badges:', err);
           }
           
           // Fetch operator badges if operator exists
@@ -136,7 +137,7 @@ const ProductDetailPage = () => {
               const { data: operatorBadgesData } = await api.get(`/api/badges/operator/${data.operator._id}`);
               setOperatorBadges(Array.isArray(operatorBadgesData) ? operatorBadgesData : []);
             } catch (err) {
-              console.error('Failed to load operator badges:', err);
+              logger.error('Failed to load operator badges:', err);
             }
           }
         }
@@ -203,11 +204,11 @@ const ProductDetailPage = () => {
             setRelatedProducts([]);
           }
         } catch (err) {
-          console.error('Failed to load related products:', err);
+          logger.error('Failed to load related products:', err);
           setRelatedProducts([]);
         }
       } catch (err) {
-        console.error('Failed to load product:', err);
+        logger.error('Failed to load product:', err);
         setError('Failed to load product');
         setLoading(false);
       }

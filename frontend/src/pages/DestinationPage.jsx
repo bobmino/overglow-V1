@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import DestinationGuide from '../components/DestinationGuide';
 import { MapPin, Star, Filter, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { canonicalUrl } from '../utils/siteUrl';
+import { logger } from '../utils/logger.js';
 
 const DestinationPage = () => {
   const { city: cityKey } = useParams();
@@ -36,7 +37,7 @@ const DestinationPage = () => {
         
         setLoading(false);
       } catch (error) {
-        console.error('Failed to load products:', error);
+        logger.error('Failed to load products:', error);
         setProducts([]);
         setLoading(false);
       }

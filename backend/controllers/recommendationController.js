@@ -1,4 +1,5 @@
 import {
+import { logger } from '../utils/logger.js';
   getPersonalizedRecommendations,
   getSimilarProducts,
   getTrendingProducts,
@@ -18,7 +19,7 @@ const getRecommendations = async (req, res) => {
 
     res.json(recommendations);
   } catch (error) {
-    console.error('Get recommendations error:', error);
+    logger.error('Get recommendations error:', error);
     res.status(500).json({ message: 'Failed to fetch recommendations' });
   }
 };
@@ -36,7 +37,7 @@ const getSimilar = async (req, res) => {
 
     res.json(similarProducts);
   } catch (error) {
-    console.error('Get similar products error:', error);
+    logger.error('Get similar products error:', error);
     res.status(500).json({ message: 'Failed to fetch similar products' });
   }
 };
@@ -54,7 +55,7 @@ const getTrending = async (req, res) => {
 
     res.json(trendingProducts);
   } catch (error) {
-    console.error('Get trending products error:', error);
+    logger.error('Get trending products error:', error);
     res.status(500).json({ message: 'Failed to fetch trending products' });
   }
 };
@@ -69,7 +70,7 @@ const getNewUserRecs = async (req, res) => {
 
     res.json(recommendations);
   } catch (error) {
-    console.error('Get new user recommendations error:', error);
+    logger.error('Get new user recommendations error:', error);
     res.status(500).json({ message: 'Failed to fetch recommendations' });
   }
 };

@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { Award, CheckCircle, X, Clock, Eye, AlertCircle, FileText } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const AdminBadgeRequestsPage = () => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ const AdminBadgeRequestsPage = () => {
       const { data } = await api.get('/api/badge-requests/pending');
       setRequests(data);
     } catch (error) {
-      console.error('Failed to fetch badge requests:', error);
+      logger.error('Failed to fetch badge requests:', error);
     } finally {
       setLoading(false);
     }
@@ -44,7 +45,7 @@ const AdminBadgeRequestsPage = () => {
       setAdminNotes('');
       alert(t('admin.badge_requests.approve_success'));
     } catch (error) {
-      console.error('Approve error:', error);
+      logger.error('Approve error:', error);
       alert(error.response?.data?.message || t('admin.badge_requests.approve_error'));
     } finally {
       setProcessing(false);
@@ -71,7 +72,7 @@ const AdminBadgeRequestsPage = () => {
       setAdminNotes('');
       alert(t('admin.badge_requests.reject_success'));
     } catch (error) {
-      console.error('Reject error:', error);
+      logger.error('Reject error:', error);
       alert(error.response?.data?.message || t('admin.badge_requests.reject_error'));
     } finally {
       setProcessing(false);

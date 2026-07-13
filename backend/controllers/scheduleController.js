@@ -3,6 +3,7 @@ import Product from '../models/productModel.js';
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
 import { getScheduleAvailability, getMultipleScheduleAvailability } from '../utils/availabilityService.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Create a schedule
 // @route   POST /api/products/:productId/schedules
@@ -87,7 +88,7 @@ const getSchedules = async (req, res) => {
     
     res.json(schedulesWithAvailability);
   } catch (error) {
-    console.error('Get schedules error:', error);
+    logger.error('Get schedules error:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des créneaux' });
   }
 };

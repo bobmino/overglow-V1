@@ -1,5 +1,6 @@
 import { getAboutContent, getCultureContent } from '../data/editorialContent.js';
 import { resolveRequestLang, SUPPORTED_LANGS } from '../utils/contentI18n.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Editorial about page content
 // @route   GET /api/content/about?lang=fr
@@ -12,7 +13,7 @@ export const getAboutPage = async (req, res) => {
       content: getAboutContent(lang),
     });
   } catch (error) {
-    console.error('getAboutPage error:', error);
+    logger.error('getAboutPage error:', error);
     res.status(500).json({ message: 'Failed to load about content' });
   }
 };
@@ -30,7 +31,7 @@ export const getCulturePage = async (req, res) => {
       authenticityTags: data.authenticityTags,
     });
   } catch (error) {
-    console.error('getCulturePage error:', error);
+    logger.error('getCulturePage error:', error);
     res.status(500).json({ message: 'Failed to load culture content' });
   }
 };

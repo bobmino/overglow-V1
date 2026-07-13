@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { generateAIResponse } from '../services/aiService.js';
 import asyncHandler from '../middleware/asyncHandler.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get or create chat for inquiry
 // @route   GET /api/chat/inquiry/:inquiryId
@@ -70,7 +71,7 @@ const getOrCreateInquiryChatHandler = async (req, res) => {
       messages,
     });
   } catch (error) {
-    console.error('Get or create inquiry chat error:', error);
+    logger.error('Get or create inquiry chat error:', error);
     res.status(500).json({ message: 'Failed to get or create chat' });
   }
 };
@@ -92,7 +93,7 @@ const getUserChatsHandler = async (req, res) => {
 
     res.json(chats);
   } catch (error) {
-    console.error('Get user chats error:', error);
+    logger.error('Get user chats error:', error);
     res.status(500).json({ message: 'Failed to fetch chats' });
   }
 };
@@ -149,7 +150,7 @@ const getChatByIdHandler = async (req, res) => {
       messages,
     });
   } catch (error) {
-    console.error('Get chat by ID error:', error);
+    logger.error('Get chat by ID error:', error);
     res.status(500).json({ message: 'Failed to fetch chat' });
   }
 };
@@ -193,7 +194,7 @@ const sendMessageHandler = async (req, res) => {
     try {
       aiResponse = await generateAIResponse(content);
     } catch (error) {
-      console.error('Error generating AI response:', error);
+      logger.error('Error generating AI response:', error);
       // Fallback non bloquant : On enregistre au moins l'action utilisateur sur le chat
       chat.lastMessage = userMessage._id;
       chat.lastMessageAt = new Date();
@@ -231,7 +232,7 @@ const sendMessageHandler = async (req, res) => {
     // Retourne les deux entitÃ©s crÃ©Ã©es pour synchroniser l'UI du chat
     res.status(201).json({ userMessage, aiMessage });
   } catch (error) {
-    console.error('Send message error:', error);
+    logger.error('Send message error:', error);
     res.status(500).json({ message: 'Failed to send message' });
   }
 };
@@ -273,7 +274,7 @@ const markChatAsReadHandler = async (req, res) => {
 
     res.json({ message: 'Chat marked as read' });
   } catch (error) {
-    console.error('Mark chat as read error:', error);
+    logger.error('Mark chat as read error:', error);
     res.status(500).json({ message: 'Failed to mark chat as read' });
   }
 };
@@ -327,7 +328,7 @@ const getOrCreateSupportChatHandler = async (req, res) => {
       messages,
     });
   } catch (error) {
-    console.error('Get or create support chat error:', error);
+    logger.error('Get or create support chat error:', error);
     res.status(500).json({ message: 'Failed to get or create support chat' });
   }
 };

@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const FavoritesPage = () => {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ const FavoritesPage = () => {
 
         setProducts(fetched);
       } catch (error) {
-        console.error('Failed to fetch wishlist products:', error);
+        logger.error('Failed to fetch wishlist products:', error);
       } finally {
         setLoading(false);
       }

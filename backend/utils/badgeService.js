@@ -4,6 +4,7 @@ import Product from '../models/productModel.js';
 import Review from '../models/reviewModel.js';
 import Booking from '../models/bookingModel.js';
 import Inquiry from '../models/inquiryModel.js';
+import { logger } from './logger.js';
 
 /**
  * Calculate operator metrics and update badges
@@ -81,7 +82,7 @@ export const updateOperatorMetrics = async (operatorId) => {
     // Update badges
     await assignOperatorBadges(operatorId);
   } catch (error) {
-    console.error('Error updating operator metrics:', error);
+    logger.error('Error updating operator metrics:', error);
   }
 };
 
@@ -154,7 +155,7 @@ export const updateProductMetrics = async (productId) => {
     // Update badges
     await assignProductBadges(productId);
   } catch (error) {
-    console.error('Error updating product metrics:', error);
+    logger.error('Error updating product metrics:', error);
   }
 };
 
@@ -239,7 +240,7 @@ const assignOperatorBadges = async (operatorId) => {
 
     return earnedBadges;
   } catch (error) {
-    console.error('Error assigning operator badges:', error);
+    logger.error('Error assigning operator badges:', error);
     return [];
   }
 };
@@ -319,7 +320,7 @@ const assignProductBadges = async (productId) => {
 
     return earnedBadges;
   } catch (error) {
-    console.error('Error assigning product badges:', error);
+    logger.error('Error assigning product badges:', error);
     return [];
   }
 };
@@ -515,22 +516,22 @@ export const initializeDefaultBadges = async () => {
             } else {
               // Badge exists with same name but different type - skip
               skipped++;
-              console.log(`⚠️  Skipping badge "${badgeData.name}" (type: ${badgeData.type}) - duplicate name exists`);
+              logger.info(`⚠️  Skipping badge "${badgeData.name}" (type: ${badgeData.type}) - duplicate name exists`);
             }
           } catch (updateError) {
             skipped++;
-            console.error(`⚠️  Error updating badge "${badgeData.name}":`, updateError.message);
+            logger.error(`⚠️  Error updating badge "${badgeData.name}":`, updateError.message);
           }
         } else {
           skipped++;
-          console.error(`⚠️  Error creating badge "${badgeData.name}":`, error.message);
+          logger.error(`⚠️  Error creating badge "${badgeData.name}":`, error.message);
         }
       }
     }
 
-    console.log(`Default badges initialized: ${created} created, ${updated} updated, ${skipped} skipped`);
+    logger.info(`Default badges initialized: ${created} created, ${updated} updated, ${skipped} skipped`);
   } catch (error) {
-    console.error('Error initializing default badges:', error);
+    logger.error('Error initializing default badges:', error);
     throw error;
   }
 };

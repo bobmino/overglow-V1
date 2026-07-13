@@ -4,6 +4,7 @@ import Product from '../models/productModel.js';
 import ViewHistory from '../models/viewHistoryModel.js';
 import Review from '../models/reviewModel.js';
 import Schedule from '../models/scheduleModel.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get advanced operator analytics with conversion funnel
 // @route   GET /api/operator/analytics/advanced
@@ -263,7 +264,7 @@ const getAdvancedAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get advanced analytics error:', error);
+    logger.error('Get advanced analytics error:', error);
     res.status(500).json({ message: 'Failed to fetch advanced analytics' });
   }
 };
@@ -372,7 +373,7 @@ const exportAnalyticsCSV = async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename=analytics-${new Date().toISOString().split('T')[0]}.csv`);
     res.send('\ufeff' + csv); // BOM for Excel compatibility
   } catch (error) {
-    console.error('Export CSV error:', error);
+    logger.error('Export CSV error:', error);
     res.status(500).json({ message: 'Failed to export analytics' });
   }
 };

@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { Users, Mail, Shield, Trash2, AlertCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -26,7 +27,7 @@ const AdminUsersPage = () => {
       setUsers(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      logger.error('Failed to fetch users:', error);
       setLoading(false);
     }
   };

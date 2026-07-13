@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { Save, Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const CATEGORIES = [
   { value: 'Destinations', key: 'destinations' },
@@ -73,7 +74,7 @@ const AdminBlogFormPage = () => {
         setError(t('admin.blog_form.post_not_found'));
       }
     } catch (error) {
-      console.error('Failed to fetch post:', error);
+      logger.error('Failed to fetch post:', error);
       setError(t('admin.blog_form.load_error'));
     } finally {
       setLoading(false);
@@ -117,7 +118,7 @@ const AdminBlogFormPage = () => {
       setSuccess(t('admin.blog_form.image_upload_success'));
       setUploading(false);
     } catch (error) {
-      console.error('Image upload error:', error);
+      logger.error('Image upload error:', error);
       setError(t('admin.blog_form.image_upload_error'));
       setUploading(false);
     }
@@ -209,8 +210,8 @@ const AdminBlogFormPage = () => {
         navigate('/admin/blog');
       }, 1500);
     } catch (error) {
-      console.error('Failed to save post:', error);
-      console.error('Error details:', {
+      logger.error('Failed to save post:', error);
+      logger.error('Error details:', {
         message: error.message,
         response: error.response,
         data: error.response?.data,

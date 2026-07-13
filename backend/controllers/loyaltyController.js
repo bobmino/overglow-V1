@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import {
+import { logger } from '../utils/logger.js';
   getLoyaltyBenefits,
   redeemPoints,
   calculatePointsForBooking,
@@ -29,7 +30,7 @@ const getLoyaltyStatus = async (req, res) => {
       pointsHistory: user.loyaltyPointsHistory?.slice(-10) || [], // Last 10 transactions
     });
   } catch (error) {
-    console.error('Get loyalty status error:', error);
+    logger.error('Get loyalty status error:', error);
     res.status(500).json({ message: 'Failed to fetch loyalty status' });
   }
 };
@@ -53,7 +54,7 @@ const redeemLoyaltyPoints = async (req, res) => {
       remainingPoints: result.remainingPoints,
     });
   } catch (error) {
-    console.error('Redeem points error:', error);
+    logger.error('Redeem points error:', error);
     res.status(500).json({ message: error.message || 'Failed to redeem points' });
   }
 };
@@ -78,7 +79,7 @@ const getLoyaltyHistory = async (req, res) => {
 
     res.json(history);
   } catch (error) {
-    console.error('Get loyalty history error:', error);
+    logger.error('Get loyalty history error:', error);
     res.status(500).json({ message: 'Failed to fetch loyalty history' });
   }
 };

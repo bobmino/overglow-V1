@@ -2,16 +2,17 @@ import Blog from '../models/blogModel.js';
 import mongoose from 'mongoose';
 import { validationResult } from 'express-validator';
 import connectDB from '../../config/db.js';
+import { logger } from '../utils/logger.js';
 
 const ensureDbConnected = async () => {
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     return;
   }
-  console.log('Database not connected. Attempting connection...');
+  logger.info('Database not connected. Attempting connection...');
   try {
     await connectDB();
   } catch (err) {
-    console.error('Failed to connect to database:', err);
+    logger.error('Failed to connect to database:', err);
   }
 };
 
@@ -23,7 +24,7 @@ export const getBlogPosts = async (req, res) => {
   try {
     // Check if Blog model exists
     if (!Blog) {
-      console.warn('Blog model not available, returning empty posts');
+      logger.warn('Blog model not available, returning empty posts');
       return res.json({
         posts: [],
         pagination: {
@@ -135,12 +136,12 @@ export const getBlogPosts = async (req, res) => {
       .limit(parseInt(limit))
       .lean()
       .catch(err => {
-        console.error('Database query error in getBlogPosts:', err);
+        logger.error('Database query error in getBlogPosts:', err);
         return [];
       });
 
     const total = await Blog.countDocuments(query).catch(err => {
-        console.error('Count documents error:', err);
+        logger.error('Count documents error:', err);
         return 0;
       });
 
@@ -154,8 +155,8 @@ export const getBlogPosts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get blog posts error:', error);
-    console.error('Error stack:', error.stack);
+    logger.error('Get blog posts error:', error);
+    logger.error('Error stack:', error.stack);
     // Always return a valid response, even on error
     return res.json({
       posts: [],
@@ -195,7 +196,7 @@ export const getBlogPostBySlug = async (req, res) => {
 
     // Increment views (async, don't wait)
     Blog.findByIdAndUpdate(post._id, { $inc: { views: 1 } }).catch(err => 
-      console.error('Error incrementing views:', err)
+      logger.error('Error incrementing views:', err)
     );
 
     // Get related posts
@@ -216,7 +217,7 @@ export const getBlogPostBySlug = async (req, res) => {
       relatedPosts,
     });
   } catch (error) {
-    console.error('Get blog post error:', error);
+    logger.error('Get blog post error:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération de l\'article' });
   }
 };
@@ -235,15 +236,15 @@ export const getBlogCategories = async (req, res) => {
     } catch (err) {
       // If collection doesn't exist or query fails, return empty array
       // This is expected if no blog posts have been created yet
-      console.warn('Could not fetch blog categories (collection may not exist):', err.message);
+      logger.warn('Could not fetch blog categories (collection may not exist):', err.message);
       categories = [];
     }
     
     return res.json({ categories: Array.isArray(categories) ? categories : [] });
   } catch (error) {
-    console.error('Get blog categories error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error details:', {
+    logger.error('Get blog categories error:', error);
+    logger.error('Error stack:', error.stack);
+    logger.error('Error details:', {
       message: error.message,
       name: error.name,
       code: error.code,
@@ -262,7 +263,7 @@ export const getBlogTags = async (req, res) => {
   try {
     // Check if Blog model exists
     if (!Blog) {
-      console.warn('Blog model not available, returning empty tags');
+      logger.warn('Blog model not available, returning empty tags');
       return res.json({ tags: [] });
     }
 
@@ -275,7 +276,7 @@ export const getBlogTags = async (req, res) => {
     } catch (err) {
       // If collection doesn't exist or query fails, return empty array
       // This is expected if no blog posts have been created yet
-      console.warn('Could not fetch blog tags (collection may not exist):', err.message);
+      logger.warn('Could not fetch blog tags (collection may not exist):', err.message);
       tags = [];
     }
     
@@ -283,9 +284,9 @@ export const getBlogTags = async (req, res) => {
     const flatTags = Array.isArray(tags) ? tags.flat().filter(Boolean) : [];
     return res.json({ tags: flatTags });
   } catch (error) {
-    console.error('Get blog tags error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error details:', {
+    logger.error('Get blog tags error:', error);
+    logger.error('Error stack:', error.stack);
+    logger.error('Error details:', {
       message: error.message,
       name: error.name,
       code: error.code,
@@ -348,8 +349,8 @@ export const createBlogPost = async (req, res) => {
 
     res.status(201).json(populatedPost);
   } catch (error) {
-    console.error('Create blog post error:', error);
-    console.error('Error details:', {
+    logger.error('Create blog post error:', error);
+    logger.error('Error details:', {
       message: error.message,
       name: error.name,
       code: error.code,
@@ -421,7 +422,7 @@ export const updateBlogPost = async (req, res) => {
 
     res.json(populatedPost);
   } catch (error) {
-    console.error('Update blog post error:', error);
+    logger.error('Update blog post error:', error);
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Un article avec ce slug existe déjà' });
     }
@@ -443,7 +444,7 @@ export const deleteBlogPost = async (req, res) => {
     await post.deleteOne();
     res.json({ message: 'Article supprimé avec succès' });
   } catch (error) {
-    console.error('Delete blog post error:', error);
+    logger.error('Delete blog post error:', error);
     res.status(500).json({ message: 'Erreur lors de la suppression de l\'article' });
   }
 };
@@ -487,7 +488,7 @@ export const getAllBlogPosts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get all blog posts error:', error);
+    logger.error('Get all blog posts error:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des articles' });
   }
 };
@@ -628,7 +629,7 @@ export const initializeBlogPosts = async (req, res) => {
       totalPosts,
     });
   } catch (error) {
-    console.error('Initialize blog posts error:', error);
+    logger.error('Initialize blog posts error:', error);
     res.status(500).json({ message: 'Erreur lors de l\'initialisation des articles' });
   }
 };

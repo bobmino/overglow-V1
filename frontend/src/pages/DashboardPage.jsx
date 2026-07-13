@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import ReviewModal from '../components/ReviewModal';
 import RecommendationsSection from '../components/RecommendationsSection';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -28,7 +29,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
         const { data } = await api.get(`/api/bookings/${booking._id}/refund-calculation`);
         setRefundInfo(data);
       } catch (error) {
-        console.error('Failed to fetch refund info:', error);
+        logger.error('Failed to fetch refund info:', error);
       } finally {
         setLoadingRefund(false);
       }
@@ -174,7 +175,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
       }
       onBookingCancelled();
     } catch (error) {
-      console.error('Cancel error:', error);
+      logger.error('Cancel error:', error);
       alert(error.response?.data?.message || t('dashboard.cancel_failed'));
     }
   };
@@ -301,7 +302,7 @@ const DashboardPage = () => {
       
       navigate('/operator/wizard');
     } catch (error) {
-      console.error('Failed to upgrade to operator:', error);
+      logger.error('Failed to upgrade to operator:', error);
       alert(t('dashboard.upgrade_error'));
     } finally {
       setIsUpgrading(false);
@@ -314,7 +315,7 @@ const DashboardPage = () => {
       setBookings(data);
       setLoading(false);
     } catch (err) {
-      console.error('Booking fetch error:', err);
+      logger.error('Booking fetch error:', err);
       setError(t('dashboard.load_error'));
       setLoading(false);
     }

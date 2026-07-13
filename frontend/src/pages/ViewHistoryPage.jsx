@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 import { Clock, Trash2 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const ViewHistoryPage = () => {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ const ViewHistoryPage = () => {
       setProducts(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch view history:', error);
+      logger.error('Failed to fetch view history:', error);
       setProducts([]);
       setLoading(false);
     }
@@ -37,7 +38,7 @@ const ViewHistoryPage = () => {
       setProducts([]);
       alert(t('history.cleared'));
     } catch (error) {
-      console.error('Failed to clear history:', error);
+      logger.error('Failed to clear history:', error);
       alert(t('history.clear_error'));
     }
   };

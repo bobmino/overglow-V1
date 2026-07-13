@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 /**
  * Utilitaire centralisé pour les URLs d'images.
  * La bascule backend / VPS se fait uniquement via VITE_API_URL dans le fichier .env
@@ -44,7 +45,7 @@ export const formatImageUrl = (value) => {
 
   if (!base) {
     if (import.meta.env.DEV) {
-      console.warn(
+      logger.warn(
         '[formatImageUrl] VITE_API_URL non défini — chemin relatif non résolu:',
         normalizedPath
       );

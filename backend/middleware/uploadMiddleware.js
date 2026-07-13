@@ -4,6 +4,7 @@ import multer from 'multer';
 import { compressImageBuffer } from '../utils/imageCompression.js';
 import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryService.js';
 import { isAllowedCsvUpload } from '../utils/csvSanitize.js';
+import { logger } from '../utils/logger.js';
 
 // Use memory storage for Vercel (read-only filesystem)
 const storage = multer.memoryStorage();
@@ -67,14 +68,14 @@ const compressAfterUpload = async (req, res, next) => {
           file.cloudinaryUrl = cloudinaryUrl;
           file.dataUrl = cloudinaryUrl;
         } catch (cloudinaryError) {
-          console.error('Cloudinary upload failed, falling back to base64:', cloudinaryError);
+          logger.error('Cloudinary upload failed, falling back to base64:', cloudinaryError);
           file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
         }
       } else {
         file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
       }
     } catch (error) {
-      console.error('Error compressing image:', error);
+      logger.error('Error compressing image:', error);
       if (file.buffer) {
         const mimeType = file.mimetype || 'image/jpeg';
         file.dataUrl = `data:${mimeType};base64,${file.buffer.toString('base64')}`;

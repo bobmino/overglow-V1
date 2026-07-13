@@ -24,6 +24,20 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // [TASK-18] Prefer frontend/src/utils/logger.js — allow console only in the logger sink
+      'no-console': 'error',
+    },
+  },
+  {
+    files: ['src/utils/logger.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['**/*.{test,spec}.{js,jsx}', 'cypress/**/*.{js,jsx}'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ])

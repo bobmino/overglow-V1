@@ -3,6 +3,7 @@ import Review from '../models/reviewModel.js';
 import Schedule from '../models/scheduleModel.js';
 import { popularDestinations, activityCategories, popularActivities } from '../data/popularDestinations.js';
 import {
+import { logger } from '../utils/logger.js';
   escapeRegex,
   normalizeCategory,
   matchesDurationFilter,
@@ -69,7 +70,7 @@ export const getAutocomplete = async (req, res) => {
       showNearby: true
     });
   } catch (error) {
-    console.error('Autocomplete error:', error);
+    logger.error('Autocomplete error:', error);
     return res.json({ cities: [], activities: [], showNearby: true });
   }
 };
@@ -87,7 +88,7 @@ export const getCategories = async (req, res) => {
       { $sort: { count: -1 } }
     ]);
     } catch (aggregateError) {
-      console.error('Get categories aggregate error:', aggregateError);
+      logger.error('Get categories aggregate error:', aggregateError);
       categoryCounts = [];
     }
 
@@ -102,7 +103,7 @@ export const getCategories = async (req, res) => {
           status: { $regex: /^published$/i },
         })).filter(Boolean);
       } catch (distinctError) {
-        console.error('Get categories distinct fallback error:', distinctError);
+        logger.error('Get categories distinct fallback error:', distinctError);
         dynamicCategories = [];
       }
     }
@@ -113,7 +114,7 @@ export const getCategories = async (req, res) => {
       counts: categoryCounts
     });
   } catch (error) {
-    console.error('Get categories error:', error);
+    logger.error('Get categories error:', error);
     return res.json({
       categories: [],
       popularActivities: Array.isArray(popularActivities) ? popularActivities : [],
@@ -141,7 +142,7 @@ export const getPopularDestinations = async (req, res) => {
       byRegion
     });
   } catch (error) {
-    console.error('Get destinations error:', error);
+    logger.error('Get destinations error:', error);
     res.status(500).json({ message: 'Failed to fetch destinations' });
   }
 };
@@ -179,7 +180,7 @@ export const advancedSearch = async (req, res) => {
         .sort(hasGeo ? undefined : sort)
         .lean();
     } catch (mongoError) {
-      console.error('Advanced search mongo error:', mongoError);
+      logger.error('Advanced search mongo error:', mongoError);
       return res.json({
         products: [],
         total: 0,
@@ -300,7 +301,7 @@ export const advancedSearch = async (req, res) => {
       lang,
     });
   } catch (error) {
-    console.error('Advanced search error:', error);
+    logger.error('Advanced search error:', error);
     return res.json({
       products: [],
       total: 0,
@@ -362,7 +363,7 @@ export const getSearchFacets = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get search facets error:', error);
+    logger.error('Get search facets error:', error);
     res.json({
       cities: [],
       categories: [],
@@ -416,7 +417,7 @@ export const getSearchSuggestions = async (req, res) => {
       suggestions: uniqueSuggestions,
     });
   } catch (error) {
-    console.error('Suggestions error:', error);
+    logger.error('Suggestions error:', error);
     return res.json({ suggestions: [] });
   }
 };

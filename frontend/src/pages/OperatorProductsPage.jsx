@@ -7,6 +7,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import BadgeRequestModal from '../components/BadgeRequestModal';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
+import { logger } from '../utils/logger.js';
 
 const OperatorProductsPage = () => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ const OperatorProductsPage = () => {
       setProducts(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      logger.error('Failed to fetch products:', error);
       setLoading(false);
     }
   };

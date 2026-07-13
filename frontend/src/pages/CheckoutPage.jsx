@@ -9,6 +9,7 @@ import { useCart } from '../context/CartContext';
 import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
+import { logger } from '../utils/logger.js';
 
 const dateLocaleMap = { fr: 'fr-FR', en: 'en-GB', es: 'es-ES', ar: 'ar-MA' };
 
@@ -128,7 +129,7 @@ const CheckoutPage = () => {
         navigate('/booking-success', { state: { booking: createdBookings[0] } });
       }
     } catch (err) {
-      console.error('❌ Booking creation failed:', err.response?.data || err.message);
+      logger.error('❌ Booking creation failed:', err.response?.data || err.message);
       if (err.response?.data?.errors) {
         setError(JSON.stringify(err.response.data.errors));
       } else {

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -46,10 +47,10 @@ const NotificationsPage = () => {
             setUnreadCount(0);
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
           })
-          .catch(err => console.error('Failed to auto-mark all as read:', err));
+          .catch(err => logger.error('Failed to auto-mark all as read:', err));
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      logger.error('Failed to fetch notifications:', error);
       setLoading(false);
     }
   };
@@ -62,7 +63,7 @@ const NotificationsPage = () => {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Failed to mark as read:', error);
+      logger.error('Failed to mark as read:', error);
     }
   };
 
@@ -72,7 +73,7 @@ const NotificationsPage = () => {
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Failed to mark all as read:', error);
+      logger.error('Failed to mark all as read:', error);
     }
   };
 
@@ -87,7 +88,7 @@ const NotificationsPage = () => {
         return prev.filter(n => n._id !== notificationId);
       });
     } catch (error) {
-      console.error('Failed to delete notification:', error);
+      logger.error('Failed to delete notification:', error);
     }
   };
 

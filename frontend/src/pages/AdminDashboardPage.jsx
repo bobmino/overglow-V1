@@ -6,6 +6,7 @@ import { Users, Building2, Package, Calendar, DollarSign, CheckCircle, Clock } f
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import AdminAnalytics from '../components/AdminAnalytics';
+import { logger } from '../utils/logger.js';
 
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
   <div
@@ -43,7 +44,7 @@ const AdminDashboardPage = () => {
         setStats(data);
         setLoading(false);
       } catch (error) {
-        console.error('Failed to fetch admin stats:', error);
+        logger.error('Failed to fetch admin stats:', error);
         setLoading(false);
       }
     };

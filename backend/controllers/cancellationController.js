@@ -1,6 +1,7 @@
 import Booking from '../models/bookingModel.js';
 import { calculateRefund, cancelBooking, processRefund } from '../utils/cancellationService.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Calculate refund for a booking
 // @route   GET /api/bookings/:id/refund-calculation
@@ -21,7 +22,7 @@ const getRefundCalculation = async (req, res) => {
     const refundInfo = await calculateRefund(req.params.id);
     res.json(refundInfo);
   } catch (error) {
-    console.error('Get refund calculation error:', error);
+    logger.error('Get refund calculation error:', error);
     res.status(500).json({ message: 'Failed to calculate refund', error: error.message });
   }
 };
@@ -52,7 +53,7 @@ const cancelBookingRequest = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error('Cancel booking error:', error);
+    logger.error('Cancel booking error:', error);
     res.status(500).json({ message: 'Failed to cancel booking', error: error.message });
   }
 };
@@ -71,7 +72,7 @@ const processRefundRequest = async (req, res) => {
     const result = await processRefund(req.params.id, paymentMethod, paymentDetails);
     res.json(result);
   } catch (error) {
-    console.error('Process refund error:', error);
+    logger.error('Process refund error:', error);
     res.status(500).json({ message: 'Failed to process refund', error: error.message });
   }
 };

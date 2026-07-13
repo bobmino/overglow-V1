@@ -4,6 +4,7 @@ import Product from '../models/productModel.js';
 import Booking from '../models/bookingModel.js';
 import Schedule from '../models/scheduleModel.js';
 import {
+import { logger } from '../utils/logger.js';
   notifyProductApproved,
   notifyOperatorApproved,
   notifyOnboardingApproved,
@@ -86,7 +87,7 @@ const getAdminStats = async (req, res) => {
       }, {}),
     });
   } catch (error) {
-    console.error('Get admin stats error:', error);
+    logger.error('Get admin stats error:', error);
     res.status(500).json({ message: 'Failed to fetch admin stats' });
   }
 };
@@ -146,7 +147,7 @@ const getOperators = async (req, res) => {
     
     res.json(operatorsWithOnboarding);
   } catch (error) {
-    console.error('Get operators error:', error);
+    logger.error('Get operators error:', error);
     res.status(500).json({ message: 'Failed to fetch operators' });
   }
 };
@@ -238,7 +239,7 @@ const updateOperatorStatus = async (req, res) => {
       
       // Send email to operator
       if (user) {
-        sendOperatorApprovedEmail(user).catch(err => console.error('Failed to send approved email:', err));
+        sendOperatorApprovedEmail(user).catch(err => logger.error('Failed to send approved email:', err));
       }
     }
     
@@ -249,8 +250,8 @@ const updateOperatorStatus = async (req, res) => {
     
     res.json(populatedOperator);
   } catch (error) {
-    console.error('Update operator status error:', error);
-    console.error('Error details:', {
+    logger.error('Update operator status error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -308,7 +309,7 @@ const getProducts = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get products error:', error);
+    logger.error('Get products error:', error);
     res.status(500).json({ message: 'Failed to fetch products' });
   }
 };
@@ -336,7 +337,7 @@ const updateProductStatus = async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (error) {
-    console.error('Update product status error:', error);
+    logger.error('Update product status error:', error);
     res.status(500).json({ message: 'Failed to update product status' });
   }
 };
@@ -389,7 +390,7 @@ const assignProductToOperator = async (req, res) => {
       return res.status(200).json({ message: 'Produit réassigné et modifié avec succès', product: originalProduct });
     }
   } catch (error) {
-    console.error('Assign product error:', error);
+    logger.error('Assign product error:', error);
     res.status(500).json({ message: 'Failed to assign product' });
   }
 };
@@ -402,7 +403,7 @@ const getUsers = async (req, res) => {
     const users = await User.find({}).select('-password').sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
-    console.error('Get users error:', error);
+    logger.error('Get users error:', error);
     res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
@@ -421,7 +422,7 @@ const deleteUser = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error('Delete user error:', error);
+    logger.error('Delete user error:', error);
     res.status(500).json({ message: 'Failed to delete user' });
   }
 };
@@ -486,7 +487,7 @@ const initializeBadgesAndFlags = async (req, res) => {
         await updateProductMetrics(product._id);
         productsWithBadges++;
       } catch (error) {
-        console.error(`Error updating badges for product ${product._id}:`, error.message);
+        logger.error(`Error updating badges for product ${product._id}:`, error.message);
         productsWithErrors++;
       }
     }
@@ -499,7 +500,7 @@ const initializeBadgesAndFlags = async (req, res) => {
         await updateOperatorMetrics(operator._id);
         operatorsWithBadges++;
       } catch (error) {
-        console.error(`Error updating badges for operator ${operator._id}:`, error.message);
+        logger.error(`Error updating badges for operator ${operator._id}:`, error.message);
         operatorsWithErrors++;
       }
     }
@@ -519,7 +520,7 @@ const initializeBadgesAndFlags = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Initialize badges error:', error);
+    logger.error('Initialize badges error:', error);
     res.status(500).json({ 
       message: 'Failed to initialize badges',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -571,7 +572,7 @@ const createBadge = async (req, res) => {
 
     res.status(201).json(badge);
   } catch (error) {
-    console.error('Create badge error:', error);
+    logger.error('Create badge error:', error);
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Badge with this name and type already exists' });
     }
@@ -597,7 +598,7 @@ const getAllBadges = async (req, res) => {
     const badges = await Badge.find(query).sort({ type: 1, name: 1 });
     res.json(badges);
   } catch (error) {
-    console.error('Get all badges error:', error);
+    logger.error('Get all badges error:', error);
     res.status(500).json({ message: 'Failed to fetch badges' });
   }
 };
@@ -616,7 +617,7 @@ const getRequestableBadges = async (req, res) => {
     const badges = await Badge.find(query).sort({ name: 1 });
     res.json(badges);
   } catch (error) {
-    console.error('Get requestable badges error:', error);
+    logger.error('Get requestable badges error:', error);
     res.status(500).json({ message: 'Failed to fetch requestable badges' });
   }
 };
@@ -672,7 +673,7 @@ const assignBadgeToProducts = async (req, res) => {
         // Recalculate badges to ensure consistency
         await updateProductMetrics(productId);
       } catch (error) {
-        console.error(`Error assigning badge to product ${productId}:`, error.message);
+        logger.error(`Error assigning badge to product ${productId}:`, error.message);
         errors++;
       }
     }
@@ -684,7 +685,7 @@ const assignBadgeToProducts = async (req, res) => {
       total: productIds.length,
     });
   } catch (error) {
-    console.error('Assign badge to products error:', error);
+    logger.error('Assign badge to products error:', error);
     res.status(500).json({ 
       message: 'Failed to assign badge to products',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -743,7 +744,7 @@ const assignBadgeToOperators = async (req, res) => {
         // Recalculate badges to ensure consistency
         await updateOperatorMetrics(operatorId);
       } catch (error) {
-        console.error(`Error assigning badge to operator ${operatorId}:`, error.message);
+        logger.error(`Error assigning badge to operator ${operatorId}:`, error.message);
         errors++;
       }
     }
@@ -755,7 +756,7 @@ const assignBadgeToOperators = async (req, res) => {
       total: operatorIds.length,
     });
   } catch (error) {
-    console.error('Assign badge to operators error:', error);
+    logger.error('Assign badge to operators error:', error);
     res.status(500).json({ 
       message: 'Failed to assign badge to operators',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -814,7 +815,7 @@ const updateBadge = async (req, res) => {
     await badge.save();
     res.json(badge);
   } catch (error) {
-    console.error('Update badge error:', error);
+    logger.error('Update badge error:', error);
     res.status(500).json({ 
       message: 'Failed to update badge',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -840,7 +841,7 @@ const deleteBadge = async (req, res) => {
 
     res.json({ message: 'Badge deactivated successfully' });
   } catch (error) {
-    console.error('Delete badge error:', error);
+    logger.error('Delete badge error:', error);
     res.status(500).json({ 
       message: 'Failed to delete badge',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -866,7 +867,7 @@ const getProductsByBadge = async (req, res) => {
 
     res.json({ badge, products });
   } catch (error) {
-    console.error('Get products by badge error:', error);
+    logger.error('Get products by badge error:', error);
     res.status(500).json({ message: 'Failed to fetch products for badge' });
   }
 };
@@ -889,7 +890,7 @@ const getOperatorsByBadge = async (req, res) => {
 
     res.json({ badge, operators });
     } catch (error) {
-      console.error('Get operators by badge error:', error);
+      logger.error('Get operators by badge error:', error);
       res.status(500).json({ message: 'Failed to fetch operators for badge' });
     }
   };
@@ -920,7 +921,7 @@ const getOperatorsByBadge = async (req, res) => {
   
       res.json(bookings);
     } catch (error) {
-      console.error('Get pending payment bookings error:', error);
+      logger.error('Get pending payment bookings error:', error);
       res.status(500).json({ message: 'Failed to fetch pending payment bookings' });
     }
   };
@@ -969,7 +970,7 @@ const getOperatorsByBadge = async (req, res) => {
         try {
           await sendBookingConfirmation(booking, booking.user);
         } catch (emailError) {
-          console.error('Failed to send confirmation email:', emailError.message);
+          logger.error('Failed to send confirmation email:', emailError.message);
           // Don't fail the request if email fails
         }
       }
@@ -992,7 +993,7 @@ const getOperatorsByBadge = async (req, res) => {
         booking: updatedBooking,
       });
     } catch (error) {
-      console.error('Confirm payment error:', error);
+      logger.error('Confirm payment error:', error);
       res.status(500).json({ message: 'Failed to confirm payment' });
     }
   };
@@ -1045,7 +1046,7 @@ const getOperatorsByBadge = async (req, res) => {
             refundStatus: 'Not Applicable',
           });
         } catch (emailError) {
-          console.error('Failed to send cancellation email:', emailError.message);
+          logger.error('Failed to send cancellation email:', emailError.message);
           // Don't fail the request if email fails
         }
       }
@@ -1068,7 +1069,7 @@ const getOperatorsByBadge = async (req, res) => {
         booking: updatedBooking,
       });
     } catch (error) {
-      console.error('Reject payment error:', error);
+      logger.error('Reject payment error:', error);
       res.status(500).json({ message: 'Failed to reject payment' });
     }
   };
@@ -1147,7 +1148,7 @@ const getAnalytics = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get analytics error:', error);
+    logger.error('Get analytics error:', error);
     res.status(500).json({ message: 'Failed to fetch analytics' });
   }
 };

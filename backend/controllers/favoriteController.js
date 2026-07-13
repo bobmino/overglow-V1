@@ -1,5 +1,6 @@
 import Favorite from '../models/favoriteModel.js';
 import Product from '../models/productModel.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get user's favorites
 // @route   GET /api/favorites
@@ -25,7 +26,7 @@ const getFavorites = async (req, res) => {
 
     res.json(favorites);
   } catch (error) {
-    console.error('Get favorites error:', error);
+    logger.error('Get favorites error:', error);
     res.status(500).json({ message: 'Failed to fetch favorites' });
   }
 };
@@ -43,7 +44,7 @@ const getFavoriteLists = async (req, res) => {
 
     res.json(lists.map(list => ({ name: list._id, count: list.count })));
   } catch (error) {
-    console.error('Get favorite lists error:', error);
+    logger.error('Get favorite lists error:', error);
     res.status(500).json({ message: 'Failed to fetch favorite lists' });
   }
 };
@@ -98,7 +99,7 @@ const addFavorite = async (req, res) => {
 
     res.status(201).json(favorite);
   } catch (error) {
-    console.error('Add favorite error:', error);
+    logger.error('Add favorite error:', error);
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Product already in this list' });
     }
@@ -125,7 +126,7 @@ const removeFavorite = async (req, res) => {
     await favorite.deleteOne();
     res.json({ message: 'Favorite removed' });
   } catch (error) {
-    console.error('Remove favorite error:', error);
+    logger.error('Remove favorite error:', error);
     res.status(500).json({ message: 'Failed to remove favorite' });
   }
 };
@@ -178,7 +179,7 @@ const updateFavorite = async (req, res) => {
 
     res.json(favorite);
   } catch (error) {
-    console.error('Update favorite error:', error);
+    logger.error('Update favorite error:', error);
     res.status(500).json({ message: 'Failed to update favorite' });
   }
 };
@@ -200,7 +201,7 @@ const checkFavorite = async (req, res) => {
 
     res.json({ isFavorited: !!favorite, favorite: favorite || null });
   } catch (error) {
-    console.error('Check favorite error:', error);
+    logger.error('Check favorite error:', error);
     res.status(500).json({ message: 'Failed to check favorite' });
   }
 };
@@ -226,7 +227,7 @@ const shareList = async (req, res) => {
     
     res.json({ shareUrl, shareToken });
   } catch (error) {
-    console.error('Share list error:', error);
+    logger.error('Share list error:', error);
     res.status(500).json({ message: 'Failed to share list' });
   }
 };
@@ -258,7 +259,7 @@ const getSharedList = async (req, res) => {
       count: favorites.length,
     });
   } catch (error) {
-    console.error('Get shared list error:', error);
+    logger.error('Get shared list error:', error);
     res.status(500).json({ message: 'Failed to fetch shared list' });
   }
 };
@@ -294,7 +295,7 @@ const getPriceAlerts = async (req, res) => {
     
     res.json({ alerts, count: alerts.length });
   } catch (error) {
-    console.error('Get price alerts error:', error);
+    logger.error('Get price alerts error:', error);
     res.status(500).json({ message: 'Failed to fetch price alerts' });
   }
 };

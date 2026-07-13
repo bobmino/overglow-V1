@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -35,7 +36,7 @@ const ApprovalRequestsPage = () => {
       setRequests(requestsArray);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch approval requests:', error);
+      logger.error('Failed to fetch approval requests:', error);
       setRequests([]);
       setLoading(false);
     }

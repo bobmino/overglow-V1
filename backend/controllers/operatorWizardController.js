@@ -1,6 +1,7 @@
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
 import { sanitizeBody } from '../utils/sanitizeBody.js';
+import { logger } from '../utils/logger.js';
 
 const WIZARD_PROVIDER_FIELDS = ['providerType'];
 const WIZARD_PUBLIC_FIELDS = ['publicName', 'description', 'location'];
@@ -31,7 +32,7 @@ const getWizardStatus = async (req, res) => {
       status: operator.status,
     });
   } catch (error) {
-    console.error('Get wizard status error:', error);
+    logger.error('Get wizard status error:', error);
     res.status(500).json({ message: 'Failed to fetch wizard status' });
   }
 };
@@ -61,7 +62,7 @@ const saveProviderType = async (req, res) => {
     await operator.save();
     res.json({ message: 'Provider type saved', operator });
   } catch (error) {
-    console.error('Save provider type error:', error);
+    logger.error('Save provider type error:', error);
     res.status(500).json({ message: 'Failed to save provider type' });
   }
 };
@@ -102,7 +103,7 @@ const savePublicInfo = async (req, res) => {
     await operator.save();
     res.json({ message: 'Public information saved', operator });
   } catch (error) {
-    console.error('Save public info error:', error);
+    logger.error('Save public info error:', error);
     res.status(500).json({ message: 'Failed to save public information' });
   }
 };
@@ -131,7 +132,7 @@ const savePhotos = async (req, res) => {
     await operator.save();
     res.json({ message: 'Photos saved', operator });
   } catch (error) {
-    console.error('Save photos error:', error);
+    logger.error('Save photos error:', error);
     res.status(500).json({ message: 'Failed to save photos' });
   }
 };
@@ -165,7 +166,7 @@ const saveAddress = async (req, res) => {
     await operator.save();
     res.json({ message: 'Address saved', operator });
   } catch (error) {
-    console.error('Save address error:', error);
+    logger.error('Save address error:', error);
     res.status(500).json({ message: 'Failed to save address' });
   }
 };
@@ -191,7 +192,7 @@ const saveExperiences = async (req, res) => {
     await operator.save();
     res.json({ message: 'Experiences saved', operator });
   } catch (error) {
-    console.error('Save experiences error:', error);
+    logger.error('Save experiences error:', error);
     res.status(500).json({ message: 'Failed to save experiences' });
   }
 };
@@ -252,7 +253,7 @@ const savePrivateInfo = async (req, res) => {
     await operator.save();
     res.json({ message: 'Private information saved', operator });
   } catch (error) {
-    console.error('Save private info error:', error);
+    logger.error('Save private info error:', error);
     res.status(500).json({ message: 'Failed to save private information' });
   }
 };
@@ -288,7 +289,7 @@ const submitWizard = async (req, res) => {
       operator 
     });
   } catch (error) {
-    console.error('Submit wizard error:', error);
+    logger.error('Submit wizard error:', error);
     res.status(500).json({ message: 'Failed to submit wizard' });
   }
 };
@@ -305,7 +306,7 @@ const getWizardData = async (req, res) => {
 
     res.json(operator);
   } catch (error) {
-    console.error('Get wizard data error:', error);
+    logger.error('Get wizard data error:', error);
     res.status(500).json({ message: 'Failed to fetch wizard data' });
   }
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../config/axios';
 import TourCard from './TourCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { logger } from '../utils/logger.js';
 
 const TopTours = () => {
   const [products, setProducts] = useState([]);
@@ -21,7 +22,7 @@ const TopTours = () => {
         const { data: recommendations } = await api.get('/api/recommendations/new-user?limit=8');
         setProducts(Array.isArray(recommendations) ? recommendations.slice(0, 8) : []);
       } catch (error) {
-        console.error('Failed to fetch products:', error);
+        logger.error('Failed to fetch products:', error);
         setProducts([]);
       }
     };

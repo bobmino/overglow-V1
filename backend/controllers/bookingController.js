@@ -849,12 +849,12 @@ const updateBookingStatus = async (req, res) => {
             });
           }
         } catch (templateErr) {
-          console.error('Failed to compile email template, falling back to built-in template:', templateErr.message);
+          logger.error('Failed to compile email template, falling back to built-in template:', templateErr.message);
         }
 
         await sendBookingConfirmation(booking, booking.user, compiledHtml);
       } catch (err) {
-        console.error('Failed to send confirmation email:', err.message);
+        logger.error('Failed to send confirmation email:', err.message);
       }
     }
 

@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { Building2, Mail, CheckCircle, XCircle, Clock, AlertCircle, Eye, FileText, User as UserIcon } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const AdminOperatorsPage = () => {
   const { t, i18n } = useTranslation();
@@ -22,7 +23,7 @@ const AdminOperatorsPage = () => {
       setOperators(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch operators:', error);
+      logger.error('Failed to fetch operators:', error);
       setLoading(false);
     }
   };
@@ -45,7 +46,7 @@ const AdminOperatorsPage = () => {
       setRejectionReason('');
       setApprovalNotes('');
     } catch (error) {
-      console.error('Failed to update operator status:', error);
+      logger.error('Failed to update operator status:', error);
       alert(error.response?.data?.message || t('admin.operators.status_update_error'));
     }
   };
@@ -69,7 +70,7 @@ const AdminOperatorsPage = () => {
 
       await fetchOperators();
     } catch (error) {
-      console.error('Failed to toggle auto-approve:', error);
+      logger.error('Failed to toggle auto-approve:', error);
       alert(error.response?.data?.message || t('admin.operators.auto_approve_error'));
     }
   };

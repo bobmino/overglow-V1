@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { useToast } from '../context/ToastContext';
 import {
+import { logger } from '../utils/logger.js';
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -52,7 +53,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
       onClose();
       setReason('');
     } catch (error) {
-      console.error('Reject payment error:', error);
+      logger.error('Reject payment error:', error);
       toast(error.response?.data?.message || t('admin.pending_payments.reject_error'), { type: 'error' });
     } finally {
       setLoading(false);
@@ -160,7 +161,7 @@ const AdminPendingPaymentsPage = () => {
       const { data } = await api.get('/api/admin/bookings/pending-payments');
       setBookings(data);
     } catch (error) {
-      console.error('Failed to fetch pending payments:', error);
+      logger.error('Failed to fetch pending payments:', error);
       toast(t('admin.pending_payments.load_error'), { type: 'error' });
     } finally {
       setLoading(false);
@@ -177,7 +178,7 @@ const AdminPendingPaymentsPage = () => {
       toast(t('admin.pending_payments.confirm_success'), { type: 'success' });
       fetchPendingPayments();
     } catch (error) {
-      console.error('Confirm payment error:', error);
+      logger.error('Confirm payment error:', error);
       toast(error.response?.data?.message || t('admin.pending_payments.confirm_error'), { type: 'error' });
     }
   };

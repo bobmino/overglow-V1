@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { trackBookingPageView } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -99,7 +100,7 @@ const BookingPage = () => {
         }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching schedules:', error);
+        logger.error('Error fetching schedules:', error);
         setLoading(false);
       }
     };

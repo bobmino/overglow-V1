@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import Booking from '../models/bookingModel.js';
+import { logger } from './logger.js';
 
 /**
  * Calculate loyalty level based on total spent
@@ -69,7 +70,7 @@ export const addLoyaltyPoints = async (userId, points, reason, bookingId = null)
     await user.save();
     return user;
   } catch (error) {
-    console.error('Add loyalty points error:', error);
+    logger.error('Add loyalty points error:', error);
     throw error;
   }
 };
@@ -109,7 +110,7 @@ export const redeemPoints = async (userId, pointsToRedeem) => {
       remainingPoints: user.loyaltyPoints,
     };
   } catch (error) {
-    console.error('Redeem points error:', error);
+    logger.error('Redeem points error:', error);
     throw error;
   }
 };
@@ -138,7 +139,7 @@ export const updateUserStatsAfterBooking = async (userId, amount) => {
       await user.save();
     }
   } catch (error) {
-    console.error('Update user stats error:', error);
+    logger.error('Update user stats error:', error);
   }
 };
 

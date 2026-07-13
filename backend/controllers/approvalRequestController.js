@@ -6,6 +6,7 @@ import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyApprovalRequest } from '../utils/notificationService.js';
 import { sendOperatorApprovedEmail } from '../utils/emailService.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Create approval request
 // @route   POST /api/approval-requests
@@ -96,7 +97,7 @@ const createApprovalRequest = async (req, res) => {
 
     res.status(201).json(createdRequest);
   } catch (error) {
-    console.error('Create approval request error:', error);
+    logger.error('Create approval request error:', error);
     if (error.code === 11000) {
       // Duplicate key error (unique constraint)
       return res.status(400).json({ 
@@ -118,7 +119,7 @@ const getMyApprovalRequests = async (req, res) => {
 
     res.json(requests);
   } catch (error) {
-    console.error('Get my approval requests error:', error);
+    logger.error('Get my approval requests error:', error);
     res.status(500).json({ message: 'Failed to fetch approval requests' });
   }
 };
@@ -138,7 +139,7 @@ const getAllApprovalRequests = async (req, res) => {
 
     res.json(requests);
   } catch (error) {
-    console.error('Get all approval requests error:', error);
+    logger.error('Get all approval requests error:', error);
     res.status(500).json({ message: 'Failed to fetch approval requests' });
   }
 };
@@ -189,7 +190,7 @@ const approveRequest = async (req, res) => {
             user.isApproved = true;
             user.approvedAt = new Date();
             await user.save();
-            sendOperatorApprovedEmail(user).catch(err => console.error('Failed to send approved email:', err));
+            sendOperatorApprovedEmail(user).catch(err => logger.error('Failed to send approved email:', err));
           }
         }
         break;
@@ -202,7 +203,7 @@ const approveRequest = async (req, res) => {
 
     res.json({ request, entity });
   } catch (error) {
-    console.error('Approve request error:', error);
+    logger.error('Approve request error:', error);
     res.status(500).json({ message: 'Failed to approve request' });
   }
 };
@@ -230,7 +231,7 @@ const rejectRequest = async (req, res) => {
 
     res.json(request);
   } catch (error) {
-    console.error('Reject request error:', error);
+    logger.error('Reject request error:', error);
     res.status(500).json({ message: 'Failed to reject request' });
   }
 };

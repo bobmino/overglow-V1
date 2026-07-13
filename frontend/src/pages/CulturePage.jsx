@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const SECTION_META = [
   { id: 'traditions', labelKey: 'culture.section_traditions', icon: BookOpen },
@@ -32,7 +33,7 @@ const CulturePage = () => {
           setAuthenticityTags(data?.authenticityTags || []);
         }
       } catch (err) {
-        console.error('Culture content load failed:', err);
+        logger.error('Culture content load failed:', err);
         if (!cancelled) {
           setSectionsData({});
           setAuthenticityTags([]);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
   const [badges, setBadges] = useState([]);
@@ -30,7 +31,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
       const { data } = await api.get('/api/badges/requestable?type=product');
       setBadges(data);
     } catch (error) {
-      console.error('Failed to fetch badges:', error);
+      logger.error('Failed to fetch badges:', error);
       setError('Impossible de charger les badges disponibles');
     } finally {
       setLoading(false);
@@ -55,7 +56,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
         photos: [...prev.photos, ...(data.urls || data.images || [])],
       }));
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       setError('Erreur lors du téléchargement des images');
     } finally {
       setSubmitting(false);
@@ -131,7 +132,7 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
         setLinkInput('');
       }, 2000);
     } catch (error) {
-      console.error('Submit error:', error);
+      logger.error('Submit error:', error);
       setError(error.response?.data?.message || 'Erreur lors de la soumission de la demande');
     } finally {
       setSubmitting(false);

@@ -11,7 +11,11 @@ const notFound = (req, res, next) => {
 const errorHandler = (err, req, res, next) => {
   // SPECIAL HANDLING FOR BLOG ROUTES - Always return valid responses instead of 500
   if (req.path && (req.path.includes('/blog') || req.originalUrl.includes('/blog'))) {
-    console.error('[BLOG] Error intercepted by errorHandler:', err?.message || err);
+    logger.error('Blog route error intercepted', {
+      message: err?.message || String(err),
+      path: req.path,
+      requestId: req.requestId,
+    });
 
     // CORS allowlist centralisée (pas de reflection d'origine arbitraire)
     setCORSHeaders(req, res);

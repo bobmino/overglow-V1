@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
 import NotificationBadge from './NotificationBadge';
+import { logger } from '../utils/logger.js';
 
 const Header = () => {
   const { user, login, logout, isAuthenticated, updateUser } = useAuth();
@@ -107,7 +108,7 @@ const Header = () => {
       setShowUserMenu(false);
       navigate('/operator/wizard');
     } catch (error) {
-      console.error('Failed to upgrade to operator:', error);
+      logger.error('Failed to upgrade to operator:', error);
       alert('Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.');
     } finally {
       setIsUpgrading(false);

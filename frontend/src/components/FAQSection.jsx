@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
 import { HelpCircle, ChevronDown, ChevronUp, Search, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { logger } from '../utils/logger.js';
 
 const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
   const [faqs, setFaqs] = useState([]);
@@ -24,7 +25,7 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
       const { data } = await api.get(`/api/faq/categories?language=${language}`);
       setCategories(data);
     } catch (error) {
-      console.error('Failed to fetch FAQ categories:', error);
+      logger.error('Failed to fetch FAQ categories:', error);
     }
   };
 
@@ -48,7 +49,7 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
       const { data } = await api.get('/api/faq', { params });
       setFaqs(data.faqs || []);
     } catch (error) {
-      console.error('Failed to fetch FAQs:', error);
+      logger.error('Failed to fetch FAQs:', error);
       setError('Erreur lors du chargement des questions fréquentes');
     } finally {
       setLoading(false);
@@ -60,7 +61,7 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
       await api.post(`/api/faq/${faqId}/feedback`, { helpful });
       // Optionally update local state to reflect feedback
     } catch (error) {
-      console.error('Failed to submit feedback:', error);
+      logger.error('Failed to submit feedback:', error);
     }
   };
 

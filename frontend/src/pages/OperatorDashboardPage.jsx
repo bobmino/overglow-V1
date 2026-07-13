@@ -8,6 +8,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -54,7 +55,7 @@ const OperatorDashboardPage = () => {
         const { data } = await api.get('/api/operator/dashboard-stats');
         setStats(data);
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        logger.error('Failed to fetch stats:', error);
         toast(t('operator.dashboard.error_stats'), { type: 'error' });
       }
     };
@@ -65,7 +66,7 @@ const OperatorDashboardPage = () => {
         setBookings(data);
         setFilteredBookings(data);
       } catch (error) {
-        console.error('Failed to fetch bookings:', error);
+        logger.error('Failed to fetch bookings:', error);
         toast(t('operator.dashboard.error_bookings'), { type: 'error' });
       }
     };

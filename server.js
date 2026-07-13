@@ -10,7 +10,9 @@ import { validatePaymentEnvAtStartup } from './backend/config/paymentEnv.js';
 import { validateAiEnvAtStartup } from './backend/services/aiService.js';
 import { initSentry } from './backend/utils/sentry.js';
 import { apiLimiter } from './backend/middleware/rateLimiter.js';
+import { requestLogger } from './backend/middleware/requestLogger.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
+import { logger } from './backend/utils/logger.js';
 
 // Routes API
 import authRoutes from './backend/routes/authRoutes.js';
@@ -98,12 +100,15 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// [TASK-18] Request ID + structured access logs
+app.use(requestLogger);
+
 // ─── Fichiers statiques (images uploadées localement) ───────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── Connexion MongoDB ──────────────────────────────────────────────────────
 connectDB().catch((err) => {
-  console.error('MongoDB connection failed at startup:', err.message);
+  logger.error('MongoDB connection failed at startup', { err });
 });
 
 // ─── Rate limiting global API ─────────────────────────────────────────────────
@@ -171,7 +176,7 @@ app.use(errorHandler);
 // ─── Démarrage serveur local (pas sur Vercel serverless) ─────────────────────
 if (!isVercel) {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 }
 

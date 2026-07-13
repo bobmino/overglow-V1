@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, X, AlertCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -67,7 +68,7 @@ const ProfilePage = () => {
       });
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      logger.error('Failed to fetch profile:', error);
       setLoading(false);
     }
   };
@@ -105,7 +106,7 @@ const ProfilePage = () => {
       setSuccess(t('profile.update_success'));
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      logger.error('Failed to update profile:', error);
       setError(error.response?.data?.message || t('profile.update_error'));
     } finally {
       setSaving(false);

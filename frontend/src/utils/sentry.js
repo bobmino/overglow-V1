@@ -4,13 +4,14 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { logger } from './logger.js';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
 export const initSentry = () => {
   if (!SENTRY_DSN) {
     if (import.meta.env.DEV) {
-      console.warn('Sentry DSN not configured. Set VITE_SENTRY_DSN in .env');
+      logger.warn('Sentry DSN not configured. Set VITE_SENTRY_DSN in .env');
     }
     return;
   }
@@ -78,7 +79,7 @@ export const clearSentryUser = () => {
  */
 export const captureException = (error, context = {}) => {
   if (!SENTRY_DSN) {
-    console.error('Sentry not initialized:', error, context);
+    logger.error('Sentry not initialized:', error, context);
     return;
   }
   
@@ -92,7 +93,7 @@ export const captureException = (error, context = {}) => {
  */
 export const captureMessage = (message, level = 'info', context = {}) => {
   if (!SENTRY_DSN) {
-    console.log(`[${level.toUpperCase()}]`, message, context);
+    logger.info(`[${level.toUpperCase()}]`, message, context);
     return;
   }
   

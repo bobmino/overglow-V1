@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFormValidation } from '../hooks/useFormValidation';
 import FormField from '../components/FormField';
 import { trackLogin } from '../utils/analytics';
+import { logger } from '../utils/logger.js';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -49,7 +50,7 @@ const LoginPage = () => {
     // Use setTimeout to check errors after state update
     if (!isValid) {
       setTimeout(() => {
-        console.log('❌ Form validation failed (after state update):', {
+        logger.info('❌ Form validation failed (after state update):', {
           errors: errors,
           email: formData.email,
           passwordLength: formData.password?.length,
@@ -64,7 +65,7 @@ const LoginPage = () => {
 
     try {
       // Log request for debugging (always log for troubleshooting)
-      console.log('🔐 Login attempt:', { 
+      logger.info('🔐 Login attempt:', { 
         email: formData.email, 
         passwordLength: formData.password?.length,
         baseURL: api.defaults.baseURL || 'relative',
@@ -75,7 +76,7 @@ const LoginPage = () => {
 
       const { data } = await api.post('/api/auth/login', formData);
       
-      console.log('✅ Login successful:', { userId: data._id, role: data.role });
+      logger.info('✅ Login successful:', { userId: data._id, role: data.role });
       
       // Store both access token and refresh token
       const userData = {
@@ -90,7 +91,7 @@ const LoginPage = () => {
       navigate(from, { state: fromState, replace: true });
     } catch (err) {
       // Enhanced error logging (always log for troubleshooting)
-      console.error('❌ Login error:', {
+      logger.error('❌ Login error:', {
         message: err.message,
         status: err.response?.status,
         statusText: err.response?.statusText,

@@ -6,6 +6,7 @@ import { formatImageUrl } from '../utils/formatImage';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const OperatorProductFormPage = () => {
   const { t } = useTranslation();
@@ -131,7 +132,7 @@ const OperatorProductFormPage = () => {
 
       setError('');
     } catch (err) {
-      console.error('Failed to fetch product details:', err.response?.data || err.message);
+      logger.error('Failed to fetch product details:', err.response?.data || err.message);
       setError(err.response?.data?.message || t('operator.product_form.fetch_error'));
     }
   };
@@ -187,7 +188,7 @@ const OperatorProductFormPage = () => {
       setFormData(prev => ({ ...prev, images: [...prev.images, imageUrl] }));
       setUploading(false);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       setUploading(false);
     }
   };
@@ -258,8 +259,8 @@ const OperatorProductFormPage = () => {
       setError('');
       navigate('/operator/products');
     } catch (err) {
-      console.error('Save product error:', err);
-      console.error('Error response:', err.response?.data);
+      logger.error('Save product error:', err);
+      logger.error('Error response:', err.response?.data);
       const errorMessage = err.response?.data?.message || 
                           err.response?.data?.error ||
                           err.response?.data?.errors?.[0]?.msg || 

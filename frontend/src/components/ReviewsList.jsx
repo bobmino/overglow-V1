@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from '../config/axios';
 import { Star, ThumbsUp, ThumbsDown, CheckCircle, Image as ImageIcon, Filter, Flag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const ReviewItem = ({ review, onVote }) => {
   const { user } = useAuth();
@@ -26,7 +27,7 @@ const ReviewItem = ({ review, onVote }) => {
       setHasVotedNotHelpful(helpful === false);
       if (onVote) onVote();
     } catch (error) {
-      console.error('Vote error:', error);
+      logger.error('Vote error:', error);
       alert(error.response?.data?.message || 'Erreur lors du vote');
     }
   };
@@ -63,7 +64,7 @@ const ReviewItem = ({ review, onVote }) => {
       });
       alert('Review signalée avec succès. Merci pour votre contribution.');
     } catch (error) {
-      console.error('Report error:', error);
+      logger.error('Report error:', error);
       alert(error.response?.data?.message || 'Erreur lors du signalement');
     }
   };
@@ -195,7 +196,7 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
         const { data } = await api.get(`/api/products/${productId}/reviews?${params.toString()}`);
         setReviews(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Failed to fetch reviews:', error);
+        logger.error('Failed to fetch reviews:', error);
       }
     };
     fetchReviews();
@@ -268,7 +269,7 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
                   const { data } = await api.get(`/api/products/${productId}/reviews?filter=${filter}&sort=${sort}`);
                   setReviews(Array.isArray(data) ? data : []);
                 } catch (error) {
-                  console.error('Failed to refresh reviews:', error);
+                  logger.error('Failed to refresh reviews:', error);
                 }
               };
               fetchReviews();

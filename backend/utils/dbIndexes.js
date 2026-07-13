@@ -5,13 +5,14 @@ import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import Review from '../models/reviewModel.js';
 import Notification from '../models/notificationModel.js';
+import { logger } from './logger.js';
 
 /**
  * Create database indexes for optimal query performance
  */
 export const createIndexes = async () => {
   try {
-    console.log('Creating database indexes...');
+    logger.info('Creating database indexes...');
 
     // Product indexes
     await Product.collection.createIndex({ status: 1, city: 1, category: 1 });
@@ -48,9 +49,9 @@ export const createIndexes = async () => {
     await Notification.collection.createIndex({ user: 1, isRead: 1, createdAt: -1 });
     await Notification.collection.createIndex({ user: 1, isRead: 1 });
 
-    console.log('Database indexes created successfully');
+    logger.info('Database indexes created successfully');
   } catch (error) {
-    console.error('Error creating indexes:', error);
+    logger.error('Error creating indexes:', error);
     // Don't throw - indexes might already exist
   }
 };

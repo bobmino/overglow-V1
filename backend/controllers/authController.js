@@ -123,7 +123,7 @@ const registerUser = async (req, res) => {
       await user.save();
       
       // Send welcome email (non-blocking)
-      sendWelcomeEmail(user).catch(err => console.error('Failed to send welcome email:', err));
+      sendWelcomeEmail(user).catch(err => logger.error('Failed to send welcome email:', err));
 
       setAuthCookies(res, accessToken, refreshToken);
 
@@ -139,7 +139,7 @@ const registerUser = async (req, res) => {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     res.status(500).json({ message: 'Server error during registration' });
   }
 };
@@ -186,7 +186,7 @@ const partnerSignup = async (req, res) => {
     });
 
     const { sendOperatorOnboardingPendingEmail } = await import('../utils/emailService.js');
-    sendOperatorOnboardingPendingEmail(user).catch(err => console.error('Failed to send onboarding pending email:', err));
+    sendOperatorOnboardingPendingEmail(user).catch(err => logger.error('Failed to send onboarding pending email:', err));
 
     return res.status(201).json({
       success: true,
@@ -234,7 +234,7 @@ const upgradeToOperator = async (req, res) => {
     }
 
     const { sendOperatorOnboardingPendingEmail } = await import('../utils/emailService.js');
-    sendOperatorOnboardingPendingEmail(user).catch(err => console.error('Failed to send onboarding pending email:', err));
+    sendOperatorOnboardingPendingEmail(user).catch(err => logger.error('Failed to send onboarding pending email:', err));
 
     // Issue new token with updated role
     const accessToken = generateAccessToken(user._id, user.role);
@@ -281,7 +281,7 @@ const loginUser = async (req, res) => {
 
     // Check if JWT_SECRET is configured
     if (!process.env.JWT_SECRET) {
-      console.error('Login error: JWT_SECRET is not defined in environment variables');
+      logger.error('Login error: JWT_SECRET is not defined in environment variables');
       return res.status(500).json({ 
         message: 'Server configuration error. Please contact support.',
         error: 'JWT_SECRET missing'
@@ -290,7 +290,7 @@ const loginUser = async (req, res) => {
 
     // Check database connection
     if (mongoose.connection.readyState !== 1) {
-      console.error('Login error: Database not connected', { 
+      logger.error('Login error: Database not connected', { 
         readyState: mongoose.connection.readyState,
         states: {
           0: 'disconnected',
@@ -307,7 +307,7 @@ const loginUser = async (req, res) => {
         
         // Check again after waiting
         if (mongoose.connection.readyState !== 1) {
-          console.error('Login error: Database still not connected after retry', { 
+          logger.error('Login error: Database still not connected after retry', { 
             readyState: mongoose.connection.readyState 
           });
           return res.status(500).json({ 
@@ -316,7 +316,7 @@ const loginUser = async (req, res) => {
           });
         }
       } catch (dbError) {
-        console.error('Database reconnection failed:', {
+        logger.error('Database reconnection failed:', {
           message: dbError.message,
           stack: dbError.stack,
           name: dbError.name
@@ -334,7 +334,7 @@ const loginUser = async (req, res) => {
     try {
       user = await User.findOne({ email: { $regex: new RegExp(`^${trimmedEmail}$`, 'i') } });
     } catch (findError) {
-      console.error('User find error:', {
+      logger.error('User find error:', {
         message: findError.message,
         stack: findError.stack,
         name: findError.name,
@@ -352,7 +352,7 @@ const loginUser = async (req, res) => {
 
     // Check if user has a password (should always be true, but safety check)
     if (!user.password) {
-      console.error('Login error: User found but password is missing', { userId: user._id, email });
+      logger.error('Login error: User found but password is missing', { userId: user._id, email });
       return res.status(500).json({ 
         message: 'Server error: User account configuration issue',
         error: 'Password missing'
@@ -364,7 +364,7 @@ const loginUser = async (req, res) => {
     try {
       passwordMatch = await user.matchPassword(password);
     } catch (matchError) {
-      console.error('Password match error:', {
+      logger.error('Password match error:', {
         message: matchError.message,
         stack: matchError.stack,
         name: matchError.name,
@@ -411,7 +411,7 @@ const loginUser = async (req, res) => {
         await user.save();
         setAuthCookies(res, accessToken, refreshToken);
       } catch (tokenError) {
-        console.error('Token generation error:', {
+        logger.error('Token generation error:', {
           message: tokenError.message,
           stack: tokenError.stack,
           name: tokenError.name,
@@ -467,7 +467,7 @@ const loginUser = async (req, res) => {
     setCORSHeaders(req, res);
     
     // Log full error details for debugging
-    console.error('Login error:', {
+    logger.error('Login error:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -580,7 +580,7 @@ const updateProfile = async (req, res) => {
       socialLinks: user.socialLinks,
     });
   } catch (error) {
-    console.error('Update profile error:', error);
+    logger.error('Update profile error:', error);
     res.status(500).json({ message: 'Failed to update profile' });
   }
 };
@@ -592,26 +592,26 @@ const refreshTokenHandler = async (req, res) => {
   setCORSHeaders(req, res);
   
   try {
-    console.log('🔄 Refresh token handler called');
+    logger.info('🔄 Refresh token handler called');
     
     const { refreshToken: token } = req.body;
     const cookies = parseCookies(req);
     const refreshTokenFromCookie = cookies.refreshToken;
     const effectiveToken = token || refreshTokenFromCookie;
     
-    console.log('📋 Refresh token input:', {
+    logger.info('📋 Refresh token input:', {
       hasBodyToken: !!token,
       hasCookieToken: !!refreshTokenFromCookie,
       tokenLength: effectiveToken ? effectiveToken.length : 0,
     });
     
     if (!effectiveToken) {
-      console.log('❌ No refresh token provided');
+      logger.info('❌ No refresh token provided');
       return res.status(400).json({ message: 'Refresh token is required' });
     }
     
     if (!process.env.JWT_SECRET) {
-      console.error('❌ JWT_SECRET not configured');
+      logger.error('❌ JWT_SECRET not configured');
       return res.status(500).json({ message: 'Server configuration error' });
     }
     
@@ -619,27 +619,27 @@ const refreshTokenHandler = async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(effectiveToken, process.env.JWT_SECRET);
-      console.log('✅ Token verified, decoded:', { id: decoded.id, type: decoded.type, role: decoded.role });
+      logger.info('✅ Token verified, decoded:', { id: decoded.id, type: decoded.type, role: decoded.role });
     } catch (error) {
-      console.log('❌ Token verification failed:', error.message);
+      logger.info('❌ Token verification failed:', error.message);
       return res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
     
     // Check token type
     if (decoded.type !== 'refresh') {
-      console.log('❌ Invalid token type:', decoded.type);
+      logger.info('❌ Invalid token type:', decoded.type);
       return res.status(401).json({ message: 'Invalid token type' });
     }
     
     // Ensure database connection
     try {
       if (mongoose.connection.readyState !== 1) {
-        console.log('⚠️ Database not connected, attempting reconnect...');
+        logger.info('⚠️ Database not connected, attempting reconnect...');
         await connectDB();
-        console.log('✅ Database reconnected');
+        logger.info('✅ Database reconnected');
       }
     } catch (dbError) {
-      console.error('❌ Database connection error:', dbError.message);
+      logger.error('❌ Database connection error:', dbError.message);
       return res.status(500).json({ message: 'Database connection error' });
     }
     
@@ -647,9 +647,9 @@ const refreshTokenHandler = async (req, res) => {
     let user;
     try {
       user = await User.findById(decoded.id);
-      console.log('👤 User lookup:', { found: !!user, userId: decoded.id });
+      logger.info('👤 User lookup:', { found: !!user, userId: decoded.id });
     } catch (findError) {
-      console.error('❌ User find error:', findError.message);
+      logger.error('❌ User find error:', findError.message);
       return res.status(500).json({ message: 'Database error during user lookup' });
     }
     
@@ -658,10 +658,10 @@ const refreshTokenHandler = async (req, res) => {
     }
     
     // Check if refresh token exists in user's refresh tokens
-    console.log('🔍 Checking stored tokens, count:', user.refreshTokens?.length || 0);
+    logger.info('🔍 Checking stored tokens, count:', user.refreshTokens?.length || 0);
     
     if (!user.refreshTokens || !Array.isArray(user.refreshTokens)) {
-      console.log('❌ User has no refreshTokens array');
+      logger.info('❌ User has no refreshTokens array');
       return res.status(401).json({ message: 'No refresh tokens found for user' });
     }
     
@@ -669,12 +669,12 @@ const refreshTokenHandler = async (req, res) => {
       rt => rt.token === effectiveToken && rt.expiresAt > new Date()
     );
     
-    console.log('🔑 Stored token check:', { found: !!storedToken });
+    logger.info('🔑 Stored token check:', { found: !!storedToken });
     
     if (!storedToken) {
       // Check if token exists but is expired
       const expiredToken = user.refreshTokens.find(rt => rt.token === effectiveToken);
-      console.log('❌ Token not valid, expired:', !!expiredToken);
+      logger.info('❌ Token not valid, expired:', !!expiredToken);
       return res.status(401).json({ message: 'Refresh token not found or expired' });
     }
     
@@ -682,28 +682,28 @@ const refreshTokenHandler = async (req, res) => {
     let accessToken;
     try {
       const normalizedRole = normalizeRole(user.role);
-      console.log('🔧 Generating access token:', { userId: user._id, role: normalizedRole });
+      logger.info('🔧 Generating access token:', { userId: user._id, role: normalizedRole });
       accessToken = generateAccessToken(user._id, normalizedRole);
-      console.log('✅ Access token generated, length:', accessToken?.length);
+      logger.info('✅ Access token generated, length:', accessToken?.length);
     } catch (tokenError) {
-      console.error('❌ Token generation error:', tokenError.message);
+      logger.error('❌ Token generation error:', tokenError.message);
       return res.status(500).json({ message: 'Failed to generate access token' });
     }
     
     try {
       logger.security.tokenRefresh(user._id.toString(), true);
     } catch (logError) {
-      console.error('⚠️ Logger error (non-critical):', logError.message);
+      logger.error('⚠️ Logger error (non-critical):', logError.message);
     }
     
     res.cookie('accessToken', accessToken, getCookieOptions(false));
     
-    console.log('✅ Refresh token success');
+    logger.info('✅ Refresh token success');
     res.json({
       token: accessToken,
     });
   } catch (error) {
-    console.error('❌ Refresh token unhandled error:', {
+    logger.error('❌ Refresh token unhandled error:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -737,7 +737,7 @@ const logout = async (req, res) => {
     
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error:', error);
     res.status(500).json({ message: 'Server error during logout' });
   }
 };

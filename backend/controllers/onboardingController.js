@@ -4,6 +4,7 @@ import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyOnboardingSubmitted } from '../utils/notificationService.js';
 import { sendOperatorOnboardingPendingEmail } from '../utils/emailService.js';
+import { logger } from '../utils/logger.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -81,8 +82,8 @@ const getOnboarding = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Get onboarding error:', error);
-    console.error('Error details:', {
+    logger.error('Get onboarding error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -161,8 +162,8 @@ const updateProviderType = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update provider type error:', error);
-    console.error('Error details:', {
+    logger.error('Update provider type error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -233,8 +234,8 @@ const updatePublicInfo = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update public info error:', error);
-    console.error('Error details:', {
+    logger.error('Update public info error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -293,8 +294,8 @@ const updatePhotos = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update photos error:', error);
-    console.error('Error details:', {
+    logger.error('Update photos error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -351,8 +352,8 @@ const updateAddress = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update address error:', error);
-    console.error('Error details:', {
+    logger.error('Update address error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -409,8 +410,8 @@ const updateExperiences = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update experiences error:', error);
-    console.error('Error details:', {
+    logger.error('Update experiences error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -494,8 +495,8 @@ const updatePrivateInfo = async (req, res) => {
 
     res.json(onboarding);
   } catch (error) {
-    console.error('Update private info error:', error);
-    console.error('Error details:', {
+    logger.error('Update private info error:', error);
+    logger.error('Error details:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -575,7 +576,7 @@ const submitOnboarding = async (req, res) => {
     // Notify operator by email
     const userToNotify = await User.findById(req.user._id);
     if (userToNotify) {
-      sendOperatorOnboardingPendingEmail(userToNotify).catch(err => console.error('Failed to send pending email:', err));
+      sendOperatorOnboardingPendingEmail(userToNotify).catch(err => logger.error('Failed to send pending email:', err));
     }
 
     res.json({ 
@@ -583,7 +584,7 @@ const submitOnboarding = async (req, res) => {
       onboarding 
     });
   } catch (error) {
-    console.error('Submit onboarding error:', error);
+    logger.error('Submit onboarding error:', error);
     res.status(500).json({ message: 'Failed to submit onboarding' });
   }
 };

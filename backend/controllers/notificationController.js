@@ -1,5 +1,6 @@
 import Notification from '../models/notificationModel.js';
 import User from '../models/userModel.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get all notifications for current user
 // @route   GET /api/notifications
@@ -28,7 +29,7 @@ const getNotifications = async (req, res) => {
       unreadCount,
     });
   } catch (error) {
-    console.error('Get notifications error:', error);
+    logger.error('Get notifications error:', error);
     res.status(500).json({ message: 'Failed to fetch notifications' });
   }
 };
@@ -55,7 +56,7 @@ const markAsRead = async (req, res) => {
 
     res.json(notification);
   } catch (error) {
-    console.error('Mark as read error:', error);
+    logger.error('Mark as read error:', error);
     res.status(500).json({ message: 'Failed to mark notification as read' });
   }
 };
@@ -72,7 +73,7 @@ const markAllAsRead = async (req, res) => {
 
     res.json({ message: 'All notifications marked as read' });
   } catch (error) {
-    console.error('Mark all as read error:', error);
+    logger.error('Mark all as read error:', error);
     res.status(500).json({ message: 'Failed to mark all notifications as read' });
   }
 };
@@ -96,7 +97,7 @@ const deleteNotification = async (req, res) => {
     await notification.deleteOne();
     res.json({ message: 'Notification deleted' });
   } catch (error) {
-    console.error('Delete notification error:', error);
+    logger.error('Delete notification error:', error);
     res.status(500).json({ message: 'Failed to delete notification' });
   }
 };
@@ -113,7 +114,7 @@ const getUnreadCount = async (req, res) => {
 
     res.json({ unreadCount: count });
   } catch (error) {
-    console.error('Get unread count error:', error);
+    logger.error('Get unread count error:', error);
     res.status(500).json({ message: 'Failed to get unread count' });
   }
 };

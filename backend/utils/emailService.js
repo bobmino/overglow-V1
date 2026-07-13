@@ -1,6 +1,7 @@
 import pkg from 'nodemailer';
 const { createTransport } = pkg;
 import {
+import { logger } from './logger.js';
   getBookingConfirmationTemplate,
   getCancellationTemplate,
   getOperatorBookingNotificationTemplate,
@@ -30,7 +31,7 @@ const sendMailWithRetry = async (mailOptions, { retries = 2, baseDelayMs = 500 }
     } catch (error) {
       lastError = error;
       const isLastAttempt = attempt === retries;
-      console.warn(`⚠️  Email send attempt ${attempt + 1}/${retries + 1} failed for ${mailOptions.to}: ${error.message}`);
+      logger.warn(`⚠️  Email send attempt ${attempt + 1}/${retries + 1} failed for ${mailOptions.to}: ${error.message}`);
       if (!isLastAttempt) {
         await sleep(baseDelayMs * 2 ** attempt); // 500ms, 1000ms, 2000ms...
       }
@@ -68,20 +69,20 @@ if (isEmailEnabled()) {
     // Verify connection
     transporter.verify((error, success) => {
       if (error) {
-        console.warn('⚠️  Email service not configured properly:', error.message);
-        console.warn('📧 To enable emails, configure EMAIL_USER and EMAIL_PASS in .env');
-        console.warn('📧 Or set EMAIL_ENABLED=false to disable email notifications');
+        logger.warn('⚠️  Email service not configured properly:', error.message);
+        logger.warn('📧 To enable emails, configure EMAIL_USER and EMAIL_PASS in .env');
+        logger.warn('📧 Or set EMAIL_ENABLED=false to disable email notifications');
         transporter = null;
       } else {
-        console.log('✅ Email service configured successfully');
+        logger.info('✅ Email service configured successfully');
       }
     });
   } catch (error) {
-    console.warn('⚠️  Failed to initialize email service:', error.message);
+    logger.warn('⚠️  Failed to initialize email service:', error.message);
     transporter = null;
   }
 } else {
-  console.log('📧 Email service disabled (set EMAIL_ENABLED=false or configure EMAIL_USER/EMAIL_PASS)');
+  logger.info('📧 Email service disabled (set EMAIL_ENABLED=false or configure EMAIL_USER/EMAIL_PASS)');
 }
 
 // Send booking confirmation email
@@ -97,21 +98,21 @@ export const sendBookingConfirmation = async (booking, user, customHtml, whatsap
   // Skip if email is disabled or transporter not available
   if (!transporter || !isEmailEnabled()) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV] Email would be sent to:', user.email);
-      console.log('📧 [DEV] Subject:', mailOptions.subject);
+      logger.info('📧 [DEV] Email would be sent to:', user.email);
+      logger.info('📧 [DEV] Subject:', mailOptions.subject);
     }
     return;
   }
 
   try {
     await sendMailWithRetry(mailOptions);
-    console.log('✅ Booking confirmation email sent to:', user.email);
+    logger.info('✅ Booking confirmation email sent to:', user.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the booking
-    console.error('❌ Error sending booking confirmation email:', error.message);
+    logger.error('❌ Error sending booking confirmation email:', error.message);
     if (error.code === 'EAUTH') {
-      console.error('💡 Tip: For Gmail, use an App Password instead of your regular password');
-      console.error('💡 See: https://support.google.com/accounts/answer/185833');
+      logger.error('💡 Tip: For Gmail, use an App Password instead of your regular password');
+      logger.error('💡 See: https://support.google.com/accounts/answer/185833');
     }
   }
 };
@@ -128,21 +129,21 @@ export const sendCancellationEmail = async (booking, user, refundInfo = null) =>
   // Skip if email is disabled or transporter not available
   if (!transporter || !isEmailEnabled()) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV] Email would be sent to:', user.email);
-      console.log('📧 [DEV] Subject:', mailOptions.subject);
+      logger.info('📧 [DEV] Email would be sent to:', user.email);
+      logger.info('📧 [DEV] Subject:', mailOptions.subject);
     }
     return;
   }
 
   try {
     await sendMailWithRetry(mailOptions);
-    console.log('✅ Cancellation email sent to:', user.email);
+    logger.info('✅ Cancellation email sent to:', user.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the cancellation
-    console.error('❌ Error sending cancellation email:', error.message);
+    logger.error('❌ Error sending cancellation email:', error.message);
     if (error.code === 'EAUTH') {
-      console.error('💡 Tip: For Gmail, use an App Password instead of your regular password');
-      console.error('💡 See: https://support.google.com/accounts/answer/185833');
+      logger.error('💡 Tip: For Gmail, use an App Password instead of your regular password');
+      logger.error('💡 See: https://support.google.com/accounts/answer/185833');
     }
   }
 };
@@ -154,7 +155,7 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
   const operatorUser = await User.findById(operator.user || operator);
   
   if (!operatorUser || !operatorUser.email) {
-    console.warn('⚠️  Operator email not found, skipping email notification');
+    logger.warn('⚠️  Operator email not found, skipping email notification');
     return;
   }
 
@@ -168,18 +169,18 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
   // Skip if email is disabled or transporter not available
   if (!transporter || !isEmailEnabled()) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV] Email would be sent to operator:', operatorUser.email);
-      console.log('📧 [DEV] Subject:', mailOptions.subject);
+      logger.info('📧 [DEV] Email would be sent to operator:', operatorUser.email);
+      logger.info('📧 [DEV] Subject:', mailOptions.subject);
     }
     return;
   }
 
   try {
     await sendMailWithRetry(mailOptions);
-    console.log('✅ Operator booking notification email sent to:', operatorUser.email);
+    logger.info('✅ Operator booking notification email sent to:', operatorUser.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the booking
-    console.error('❌ Error sending operator booking notification email:', error.message);
+    logger.error('❌ Error sending operator booking notification email:', error.message);
   }
 };
 
@@ -195,17 +196,17 @@ export const sendRefundProcessedEmail = async (withdrawal, user) => {
   // Skip if email is disabled or transporter not available
   if (!transporter || !isEmailEnabled()) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV] Email would be sent to:', user.email);
-      console.log('📧 [DEV] Subject:', mailOptions.subject);
+      logger.info('📧 [DEV] Email would be sent to:', user.email);
+      logger.info('📧 [DEV] Subject:', mailOptions.subject);
     }
     return;
   }
 
   try {
     await sendMailWithRetry(mailOptions);
-    console.log('✅ Refund processed email sent to:', user.email);
+    logger.info('✅ Refund processed email sent to:', user.email);
   } catch (error) {
-    console.error('❌ Error sending refund processed email:', error.message);
+    logger.error('❌ Error sending refund processed email:', error.message);
   }
 };
 
@@ -223,7 +224,7 @@ export const sendWelcomeEmail = async (user) => {
   try {
     await sendMailWithRetry(mailOptions);
   } catch (error) {
-    console.error('❌ Error sending welcome email:', error.message);
+    logger.error('❌ Error sending welcome email:', error.message);
   }
 };
 
@@ -241,7 +242,7 @@ export const sendOperatorOnboardingPendingEmail = async (user) => {
   try {
     await sendMailWithRetry(mailOptions);
   } catch (error) {
-    console.error('❌ Error sending operator onboarding pending email:', error.message);
+    logger.error('❌ Error sending operator onboarding pending email:', error.message);
   }
 };
 
@@ -259,7 +260,7 @@ export const sendOperatorApprovedEmail = async (user) => {
   try {
     await sendMailWithRetry(mailOptions);
   } catch (error) {
-    console.error('❌ Error sending operator approved email:', error.message);
+    logger.error('❌ Error sending operator approved email:', error.message);
   }
 };
 
@@ -311,15 +312,15 @@ export const sendCircuitBookingConfirmation = async (bookings, user, paymentRefe
 
   if (!transporter || !isEmailEnabled()) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV] Email Circuit would be sent to:', user.email);
+      logger.info('📧 [DEV] Email Circuit would be sent to:', user.email);
     }
     return;
   }
 
   try {
     await sendMailWithRetry(mailOptions);
-    console.log('✅ Circuit booking confirmation email sent to:', user.email);
+    logger.info('✅ Circuit booking confirmation email sent to:', user.email);
   } catch (error) {
-    console.error('❌ Error sending circuit booking confirmation email:', error.message);
+    logger.error('❌ Error sending circuit booking confirmation email:', error.message);
   }
 };

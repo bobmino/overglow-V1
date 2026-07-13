@@ -4,6 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 // FIX TDZ : Ne pas appeler loadStripe() au niveau module car cela cause un
 // ReferenceError lors du build Vite si la variable est accédée avant initialisation.
@@ -13,7 +14,7 @@ const getStripePromise = () => {
   if (!_stripePromise) {
     const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder';
     _stripePromise = loadStripe(key).catch(err => {
-      console.warn('Failed to load Stripe.js. Payments via card will be unavailable:', err.message);
+      logger.warn('Failed to load Stripe.js. Payments via card will be unavailable:', err.message);
       return null;
     });
   }
@@ -122,7 +123,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         const { data } = await api.get(`/api/payments/convert-to-mad?amount=${amount}&from=EUR`);
         setMadAmount(data.madAmount);
       } catch (error) {
-        console.error('Failed to convert to MAD:', error);
+        logger.error('Failed to convert to MAD:', error);
       }
     };
     fetchMadConversion();
@@ -142,7 +143,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       setBankDetails(data);
       setPaymentReference(data.paymentReference || '');
     } catch (err) {
-      console.error('Failed to fetch bank details:', err);
+      logger.error('Failed to fetch bank details:', err);
       setError(t('payment.err_bank_details'));
     } finally {
       setLoadingBankDetails(false);

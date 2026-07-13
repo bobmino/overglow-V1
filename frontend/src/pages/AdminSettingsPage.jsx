@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { Settings, Save, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const AdminSettingsPage = () => {
   const { t, i18n } = useTranslation();
@@ -27,7 +28,7 @@ const AdminSettingsPage = () => {
       setSettings(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      logger.error('Failed to fetch settings:', error);
       setLoading(false);
     }
   };

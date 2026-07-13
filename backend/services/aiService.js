@@ -29,14 +29,14 @@ export const validateAiEnvAtStartup = () => {
   if (!process.env.AI_API_KEY?.trim()) missing.push('AI_API_KEY');
 
   if (missing.length) {
-    console.warn(
+    logger.warn(
       `[aiEnv] Missing ${missing.join(', ')} — AI endpoints will return 503 until configured. ` +
         'If this repo was public, rotate any previously hardcoded AI keys immediately.'
     );
     return { ok: false, missing };
   }
 
-  console.log('[aiEnv] AI environment variables OK (values not logged)');
+  logger.info('[aiEnv] AI environment variables OK (values not logged)');
   return { ok: true, missing: [] };
 };
 

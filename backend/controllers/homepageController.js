@@ -6,6 +6,7 @@ import Badge from '../models/badgeModel.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 import connectDB from '../../config/db.js';
 import { localizeProducts, resolveRequestLang, normalizeLang } from '../utils/contentI18n.js';
+import { logger } from '../utils/logger.js';
 
 const localizeGroupName = (group, lang) => {
   const locale = normalizeLang(lang);
@@ -15,11 +16,11 @@ const localizeGroupName = (group, lang) => {
 
 const ensureDbConnected = async () => {
   if (mongoose.connection?.readyState === 1) return;
-  console.log('[Homepage] Database not connected. Attempting connection...');
+  logger.info('[Homepage] Database not connected. Attempting connection...');
   try {
     await connectDB();
   } catch (err) {
-    console.error('[Homepage] Failed to connect to database:', err);
+    logger.error('[Homepage] Failed to connect to database:', err);
   }
 };
 
@@ -274,7 +275,7 @@ export const getHomepageLayout = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('[Homepage] Layout generation error:', error);
+    logger.error('[Homepage] Layout generation error:', error);
     res.status(200).json({
       success: true,
       degraded: true,

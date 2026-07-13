@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { logger } from '../utils/logger.js';
 
 const CartContext = createContext(null);
 
@@ -9,7 +10,7 @@ export const CartProvider = ({ children }) => {
       const stored = localStorage.getItem('cartItems');
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Failed to parse cartItems from localStorage:', error);
+      logger.error('Failed to parse cartItems from localStorage:', error);
       return [];
     }
   });
@@ -19,7 +20,7 @@ export const CartProvider = ({ children }) => {
     try {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
     } catch (error) {
-      console.error('Failed to save cartItems to localStorage:', error);
+      logger.error('Failed to save cartItems to localStorage:', error);
     }
   }, [cartItems]);
 

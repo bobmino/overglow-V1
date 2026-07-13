@@ -26,7 +26,7 @@ const getStripe = () => {
     try {
       stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     } catch (error) {
-      console.error('Failed to initialize Stripe:', error.message);
+      logger.error('Failed to initialize Stripe:', error.message);
     }
   }
   return stripe;
@@ -48,7 +48,7 @@ const getPaypalClient = () => {
           );
       paypalClient = new paypal.core.PayPalHttpClient(environment);
     } catch (error) {
-      console.error('Failed to initialize PayPal:', error.message);
+      logger.error('Failed to initialize PayPal:', error.message);
     }
   }
   return paypalClient;
@@ -182,7 +182,7 @@ const createStripeIntent = async (req, res) => {
         ...(error.meta || {}),
       });
     }
-    console.error('Stripe error:', error);
+    logger.error('Stripe error:', error);
     captureException(error, { context: 'createStripeIntent' });
     res.status(500).json({ message: 'Payment initiation failed' });
   }
@@ -240,7 +240,7 @@ const createPaypalOrder = async (req, res) => {
         ...(error.meta || {}),
       });
     }
-    console.error('PayPal error:', error);
+    logger.error('PayPal error:', error);
     captureException(error, { context: 'createPaypalOrder' });
     res.status(500).json({ message: 'PayPal order creation failed' });
   }
@@ -299,7 +299,7 @@ const capturePaypalOrder = async (req, res) => {
         ...(error.meta || {}),
       });
     }
-    console.error('PayPal capture error:', error);
+    logger.error('PayPal capture error:', error);
     captureException(error, { context: 'capturePaypalOrder', orderId });
     res.status(500).json({ message: 'PayPal capture failed' });
   }
@@ -657,7 +657,7 @@ const getBankDetails = async (req, res) => {
         bankDetails.currency = 'MAD';
       }
     } catch (err) {
-      console.error('Failed to update booking with payment reference:', err.message);
+      logger.error('Failed to update booking with payment reference:', err.message);
     }
   }
 
@@ -717,7 +717,7 @@ const createBankTransferPayment = async (req, res) => {
         ...(error.meta || {}),
       });
     }
-    console.error('Bank transfer payment error:', error);
+    logger.error('Bank transfer payment error:', error);
     res.status(500).json({ message: 'Failed to initiate bank transfer payment' });
   }
 };
@@ -751,7 +751,7 @@ const createCashPickupPayment = async (req, res) => {
         ...(error.meta || {}),
       });
     }
-    console.error('Cash pickup payment error:', error);
+    logger.error('Cash pickup payment error:', error);
     res.status(500).json({ message: 'Failed to process cash pickup payment' });
   }
 };

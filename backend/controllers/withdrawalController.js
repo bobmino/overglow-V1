@@ -4,6 +4,7 @@ import Operator from '../models/operatorModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import { notifyWithdrawalRequest, notifyWithdrawalApproved, notifyRefundProcessed } from '../utils/notificationService.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Calculate available balance for operator
 // @route   GET /api/withdrawals/balance
@@ -46,7 +47,7 @@ const getOperatorBalance = async (req, res) => {
       pendingWithdrawals: withdrawals.filter(w => w.status === 'Pending').length,
     });
   } catch (error) {
-    console.error('Get operator balance error:', error);
+    logger.error('Get operator balance error:', error);
     res.status(500).json({ message: 'Failed to calculate balance' });
   }
 };
@@ -133,7 +134,7 @@ const createWithdrawal = async (req, res) => {
       res.status(400).json({ message: 'Invalid withdrawal type' });
     }
   } catch (error) {
-    console.error('Create withdrawal error:', error);
+    logger.error('Create withdrawal error:', error);
     res.status(500).json({ message: 'Failed to create withdrawal request' });
   }
 };
@@ -155,7 +156,7 @@ const getMyWithdrawals = async (req, res) => {
 
     res.json(withdrawals);
   } catch (error) {
-    console.error('Get my withdrawals error:', error);
+    logger.error('Get my withdrawals error:', error);
     res.status(500).json({ message: 'Failed to fetch withdrawals' });
   }
 };
@@ -178,7 +179,7 @@ const getAllWithdrawals = async (req, res) => {
 
     res.json(withdrawals);
   } catch (error) {
-    console.error('Get all withdrawals error:', error);
+    logger.error('Get all withdrawals error:', error);
     res.status(500).json({ message: 'Failed to fetch withdrawals' });
   }
 };
@@ -208,7 +209,7 @@ const approveWithdrawal = async (req, res) => {
 
     res.json(withdrawal);
   } catch (error) {
-    console.error('Approve withdrawal error:', error);
+    logger.error('Approve withdrawal error:', error);
     res.status(500).json({ message: 'Failed to approve withdrawal' });
   }
 };
@@ -235,7 +236,7 @@ const rejectWithdrawal = async (req, res) => {
 
     res.json(withdrawal);
   } catch (error) {
-    console.error('Reject withdrawal error:', error);
+    logger.error('Reject withdrawal error:', error);
     res.status(500).json({ message: 'Failed to reject withdrawal' });
   }
 };
@@ -269,7 +270,7 @@ const processWithdrawal = async (req, res) => {
 
     res.json(withdrawal);
   } catch (error) {
-    console.error('Process withdrawal error:', error);
+    logger.error('Process withdrawal error:', error);
     res.status(500).json({ message: 'Failed to process withdrawal' });
   }
 };

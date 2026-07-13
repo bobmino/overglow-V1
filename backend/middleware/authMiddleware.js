@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import { setCORSHeaders } from '../config/cors.js';
+import { logger } from '../utils/logger.js';
 
 // Normalize roles to avoid issues with older data / accent variants
 const normalizeRole = (role) => {
@@ -37,7 +38,7 @@ const protect = async (req, res, next) => {
 
   // Check if JWT_SECRET is configured
   if (!process.env.JWT_SECRET) {
-    console.error('Protect middleware error: JWT_SECRET is not defined in environment variables');
+    logger.error('Protect middleware error: JWT_SECRET is not defined in environment variables');
     res.status(500);
     return next(new Error('Server configuration error. JWT_SECRET missing'));
   }

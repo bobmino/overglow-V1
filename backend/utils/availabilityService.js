@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Booking from '../models/bookingModel.js';
 import Schedule from '../models/scheduleModel.js';
+import { logger } from './logger.js';
 
 /**
  * Calculate available capacity for a schedule
@@ -36,7 +37,7 @@ export const getScheduleAvailability = async (scheduleId) => {
       schedule,
     };
   } catch (error) {
-    console.error('Get schedule availability error:', error);
+    logger.error('Get schedule availability error:', error);
     throw error;
   }
 };
@@ -49,12 +50,12 @@ export const getScheduleAvailability = async (scheduleId) => {
  */
 export const checkAvailability = async (scheduleId, numberOfTickets) => {
   try {
-    console.log('🔍 checkAvailability called:', { scheduleId, numberOfTickets });
+    logger.info('🔍 checkAvailability called:', { scheduleId, numberOfTickets });
     
     const availability = await getScheduleAvailability(scheduleId);
     const schedule = availability.schedule;
     
-    console.log('📅 Schedule data:', {
+    logger.info('📅 Schedule data:', {
       scheduleId: schedule._id?.toString(),
       date: schedule.date,
       time: schedule.time,
@@ -78,13 +79,13 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     // Create the date in local server time
     const scheduleDateTime = new Date(year, month, date, hours, minutes || 0, 0, 0);
     
-    console.log('🕐 Schedule datetime:', scheduleDateTime.toISOString());
+    logger.info('🕐 Schedule datetime:', scheduleDateTime.toISOString());
 
     const now = new Date();
     // Buffer de 2 heures pour les réservations de dernière minute
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     
-    console.log('⏰ Time comparison:', {
+    logger.info('⏰ Time comparison:', {
       scheduleDateTime: scheduleDateTime.toISOString(),
       now: now.toISOString(),
       twoHoursAgo: twoHoursAgo.toISOString(),
@@ -92,7 +93,7 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
     });
     
     if (scheduleDateTime < twoHoursAgo) {
-      console.log('❌ Schedule is in the past');
+      logger.info('❌ Schedule is in the past');
       return {
         available: false,
         reason: 'Ce créneau est déjà passé',
@@ -101,21 +102,21 @@ export const checkAvailability = async (scheduleId, numberOfTickets) => {
 
     // Check capacity
     if (availability.available < numberOfTickets) {
-      console.log('❌ Not enough capacity:', { available: availability.available, requested: numberOfTickets });
+      logger.info('❌ Not enough capacity:', { available: availability.available, requested: numberOfTickets });
       return {
         available: false,
         reason: `Il ne reste que ${availability.available} place${availability.available > 1 ? 's' : ''} disponible${availability.available > 1 ? 's' : ''}`,
       };
     }
 
-    console.log('✅ Schedule is available');
+    logger.info('✅ Schedule is available');
     return {
       available: true,
       reason: null,
       availability,
     };
   } catch (error) {
-    console.error('❌ Check availability error:', { message: error.message, stack: error.stack });
+    logger.error('❌ Check availability error:', { message: error.message, stack: error.stack });
     return {
       available: false,
       reason: 'Erreur lors de la vérification de disponibilité: ' + error.message,
@@ -177,7 +178,7 @@ export const reserveCapacity = async (scheduleId, numberOfTickets) => {
     // Buffer de 2 heures pour les réservations de dernière minute
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-    console.log('🔒 reserveCapacity Time check:', {
+    logger.info('🔒 reserveCapacity Time check:', {
       scheduleDate: schedule.date,
       scheduleTime: schedule.time,
       scheduleDateTime: scheduleDateTime.toISOString(),
@@ -202,7 +203,7 @@ export const reserveCapacity = async (scheduleId, numberOfTickets) => {
     };
   } catch (error) {
     await session.abortTransaction();
-    console.error('Reserve capacity error:', error);
+    logger.error('Reserve capacity error:', error);
     return {
       success: false,
       reason: 'Erreur lors de la réservation',
@@ -222,7 +223,7 @@ export const releaseCapacity = async (scheduleId, bookingId) => {
   try {
     const schedule = await Schedule.findById(scheduleId);
     if (!schedule) {
-      console.warn(`Schedule ${scheduleId} not found when releasing capacity`);
+      logger.warn(`Schedule ${scheduleId} not found when releasing capacity`);
       return;
     }
 
@@ -232,7 +233,7 @@ export const releaseCapacity = async (scheduleId, bookingId) => {
     );
     await schedule.save();
   } catch (error) {
-    console.error('Release capacity error:', error);
+    logger.error('Release capacity error:', error);
     throw error;
   }
 };
@@ -254,7 +255,7 @@ export const getMultipleScheduleAvailability = async (scheduleIds) => {
 
     return availabilityMap;
   } catch (error) {
-    console.error('Get multiple schedule availability error:', error);
+    logger.error('Get multiple schedule availability error:', error);
     throw error;
   }
 };

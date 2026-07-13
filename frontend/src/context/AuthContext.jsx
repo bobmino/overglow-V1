@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { setSentryUser, clearSentryUser } from '../utils/sentry.js';
+import { logger } from '../utils/logger.js';
 
 const AuthContext = createContext();
 
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }) => {
             });
           } catch (err) {
             // Ignore logout errors, continue with local logout
-            console.error('Logout API error:', err);
+            logger.error('Logout API error:', err);
           }
         }
       } catch (err) {

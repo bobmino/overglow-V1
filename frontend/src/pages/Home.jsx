@@ -7,6 +7,7 @@ import Features from '../components/Features';
 import FlexibilityBanner from '../components/FlexibilityBanner';
 import AuthCTA from '../components/AuthCTA';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const CarouselSkeleton = () => (
   <div className="w-full px-4 md:px-8 mb-16 animate-pulse">
@@ -45,7 +46,7 @@ const Home = () => {
           setLayout(data.layout);
         }
       } catch (error) {
-        console.error('Failed to fetch homepage layout:', error);
+        logger.error('Failed to fetch homepage layout:', error);
       } finally {
         if (!cancelled) setLoading(false);
       }

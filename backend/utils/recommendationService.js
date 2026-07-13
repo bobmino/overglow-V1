@@ -2,6 +2,7 @@ import Product from '../models/productModel.js';
 import Booking from '../models/bookingModel.js';
 import Review from '../models/reviewModel.js';
 import Favorite from '../models/favoriteModel.js';
+import { logger } from './logger.js';
 
 /**
  * Get personalized product recommendations for a user
@@ -125,7 +126,7 @@ export const getPersonalizedRecommendations = async (userId, limit = 10) => {
       .slice(0, limit)
       .map(item => item.product);
   } catch (error) {
-    console.error('Get personalized recommendations error:', error);
+    logger.error('Get personalized recommendations error:', error);
     return [];
   }
 };
@@ -192,7 +193,7 @@ export const getSimilarProducts = async (productId, limit = 6) => {
 
     return similarProducts;
   } catch (error) {
-    console.error('Get similar products error:', error);
+    logger.error('Get similar products error:', error);
     return [];
   }
 };
@@ -262,7 +263,7 @@ export const getTrendingProducts = async (limit = 10, days = 30) => {
 
     return products;
   } catch (error) {
-    console.error('Get trending products error:', error);
+    logger.error('Get trending products error:', error);
     return [];
   }
 };
@@ -305,7 +306,7 @@ export const getNewUserRecommendations = async (limit = 10) => {
 
     return products;
   } catch (error) {
-    console.error('Get new user recommendations error:', error);
+    logger.error('Get new user recommendations error:', error);
     return [];
   }
 };

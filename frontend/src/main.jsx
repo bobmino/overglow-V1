@@ -11,6 +11,7 @@ import { setupLazyImages } from './utils/performance.js'
 import { initSentry } from './utils/sentry.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { logger } from './utils/logger.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +34,7 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         // Log uniquement en développement
         if (import.meta.env.DEV) {
-        console.log('Service Worker registered:', registration.scope);
+        logger.info('Service Worker registered:', registration.scope);
         }
         
         // Check for updates
@@ -51,7 +52,7 @@ if ('serviceWorker' in navigator) {
       })
       .catch((error) => {
         // Log les erreurs même en production pour le débogage
-        console.error('Service Worker registration failed:', error);
+        logger.error('Service Worker registration failed:', error);
       });
   });
   
@@ -68,7 +69,7 @@ if ('serviceWorker' in navigator) {
         e.prompt();
         const { outcome } = await e.userChoice;
         if (outcome === 'accepted' && import.meta.env.DEV) {
-          console.log('User accepted install prompt');
+          logger.info('User accepted install prompt');
         }
         window.deferredInstallPrompt = null;
         installButton.style.display = 'none';

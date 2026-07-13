@@ -7,6 +7,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -38,7 +39,7 @@ const AdminBlogPage = () => {
       setPagination(data.pagination || { page: 1, totalPages: 1, total: 0 });
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch blog posts:', error);
+      logger.error('Failed to fetch blog posts:', error);
       setLoading(false);
     }
   };
@@ -60,7 +61,7 @@ const AdminBlogPage = () => {
       toast(!currentStatus ? t('admin.blog.toast_published') : t('admin.blog.toast_unpublished'), { type: 'success' });
       fetchPosts();
     } catch (error) {
-      console.error('Failed to update post status:', error);
+      logger.error('Failed to update post status:', error);
       toast(t('admin.blog.toast_status_error'), { type: 'error' });
     } finally {
       setActionLoading((prev) => ({
@@ -84,7 +85,7 @@ const AdminBlogPage = () => {
       toast(t('admin.blog.toast_deleted'), { type: 'success' });
       fetchPosts();
     } catch (error) {
-      console.error('Failed to delete post:', error);
+      logger.error('Failed to delete post:', error);
       toast(t('admin.blog.toast_delete_error'), { type: 'error' });
     } finally {
       setActionLoading((prev) => ({
@@ -146,7 +147,7 @@ const AdminBlogPage = () => {
       setCopyStatus({ postId: post._id, ok: true, message: t('admin.blog.copied') });
       setTimeout(() => setCopyStatus({ postId: null, ok: false, message: '' }), 1500);
     } catch (err) {
-      console.error('Copy link failed:', err);
+      logger.error('Copy link failed:', err);
       toast(t('admin.blog.link_copy_error'), { type: 'error' });
       setCopyStatus({ postId: post._id, ok: false, message: t('admin.blog.copy_error') });
       setTimeout(() => setCopyStatus({ postId: null, ok: false, message: '' }), 1800);

@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger.js';
 /**
  * [TASK-3] Validation des variables d'environnement paiements (CMI + virement).
  * Ne jamais logger IBAN / SWIFT / CMI_STORE_KEY en clair.
@@ -52,12 +53,12 @@ export const validatePaymentEnvAtStartup = () => {
   }
 
   if (missing.length === 0) {
-    console.log('[paymentEnv] Payment environment variables OK (values not logged)');
+    logger.info('[paymentEnv] Payment environment variables OK (values not logged)');
     return { ok: true, missing: [] };
   }
 
   const message = `[paymentEnv] Missing payment env vars: ${missing.join(', ')} — payment endpoints return 503 until configured (app boot continues).`;
-  console.warn(message);
+  logger.warn(message);
   return { ok: false, missing };
 };
 

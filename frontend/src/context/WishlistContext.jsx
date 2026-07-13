@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { logger } from '../utils/logger.js';
 
 const WishlistContext = createContext(null);
 
@@ -8,7 +9,7 @@ export const WishlistProvider = ({ children }) => {
       const stored = localStorage.getItem('wishlistItems');
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Failed to parse wishlistItems from localStorage:', error);
+      logger.error('Failed to parse wishlistItems from localStorage:', error);
       return [];
     }
   });
@@ -18,7 +19,7 @@ export const WishlistProvider = ({ children }) => {
     try {
       localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
     } catch (error) {
-      console.error('Failed to save wishlistItems to localStorage:', error);
+      logger.error('Failed to save wishlistItems to localStorage:', error);
     }
   }, [wishlistItems]);
 

@@ -1,6 +1,7 @@
 import Order from '../models/orderModel.js';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 import notificationHub from '../services/notificationHub.js';
+import { logger } from '../utils/logger.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/orders/checkout
@@ -73,7 +74,7 @@ export const checkout = async (req, res) => {
     // ── Étape B : Invalidation du cache Upstash Redis ─────────────────────
     // Les disponibilités changent, on invalide le cache global en arrière-plan
     clearCache('cache:*').catch((err) =>
-      console.error('[Checkout] Erreur lors du vidage du cache Redis:', err)
+      logger.error('[Checkout] Erreur lors du vidage du cache Redis:', err)
     );
 
     // ── Étape C : Dispatch Hub de Notification ────────────────────────────
@@ -115,7 +116,7 @@ export const checkout = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('[Checkout Error]', error);
+    logger.error('[Checkout Error]', error);
     return res.status(500).json({
       success: false,
       message: error.message || 'Erreur interne lors du traitement de la commande.',
@@ -139,7 +140,7 @@ export const getMyOrders = async (req, res) => {
       orders,
     });
   } catch (error) {
-    console.error('[GetMyOrders Error]', error);
+    logger.error('[GetMyOrders Error]', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération de vos commandes.',

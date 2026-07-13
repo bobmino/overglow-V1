@@ -1,5 +1,6 @@
 import FAQ from '../models/faqModel.js';
 import { validationResult } from 'express-validator';
+import { logger } from '../utils/logger.js';
 
 // @desc    Get all FAQs with filters
 // @route   GET /api/faq
@@ -51,7 +52,7 @@ const getFAQs = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get FAQs error:', error);
+    logger.error('Get FAQs error:', error);
     res.status(500).json({ message: 'Failed to fetch FAQs' });
   }
 };
@@ -75,7 +76,7 @@ const getFAQById = async (req, res) => {
     
     res.json(faq);
   } catch (error) {
-    console.error('Get FAQ by ID error:', error);
+    logger.error('Get FAQ by ID error:', error);
     res.status(500).json({ message: 'Failed to fetch FAQ' });
   }
 };
@@ -119,7 +120,7 @@ const getFAQCategories = async (req, res) => {
     
     res.json(formattedCategories);
   } catch (error) {
-    console.error('Get FAQ categories error:', error);
+    logger.error('Get FAQ categories error:', error);
     res.status(500).json({ message: 'Failed to fetch FAQ categories' });
   }
 };
@@ -158,7 +159,7 @@ const createFAQ = async (req, res) => {
     
     res.status(201).json(faq);
   } catch (error) {
-    console.error('Create FAQ error:', error);
+    logger.error('Create FAQ error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         message: 'Validation error',
@@ -213,7 +214,7 @@ const updateFAQ = async (req, res) => {
     
     res.json(faq);
   } catch (error) {
-    console.error('Update FAQ error:', error);
+    logger.error('Update FAQ error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         message: 'Validation error',
@@ -242,7 +243,7 @@ const deleteFAQ = async (req, res) => {
     
     res.json({ message: 'FAQ deleted successfully' });
   } catch (error) {
-    console.error('Delete FAQ error:', error);
+    logger.error('Delete FAQ error:', error);
     res.status(500).json({ message: 'Failed to delete FAQ' });
   }
 };
@@ -269,7 +270,7 @@ const submitFAQFeedback = async (req, res) => {
     
     res.json({ message: 'Feedback submitted successfully' });
   } catch (error) {
-    console.error('Submit FAQ feedback error:', error);
+    logger.error('Submit FAQ feedback error:', error);
     res.status(500).json({ message: 'Failed to submit feedback' });
   }
 };

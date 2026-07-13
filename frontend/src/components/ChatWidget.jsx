@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../config/axios';
 import { MessageSquare, X, Send, Paperclip, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const ChatWidget = ({ inquiryId, chatId, onClose }) => {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       setChat(data.chat);
       setMessages(data.messages || []);
     } catch (error) {
-      console.error('Failed to fetch support chat:', error);
+      logger.error('Failed to fetch support chat:', error);
       setError('Erreur lors du chargement du chat de support');
     } finally {
       setLoading(false);
@@ -60,7 +61,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       setChat(data.chat);
       setMessages(data.messages || []);
     } catch (error) {
-      console.error('Failed to fetch or create chat:', error);
+      logger.error('Failed to fetch or create chat:', error);
       setError('Erreur lors du chargement du chat');
     } finally {
       setLoading(false);
@@ -74,7 +75,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       setChat(data.chat);
       setMessages(data.messages || []);
     } catch (error) {
-      console.error('Failed to fetch chat:', error);
+      logger.error('Failed to fetch chat:', error);
       setError('Erreur lors du chargement du chat');
     } finally {
       setLoading(false);
@@ -86,7 +87,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       const { data } = await api.get(`/api/chat/${chat._id}`);
       setMessages(data.messages || []);
     } catch (error) {
-      console.error('Failed to fetch messages:', error);
+      logger.error('Failed to fetch messages:', error);
     }
   };
 
@@ -105,7 +106,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose }) => {
       setNewMessage('');
       setError('');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message:', error);
       setError('Erreur lors de l\'envoi du message');
     } finally {
       setSending(false);

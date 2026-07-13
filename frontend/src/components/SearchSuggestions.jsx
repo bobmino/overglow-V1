@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Clock, X, TrendingUp } from 'lucide-react';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 /**
  * Search suggestions component with autocomplete and history
@@ -27,7 +28,7 @@ const SearchSuggestions = ({
       try {
         setHistory(JSON.parse(savedHistory).slice(0, 5)); // Last 5 searches
       } catch (e) {
-        console.error('Failed to parse search history:', e);
+        logger.error('Failed to parse search history:', e);
       }
     }
   }, []);

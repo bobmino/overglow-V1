@@ -11,6 +11,7 @@ import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeServi
 import crypto from 'crypto';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 import {
+import { logger } from '../utils/logger.js';
   parseFilterParams,
   buildPublishedProductQuery,
   buildSortOption,
@@ -25,11 +26,11 @@ const ensureDbConnected = async () => {
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     return;
   }
-  console.log('Database not connected. Attempting connection...');
+  logger.info('Database not connected. Attempting connection...');
   try {
     await connectDB();
   } catch (err) {
-    console.error('Failed to connect to database:', err);
+    logger.error('Failed to connect to database:', err);
   }
 };
 
@@ -251,7 +252,7 @@ const createProduct = async (req, res) => {
     
     res.status(201).json(createdProduct);
   } catch (error) {
-    console.error('Create product error:', error);
+    logger.error('Create product error:', error);
     res.status(500).json({ message: 'Failed to create product', error: error.message });
   }
 };
@@ -271,7 +272,7 @@ const getMyProducts = async (req, res) => {
     const products = await Product.find({ operator: operator._id });
     res.json(products);
   } catch (error) {
-    console.error('Get my products error:', error);
+    logger.error('Get my products error:', error);
     // Return empty list to keep operator dashboard usable even if something transient fails
     res.json([]);
   }
@@ -408,9 +409,9 @@ const updateProduct = async (req, res) => {
       const updatedProduct = await product.save();
       
       // Update product metrics and badges (async, don't wait)
-      updateProductMetrics(product._id).catch(err => console.error('Error updating product metrics:', err));
+      updateProductMetrics(product._id).catch(err => logger.error('Error updating product metrics:', err));
       if (operator) {
-        updateOperatorMetrics(operator._id).catch(err => console.error('Error updating operator metrics:', err));
+        updateOperatorMetrics(operator._id).catch(err => logger.error('Error updating operator metrics:', err));
       }
       
       // Invalidate cache
@@ -418,10 +419,10 @@ const updateProduct = async (req, res) => {
       
       res.json(updatedProduct);
   } catch (error) {
-    console.error('Update product error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
+    logger.error('Update product error:', error);
+    logger.error('Error stack:', error.stack);
+    logger.error('Error name:', error.name);
+    logger.error('Error message:', error.message);
     
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
@@ -462,7 +463,7 @@ const deleteProduct = async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (error) {
-    console.error('Delete product error:', error);
+    logger.error('Delete product error:', error);
     res.status(500).json({ message: 'Failed to delete product' });
   }
 };
@@ -509,7 +510,7 @@ const getPublishedProducts = async (req, res) => {
       lang,
     });
   } catch (error) {
-    console.error('Get published products error:', error);
+    logger.error('Get published products error:', error);
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
     return res.json({
@@ -545,7 +546,7 @@ const getProductById = async (req, res) => {
         .lean();
       product.operator = operator || null;
     } catch (err) {
-      console.error('Error populating operator:', err);
+      logger.error('Error populating operator:', err);
       product.operator = null;
     }
 
@@ -569,7 +570,7 @@ const getProductById = async (req, res) => {
           }));
         }
       } catch (err) {
-        console.error('Error populating badges:', err);
+        logger.error('Error populating badges:', err);
         // Keep badges array but with null badgeId
         product.badges = product.badges.map(badge => ({
           ...badge,
@@ -588,14 +589,14 @@ const getProductById = async (req, res) => {
         product: product._id,
         date: { $gte: twoHoursAgo.toISOString().split('T')[0] } // Filtrer les dates passées
       }).lean().catch(err => {
-        console.error('Error fetching schedules:', err);
+        logger.error('Error fetching schedules:', err);
         return [];
       }),
       Review.find({ product: product._id })
         .populate('user', 'name')
         .lean()
         .catch(err => {
-          console.error('Error fetching reviews:', err);
+          logger.error('Error fetching reviews:', err);
           return [];
         })
     ]);
@@ -604,11 +605,11 @@ const getProductById = async (req, res) => {
     try {
       const { updateProductMetrics } = await import('../utils/badgeService.js');
       updateProductMetrics(product._id).catch(err => 
-        console.error('Badge update error:', err)
+        logger.error('Badge update error:', err)
       );
     } catch (err) {
       // Silently fail if badgeService can't be imported
-      console.error('Error importing badgeService:', err);
+      logger.error('Error importing badgeService:', err);
     }
     
     res.json({ 
@@ -618,7 +619,7 @@ const getProductById = async (req, res) => {
     });
   } catch (error) {
     // Log detailed error information
-    console.error('Get product error:', {
+    logger.error('Get product error:', {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -747,7 +748,7 @@ const webhookImportProduct = async (req, res) => {
       schedulesCreated,
     });
   } catch (error) {
-    console.error('Webhook import product error:', error);
+    logger.error('Webhook import product error:', error);
     return res.status(500).json({ success: false, message: 'Import failed' });
   }
 };
@@ -765,7 +766,7 @@ const clearCacheWebhook = async (req, res) => {
     await clearCache('cache:*');
     return res.json({ success: true, message: 'Cache cleared successfully' });
   } catch (error) {
-    console.error('Clear cache error:', error);
+    logger.error('Clear cache error:', error);
     return res.status(500).json({ success: false, message: 'Failed to clear cache' });
   }
 };

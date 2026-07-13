@@ -1,4 +1,5 @@
 import Operator from '../models/operatorModel.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Middleware to check if operator has completed the wizard
@@ -32,7 +33,7 @@ export const checkWizardCompleted = async (req, res, next) => {
     // but show a message about waiting for approval
     next();
   } catch (error) {
-    console.error('Check wizard completed error:', error);
+    logger.error('Check wizard completed error:', error);
     next();
   }
 };
@@ -70,7 +71,7 @@ export const checkOperatorStatus = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Check operator status error:', error);
+    logger.error('Check operator status error:', error);
     next();
   }
 };

@@ -1,6 +1,7 @@
 // backend/middleware/cacheMiddleware.js
 import { Redis } from '@upstash/redis';
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger.js';
 
 dotenv.config();
 
@@ -13,10 +14,10 @@ try {
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     });
   } else {
-    console.warn('[Redis Init] Variables UPSTASH_REDIS manquantes. Cache désactivé.');
+    logger.warn('[Redis Init] Variables UPSTASH_REDIS manquantes. Cache désactivé.');
   }
 } catch (err) {
-  console.error('[Redis Init Error] Échec de l\'initialisation de Redis:', err);
+  logger.error('[Redis Init Error] Échec de l\'initialisation de Redis:', err);
 }
 
 /**
@@ -55,7 +56,7 @@ export const cache = (duration = 900) => {
         
         // Sauvegarde asynchrone dans Redis en arrière-plan sans bloquer la requête
         redis.set(cacheKey, data, { ex: duration }).catch((err) => {
-          console.error(`[Redis Error] Échec de l'écriture pour la clé ${cacheKey}:`, err);
+          logger.error(`[Redis Error] Échec de l'écriture pour la clé ${cacheKey}:`, err);
         });
 
         return res.json(data);
@@ -64,7 +65,7 @@ export const cache = (duration = 900) => {
       next();
     } catch (error) {
       // FAIL-SAFE : Si Upstash est indisponible, on loggue l'erreur et on passe à la DB
-      console.error('[Redis Error] Erreur critique de lecture du cache, fallback vers la DB:', error);
+      logger.error('[Redis Error] Erreur critique de lecture du cache, fallback vers la DB:', error);
       res.setHeader('X-Cache', 'BYPASS_ERROR');
       next();
     }
@@ -89,10 +90,10 @@ export const clearCache = async (prefix = 'cache:*') => {
       }
     } while (cursor !== "0");
     
-    console.log(`[Redis Cache] Invalidation réussie pour le pattern: ${prefix}`);
+    logger.info(`[Redis Cache] Invalidation réussie pour le pattern: ${prefix}`);
     return true;
   } catch (error) {
-    console.error(`[Redis Error] Échec de l'invalidation du cache pour le préfixe ${prefix}:`, error);
+    logger.error(`[Redis Error] Échec de l'invalidation du cache pour le préfixe ${prefix}:`, error);
     return false;
   }
 };

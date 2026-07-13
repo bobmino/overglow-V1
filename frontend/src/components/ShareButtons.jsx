@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Share2, Facebook, Twitter, MessageCircle, Link as LinkIcon, Check } from 'lucide-react';
 import { trackShare } from '../utils/analytics';
+import { logger } from '../utils/logger.js';
 
 const ShareButtons = ({ product, url, title, description, contentType = 'product' }) => {
   const [copied, setCopied] = useState(false);
@@ -17,7 +18,7 @@ const ShareButtons = ({ product, url, title, description, contentType = 'product
       // Track share
       trackShare('copy_link', contentType, product?._id || product?.id);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy:', err);
     }
   };
 

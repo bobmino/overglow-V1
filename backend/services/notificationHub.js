@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 // instead of the legacy Resend-only sender, which used to fire a second, duplicate
 // confirmation email alongside the nodemailer one sent directly by the controllers.
 import { sendBookingConfirmation } from '../utils/emailService.js';
+import { logger } from '../utils/logger.js';
 
 class NotificationHub extends EventEmitter {
   constructor() {
@@ -29,12 +30,12 @@ class NotificationHub extends EventEmitter {
         const clientName = user?.name || 'Inconnu';
         const clientEmail = to || user?.email || 'Inconnu';
         
-        console.warn(`[Back-Office Opérateur Alert] NOUVELLE RÉSERVATION RÉUSSIE !`);
-        console.warn(`ID Réservation : ${bookingId}`);
-        console.warn(`ID Opérateur   : ${operatorId}`);
-        console.warn(`Client         : ${clientName} (${clientEmail})`);
-        console.warn(`Montant        : €${booking?.totalAmount || 0}`);
-        console.warn(`-----------------------------------------------------`);
+        logger.warn(`[Back-Office Opérateur Alert] NOUVELLE RÉSERVATION RÉUSSIE !`);
+        logger.warn(`ID Réservation : ${bookingId}`);
+        logger.warn(`ID Opérateur   : ${operatorId}`);
+        logger.warn(`Client         : ${clientName} (${clientEmail})`);
+        logger.warn(`Montant        : €${booking?.totalAmount || 0}`);
+        logger.warn(`-----------------------------------------------------`);
         
         return { success: true, logged: true };
       })();
@@ -45,9 +46,9 @@ class NotificationHub extends EventEmitter {
       // Log des résultats pour monitoring interne
       results.forEach((result, idx) => {
         if (result.status === 'rejected') {
-          console.error(`[NotificationHub Error] Tâche ${idx === 0 ? 'Email' : 'Opérateur Log'} a échoué:`, result.reason);
+          logger.error(`[NotificationHub Error] Tâche ${idx === 0 ? 'Email' : 'Opérateur Log'} a échoué:`, result.reason);
         } else {
-          console.log(`[NotificationHub Success] Tâche ${idx === 0 ? 'Email' : 'Opérateur Log'} exécutée avec succès:`, result.value);
+          logger.info(`[NotificationHub Success] Tâche ${idx === 0 ? 'Email' : 'Opérateur Log'} exécutée avec succès:`, result.value);
         }
       });
     });
@@ -59,7 +60,7 @@ class NotificationHub extends EventEmitter {
    * @param {Object} payload - Les données associées à l'événement
    */
   dispatch(eventName, payload) {
-    console.log(`[NotificationHub] Dispatch de l'événement: ${eventName}`);
+    logger.info(`[NotificationHub] Dispatch de l'événement: ${eventName}`);
     this.emit(eventName, payload);
   }
 }

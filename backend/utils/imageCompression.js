@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
+import { logger } from './logger.js';
 
 /**
  * Compress and optimize image from buffer (for Vercel/memory storage)
@@ -48,7 +49,7 @@ export const compressImageBuffer = async (inputBuffer, options = {}) => {
     const compressedBuffer = await pipeline.toBuffer();
     return compressedBuffer;
   } catch (error) {
-    console.error('Image compression error:', error);
+    logger.error('Image compression error:', error);
     // Return original buffer if compression fails
     return inputBuffer;
   }
@@ -133,7 +134,7 @@ export const compressImage = async (inputPath, options = {}) => {
       return inputPath;
     }
   } catch (error) {
-    console.error('Image compression error:', error);
+    logger.error('Image compression error:', error);
     // Return original path if compression fails
     return inputPath;
   }
@@ -170,7 +171,7 @@ export const generateResponsiveImages = async (inputPath) => {
       
       results[size.suffix] = outputPath.replace(/\\/g, '/');
     } catch (error) {
-      console.error(`Error generating ${size.suffix} image:`, error);
+      logger.error(`Error generating ${size.suffix} image:`, error);
     }
   }
 

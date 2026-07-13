@@ -1,4 +1,5 @@
 import Notification from '../models/notificationModel.js';
+import { logger } from './logger.js';
 
 /**
  * Create a notification for a user
@@ -18,7 +19,7 @@ export const createNotification = async ({
 }) => {
   try {
     if (!userId || !type || !title || !message) {
-      console.warn('Missing required fields for notification');
+      logger.warn('Missing required fields for notification');
       return null;
     }
 
@@ -33,7 +34,7 @@ export const createNotification = async ({
     await notification.save();
     return notification;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    logger.error('Error creating notification:', error);
     return null;
   }
 };
@@ -276,7 +277,7 @@ export const notifyBadgeRequestSubmitted = async (badgeRequest, product, badge) 
       });
     }
   } catch (error) {
-    console.error('Error notifying badge request submitted:', error);
+    logger.error('Error notifying badge request submitted:', error);
   }
 };
 
@@ -296,7 +297,7 @@ export const notifyBadgeRequestApproved = async (badgeRequest, operatorUserId) =
       },
     });
   } catch (error) {
-    console.error('Error notifying badge request approved:', error);
+    logger.error('Error notifying badge request approved:', error);
   }
 };
 
@@ -316,7 +317,7 @@ export const notifyBadgeRequestRejected = async (badgeRequest, operatorUserId, r
       },
     });
   } catch (error) {
-    console.error('Error notifying badge request rejected:', error);
+    logger.error('Error notifying badge request rejected:', error);
   }
 };
 

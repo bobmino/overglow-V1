@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
+import { logger } from '../utils/logger.js';
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
@@ -28,7 +29,7 @@ const AdminAnalytics = () => {
         setData(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load analytics', err);
+        logger.error('Failed to load analytics', err);
         setError('Impossible de charger les données analytiques');
         setLoading(false);
       }

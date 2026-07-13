@@ -6,6 +6,7 @@ import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { MapPin } from 'lucide-react';
 import { canonicalUrl } from '../utils/siteUrl';
+import { logger } from '../utils/logger.js';
 
 const categoryIcons = {
   Tours: '🗺️',
@@ -43,7 +44,7 @@ const CategoryPage = () => {
 
         setLoading(false);
       } catch (error) {
-        console.error('Failed to load products:', error);
+        logger.error('Failed to load products:', error);
         setProducts([]);
         setLoading(false);
       }

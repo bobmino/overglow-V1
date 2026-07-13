@@ -23,11 +23,11 @@ if (hasUpstash) {
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     });
   } catch (error) {
-    console.warn('[rateLimiter] Failed to init Upstash Redis:', error.message);
+    logger.warn('[rateLimiter] Failed to init Upstash Redis:', error.message);
     redis = null;
   }
 } else {
-  console.warn(
+  logger.warn(
     '[rateLimiter] UPSTASH_REDIS_REST_URL/TOKEN missing — using in-memory fallback (not reliable on Vercel).'
   );
 }
@@ -81,7 +81,7 @@ const createUpstashMiddleware = (limiter, fallback, label) => {
 
       return next();
     } catch (error) {
-      console.error(`[rateLimiter] ${label} Upstash error — failing open:`, error.message);
+      logger.error(`[rateLimiter] ${label} Upstash error — failing open:`, error.message);
       return next();
     }
   };

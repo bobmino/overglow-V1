@@ -3,6 +3,7 @@ import { Globe, Users, Heart, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
+import { logger } from '../utils/logger.js';
 
 const AboutPage = () => {
   const { t, i18n } = useTranslation();
@@ -17,7 +18,7 @@ const AboutPage = () => {
         const { data } = await api.get('/api/content/about');
         if (!cancelled) setContent(data?.content || null);
       } catch (err) {
-        console.error('About content load failed:', err);
+        logger.error('About content load failed:', err);
         if (!cancelled) setContent(null);
       } finally {
         if (!cancelled) setLoading(false);

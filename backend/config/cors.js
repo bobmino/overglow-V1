@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger.js';
 /**
  * CORS centralisé — allowlist explicite (pas de wildcard *.vercel.app).
  * [TASK-1] Source unique pour server.js, api/index.js, middlewares et controllers.
@@ -97,7 +98,7 @@ export const corsOptions = {
       return callback(null, true);
     }
 
-    console.warn(`[CORS] blocked origin: ${origin}`);
+    logger.warn(`[CORS] blocked origin: ${origin}`);
     return callback(new Error(`CORS: origin ${origin} not allowed`), false);
   },
   credentials: true,

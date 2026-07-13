@@ -4,6 +4,7 @@ import Operator from '../models/operatorModel.js';
 import Badge from '../models/badgeModel.js';
 import { updateProductMetrics } from '../utils/badgeService.js';
 import { notifyBadgeRequestSubmitted, notifyBadgeRequestApproved, notifyBadgeRequestRejected } from '../utils/notificationService.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Create a badge request for a product
 // @route   POST /api/badge-requests
@@ -81,7 +82,7 @@ const createBadgeRequest = async (req, res) => {
 
     res.status(201).json(badgeRequest);
   } catch (error) {
-    console.error('Create badge request error:', error);
+    logger.error('Create badge request error:', error);
     res.status(500).json({ 
       message: 'Failed to create badge request',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -107,7 +108,7 @@ const getMyBadgeRequests = async (req, res) => {
 
     res.json(requests);
   } catch (error) {
-    console.error('Get my badge requests error:', error);
+    logger.error('Get my badge requests error:', error);
     res.status(500).json({ message: 'Failed to fetch badge requests' });
   }
 };
@@ -125,7 +126,7 @@ const getPendingBadgeRequests = async (req, res) => {
 
     res.json(requests);
   } catch (error) {
-    console.error('Get pending badge requests error:', error);
+    logger.error('Get pending badge requests error:', error);
     res.status(500).json({ message: 'Failed to fetch pending badge requests' });
   }
 };
@@ -183,7 +184,7 @@ const approveBadgeRequest = async (req, res) => {
 
     res.json(badgeRequest);
   } catch (error) {
-    console.error('Approve badge request error:', error);
+    logger.error('Approve badge request error:', error);
     res.status(500).json({ 
       message: 'Failed to approve badge request',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -233,7 +234,7 @@ const rejectBadgeRequest = async (req, res) => {
 
     res.json(badgeRequest);
   } catch (error) {
-    console.error('Reject badge request error:', error);
+    logger.error('Reject badge request error:', error);
     res.status(500).json({ 
       message: 'Failed to reject badge request',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined

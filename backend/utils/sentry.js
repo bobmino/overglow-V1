@@ -4,13 +4,14 @@
  */
 
 import * as Sentry from '@sentry/node';
+import { logger } from './logger.js';
 
 const SENTRY_DSN = process.env.SENTRY_DSN || '';
 
 export const initSentry = () => {
   if (!SENTRY_DSN) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('Sentry DSN not configured. Set SENTRY_DSN in .env');
+      logger.warn('Sentry DSN not configured. Set SENTRY_DSN in .env');
     }
     return;
   }
@@ -59,7 +60,7 @@ export const initSentry = () => {
  */
 export const captureException = (error, context = {}) => {
   if (!SENTRY_DSN) {
-    console.error('Sentry not initialized:', error, context);
+    logger.error('Sentry not initialized:', error, context);
     return;
   }
   
@@ -73,7 +74,7 @@ export const captureException = (error, context = {}) => {
  */
 export const captureMessage = (message, level = 'info', context = {}) => {
   if (!SENTRY_DSN) {
-    console.log(`[${level.toUpperCase()}]`, message, context);
+    logger.info(`[${level.toUpperCase()}]`, message, context);
     return;
   }
   

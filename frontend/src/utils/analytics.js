@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 /**
  * Google Analytics 4 (GA4) Event Tracking
  * Comprehensive event tracking for conversions, funnel, and user behavior
@@ -17,7 +18,7 @@ const isGA4Enabled = () => {
  */
 export const initGA4 = () => {
   if (typeof window === 'undefined' || !GA4_MEASUREMENT_ID) {
-    console.warn('GA4 Measurement ID not configured. Set VITE_GA4_MEASUREMENT_ID in .env');
+    logger.warn('GA4 Measurement ID not configured. Set VITE_GA4_MEASUREMENT_ID in .env');
     return;
   }
 

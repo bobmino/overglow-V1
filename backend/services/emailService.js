@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger.js';
 
 dotenv.config();
 
@@ -159,7 +160,7 @@ export const getBookingConfirmationPremiumTemplate = ({ booking, user, whatsappL
 export const sendBookingConfirmationEmail = async ({ to, booking, user, whatsappLink }) => {
   const client = getResendClient();
   if (!client) {
-    console.warn('[Resend Email] RESEND_API_KEY not configured — skipping confirmation email');
+    logger.warn('[Resend Email] RESEND_API_KEY not configured — skipping confirmation email');
     return { success: false, skipped: true };
   }
 
@@ -173,10 +174,10 @@ export const sendBookingConfirmationEmail = async ({ to, booking, user, whatsapp
       subject: subject,
       html: html,
     });
-    console.log(`[Resend Email] Email de confirmation envoyé avec succès à ${to} :`, data);
+    logger.info(`[Resend Email] Email de confirmation envoyé avec succès à ${to} :`, data);
     return { success: true, data };
   } catch (error) {
-    console.error(`[Resend Email Error] Échec de l'envoi de l'email de confirmation à ${to} :`, error);
+    logger.error(`[Resend Email Error] Échec de l'envoi de l'email de confirmation à ${to} :`, error);
     throw error;
   }
 };

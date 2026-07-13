@@ -1,5 +1,6 @@
 import OperatorOnboarding from '../models/operatorOnboardingModel.js';
 import Operator from '../models/operatorModel.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Middleware to check if operator has completed onboarding
@@ -39,7 +40,7 @@ export const requireOnboarding = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Onboarding middleware error:', error);
+    logger.error('Onboarding middleware error:', error);
     res.status(500).json({ message: 'Error checking onboarding status' });
   }
 };

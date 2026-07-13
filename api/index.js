@@ -3,6 +3,7 @@
 // This ensures CORS headers are ALWAYS set, even on errors
 
 import { setCORSHeaders } from '../backend/config/cors.js';
+import { logger } from '../backend/utils/logger.js';
 
 // Try to import server.js, but handle failures gracefully
 let app = null;
@@ -17,7 +18,7 @@ const isProduction = () =>
 const sendSafeError = (req, res, statusCode, publicMessage, error) => {
   const timestamp = new Date().toISOString();
 
-  console.error('[api/index] error', {
+  logger.error('[api/index] error', {
     timestamp,
     method: req?.method,
     url: req?.url,
@@ -59,7 +60,7 @@ const loadApp = async () => {
       app = module.default;
       return app;
     } catch (error) {
-      console.error('Failed to load server.js:', {
+      logger.error('Failed to load server.js:', {
         message: error.message,
         stack: error.stack,
         name: error.name,

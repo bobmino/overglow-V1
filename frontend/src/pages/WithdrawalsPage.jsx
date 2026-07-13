@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { DollarSign, Plus, Clock, CheckCircle, XCircle, CheckCheck } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -45,7 +46,7 @@ const WithdrawalsPage = () => {
       const { data } = await api.get('/api/withdrawals/balance');
       setBalance(data);
     } catch (error) {
-      console.error('Failed to fetch balance:', error);
+      logger.error('Failed to fetch balance:', error);
     }
   };
 
@@ -55,7 +56,7 @@ const WithdrawalsPage = () => {
       setWithdrawals(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch withdrawals:', error);
+      logger.error('Failed to fetch withdrawals:', error);
       setLoading(false);
     }
   };

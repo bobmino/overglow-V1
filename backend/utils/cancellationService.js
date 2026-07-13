@@ -4,6 +4,7 @@ import Schedule from '../models/scheduleModel.js';
 import Withdrawal from '../models/withdrawalModel.js';
 import { notifyRefundProcessed } from './notificationService.js';
 import { sendCancellationEmail, sendRefundProcessedEmail } from './emailService.js';
+import { logger } from './logger.js';
 
 /**
  * Calculate refund amount based on cancellation policy and timing
@@ -109,7 +110,7 @@ export const calculateRefund = async (bookingId, cancellationDate = new Date()) 
       policyType: policy.type,
     };
   } catch (error) {
-    console.error('Calculate refund error:', error);
+    logger.error('Calculate refund error:', error);
     throw error;
   }
 };
@@ -180,7 +181,7 @@ export const cancelBooking = async (bookingId, reason = '', cancelledBy = 'user'
 
     // Send cancellation email with refund info
     sendCancellationEmail(booking, booking.user, refundInfo).catch(err =>
-      console.error('Error sending cancellation email:', err)
+      logger.error('Error sending cancellation email:', err)
     );
 
     return {
@@ -191,7 +192,7 @@ export const cancelBooking = async (bookingId, reason = '', cancelledBy = 'user'
         : 'Réservation annulée. Aucun remboursement applicable selon la politique d\'annulation.',
     };
   } catch (error) {
-    console.error('Cancel booking error:', error);
+    logger.error('Cancel booking error:', error);
     throw error;
   }
 };
@@ -257,7 +258,7 @@ export const processRefund = async (bookingId, paymentMethod, paymentDetails) =>
       
       // Send refund processed email
       sendRefundProcessedEmail(withdrawal, user).catch(err =>
-        console.error('Error sending refund processed email:', err)
+        logger.error('Error sending refund processed email:', err)
       );
     }
 
@@ -267,7 +268,7 @@ export const processRefund = async (bookingId, paymentMethod, paymentDetails) =>
       message: 'Remboursement traité avec succès',
     };
   } catch (error) {
-    console.error('Process refund error:', error);
+    logger.error('Process refund error:', error);
     throw error;
   }
 };

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import DestinationCard from './DestinationCard';
 import api from '../config/axios';
 import destinationsData from '../config/destinations';
+import { logger } from '../utils/logger.js';
 
 const TopDestinations = () => {
   const { data: activeDestinations = [], isLoading: loading } = useQuery({
@@ -23,7 +24,7 @@ const TopDestinations = () => {
           };
         });
       } catch (error) {
-        console.error('Failed to load active destinations:', error);
+        logger.error('Failed to load active destinations:', error);
         // Fallback to default destinations
         return destinationsData.map(dest => ({ ...dest, toursCount: 0 }));
       }

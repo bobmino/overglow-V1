@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+import { logger } from '../utils/logger.js';
   getBadges,
   getOperatorBadges,
   getProductBadges,
@@ -24,7 +25,7 @@ router.get('/requestable', async (req, res) => {
     const badges = await Badge.find(query).sort({ name: 1 });
     res.json(badges);
   } catch (error) {
-    console.error('Get requestable badges error:', error);
+    logger.error('Get requestable badges error:', error);
     res.status(500).json({ message: 'Failed to fetch requestable badges' });
   }
 });

@@ -6,6 +6,7 @@ import Operator from '../models/operatorModel.js';
 import Settings from '../models/settingsModel.js';
 import { validationResult } from 'express-validator';
 import { notifyReviewPending, notifyReviewApproved } from '../utils/notificationService.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Create a review
 // @route   POST /api/products/:productId/reviews
@@ -78,9 +79,9 @@ const createReview = async (req, res) => {
   
   // Update product and operator metrics (async, don't wait)
   const { updateProductMetrics, updateOperatorMetrics } = await import('../utils/badgeService.js');
-  updateProductMetrics(productId).catch(err => console.error('Error updating product metrics:', err));
+  updateProductMetrics(productId).catch(err => logger.error('Error updating product metrics:', err));
   if (product.operator) {
-    updateOperatorMetrics(product.operator).catch(err => console.error('Error updating operator metrics:', err));
+    updateOperatorMetrics(product.operator).catch(err => logger.error('Error updating operator metrics:', err));
   }
   
   // Notify admin if review is pending
@@ -112,7 +113,7 @@ const approveReview = async (req, res) => {
     
     res.json(review);
   } catch (error) {
-    console.error('Approve review error:', error);
+    logger.error('Approve review error:', error);
     res.status(500).json({ message: 'Failed to approve review' });
   }
 };
@@ -135,7 +136,7 @@ const rejectReview = async (req, res) => {
     
     res.json(review);
   } catch (error) {
-    console.error('Reject review error:', error);
+    logger.error('Reject review error:', error);
     res.status(500).json({ message: 'Failed to reject review' });
   }
 };
@@ -176,7 +177,7 @@ const getProductReviews = async (req, res) => {
     
     res.json(reviews);
   } catch (error) {
-    console.error('Get product reviews error:', error);
+    logger.error('Get product reviews error:', error);
     res.status(500).json({ message: 'Failed to fetch reviews' });
   }
 };
@@ -223,7 +224,7 @@ const voteReview = async (req, res) => {
     await review.save();
     res.json({ helpfulVotes: review.helpfulVotes, review });
   } catch (error) {
-    console.error('Vote review error:', error);
+    logger.error('Vote review error:', error);
     res.status(500).json({ message: 'Failed to vote on review' });
   }
 };
@@ -255,7 +256,7 @@ const addOperatorResponse = async (req, res) => {
     await review.save();
     res.json(review);
   } catch (error) {
-    console.error('Add operator response error:', error);
+    logger.error('Add operator response error:', error);
     res.status(500).json({ message: 'Failed to add response' });
   }
 };
@@ -307,7 +308,7 @@ const reportReview = async (req, res) => {
     
     res.json({ message: 'Review reported successfully', reportCount: review.reportCount });
   } catch (error) {
-    console.error('Report review error:', error);
+    logger.error('Report review error:', error);
     res.status(500).json({ message: 'Failed to report review' });
   }
 };

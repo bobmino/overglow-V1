@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { Award, Plus, Edit, Trash2, Package, Building2, Save, X, Info } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const BOOLEAN_CRITERIA_FLAGS = [
   'isVerified',
@@ -126,7 +127,7 @@ const AdminBadgeManagementPage = () => {
       setBadges(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch badges:', error);
+      logger.error('Failed to fetch badges:', error);
       setLoading(false);
     }
   };
@@ -149,7 +150,7 @@ const AdminBadgeManagementPage = () => {
       }
       setProductsWithBadges(badgesMap);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      logger.error('Failed to fetch products:', error);
       setProducts([]);
       setProductsWithBadges({});
     }
@@ -172,7 +173,7 @@ const AdminBadgeManagementPage = () => {
       }
       setOperatorsWithBadges(badgesMap);
     } catch (error) {
-      console.error('Failed to fetch operators:', error);
+      logger.error('Failed to fetch operators:', error);
       setOperators([]);
       setOperatorsWithBadges({});
     }

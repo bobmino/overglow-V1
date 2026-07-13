@@ -2,6 +2,7 @@ import express from 'express';
 import Product from '../models/productModel.js';
 import { popularDestinations } from '../data/popularDestinations.js';
 import { activityCategories } from '../data/popularDestinations.js';
+import { logger } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -93,7 +94,7 @@ ${[...staticEntries, ...destinationEntries, ...categoryEntries, ...productEntrie
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(sitemap);
   } catch (error) {
-    console.error('Sitemap generation error:', error);
+    logger.error('Sitemap generation error:', error);
     res.status(500).send('Error generating sitemap');
   }
 });

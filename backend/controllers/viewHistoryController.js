@@ -1,5 +1,6 @@
 import ViewHistory from '../models/viewHistoryModel.js';
 import Product from '../models/productModel.js';
+import { logger } from '../utils/logger.js';
 
 // @desc    Record product view
 // @route   POST /api/view-history
@@ -44,7 +45,7 @@ const recordView = async (req, res) => {
     
     res.json({ message: 'View recorded' });
   } catch (error) {
-    console.error('Record view error:', error);
+    logger.error('Record view error:', error);
     res.status(500).json({ message: 'Failed to record view' });
   }
 };
@@ -73,7 +74,7 @@ const getViewHistory = async (req, res) => {
     
     res.json(products);
   } catch (error) {
-    console.error('Get view history error:', error);
+    logger.error('Get view history error:', error);
     res.status(500).json({ message: 'Failed to fetch view history' });
   }
 };
@@ -86,7 +87,7 @@ const clearViewHistory = async (req, res) => {
     await ViewHistory.deleteMany({ user: req.user._id });
     res.json({ message: 'View history cleared' });
   } catch (error) {
-    console.error('Clear view history error:', error);
+    logger.error('Clear view history error:', error);
     res.status(500).json({ message: 'Failed to clear view history' });
   }
 };

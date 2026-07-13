@@ -5,6 +5,7 @@ import { MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { Link } from 'react-router-dom';
 import ChatWidget from '../components/ChatWidget';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -112,7 +113,7 @@ const MyInquiriesPage = () => {
         setInquiries(data);
         setLoading(false);
       } catch (error) {
-        console.error('Failed to fetch inquiries:', error);
+        logger.error('Failed to fetch inquiries:', error);
         setLoading(false);
       }
     };

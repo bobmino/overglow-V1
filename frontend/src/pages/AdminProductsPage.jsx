@@ -6,6 +6,7 @@ import { Package, MapPin, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { formatImageUrl } from '../utils/formatImage';
+import { logger } from '../utils/logger.js';
 
 const AdminProductsPage = () => {
   const { t, i18n } = useTranslation();
@@ -28,7 +29,7 @@ const AdminProductsPage = () => {
       setProducts(Array.isArray(data) ? data : (data?.products || []));
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      logger.error('Failed to fetch products:', error);
       setLoading(false);
     }
   };
@@ -38,7 +39,7 @@ const AdminProductsPage = () => {
       const { data } = await api.get('/api/admin/operators');
       setOperatorsList(data);
     } catch (error) {
-      console.error('Failed to fetch operators:', error);
+      logger.error('Failed to fetch operators:', error);
     }
   };
 
@@ -59,7 +60,7 @@ const AdminProductsPage = () => {
       fetchProducts();
       alert(assignActionClone ? t('admin.products.assign_success_clone') : t('admin.products.assign_success_reassign'));
     } catch (error) {
-      console.error('Failed to assign product:', error);
+      logger.error('Failed to assign product:', error);
       alert(t('admin.products.assign_error'));
     } finally {
       setAssigning(false);

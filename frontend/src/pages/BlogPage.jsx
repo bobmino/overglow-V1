@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
+import { logger } from '../utils/logger.js';
 
 const BlogPage = () => {
   const { t, i18n } = useTranslation();
@@ -26,7 +27,7 @@ const BlogPage = () => {
           setTotalPages(data?.pagination?.totalPages || 1);
         }
       } catch (err) {
-        console.error('Blog list error:', err);
+        logger.error('Blog list error:', err);
         if (!cancelled) setPosts([]);
       } finally {
         if (!cancelled) setLoading(false);

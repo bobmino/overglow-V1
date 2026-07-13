@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
 import ProductCard from './ProductCard';
 import { Users } from 'lucide-react';
+import { logger } from '../utils/logger.js';
 
 const OthersAlsoBooked = ({ productId }) => {
   const [products, setProducts] = useState([]);
@@ -21,7 +22,7 @@ const OthersAlsoBooked = ({ productId }) => {
       setProducts(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch also booked products:', error);
+      logger.error('Failed to fetch also booked products:', error);
       setProducts([]);
       setLoading(false);
     }

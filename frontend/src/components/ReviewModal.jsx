@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import api from '../config/axios';
 import { Star, X, Camera, Image as ImageIcon } from 'lucide-react';
+import { logger } from '../utils/logger.js';
 
 const ReviewModal = ({ booking, onClose, onSubmitted }) => {
   const [rating, setRating] = useState(5);
@@ -48,7 +49,7 @@ const ReviewModal = ({ booking, onClose, onSubmitted }) => {
           });
           photoUrls = Array.isArray(uploadRes.data) ? uploadRes.data : [];
         } catch (uploadErr) {
-          console.error('Photo upload error:', uploadErr);
+          logger.error('Photo upload error:', uploadErr);
           // Continue without photos if upload fails
         }
       }

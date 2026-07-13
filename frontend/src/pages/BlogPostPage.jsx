@@ -9,6 +9,7 @@ import { Calendar, Clock, Eye, Tag, ArrowLeft, User } from 'lucide-react';
 import { trackBlogView } from '../utils/analytics';
 import { formatImageUrl, formatImageUrlWithFallback } from '../utils/formatImage';
 import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
+import { logger } from '../utils/logger.js';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -42,7 +43,7 @@ const BlogPostPage = () => {
           });
         }
       } catch (err) {
-        console.error('Failed to fetch blog post:', err);
+        logger.error('Failed to fetch blog post:', err);
         setError(t('blog.not_found_title'));
       } finally {
         setLoading(false);

@@ -7,6 +7,7 @@ import DashboardNavBar from '../components/DashboardNavBar';
 import InternalNoteModal from '../components/InternalNoteModal';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -35,7 +36,7 @@ const OperatorBookingsPage = () => {
       setBookings(bookingsArray);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      logger.error('Failed to fetch bookings:', error);
       setBookings([]);
       toast(t('operator.bookings.load_error'), { type: 'error' });
       setLoading(false);
@@ -53,7 +54,7 @@ const OperatorBookingsPage = () => {
       fetchBookings();
       toast(t('operator.bookings.marked_handled'), { type: 'success' });
     } catch (error) {
-      console.error('Failed to mark booking as handled:', error);
+      logger.error('Failed to mark booking as handled:', error);
       toast(t('operator.bookings.action_error'), { type: 'error' });
     } finally {
       setHandlingBookingId(null);
@@ -67,7 +68,7 @@ const OperatorBookingsPage = () => {
       fetchBookings();
       toast(t('operator.bookings.payment_confirmed'), { type: 'success' });
     } catch (error) {
-      console.error('Failed to confirm payment:', error);
+      logger.error('Failed to confirm payment:', error);
       toast(t('operator.bookings.payment_confirm_error'), { type: 'error' });
     } finally {
       setConfirmingPaymentId(null);

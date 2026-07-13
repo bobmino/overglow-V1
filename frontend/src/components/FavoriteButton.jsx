@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { trackFavorite } from '../utils/analytics';
 import { useWishlist } from '../context/WishlistContext';
+import { logger } from '../utils/logger.js';
 
 const FavoriteButton = ({ productId, product, listName = 'default', size = 24, showText = false }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -40,7 +41,7 @@ const FavoriteButton = ({ productId, product, listName = 'default', size = 24, s
         }
       }
     } catch (error) {
-      console.error('Toggle favorite error:', error);
+      logger.error('Toggle favorite error:', error);
     } finally {
       setLoading(false);
     }

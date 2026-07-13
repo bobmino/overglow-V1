@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import {
+import { logger } from '../utils/logger.js';
   Building2,
   User,
   Camera,
@@ -148,7 +149,7 @@ const OperatorOnboardingPage = () => {
       }
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch onboarding:', error);
+      logger.error('Failed to fetch onboarding:', error);
       setLoading(false);
     }
   };
@@ -237,7 +238,7 @@ const OperatorOnboardingPage = () => {
       }
       setUploading(false);
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       setError(t('operator.onboarding.upload_error'));
       setUploading(false);
     }
@@ -387,7 +388,7 @@ const OperatorOnboardingPage = () => {
       setSaving(false);
       return true;
     } catch (error) {
-      console.error('Save step error:', error);
+      logger.error('Save step error:', error);
       
       // Handle validation errors with detailed messages
       if (error.response?.status === 400) {
@@ -452,7 +453,7 @@ const OperatorOnboardingPage = () => {
       setOnboarding(data.onboarding);
       setSuccess(t('operator.onboarding.submit_success'));
     } catch (error) {
-      console.error('Submit error:', error);
+      logger.error('Submit error:', error);
       setError(error.response?.data?.message || t('operator.onboarding.submit_error'));
       setSaving(false);
     }

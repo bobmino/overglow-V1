@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { DollarSign, CheckCircle, XCircle, CheckCheck, Clock, Filter } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
+import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -35,7 +36,7 @@ const AdminWithdrawalsPage = () => {
       setWithdrawals(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch withdrawals:', error);
+      logger.error('Failed to fetch withdrawals:', error);
       setLoading(false);
     }
   };
