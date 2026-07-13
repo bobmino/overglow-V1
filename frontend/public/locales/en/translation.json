@@ -8,7 +8,27 @@
     "operatorDashboard": "Partner space",
     "analytics": "Analytics",
     "login": "Log in",
-    "logout": "Log out"
+    "logout": "Log out",
+    "account": "Account",
+    "products": "Products",
+    "bookings": "Bookings",
+    "favorites": "My favorites",
+    "history": "History",
+    "loyalty": "Loyalty program",
+    "profile": "My profile",
+    "become_partner": "Become a partner",
+    "upgrading": "Creating...",
+    "upgrading_short": "Creating...",
+    "language": "Language",
+    "currency": "Currency",
+    "admin_dashboard": "Admin dashboard",
+    "admin_operators": "Manage operators",
+    "admin_products": "Review products",
+    "admin_users": "Manage users",
+    "admin_settings": "Settings",
+    "admin_withdrawals": "Withdrawals",
+    "admin_approvals": "Approval requests",
+    "admin_blog": "Manage blog"
   },
   "menu": {
     "categories": "Categories",
@@ -173,7 +193,13 @@
     "terms": "Terms of use",
     "privacy": "Privacy",
     "help_center": "Help center",
-    "contact_us": "Contact us"
+    "contact_us": "Contact us",
+    "tagline": "Authentic experiences in Morocco, carefully curated.",
+    "col_support": "Support",
+    "col_about": "About",
+    "col_operators": "For operators",
+    "col_legal": "Legal",
+    "copyright": "© {{year}} Overglow"
   },
   "mega_menu": {
     "surf_plage": "Surf & Beach",
@@ -265,5 +291,11 @@
     "link_culture": "Moroccan culture",
     "link_faq": "FAQ",
     "back_home": "Back to home"
+  },
+  "nav": {
+    "favorites": "Favorites",
+    "profile": "Profile",
+    "menu": "Menu",
+    "mobile_aria": "Mobile navigation"
   }
 }

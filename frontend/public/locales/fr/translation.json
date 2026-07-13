@@ -8,7 +8,27 @@
     "operatorDashboard": "Espace Partenaire",
     "analytics": "Analyses",
     "login": "Connexion",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "account": "Compte",
+    "products": "Produits",
+    "bookings": "Réservations",
+    "favorites": "Mes favoris",
+    "history": "Historique",
+    "loyalty": "Programme de fidélité",
+    "profile": "Mon profil",
+    "become_partner": "Devenir partenaire",
+    "upgrading": "Création en cours...",
+    "upgrading_short": "Création...",
+    "language": "Langue",
+    "currency": "Devise",
+    "admin_dashboard": "Tableau admin",
+    "admin_operators": "Gérer les opérateurs",
+    "admin_products": "Valider les produits",
+    "admin_users": "Gérer les utilisateurs",
+    "admin_settings": "Paramètres",
+    "admin_withdrawals": "Retraits",
+    "admin_approvals": "Demandes d'approbation",
+    "admin_blog": "Gérer le blog"
   },
   "menu": {
     "categories": "Catégories",
@@ -173,7 +193,13 @@
     "terms": "Conditions d'utilisation",
     "privacy": "Confidentialité",
     "help_center": "Centre d'aide",
-    "contact_us": "Nous contacter"
+    "contact_us": "Nous contacter",
+    "tagline": "Expériences authentiques au Maroc, sélectionnées avec soin.",
+    "col_support": "Support",
+    "col_about": "À propos",
+    "col_operators": "Pour les opérateurs",
+    "col_legal": "Légal",
+    "copyright": "© {{year}} Overglow"
   },
   "mega_menu": {
     "surf_plage": "Surf & Plage",
@@ -265,5 +291,11 @@
     "link_culture": "Culture marocaine",
     "link_faq": "FAQ",
     "back_home": "Retour à l’accueil"
+  },
+  "nav": {
+    "favorites": "Favoris",
+    "profile": "Profil",
+    "menu": "Menu",
+    "mobile_aria": "Navigation mobile"
   }
 }

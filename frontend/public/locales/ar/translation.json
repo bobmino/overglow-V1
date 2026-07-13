@@ -8,7 +8,27 @@
     "operatorDashboard": "مساحة الشريك",
     "analytics": "التحليلات",
     "login": "تسجيل الدخول",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "account": "الحساب",
+    "products": "المنتجات",
+    "bookings": "الحجوزات",
+    "favorites": "المفضلة",
+    "history": "السجل",
+    "loyalty": "برنامج الولاء",
+    "profile": "ملفي",
+    "become_partner": "كن شريكاً",
+    "upgrading": "جاري الإنشاء...",
+    "upgrading_short": "جاري...",
+    "language": "اللغة",
+    "currency": "العملة",
+    "admin_dashboard": "لوحة الإدارة",
+    "admin_operators": "إدارة المشغلين",
+    "admin_products": "التحقق من المنتجات",
+    "admin_users": "إدارة المستخدمين",
+    "admin_settings": "الإعدادات",
+    "admin_withdrawals": "السحوبات",
+    "admin_approvals": "طلبات الموافقة",
+    "admin_blog": "إدارة المدونة"
   },
   "menu": {
     "categories": "الفئات",
@@ -173,7 +193,13 @@
     "terms": "شروط الاستخدام",
     "privacy": "الخصوصية",
     "help_center": "مركز المساعدة",
-    "contact_us": "اتصل بنا"
+    "contact_us": "اتصل بنا",
+    "tagline": "تجارب أصيلة في المغرب، مختارة بعناية.",
+    "col_support": "الدعم",
+    "col_about": "من نحن",
+    "col_operators": "للمشغلين",
+    "col_legal": "قانوني",
+    "copyright": "© {{year}} Overglow"
   },
   "mega_menu": {
     "surf_plage": "ركوب الأمواج والشاطئ",
@@ -265,5 +291,11 @@
     "link_culture": "الثقافة المغربية",
     "link_faq": "الأسئلة الشائعة",
     "back_home": "العودة للرئيسية"
+  },
+  "nav": {
+    "favorites": "المفضلة",
+    "profile": "الملف",
+    "menu": "القائمة",
+    "mobile_aria": "التنقل عبر الجوال"
   }
 }

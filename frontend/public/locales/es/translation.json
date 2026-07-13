@@ -8,7 +8,27 @@
     "operatorDashboard": "Espacio partner",
     "analytics": "Analíticas",
     "login": "Iniciar sesión",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "account": "Cuenta",
+    "products": "Productos",
+    "bookings": "Reservas",
+    "favorites": "Mis favoritos",
+    "history": "Historial",
+    "loyalty": "Programa de fidelidad",
+    "profile": "Mi perfil",
+    "become_partner": "Hazte partner",
+    "upgrading": "Creando...",
+    "upgrading_short": "Creando...",
+    "language": "Idioma",
+    "currency": "Moneda",
+    "admin_dashboard": "Panel admin",
+    "admin_operators": "Gestionar operadores",
+    "admin_products": "Validar productos",
+    "admin_users": "Gestionar usuarios",
+    "admin_settings": "Ajustes",
+    "admin_withdrawals": "Retiros",
+    "admin_approvals": "Solicitudes de aprobación",
+    "admin_blog": "Gestionar blog"
   },
   "menu": {
     "categories": "Categorías",
@@ -173,7 +193,13 @@
     "terms": "Condiciones de uso",
     "privacy": "Privacidad",
     "help_center": "Centro de ayuda",
-    "contact_us": "Contáctanos"
+    "contact_us": "Contáctanos",
+    "tagline": "Experiencias auténticas en Marruecos, seleccionadas con cuidado.",
+    "col_support": "Soporte",
+    "col_about": "Acerca de",
+    "col_operators": "Para operadores",
+    "col_legal": "Legal",
+    "copyright": "© {{year}} Overglow"
   },
   "mega_menu": {
     "surf_plage": "Surf y playa",
@@ -265,5 +291,11 @@
     "link_culture": "Cultura marroquí",
     "link_faq": "FAQ",
     "back_home": "Volver al inicio"
+  },
+  "nav": {
+    "favorites": "Favoritos",
+    "profile": "Perfil",
+    "menu": "Menú",
+    "mobile_aria": "Navegación móvil"
   }
 }
