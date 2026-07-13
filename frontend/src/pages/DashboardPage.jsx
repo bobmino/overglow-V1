@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
 import { Calendar, MapPin, Clock, Users, XCircle, X, Star, MessageSquare, Award, Building2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ReviewModal from '../components/ReviewModal';
 import RecommendationsSection from '../components/RecommendationsSection';
 import { useAuth } from '../context/AuthContext';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const CancelModal = ({ booking, onClose, onConfirm }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [refundInfo, setRefundInfo] = useState(null);
   const [reason, setReason] = useState('');
@@ -32,23 +42,32 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
     setLoading(false);
   };
 
+  const getPolicyLabel = (policyType) => {
+    switch (policyType) {
+      case 'free': return t('dashboard.policy_free');
+      case 'moderate': return t('dashboard.policy_moderate');
+      case 'strict': return t('dashboard.policy_strict');
+      default: return t('dashboard.policy_non_refundable');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-bold text-gray-900">Cancel Booking?</h3>
+          <h3 className="text-xl font-bold text-gray-900">{t('dashboard.cancel_title')}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
           </button>
         </div>
         
         <p className="text-gray-600 mb-4">
-          Êtes-vous sûr de vouloir annuler votre réservation pour <strong>{booking.schedule?.product?.title}</strong>?
+          {t('dashboard.cancel_confirm_body', { title: booking.schedule?.product?.title })}
         </p>
         
         {loadingRefund ? (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">Calcul du remboursement...</p>
+            <p className="text-sm text-gray-600">{t('dashboard.refund_calculating')}</p>
           </div>
         ) : refundInfo && (
           <div className={`mb-4 p-4 rounded-lg border-2 ${
@@ -57,7 +76,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
               : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">Remboursement estimé:</span>
+              <span className="font-semibold text-gray-900">{t('dashboard.refund_estimated')}</span>
               <span className={`text-lg font-bold ${
                 refundInfo.refundAmount > 0 ? 'text-green-700' : 'text-red-700'
               }`}>
@@ -66,15 +85,18 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
             </div>
             <p className="text-sm text-gray-700 mb-1">
               {refundInfo.refundAmount > 0 
-                ? `Remboursement de ${refundInfo.refundPercentage}% selon la politique "${refundInfo.policyType === 'free' ? 'Annulation Gratuite' : refundInfo.policyType === 'moderate' ? 'Annulation Modérée' : refundInfo.policyType === 'strict' ? 'Annulation Stricte' : 'Non Remboursable'}"`
-                : 'Aucun remboursement applicable selon la politique d\'annulation'
+                ? t('dashboard.refund_pct_body', {
+                    pct: refundInfo.refundPercentage,
+                    policy: getPolicyLabel(refundInfo.policyType),
+                  })
+                : t('dashboard.refund_none')
               }
             </p>
             {refundInfo.hoursUntilStart !== undefined && (
               <p className="text-xs text-gray-600 mt-1">
-                Temps restant avant le début: {refundInfo.hoursUntilStart.toFixed(1)}h
+                {t('dashboard.hours_left', { hours: refundInfo.hoursUntilStart.toFixed(1) })}
                 {refundInfo.isFreeCancellation && (
-                  <span className="ms-2 text-green-600 font-semibold">✓ Annulation gratuite</span>
+                  <span className="ms-2 text-green-600 font-semibold">{t('dashboard.free_cancel_badge')}</span>
                 )}
               </p>
             )}
@@ -83,14 +105,14 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
         
         <div className="mb-4">
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Raison de l'annulation (optionnel)
+            {t('dashboard.reason_label')}
           </label>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-            placeholder="Expliquez pourquoi vous annulez..."
+            placeholder={t('dashboard.reason_placeholder')}
           />
         </div>
 
@@ -99,7 +121,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
             onClick={onClose}
             className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition"
           >
-            Keep Booking
+            {t('dashboard.keep')}
           </button>
           <button
             onClick={handleCancel}
@@ -108,7 +130,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
               loading || loadingRefund ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'
             }`}
           >
-            {loading ? 'Annulation...' : 'Confirmer l\'annulation'}
+            {loading ? t('dashboard.confirming') : t('dashboard.confirm_cancel')}
           </button>
         </div>
       </div>
@@ -117,8 +139,11 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
 };
 
 const BookingCard = ({ booking, onBookingCancelled }) => {
+  const { t, i18n } = useTranslation();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+
+  const dateLocale = getDateLocale(i18n.language);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -129,19 +154,28 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
     }
   };
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'Confirmed': return t('dashboard.status_confirmed');
+      case 'Pending': return t('dashboard.status_pending');
+      case 'Cancelled': return t('dashboard.status_cancelled');
+      default: return status;
+    }
+  };
+
   const handleCancelBooking = async (bookingId, reason) => {
     try {
       const { data } = await api.post(`/api/bookings/${bookingId}/cancel`, { reason });
       setShowCancelModal(false);
       if (data.refundInfo && data.refundInfo.refundAmount > 0) {
-        alert(`Réservation annulée. Remboursement de €${data.refundInfo.refundAmount.toFixed(2)} sera traité.`);
+        alert(t('dashboard.cancel_success_refund', { amount: data.refundInfo.refundAmount.toFixed(2) }));
       } else {
-        alert(data.message || 'Réservation annulée.');
+        alert(data.message || t('dashboard.cancel_success'));
       }
       onBookingCancelled();
     } catch (error) {
       console.error('Cancel error:', error);
-      alert(error.response?.data?.message || 'Échec de l\'annulation');
+      alert(error.response?.data?.message || t('dashboard.cancel_failed'));
     }
   };
 
@@ -156,7 +190,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="font-bold text-lg text-gray-900 mb-2">
-              {booking.schedule?.product?.title || 'Product'}
+              {booking.schedule?.product?.title || t('dashboard.product_fallback')}
             </h3>
             <div className="flex items-center text-gray-600 text-sm mb-1">
               <MapPin size={14} className="me-1" />
@@ -164,14 +198,14 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
             </div>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.status)}`}>
-            {booking.status}
+            {getStatusLabel(booking.status)}
           </span>
         </div>
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-gray-700">
             <Calendar size={16} className="me-2 text-gray-400" />
-            {new Date(booking.schedule?.date).toLocaleDateString('fr-FR', { 
+            {new Date(booking.schedule?.date).toLocaleDateString(dateLocale, { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
@@ -184,13 +218,13 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
           </div>
           <div className="flex items-center text-gray-700">
             <Users size={16} className="me-2 text-gray-400" />
-            {booking.numberOfTickets} ticket{booking.numberOfTickets > 1 ? 's' : ''}
+            {t('dashboard.tickets', { count: booking.numberOfTickets })}
           </div>
         </div>
 
         <div className="border-t pt-4 flex justify-between items-center">
           <div>
-            <span className="text-sm text-gray-600">Total</span>
+            <span className="text-sm text-gray-600">{t('dashboard.total')}</span>
             <p className="text-xl font-bold text-gray-900">€{booking.totalAmount.toFixed(2)}</p>
           </div>
           <div className="flex gap-2">
@@ -200,14 +234,14 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
                   to={`/products/${booking.schedule?.product?._id}`}
                   className="text-green-700 font-semibold hover:underline"
                 >
-                  View Details
+                  {t('dashboard.view_details')}
                 </Link>
                 <button
                   onClick={() => setShowCancelModal(true)}
                   className="flex items-center text-red-600 font-semibold hover:underline"
                 >
                   <XCircle size={16} className="me-1" />
-                  Cancel
+                  {t('dashboard.cancel_booking')}
                 </button>
               </>
             )}
@@ -217,7 +251,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
                 className="flex items-center text-green-700 font-semibold hover:underline"
               >
                 <Star size={16} className="me-1" />
-                Write Review
+                {t('dashboard.leave_review')}
               </button>
             )}
           </div>
@@ -244,6 +278,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
 };
 
 const DashboardPage = () => {
+  const { t } = useTranslation();
   const { user, updateUser, login } = useAuth();
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
@@ -267,7 +302,7 @@ const DashboardPage = () => {
       navigate('/operator/wizard');
     } catch (error) {
       console.error('Failed to upgrade to operator:', error);
-      alert('Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.');
+      alert(t('dashboard.upgrade_error'));
     } finally {
       setIsUpgrading(false);
     }
@@ -280,7 +315,7 @@ const DashboardPage = () => {
       setLoading(false);
     } catch (err) {
       console.error('Booking fetch error:', err);
-      setError('Failed to load bookings');
+      setError(t('dashboard.load_error'));
       setLoading(false);
     }
   };
@@ -304,7 +339,7 @@ const DashboardPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">Mes réservations</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.page_title')}</h1>
         <div className="flex gap-3">
           {user?.role === 'Client' && (
             <button
@@ -313,7 +348,7 @@ const DashboardPage = () => {
               className="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition flex items-center gap-2 shadow-md hover:shadow-lg"
             >
               <Building2 size={18} />
-              {isUpgrading ? 'Création en cours...' : 'Devenir Partenaire'}
+              {isUpgrading ? t('dashboard.upgrading') : t('dashboard.become_partner')}
             </button>
           )}
           <Link
@@ -321,13 +356,13 @@ const DashboardPage = () => {
             className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition flex items-center gap-2"
           >
             <Award size={18} />
-            Programme de Fidélité
+            {t('dashboard.loyalty_program')}
           </Link>
           <Link
             to="/dashboard/inquiries"
             className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
           >
-            Mes Inquiries
+            {t('dashboard.my_inquiries')}
           </Link>
         </div>
       </div>
@@ -341,13 +376,13 @@ const DashboardPage = () => {
       {bookings.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No bookings yet</h2>
-          <p className="text-gray-600 mb-6">Start exploring and book your next adventure!</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.no_bookings')}</h2>
+          <p className="text-gray-600 mb-6">{t('dashboard.no_bookings_hint')}</p>
           <Link 
             to="/search" 
             className="inline-block bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
           >
-            Explore Experiences
+            {t('dashboard.explore')}
           </Link>
         </div>
       ) : (
@@ -362,7 +397,7 @@ const DashboardPage = () => {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <RecommendationsSection
               type="personalized"
-              title="Recommandations pour vous"
+              title={t('dashboard.recommendations_title')}
               limit={6}
             />
           </div>

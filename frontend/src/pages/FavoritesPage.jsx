@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Heart, X, ShoppingCart } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
@@ -8,6 +9,7 @@ import DashboardNavBar from '../components/DashboardNavBar';
 import api from '../config/axios';
 
 const FavoritesPage = () => {
+  const { t } = useTranslation();
   const { wishlistItems, removeFromWishlist } = useWishlist();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,9 +66,9 @@ const FavoritesPage = () => {
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mes Coups de Cœur</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('favorites.title')}</h1>
           <p className="text-gray-600 mt-1">
-            {wishlistItems.length} expérience{wishlistItems.length > 1 ? 's' : ''} sauvegardée{wishlistItems.length > 1 ? 's' : ''}
+            {t('favorites.saved', { count: wishlistItems.length })}
           </p>
         </div>
         <DashboardNavBar />
@@ -75,15 +77,15 @@ const FavoritesPage = () => {
       {products.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Heart size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucun coup de cœur</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('favorites.empty_title')}</h2>
           <p className="text-gray-600 mb-6">
-            Explorez nos expériences et cliquez sur le ❤️ pour les sauvegarder ici !
+            {t('favorites.empty_body')}
           </p>
           <a
             href="/search"
             className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-700 transition"
           >
-            Explorer les Expériences
+            {t('favorites.explore')}
           </a>
         </div>
       ) : (
@@ -94,7 +96,7 @@ const FavoritesPage = () => {
               <button
                 onClick={(e) => handleRemove(e, product._id)}
                 className="absolute top-4 end-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:bg-white transition z-10"
-                title="Retirer des coups de cœur"
+                title={t('favorites.remove_title')}
               >
                 <X size={18} className="text-red-600" />
               </button>

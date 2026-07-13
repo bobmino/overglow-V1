@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -7,6 +8,7 @@ import { Trash2 as FiTrash2, Clock as FiClock, Calendar as FiCalendar, MapPin as
 import { formatImageUrl } from '../utils/formatImage';
 
 const CircuitPage = () => {
+  const { t } = useTranslation();
   const { circuitItems, removeFromCircuit } = useCart();
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
@@ -26,17 +28,17 @@ const CircuitPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Mon Circuit</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('circuit.title')}</h1>
         
         {circuitItems.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <h2 className="text-xl font-medium text-gray-900 mb-4">Votre circuit est vide</h2>
-            <p className="text-gray-500 mb-8">Commencez à explorer nos activités pour créer votre circuit idéal.</p>
+            <h2 className="text-xl font-medium text-gray-900 mb-4">{t('circuit.empty_title')}</h2>
+            <p className="text-gray-500 mb-8">{t('circuit.empty_body')}</p>
             <button
               onClick={() => navigate('/')}
               className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
             >
-              Découvrir les activités
+              {t('circuit.discover')}
             </button>
           </div>
         ) : (
@@ -53,7 +55,7 @@ const CircuitPage = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
-                        Sans image
+                        {t('circuit.no_image')}
                       </div>
                     )}
                   </div>
@@ -64,7 +66,7 @@ const CircuitPage = () => {
                         <button 
                           onClick={() => removeFromCircuit(item.id)}
                           className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-full transition-colors"
-                          aria-label="Supprimer"
+                          aria-label={t('circuit.remove')}
                         >
                           <FiTrash2 className="w-5 h-5" />
                         </button>
@@ -90,12 +92,12 @@ const CircuitPage = () => {
                         
                         <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
                           <span className="font-medium bg-gray-100 px-3 py-1 rounded-full text-gray-800">
-                            {item.numberOfTickets} billet(s)
+                            {t('circuit.tickets', { count: item.numberOfTickets })}
                           </span>
                           {item.skipTheLine && (
                             <span className="flex items-center gap-1 font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
                               <FiCheckCircle className="w-4 h-4" />
-                              Coupe-file
+                              {t('circuit.skip_line')}
                             </span>
                           )}
                         </div>
@@ -113,14 +115,14 @@ const CircuitPage = () => {
 
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border-t-4 border-emerald-500">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Récapitulatif</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('circuit.summary')}</h3>
                 
                 <div className="space-y-4 mb-8">
                   {circuitItems.map((item, idx) => (
                     <div key={idx} className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0">
                       <span className="text-gray-800 font-medium mb-1 truncate">{item.product?.title}</span>
                       <div className="flex justify-between text-gray-500">
-                        <span>{item.numberOfTickets}x Billet(s)</span>
+                        <span>{t('circuit.tickets', { count: item.numberOfTickets })}</span>
                         <span className="font-medium text-gray-900">{formatPrice(item.priceBreakdown?.subtotal || 0)}</span>
                       </div>
                     </div>
@@ -129,10 +131,10 @@ const CircuitPage = () => {
                 
                 <div className="border-t border-gray-100 pt-6 mb-8">
                   <div className="flex justify-between items-end mb-2">
-                    <span className="text-lg font-bold text-gray-900">Total</span>
+                    <span className="text-lg font-bold text-gray-900">{t('circuit.total')}</span>
                     <span className="text-3xl font-bold text-emerald-600">{formatPrice(totalPrice)}</span>
                   </div>
-                  <p className="text-sm text-gray-500 text-end">Taxes incluses</p>
+                  <p className="text-sm text-gray-500 text-end">{t('circuit.taxes_included')}</p>
                 </div>
 
                 <button
@@ -140,10 +142,10 @@ const CircuitPage = () => {
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(5,150,105,0.4)] hover:shadow-[0_12px_25px_-8px_rgba(5,150,105,0.5)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                 >
                   <FiCheckCircle className="w-6 h-6" />
-                  Valider mon circuit
+                  {t('circuit.continue')}
                 </button>
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <FiCheckCircle className="w-4 h-4 text-emerald-500" /> Paiement sécurisé
+                  <FiCheckCircle className="w-4 h-4 text-emerald-500" /> {t('circuit.secure_payment')}
                 </div>
               </div>
             </div>

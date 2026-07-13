@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
@@ -10,6 +11,7 @@ import { canonicalUrl } from '../utils/siteUrl';
 const slugToTag = (slug) => decodeURIComponent(String(slug || '').replace(/-/g, ' ')).trim();
 
 const TagHubPage = () => {
+  const { t } = useTranslation();
   const { tag: tagSlug } = useParams();
   const tag = useMemo(() => slugToTag(tagSlug), [tagSlug]);
 
@@ -46,8 +48,8 @@ const TagHubPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <Helmet>
-        <title>#{tag} — Résultats | Overglow Trip</title>
-        <meta name="description" content={`Tous les contenus Overglow Trip liés au tag ${tag}: articles et expériences.`} />
+        <title>{t('tags.meta_title', { tag })}</title>
+        <meta name="description" content={t('tags.meta_description', { tag })} />
         <link rel="canonical" href={canonicalUrl(`/tags/${encodeURIComponent(tagSlug || '')}`)} />
       </Helmet>
 
@@ -55,14 +57,14 @@ const TagHubPage = () => {
         <div className="flex items-center justify-between gap-4 mb-6">
           <Link to="/blog" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 transition">
             <ArrowLeft size={18} />
-            Retour au blog
+            {t('tags.back_blog')}
           </Link>
           <Link
             to={`/search?q=${encodeURIComponent(tag)}`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition"
           >
             <Search size={16} />
-            Rechercher “{tag}”
+            {t('tags.search_tag', { tag })}
           </Link>
         </div>
 
@@ -74,28 +76,28 @@ const TagHubPage = () => {
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">#{tag}</h1>
               <p className="text-slate-600 text-sm">
-                {loading ? 'Chargement…' : `${totalCount} résultat(s) indexé(s)`}
+                {loading ? t('tags.loading') : t('tags.results', { count: totalCount })}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2 mt-4">
             {[
-              { key: 'all', label: `Tout (${totalCount})` },
-              { key: 'blog', label: `Articles (${blogPosts.length})` },
-              { key: 'experiences', label: `Expériences (${products.length})` },
-            ].map((t) => (
+              { key: 'all', label: `${t('tags.tab_all')} (${totalCount})` },
+              { key: 'blog', label: `${t('tags.tab_blog')} (${blogPosts.length})` },
+              { key: 'experiences', label: `${t('tags.tab_experiences')} (${products.length})` },
+            ].map((tab) => (
               <button
-                key={t.key}
+                key={tab.key}
                 type="button"
-                onClick={() => setActiveTab(t.key)}
+                onClick={() => setActiveTab(tab.key)}
                 className={`px-4 py-2 rounded-xl font-bold border transition ${
-                  activeTab === t.key
+                  activeTab === tab.key
                     ? 'bg-primary-600 text-white border-primary-600'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                {t.label}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -109,7 +111,7 @@ const TagHubPage = () => {
           </div>
         ) : totalCount === 0 ? (
           <div className="text-center py-12">
-            <p className="text-slate-900 text-xl font-extrabold mb-2">Aucun résultat</p>
+            <p className="text-slate-900 text-xl font-extrabold mb-2">{t('tags.empty')}</p>
             <p className="text-slate-600 mb-6">
               Aucun article publié ou expérience ne correspond encore à <span className="font-semibold">#{tag}</span>.
             </p>
@@ -124,7 +126,7 @@ const TagHubPage = () => {
           <div className="space-y-10">
             {(activeTab === 'all' || activeTab === 'blog') && blogPosts.length > 0 && (
               <section>
-                <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-4">Articles</h2>
+                <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-4">{t('tags.posts_title')}</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {blogPosts.map((p) => (
                     <BlogCard key={p._id || p.slug} post={p} />
@@ -135,7 +137,7 @@ const TagHubPage = () => {
 
             {(activeTab === 'all' || activeTab === 'experiences') && products.length > 0 && (
               <section>
-                <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-4">Expériences</h2>
+                <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-4">{t('tags.experiences_title')}</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map((p) => (
                     <ProductCard key={p._id} product={p} />
@@ -151,5 +153,3 @@ const TagHubPage = () => {
 };
 
 export default TagHubPage;
-
-

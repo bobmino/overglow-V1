@@ -2,14 +2,26 @@ import React, { useState, useEffect } from 'react';
 import api from '../config/axios';
 import { Bell, Check, CheckCheck, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const NotificationsPage = () => {
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, unread
+
+  const dateLocale = getDateLocale(i18n.language);
 
   useEffect(() => {
     fetchNotifications();
@@ -141,10 +153,10 @@ const NotificationsPage = () => {
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('notifications.page_title')}</h1>
           {unreadCount > 0 && (
             <p className="text-sm text-gray-600 mt-1">
-              {unreadCount} notification{unreadCount > 1 ? 's' : ''} non lue{unreadCount > 1 ? 's' : ''}
+              {t('notifications.unread_count', { count: unreadCount })}
             </p>
           )}
         </div>
@@ -159,7 +171,7 @@ const NotificationsPage = () => {
             filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Toutes
+          {t('notifications.filter_all')}
         </button>
         <button
           onClick={() => setFilter('unread')}
@@ -167,7 +179,7 @@ const NotificationsPage = () => {
             filter === 'unread' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Non lues ({unreadCount})
+          {t('notifications.filter_unread', { count: unreadCount })}
         </button>
         {unreadCount > 0 && (
           <button
@@ -175,7 +187,7 @@ const NotificationsPage = () => {
             className="ms-auto px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
           >
             <CheckCheck size={18} />
-            Tout marquer comme lu
+            {t('notifications.mark_all_read')}
           </button>
         )}
       </div>
@@ -183,11 +195,12 @@ const NotificationsPage = () => {
       {notifications.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Bell size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucune notification</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('notifications.empty_title')}</h2>
           <p className="text-gray-600">
             {filter === 'unread' 
-              ? 'Vous n\'avez pas de notifications non lues'
-              : 'Vous n\'avez pas encore de notifications'}
+              ? t('notifications.empty_unread')
+              : t('notifications.empty_all')
+            }
           </p>
         </div>
       ) : (
@@ -214,7 +227,7 @@ const NotificationsPage = () => {
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
-                          {new Date(notification.createdAt).toLocaleDateString('fr-FR', {
+                          {new Date(notification.createdAt).toLocaleDateString(dateLocale, {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -231,7 +244,7 @@ const NotificationsPage = () => {
                               markAsRead(notification._id);
                             }}
                             className="p-2 text-primary-600 hover:bg-primary-100 rounded-lg transition"
-                            title="Marquer comme lu"
+                            title={t('notifications.mark_read')}
                           >
                             <Check size={18} />
                           </button>
@@ -242,7 +255,7 @@ const NotificationsPage = () => {
                             deleteNotification(notification._id);
                           }}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
-                          title="Supprimer"
+                          title={t('notifications.delete')}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -272,4 +285,3 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
-

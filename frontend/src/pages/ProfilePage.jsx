@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, X, AlertCircle, CheckCircle } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const ProfilePage = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +23,8 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+
+  const dateLocale = getDateLocale(i18n.language);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -90,11 +102,11 @@ const ProfilePage = () => {
       const { data } = await api.put('/api/auth/profile', formData);
       setProfile(data);
       setIsEditing(false);
-      setSuccess('Profil mis à jour avec succès');
+      setSuccess(t('profile.update_success'));
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
       console.error('Failed to update profile:', error);
-      setError(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+      setError(error.response?.data?.message || t('profile.update_error'));
     } finally {
       setSaving(false);
     }
@@ -136,7 +148,7 @@ const ProfilePage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Mon Profil</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('profile.page_title')}</h1>
         <DashboardNavBar />
       </div>
 
@@ -176,7 +188,7 @@ const ProfilePage = () => {
                   className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center justify-center gap-2"
                 >
                   <Edit2 size={18} />
-                  Modifier le profil
+                  {t('profile.edit_profile')}
                 </button>
               )}
             </div>
@@ -188,11 +200,11 @@ const ProfilePage = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
             {/* Personal Information */}
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Informations personnelles</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('profile.personal_info')}</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nom complet *
+                    {t('profile.full_name')}
                   </label>
                   {isEditing ? (
                     <input
@@ -204,13 +216,13 @@ const ProfilePage = () => {
                       required
                     />
                   ) : (
-                    <p className="text-gray-900">{formData.name || 'Non renseigné'}</p>
+                    <p className="text-gray-900">{formData.name || t('profile.not_provided')}</p>
                   )}
                 </div>
 
                 <div>
                   <label htmlFor="profile-email" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email *
+                    {t('profile.email')}
                   </label>
                   {isEditing ? (
                     <input
@@ -224,13 +236,13 @@ const ProfilePage = () => {
                       autoComplete="email"
                     />
                   ) : (
-                    <p className="text-gray-900">{formData.email || 'Non renseigné'}</p>
+                    <p className="text-gray-900">{formData.email || t('profile.not_provided')}</p>
                   )}
                 </div>
 
                 <div>
                   <label htmlFor="profile-phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Téléphone
+                    {t('profile.phone')}
                   </label>
                   {isEditing ? (
                     <div className="relative">
@@ -242,18 +254,18 @@ const ProfilePage = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        placeholder="+33 6 12 34 56 78"
+                        placeholder={t('profile.phone_placeholder')}
                         autoComplete="tel"
                       />
                     </div>
                   ) : (
-                    <p className="text-gray-900">{formData.phone || 'Non renseigné'}</p>
+                    <p className="text-gray-900">{formData.phone || t('profile.not_provided')}</p>
                   )}
                 </div>
 
                 <div>
                   <label htmlFor="profile-date-of-birth" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date de naissance
+                    {t('profile.date_of_birth')}
                   </label>
                   {isEditing ? (
                     <input
@@ -268,8 +280,8 @@ const ProfilePage = () => {
                   ) : (
                     <p className="text-gray-900">
                       {formData.dateOfBirth 
-                        ? new Date(formData.dateOfBirth).toLocaleDateString('fr-FR')
-                        : 'Non renseigné'
+                        ? new Date(formData.dateOfBirth).toLocaleDateString(dateLocale)
+                        : t('profile.not_provided')
                       }
                     </p>
                   )}
@@ -277,7 +289,7 @@ const ProfilePage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Localisation
+                    {t('profile.location')}
                   </label>
                   {isEditing ? (
                     <div className="relative">
@@ -288,11 +300,11 @@ const ProfilePage = () => {
                         value={formData.location}
                         onChange={handleChange}
                         className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        placeholder="Agadir, Maroc"
+                        placeholder={t('profile.location_placeholder')}
                       />
                     </div>
                   ) : (
-                    <p className="text-gray-900">{formData.location || 'Non renseigné'}</p>
+                    <p className="text-gray-900">{formData.location || t('profile.not_provided')}</p>
                   )}
                 </div>
               </div>
@@ -300,10 +312,10 @@ const ProfilePage = () => {
 
             {/* About Section */}
             <div className="mb-8 border-t pt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">À propos</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('profile.about')}</h3>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Biographie
+                  {t('profile.bio')}
                 </label>
                 {isEditing ? (
                   <textarea
@@ -312,11 +324,11 @@ const ProfilePage = () => {
                     onChange={handleChange}
                     rows={6}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Parlez-nous de vous..."
+                    placeholder={t('profile.bio_placeholder')}
                   />
                 ) : (
                   <p className="text-gray-900 whitespace-pre-wrap">
-                    {formData.bio || 'Aucune biographie renseignée'}
+                    {formData.bio || t('profile.no_bio')}
                   </p>
                 )}
               </div>
@@ -324,11 +336,11 @@ const ProfilePage = () => {
 
             {/* Website & Social Links */}
             <div className="mb-8 border-t pt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Liens et réseaux sociaux</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('profile.links_social')}</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Site web
+                    {t('profile.website')}
                   </label>
                   {isEditing ? (
                     <input
@@ -337,7 +349,7 @@ const ProfilePage = () => {
                       value={formData.website}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="https://www.example.com"
+                      placeholder={t('profile.website_placeholder')}
                     />
                   ) : (
                     <p className="text-gray-900">
@@ -346,7 +358,7 @@ const ProfilePage = () => {
                           {formData.website}
                         </a>
                       ) : (
-                        'Non renseigné'
+                        t('profile.not_provided')
                       )}
                     </p>
                   )}
@@ -356,7 +368,7 @@ const ProfilePage = () => {
                   {['facebook', 'instagram', 'twitter', 'linkedin'].map((social) => (
                     <div key={social}>
                       <label className="block text-sm font-semibold text-gray-700 mb-2 capitalize">
-                        {social}
+                        {t(`profile.social_${social}`)}
                       </label>
                       {isEditing ? (
                         <input
@@ -365,7 +377,7 @@ const ProfilePage = () => {
                           value={formData.socialLinks[social]}
                           onChange={handleChange}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          placeholder={`https://${social}.com/username`}
+                          placeholder={t('profile.social_placeholder', { social })}
                         />
                       ) : (
                         <p className="text-gray-900">
@@ -374,7 +386,7 @@ const ProfilePage = () => {
                               {formData.socialLinks[social]}
                             </a>
                           ) : (
-                            'Non renseigné'
+                            t('profile.not_provided')
                           )}
                         </p>
                       )}
@@ -393,7 +405,7 @@ const ProfilePage = () => {
                   className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Save size={18} />
-                  {saving ? 'Enregistrement...' : 'Enregistrer'}
+                  {saving ? t('profile.saving') : t('profile.save')}
                 </button>
                 <button
                   onClick={handleCancel}
@@ -401,7 +413,7 @@ const ProfilePage = () => {
                   className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition flex items-center justify-center gap-2"
                 >
                   <X size={18} />
-                  Annuler
+                  {t('profile.cancel')}
                 </button>
               </div>
             )}
@@ -415,4 +427,3 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
-

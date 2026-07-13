@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { Clock, Trash2 } from 'lucide-react';
@@ -6,6 +7,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
 const ViewHistoryPage = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,17 +28,17 @@ const ViewHistoryPage = () => {
   };
 
   const handleClearHistory = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir effacer tout l\'historique de navigation ?')) {
+    if (!window.confirm(t('history.confirm_clear'))) {
       return;
     }
     
     try {
       await api.delete('/api/view-history');
       setProducts([]);
-      alert('Historique effacé avec succès');
+      alert(t('history.cleared'));
     } catch (error) {
       console.error('Failed to clear history:', error);
-      alert('Erreur lors de l\'effacement de l\'historique');
+      alert(t('history.clear_error'));
     }
   };
 
@@ -58,10 +60,10 @@ const ViewHistoryPage = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Clock size={32} />
-            Produits Récemment Consultés
+            {t('history.title')}
           </h1>
           <p className="text-gray-600 mt-2">
-            {products.length} produit{products.length > 1 ? 's' : ''} consulté{products.length > 1 ? 's' : ''}
+            {t('history.count', { count: products.length })}
           </p>
         </div>
         <div className="flex gap-3">
@@ -71,7 +73,7 @@ const ViewHistoryPage = () => {
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
             >
               <Trash2 size={18} />
-              Effacer l'historique
+              {t('history.clear')}
             </button>
           )}
           <DashboardNavBar />
@@ -81,9 +83,9 @@ const ViewHistoryPage = () => {
       {products.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Clock size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucun historique</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('history.empty_title')}</h2>
           <p className="text-gray-600">
-            Vous n'avez pas encore consulté de produits. Commencez à explorer !
+            {t('history.empty_body')}
           </p>
         </div>
       ) : (
@@ -100,4 +102,3 @@ const ViewHistoryPage = () => {
 };
 
 export default ViewHistoryPage;
-

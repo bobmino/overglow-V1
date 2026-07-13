@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seo:generate": "node ../scripts/generateSeoAssets.js",
+    "i18n:validate": "node ../scripts/validateLocales.js",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:run:chrome": "cypress run --browser chrome",

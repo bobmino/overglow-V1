@@ -1,18 +1,30 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/axios';
 import { trackBookingPageView } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const BookingPage = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const { product, date, timeSlot, tickets, skipTheLine } = location.state || {};
+
+  const dateLocale = getDateLocale(i18n.language);
   
   const [loading, setLoading] = useState(true);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -136,21 +148,21 @@ const BookingPage = () => {
           <div className="flex items-center justify-center mb-8 text-sm font-medium">
             <div className="flex items-center text-primary-600">
               <span className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center me-2">1</span>
-              Details
+              {t('booking_page.step_details')}
             </div>
             <div className="w-12 h-0.5 bg-slate-200 mx-4"></div>
             <div className="flex items-center text-slate-400">
               <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center me-2">2</span>
-              Payment
+              {t('booking_page.step_payment')}
             </div>
             <div className="w-12 h-0.5 bg-slate-200 mx-4"></div>
             <div className="flex items-center text-slate-400">
               <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center me-2">3</span>
-              Confirmation
+              {t('booking_page.step_confirmation')}
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-slate-900 mb-8">Confirmer les détails</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-8">{t('booking_page.page_title')}</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2 space-y-6">
@@ -158,7 +170,7 @@ const BookingPage = () => {
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
                   <Clock className="me-2 text-primary-600" size={20} />
-                  Select a time
+                  {t('booking_page.select_time')}
                 </h2>
                 
                 {loading ? (
@@ -179,7 +191,7 @@ const BookingPage = () => {
                       >
                         <div className="font-bold text-lg mb-1">{slot.time}</div>
                         <div className="text-sm text-slate-600">
-                          {new Date(slot.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {new Date(slot.date).toLocaleDateString(dateLocale, { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="text-sm font-medium text-primary-700 mt-2">
                           {formatPrice(slot.price, 'EUR')}
@@ -190,7 +202,7 @@ const BookingPage = () => {
                 ) : (
                   <div className="p-4 bg-orange-50 text-orange-700 rounded-lg flex items-start">
                     <AlertCircle className="me-2 mt-0.5 flex-shrink-0" size={18} />
-                    <p>No available time slots found for these dates. Please try selecting different dates.</p>
+                    <p>{t('booking_page.no_slots')}</p>
                   </div>
                 )}
               </div>
@@ -199,12 +211,12 @@ const BookingPage = () => {
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
                 <h2 className="text-xl font-bold mb-4 flex items-center">
                   <Users className="me-2 text-primary-600" size={20} />
-                  Traveler Details
+                  {t('booking_page.traveler_details')}
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="traveler-first-name" className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                    <label htmlFor="traveler-first-name" className="block text-sm font-medium text-slate-700 mb-1">{t('booking_page.first_name')}</label>
                     <input
                       type="text"
                       id="traveler-first-name"
@@ -216,7 +228,7 @@ const BookingPage = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="traveler-last-name" className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                    <label htmlFor="traveler-last-name" className="block text-sm font-medium text-slate-700 mb-1">{t('booking_page.last_name')}</label>
                     <input
                       type="text"
                       id="traveler-last-name"
@@ -228,7 +240,7 @@ const BookingPage = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label htmlFor="traveler-email" className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <label htmlFor="traveler-email" className="block text-sm font-medium text-slate-700 mb-1">{t('booking_page.email')}</label>
                     <input
                       type="email"
                       id="traveler-email"
@@ -240,7 +252,7 @@ const BookingPage = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label htmlFor="traveler-phone" className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                    <label htmlFor="traveler-phone" className="block text-sm font-medium text-slate-700 mb-1">{t('booking_page.phone')}</label>
                     <input
                       type="tel"
                       id="traveler-phone"
@@ -258,7 +270,7 @@ const BookingPage = () => {
             {/* Order Summary Sidebar */}
             <div>
               <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-24">
-                <h3 className="font-bold text-lg mb-4">Order Summary</h3>
+                <h3 className="font-bold text-lg mb-4">{t('booking_page.order_summary')}</h3>
                 
                 <div className="flex gap-3 mb-4 pb-4 border-b border-slate-100">
                   <img 
@@ -274,19 +286,19 @@ const BookingPage = () => {
 
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Date</span>
+                    <span className="text-slate-600">{t('booking_page.date')}</span>
                     <span className="font-medium">
-                      {date && new Date(date).toLocaleDateString('fr-FR')}
+                      {date && new Date(date).toLocaleDateString(dateLocale)}
                     </span>
                   </div>
                   {timeSlot && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Plage horaire</span>
+                      <span className="text-slate-600">{t('booking_page.time_slot')}</span>
                       <span className="font-medium">{timeSlot.startTime} - {timeSlot.endTime}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Tickets</span>
+                    <span className="text-slate-600">{t('booking_page.tickets_label')}</span>
                     <span className="font-medium">{tickets}</span>
                   </div>
                 </div>
@@ -296,21 +308,21 @@ const BookingPage = () => {
                     <>
                       <div className="space-y-2 mb-3">
                         <div className="flex justify-between text-sm text-slate-600">
-                          <span>{formatPrice(selectedSlot.price, 'EUR')} × {tickets} ticket{tickets > 1 ? 's' : ''}</span>
+                          <span>{formatPrice(selectedSlot.price, 'EUR')} × {t('booking_page.tickets_line', { count: tickets })}</span>
                           <span>{formatPrice(selectedSlot.price * tickets, 'EUR')}</span>
                         </div>
                         {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                           <div className="flex justify-between text-sm text-slate-600">
                             <span className="flex items-center gap-1">
                               <span>⚡</span>
-                              Skip-the-Line ({product.skipTheLine.type})
+                              {t('booking_page.skip_the_line', { type: product.skipTheLine.type })}
                             </span>
                             <span>{formatPrice(product.skipTheLine.additionalPrice * tickets, 'EUR')}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                        <span className="font-bold text-slate-900">Total</span>
+                        <span className="font-bold text-slate-900">{t('booking_page.total')}</span>
                         <span className="font-bold text-xl text-primary-700">
                           {formatPrice(totalPrice, 'EUR')}
                         </span>
@@ -325,7 +337,7 @@ const BookingPage = () => {
                   disabled={!selectedSlot || !travelerDetails.firstName || !travelerDetails.email}
                   className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  Continue to Payment
+                  {t('booking_page.continue_payment')}
                   <ChevronRight size={18} className="ms-2" />
                 </button>
               </div>
