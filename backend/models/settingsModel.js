@@ -17,15 +17,38 @@ const settingsSchema = mongoose.Schema({
   timestamps: true,
 });
 
-// Predefined settings keys
+/** [PROMPT-5] Platform settings defaults (any key can still be upserted). */
 settingsSchema.statics.getDefaultSettings = () => ({
-  autoApproveProducts: false, // Auto-approve products from approved operators
-  autoApproveReviews: false, // Auto-approve reviews from approved users
-  requireProductApproval: true, // Require admin approval for products
-  requireReviewApproval: true, // Require admin approval for reviews
+  // Général
+  autoApproveProducts: false,
+  autoApproveReviews: false,
+  requireProductApproval: true,
+  requireReviewApproval: true,
+  maintenanceMode: false,
+  defaultLanguage: 'fr',
+  defaultCurrency: 'MAD',
+  // Finances
+  platformCommissionPercent: 15,
+  minWithdrawalDays: 7,
+  transferFeeMad: 0,
+  minWithdrawalAmountMad: 100,
+  // Paiements
+  stripeEnabled: true,
+  stripeTestMode: true,
+  paypalEnabled: true,
+  paypalTestMode: true,
+  cmiEnabled: false,
+  bankTransferEnabled: true,
+  showIban: true,
+  // Notifications
+  supportEmail: 'support@overglowtrip.com',
+  notifyNewUser: true,
+  notifyNewBooking: true,
+  notifyPaymentReceived: true,
+  notifyWithdrawalRequested: true,
+  digestEmailFrequency: 'weekly',
 });
 
 const Settings = mongoose.model('Settings', settingsSchema);
 
 export default Settings;
-

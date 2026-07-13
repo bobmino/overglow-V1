@@ -8,14 +8,13 @@ const getSettings = async (req, res) => {
   try {
     const settings = await Settings.find({});
     const defaultSettings = Settings.getDefaultSettings();
-    
-    // Merge with defaults
-    const mergedSettings = {};
-    Object.keys(defaultSettings).forEach(key => {
-      const setting = settings.find(s => s.key === key);
-      mergedSettings[key] = setting ? setting.value : defaultSettings[key];
+
+    // Defaults first, then DB overrides (including any extra upserted keys)
+    const mergedSettings = { ...defaultSettings };
+    settings.forEach((s) => {
+      mergedSettings[s.key] = s.value;
     });
-    
+
     res.json(mergedSettings);
   } catch (error) {
     logger.error('Get settings error:', error);

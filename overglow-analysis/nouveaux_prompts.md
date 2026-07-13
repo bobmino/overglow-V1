@@ -10,6 +10,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 2 — Page Réservations Admin
 - [x] PROMPT 3 — Cloche de Notifications Header
 - [x] PROMPT 4 — Dashboard Admin Pro
+- [x] PROMPT 5 — Settings Complètes & Organisées
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
