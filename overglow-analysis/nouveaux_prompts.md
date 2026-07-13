@@ -12,6 +12,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 4 — Dashboard Admin Pro
 - [x] PROMPT 5 — Settings Complètes & Organisées
 - [x] PROMPT 6 — Chat Pro + Inbox Admin
+- [x] PROMPT 7 — Notifications Temps Réel
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 

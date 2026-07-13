@@ -18,6 +18,8 @@ const notificationSchema = mongoose.Schema({
       'review_pending',
       'review_approved',
       'review_rejected',
+      'new_review',
+      'low_rating',
       'inquiry_received',
       'inquiry_answered',
       'inquiry_approved',
@@ -35,6 +37,9 @@ const notificationSchema = mongoose.Schema({
       'onboarding_rejected',
       'payment_received',
       'activity_reminder',
+      'badge_request_submitted',
+      'badge_request_approved',
+      'badge_request_rejected',
     ],
     required: true,
   },
@@ -49,7 +54,7 @@ const notificationSchema = mongoose.Schema({
   relatedEntity: {
     type: {
       type: String,
-      enum: ['Product', 'Booking', 'Review', 'Inquiry', 'Withdrawal', 'Operator', 'OperatorOnboarding'],
+      enum: ['Product', 'Booking', 'Review', 'Inquiry', 'Withdrawal', 'Operator', 'OperatorOnboarding', 'BadgeRequest'],
     },
     id: {
       type: mongoose.Schema.Types.ObjectId,

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
+import { useNotificationPolling } from '../hooks/useNotificationPolling';
 import { logger } from '../utils/logger.js';
 
 const iconForType = (type = '') => {
@@ -22,7 +23,7 @@ const iconForType = (type = '') => {
   if (type.startsWith('product')) {
     return { Icon: Package, className: 'bg-green-100 text-green-600' };
   }
-  if (type.startsWith('review')) {
+  if (type.startsWith('review') || type === 'new_review' || type === 'low_rating') {
     return { Icon: Star, className: 'bg-yellow-100 text-yellow-700' };
   }
   if (type.startsWith('inquiry')) {
@@ -62,31 +63,24 @@ const linkForNotification = (n) => {
       return '/operator/inquiries';
     case 'Withdrawal':
       return '/operator/withdrawals';
+    case 'Review':
+      return '/operator/dashboard';
     default:
       return '/notifications';
   }
 };
 
 /**
- * [PROMPT-3] Header notification bell with dropdown.
+ * [PROMPT-3 + PROMPT-7] Header notification bell with dropdown + polling.
  */
 const NotificationBell = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const rootRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [items, setItems] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
-
-  const fetchCount = useCallback(async () => {
-    try {
-      const { data } = await api.get('/api/notifications/unread-count');
-      setUnreadCount(data.count ?? data.unreadCount ?? 0);
-    } catch {
-      /* silent */
-    }
-  }, []);
+  const { unreadCount, setUnreadCount, refetch } = useNotificationPolling(30000);
 
   const fetchUnreadPreview = useCallback(async () => {
     setLoadingList(true);
@@ -95,25 +89,15 @@ const NotificationBell = () => {
         params: { unreadOnly: true, limit: 5 },
       });
       setItems(data.notifications || []);
-      setUnreadCount(data.unreadCount ?? unreadCount);
+      if (typeof data.unreadCount === 'number') {
+        setUnreadCount(data.unreadCount);
+      }
     } catch (err) {
       logger.error('Notification preview failed', err);
     } finally {
       setLoadingList(false);
     }
-  }, [unreadCount]);
-
-  useEffect(() => {
-    if (authLoading || !isAuthenticated) return undefined;
-    fetchCount();
-    const onRead = () => fetchCount();
-    window.addEventListener('notificationsRead', onRead);
-    const interval = setInterval(fetchCount, 30000);
-    return () => {
-      window.removeEventListener('notificationsRead', onRead);
-      clearInterval(interval);
-    };
-  }, [authLoading, isAuthenticated, fetchCount]);
+  }, [setUnreadCount]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -127,7 +111,7 @@ const NotificationBell = () => {
 
   const markAllRead = async () => {
     try {
-      await api.put('/api/notifications/mark-all-read');
+      await api.post('/api/notifications/mark-all-read');
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
       window.dispatchEvent(new CustomEvent('notificationsRead'));
@@ -156,7 +140,10 @@ const NotificationBell = () => {
     <div className="relative" ref={rootRef}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => !v);
+          refetch();
+        }}
         className="relative p-2 text-slate-600 hover:text-primary-600 hover:bg-slate-100 rounded-lg transition"
         aria-label="Notifications"
         aria-expanded={open}

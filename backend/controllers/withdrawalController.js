@@ -3,7 +3,7 @@ import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
-import { notifyWithdrawalRequest, notifyWithdrawalApproved, notifyRefundProcessed } from '../utils/notificationService.js';
+import { notifyWithdrawalRequest, notifyWithdrawalApproved, notifyWithdrawalRejected, notifyRefundProcessed } from '../utils/notificationService.js';
 import { logger } from '../utils/logger.js';
 
 // @desc    Calculate available balance for operator
@@ -105,7 +105,11 @@ const createWithdrawal = async (req, res) => {
       // Notify admin
       const admins = await User.find({ role: 'Admin' });
       const adminIds = admins.map(admin => admin._id);
-      await notifyWithdrawalRequest(createdWithdrawal, adminIds);
+      await notifyWithdrawalRequest(
+        createdWithdrawal,
+        adminIds,
+        operator.companyName || req.user.name || 'un opérateur'
+      );
 
       res.status(201).json(createdWithdrawal);
     } else if (type === 'client_refund') {
@@ -127,7 +131,11 @@ const createWithdrawal = async (req, res) => {
       // Notify admin
       const admins = await User.find({ role: 'Admin' });
       const adminIds = admins.map(admin => admin._id);
-      await notifyWithdrawalRequest(createdWithdrawal, adminIds);
+      await notifyWithdrawalRequest(
+        createdWithdrawal,
+        adminIds,
+        req.user.name || 'un client'
+      );
 
       res.status(201).json(createdWithdrawal);
     } else {
@@ -233,6 +241,11 @@ const rejectWithdrawal = async (req, res) => {
     withdrawal.status = 'Rejected';
     withdrawal.rejectionReason = reason || '';
     await withdrawal.save();
+
+    const userId = withdrawal.user?._id || withdrawal.user;
+    if (userId) {
+      await notifyWithdrawalRejected(withdrawal, userId, reason || '');
+    }
 
     res.json(withdrawal);
   } catch (error) {

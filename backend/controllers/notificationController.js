@@ -87,7 +87,7 @@ const markAllAsRead = async (req, res) => {
       { isRead: true, readAt: new Date() }
     );
 
-    res.json({ message: 'All notifications marked as read' });
+    res.json({ success: true, message: 'All notifications marked as read' });
   } catch (error) {
     logger.error('Mark all as read error:', error);
     res.status(500).json({ message: 'Failed to mark all notifications as read' });

@@ -5,7 +5,7 @@ import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import Settings from '../models/settingsModel.js';
 import { validationResult } from 'express-validator';
-import { notifyReviewPending, notifyReviewApproved } from '../utils/notificationService.js';
+import { notifyReviewPending, notifyReviewApproved, notifyNewReview, notifyLowRating } from '../utils/notificationService.js';
 import { logger } from '../utils/logger.js';
 import { sanitizeText } from '../utils/sanitizer.js';
 
@@ -83,6 +83,21 @@ const createReview = async (req, res) => {
   updateProductMetrics(productId).catch(err => logger.error('Error updating product metrics:', err));
   if (product.operator) {
     updateOperatorMetrics(product.operator).catch(err => logger.error('Error updating operator metrics:', err));
+  }
+
+  // Notify operator of new review (+ low rating alert)
+  if (product.operator) {
+    try {
+      const operatorDoc = await Operator.findById(product.operator).select('user');
+      if (operatorDoc?.user) {
+        await notifyNewReview(review, product, operatorDoc.user);
+        if (Number(rating) <= 2) {
+          await notifyLowRating(review, product, operatorDoc.user);
+        }
+      }
+    } catch (err) {
+      logger.error('Error notifying operator of new review:', err);
+    }
   }
   
   // Notify admin if review is pending

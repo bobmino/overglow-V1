@@ -6,6 +6,7 @@ import Schedule from '../models/scheduleModel.js';
 import { logger } from '../utils/logger.js';
 import {
   notifyProductApproved,
+  notifyProductRejected,
   notifyOperatorApproved,
   notifyOnboardingApproved,
   notifyOnboardingRejected,
@@ -583,19 +584,39 @@ const getProducts = async (req, res) => {
 // @access  Private/Admin
 const updateProductStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, reason, rejectionReason } = req.body;
     const product = await Product.findById(req.params.id);
 
     if (product) {
       const oldStatus = product.status;
       product.status = status;
       await product.save();
-      
-      // Notify operator if product was approved
-      if (oldStatus !== 'Published' && status === 'Published') {
-        await notifyProductApproved(product, product.operator);
+
+      // Resolve operator → user id for notifications
+      let operatorUserId = null;
+      if (product.operator) {
+        const opDoc = await Operator.findById(product.operator).select('user');
+        operatorUserId = opDoc?.user || null;
       }
-      
+
+      // Notify operator if product was approved
+      if (operatorUserId && oldStatus !== 'Published' && status === 'Published') {
+        await notifyProductApproved(product, operatorUserId);
+      }
+
+      // Reject = Pending Review → Draft (admin reject button)
+      if (
+        operatorUserId &&
+        oldStatus === 'Pending Review' &&
+        status === 'Draft'
+      ) {
+        await notifyProductRejected(
+          product,
+          operatorUserId,
+          reason || rejectionReason || ''
+        );
+      }
+
       res.json(product);
     } else {
       res.status(404).json({ message: 'Product not found' });

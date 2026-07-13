@@ -202,14 +202,14 @@ export const notifyReviewApproved = async (review, userId) => {
 /**
  * Create notification for withdrawal request (to admin)
  */
-export const notifyWithdrawalRequest = async (withdrawal, adminIds) => {
+export const notifyWithdrawalRequest = async (withdrawal, adminIds, operatorName = 'un opérateur') => {
   const notifications = [];
   for (const adminId of adminIds) {
     const notif = await createNotification({
       userId: adminId,
       type: 'withdrawal_requested',
       title: 'Demande de retrait',
-      message: `Nouvelle demande de retrait de €${withdrawal.amount}`,
+      message: `Nouveau retrait demandé par ${operatorName}`,
       relatedEntity: {
         type: 'Withdrawal',
         id: withdrawal._id,
@@ -228,10 +228,76 @@ export const notifyWithdrawalApproved = async (withdrawal, userId) => {
     userId,
     type: 'withdrawal_approved',
     title: 'Retrait approuvé',
-    message: `Votre demande de retrait de €${withdrawal.amount} a été approuvée`,
+    message: `Votre retrait de ${withdrawal.amount} MAD a été approuvé`,
     relatedEntity: {
       type: 'Withdrawal',
       id: withdrawal._id,
+    },
+  });
+};
+
+/**
+ * Create notification for withdrawal rejected (to user / operator)
+ */
+export const notifyWithdrawalRejected = async (withdrawal, userId, reason = '') => {
+  const reasonText = reason?.trim() ? reason.trim() : 'aucune raison précisée';
+  return createNotification({
+    userId,
+    type: 'withdrawal_rejected',
+    title: 'Retrait refusé',
+    message: `Votre retrait a été refusé: ${reasonText}`,
+    relatedEntity: {
+      type: 'Withdrawal',
+      id: withdrawal._id,
+    },
+  });
+};
+
+/**
+ * Create notification for product rejected (to operator user)
+ */
+export const notifyProductRejected = async (product, operatorUserId, reason = '') => {
+  const reasonText = reason?.trim() ? reason.trim() : 'retourné en brouillon pour modifications';
+  return createNotification({
+    userId: operatorUserId,
+    type: 'product_rejected',
+    title: 'Produit refusé',
+    message: `Votre produit '${product.title}' a été refusé: ${reasonText}`,
+    relatedEntity: {
+      type: 'Product',
+      id: product._id,
+    },
+  });
+};
+
+/**
+ * Notify operator of a new review on their product
+ */
+export const notifyNewReview = async (review, product, operatorUserId) => {
+  return createNotification({
+    userId: operatorUserId,
+    type: 'new_review',
+    title: 'Nouvel avis',
+    message: `Nouvel avis sur '${product.title}'`,
+    relatedEntity: {
+      type: 'Review',
+      id: review._id,
+    },
+  });
+};
+
+/**
+ * Notify operator of a low rating (≤ 2/5)
+ */
+export const notifyLowRating = async (review, product, operatorUserId) => {
+  return createNotification({
+    userId: operatorUserId,
+    type: 'low_rating',
+    title: 'Avis négatif',
+    message: `Avis négatif (${review.rating}/5) sur '${product.title}'`,
+    relatedEntity: {
+      type: 'Review',
+      id: review._id,
     },
   });
 };
