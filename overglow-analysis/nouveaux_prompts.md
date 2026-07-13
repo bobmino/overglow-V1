@@ -674,7 +674,7 @@ REQUIREMENTS:
 
 Do NOT change any logic. This is purely text cleanup and dead code removal.
 
-PROMPT 15 — 🟢 Mobile Admin Responsive
+[x] PROMPT 15 — 🟢 Mobile Admin Responsive
 You are a mobile-first UI engineer.
 
 TASK: Make the entire admin area fully responsive and mobile-friendly.

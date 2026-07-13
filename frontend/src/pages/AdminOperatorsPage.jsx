@@ -140,7 +140,7 @@ const AdminOperatorsPage = () => {
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.operators.title')}</h1>
       </div>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
@@ -226,7 +226,7 @@ const AdminOperatorsPage = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => openDetailModal(operator)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
@@ -288,7 +288,7 @@ const AdminOperatorsPage = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
                     {selectedOperator.companyName || selectedOperator.user?.name}
                   </h2>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {getStatusBadge(selectedOperator.status)}
                     {getOnboardingStatusBadge(selectedOperator.onboarding)}
                   </div>
@@ -310,7 +310,7 @@ const AdminOperatorsPage = () => {
             <div className="p-6 space-y-6">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-3">{t('admin.operators.user_info')}</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">{t('admin.common.name')}</p>
                     <p className="font-semibold">{selectedOperator.user?.name}</p>
@@ -357,7 +357,7 @@ const AdminOperatorsPage = () => {
                   {selectedOperator.onboarding.providerType === 'company' && selectedOperator.onboarding.companyInfo && (
                     <div className="border-t pt-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">{t('admin.operators.company_info')}</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-gray-600">{t('admin.operators.company_name')}</p>
                           <p className="font-semibold">{selectedOperator.onboarding.companyInfo.companyName || t('admin.common.na')}</p>
@@ -385,7 +385,7 @@ const AdminOperatorsPage = () => {
                   {selectedOperator.onboarding.providerType === 'individual_with_status' && selectedOperator.onboarding.individualWithStatusInfo && (
                     <div className="border-t pt-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">{t('admin.operators.status_info')}</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-gray-600">{t('admin.operators.status_type')}</p>
                           <p className="font-semibold">{selectedOperator.onboarding.individualWithStatusInfo.statusType || t('admin.common.na')}</p>
@@ -432,7 +432,7 @@ const AdminOperatorsPage = () => {
               )}
 
               {selectedOperator.onboarding?.onboardingStatus === 'pending_approval' && (
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1">
                     <label className="block text-sm font-bold text-gray-700 mb-2">{t('admin.operators.approval_notes')}</label>
                     <textarea
@@ -475,7 +475,7 @@ const AdminOperatorsPage = () => {
               )}
 
               {selectedOperator.status === 'Active' && selectedOperator.onboarding?.onboardingStatus !== 'pending_approval' && (
-                <div className="flex justify-end gap-4">
+                <div className="flex flex-wrap justify-end gap-2">
                   <button
                     onClick={() => handleStatusChange(selectedOperator._id, 'Suspended')}
                     className="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition"
@@ -486,7 +486,7 @@ const AdminOperatorsPage = () => {
               )}
 
               {selectedOperator.status === 'Suspended' && (
-                <div className="flex justify-end gap-4">
+                <div className="flex flex-wrap justify-end gap-2">
                   <button
                     onClick={() => handleStatusChange(selectedOperator._id, 'Active')}
                     className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"

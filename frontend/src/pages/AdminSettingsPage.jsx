@@ -45,7 +45,7 @@ const DEFAULTS = {
 };
 
 const ToggleRow = ({ title, help, checked, saving, onChange }) => (
-  <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
     <div className="flex-1 min-w-0">
       <h3 className="font-semibold text-gray-900">{title}</h3>
       {help && <p className="text-xs text-gray-500 mt-1">{help}</p>}

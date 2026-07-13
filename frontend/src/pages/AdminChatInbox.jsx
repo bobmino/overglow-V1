@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Search } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Search } from 'lucide-react';
 import ChatWidget from '../components/ChatWidget';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
@@ -73,6 +73,7 @@ const AdminChatInbox = () => {
     (conversation) => String(conversation._id) === String(selectedChatId)
   );
   const selectedParticipant = getOtherParticipant(selectedConversation);
+  const showChatPane = Boolean(selectedConversation);
 
   const formatRelativeTime = (date) => {
     if (!date) return '';
@@ -110,8 +111,12 @@ const AdminChatInbox = () => {
   };
 
   return (
-    <main className="flex h-[calc(100vh-4rem)] min-h-[600px] overflow-hidden bg-gray-100">
-      <aside className="flex w-[300px] shrink-0 flex-col border-r border-gray-200 bg-white">
+    <main className="flex h-[calc(100dvh-8rem)] min-h-[480px] md:h-[calc(100vh-4rem)] md:min-h-[600px] overflow-hidden bg-gray-100">
+      <aside
+        className={`flex w-full shrink-0 flex-col border-r border-gray-200 bg-white md:w-[300px] ${
+          showChatPane ? 'hidden md:flex' : 'flex'
+        }`}
+      >
         <div className="border-b border-gray-200 p-4">
           <div className="mb-4 flex items-center gap-2">
             <MessageSquare className="text-primary-600" size={22} />
@@ -127,7 +132,7 @@ const AdminChatInbox = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher..."
-              className="w-full rounded-lg border border-gray-300 py-2 pe-3 ps-9 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              className="w-full rounded-lg border border-gray-300 py-2.5 pe-3 ps-9 text-sm min-h-11 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
               aria-label="Rechercher une conversation"
             />
           </div>
@@ -167,7 +172,7 @@ const AdminChatInbox = () => {
                   type="button"
                   key={conversation._id}
                   onClick={() => setSelectedChatId(conversation._id)}
-                  className={`flex w-full items-start gap-3 border-b border-gray-100 p-4 text-start transition ${
+                  className={`flex w-full items-start gap-3 border-b border-gray-100 p-4 text-start transition min-h-11 ${
                     isSelected
                       ? 'bg-primary-50'
                       : 'bg-white hover:bg-gray-50'
@@ -206,21 +211,35 @@ const AdminChatInbox = () => {
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col">
+      <section
+        className={`min-w-0 flex-1 flex-col ${
+          showChatPane ? 'flex' : 'hidden md:flex'
+        }`}
+      >
         {selectedConversation ? (
           <>
-            <header className="flex min-h-16 items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-              <div className="min-w-0">
-                <h2 className="truncate font-bold text-gray-900">
-                  {selectedParticipant?.name || 'Utilisateur'}
-                </h2>
-                <p className="truncate text-sm text-gray-500">
-                  {selectedParticipant?.email || 'Adresse e-mail indisponible'}
-                </p>
+            <header className="flex min-h-14 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-3 md:min-h-16 md:px-6">
+              <div className="flex min-w-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedChatId(null)}
+                  className="md:hidden inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+                  aria-label="Retour aux conversations"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <div className="min-w-0">
+                  <h2 className="truncate font-bold text-gray-900">
+                    {selectedParticipant?.name || 'Utilisateur'}
+                  </h2>
+                  <p className="truncate text-sm text-gray-500">
+                    {selectedParticipant?.email || 'Adresse e-mail indisponible'}
+                  </p>
+                </div>
               </div>
               <Link
                 to="/admin/users"
-                className="shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700 hover:underline"
+                className="hidden sm:inline shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700 hover:underline"
               >
                 Voir les utilisateurs
               </Link>
@@ -230,7 +249,7 @@ const AdminChatInbox = () => {
                 key={selectedChatId}
                 chatId={selectedChatId}
                 embedded
-                onClose={() => {}}
+                onClose={() => setSelectedChatId(null)}
               />
             </div>
           </>

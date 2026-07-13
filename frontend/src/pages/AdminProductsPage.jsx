@@ -110,7 +110,7 @@ const AdminProductsPage = () => {
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.products.title')}</h1>
       </div>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${

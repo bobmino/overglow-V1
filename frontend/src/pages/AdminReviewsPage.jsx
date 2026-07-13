@@ -166,7 +166,7 @@ const AdminReviewsPage = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left text-slate-500 border-b border-slate-100 bg-slate-50">
@@ -303,6 +303,102 @@ const AdminReviewsPage = () => {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="py-10 text-center text-gray-500">Chargement…</div>
+          ) : reviews.length === 0 ? (
+            <div className="py-10 text-center text-gray-500">Aucun avis</div>
+          ) : (
+            reviews.map((r) => (
+              <article key={r._id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900">{r.user?.name || '—'}</p>
+                    <p className="text-xs text-gray-500 break-all">{r.user?.email}</p>
+                  </div>
+                  {statusBadge(r.status)}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Produit</p>
+                  <p className="font-medium text-gray-800">{r.product?.title || '—'}</p>
+                </div>
+                <div className="inline-flex items-center gap-1 font-semibold text-amber-600">
+                  <Star size={14} className="fill-amber-500" />
+                  {r.rating}
+                </div>
+                <p className="line-clamp-3 text-sm text-gray-700">{r.comment}</p>
+                {r.operatorResponse?.message && (
+                  <p className="text-xs text-blue-700 line-clamp-2">
+                    Réponse : {r.operatorResponse.message}
+                  </p>
+                )}
+                <div className="flex flex-col gap-2">
+                  {r.status !== 'Approved' && (
+                    <button
+                      type="button"
+                      disabled={busyId === r._id}
+                      onClick={() => approve(r._id)}
+                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-green-600 text-white text-sm font-semibold disabled:opacity-50"
+                    >
+                      <Check size={16} /> Approuver
+                    </button>
+                  )}
+                  {r.status !== 'Rejected' && (
+                    <button
+                      type="button"
+                      disabled={busyId === r._id}
+                      onClick={() => reject(r._id)}
+                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-red-600 text-white text-sm font-semibold disabled:opacity-50"
+                    >
+                      <X size={16} /> Refuser
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReplyFor(replyFor === r._id ? null : r._id);
+                      setReplyText(r.operatorResponse?.message || '');
+                    }}
+                    className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700"
+                  >
+                    <MessageSquare size={16} /> Répondre
+                  </button>
+                </div>
+                {replyFor === r._id && (
+                  <div className="rounded-lg bg-blue-50 p-3">
+                    <label className="block text-xs font-semibold text-blue-900 mb-1">
+                      Réponse de l’opérateur / admin
+                    </label>
+                    <textarea
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      rows={3}
+                      className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm mb-2"
+                      placeholder="Écrire une réponse publique…"
+                    />
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <button
+                        type="button"
+                        disabled={busyId === r._id || !replyText.trim()}
+                        onClick={() => sendReply(r._id)}
+                        className="min-h-11 px-3 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
+                      >
+                        Publier
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReplyFor(null)}
+                        className="min-h-11 px-3 text-sm text-gray-600"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </article>
+            ))
+          )}
         </div>
 
         {pagination.totalPages > 1 && (

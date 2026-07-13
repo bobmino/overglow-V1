@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Search,
   RotateCcw,
-  X,
   Banknote,
   Percent,
   Users,
@@ -16,6 +15,8 @@ import api from '../config/axios';
 import { useToast } from '../context/ToastContext';
 import { logger } from '../utils/logger.js';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import AdminModal from '../components/AdminModal';
+import AdminCollapsibleFilters from '../components/AdminCollapsibleFilters';
 
 const STATUS_OPTIONS = [
   { value: 'Pending', label: 'En attente' },
@@ -62,18 +63,12 @@ const DetailModal = ({ booking, onClose }) => {
   if (!booking) return null;
   const product = booking.schedule?.product;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-slate-900 text-white px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <h2 className="text-lg font-heading font-bold">
-            Réservation #{String(booking._id).slice(-8).toUpperCase()}
-          </h2>
-          <button type="button" onClick={onClose} className="p-1 hover:bg-slate-800 rounded" aria-label="Fermer">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6 space-y-6 text-sm">
+    <AdminModal
+      open
+      onClose={onClose}
+      title={`Réservation #${String(booking._id).slice(-8).toUpperCase()}`}
+    >
+        <div className="space-y-6 text-sm">
           <section>
             <h3 className="font-semibold text-gray-900 mb-2">Client</h3>
             <p>{booking.user?.name || '—'}</p>
@@ -92,7 +87,7 @@ const DetailModal = ({ booking, onClose }) => {
             <h3 className="font-semibold text-gray-900 mb-2">Opérateur</h3>
             <p>{booking.operator?.companyName || booking.operator?.publicName || '—'}</p>
           </section>
-          <section className="grid grid-cols-2 gap-4">
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Montant</h3>
               <p>{formatMAD(booking.totalAmount)}</p>
@@ -127,8 +122,7 @@ const DetailModal = ({ booking, onClose }) => {
             </section>
           )}
         </div>
-      </div>
-    </div>
+    </AdminModal>
   );
 };
 
@@ -255,7 +249,7 @@ const AdminBookingsPage = () => {
     <div className="container mx-auto px-4 py-8 bg-slate-50 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-gray-900">Réservations</h1>
+          <h1 className="hidden md:block text-3xl font-heading font-bold text-gray-900">Réservations</h1>
           <p className="text-gray-600 mt-1">Gestion et suivi des réservations plateforme</p>
         </div>
         <button
@@ -273,24 +267,25 @@ const AdminBookingsPage = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Users size={16} /> Total</div>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.total}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><CalendarDays size={16} /> Ce mois</div>
-          <p className="text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Banknote size={16} /> Revenu</div>
-          <p className="text-2xl font-bold text-gray-900">{formatMAD(stats.revenue)}</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900 break-words">{formatMAD(stats.revenue)}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Percent size={16} /> Annulation</div>
-          <p className="text-2xl font-bold text-gray-900">{stats.cancellationRate}%</p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.cancellationRate}%</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 space-y-4">
+      <AdminCollapsibleFilters>
+        <div className="space-y-4">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -354,7 +349,8 @@ const AdminBookingsPage = () => {
             </button>
           ))}
         </div>
-      </div>
+        </div>
+      </AdminCollapsibleFilters>
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -371,7 +367,8 @@ const AdminBookingsPage = () => {
             <p className="text-gray-500 mt-1">Modifiez les filtres ou réessayez plus tard.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50 sticky top-0 z-10">
                 <tr className="text-left text-gray-600 border-b border-gray-200">
@@ -446,6 +443,68 @@ const AdminBookingsPage = () => {
               </tbody>
             </table>
           </div>
+          <div className="md:hidden divide-y divide-gray-200">
+            {bookings.map((b) => (
+              <article key={b._id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs text-gray-500">
+                      #{String(b._id).slice(-8).toUpperCase()}
+                    </p>
+                    <p className="font-semibold text-gray-900">{b.user?.name || '—'}</p>
+                    <p className="text-xs text-gray-500 break-all">{b.user?.email || ''}</p>
+                  </div>
+                  <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClass(b.status)}`}>
+                    {statusLabel(b.status)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-500">Produit</p>
+                    <p className="font-medium text-gray-800">{b.schedule?.product?.title || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Montant</p>
+                    <p className="font-semibold break-words">{formatMAD(b.totalAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="text-gray-700">{formatDate(b.createdAt)}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelected(b)}
+                    className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg border border-gray-300 text-gray-700 font-semibold"
+                  >
+                    <Eye size={16} /> Détails
+                  </button>
+                  {b.status === 'PENDING_PAYMENT' && (
+                    <button
+                      type="button"
+                      disabled={actionLoading === b._id}
+                      onClick={() => confirmPayment(b._id)}
+                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50"
+                    >
+                      <CheckCircle size={16} /> Valider
+                    </button>
+                  )}
+                  {b.status === 'Confirmed' && (
+                    <button
+                      type="button"
+                      disabled={actionLoading === b._id}
+                      onClick={() => cancelBooking(b._id)}
+                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50"
+                    >
+                      <XCircle size={16} /> Annuler
+                    </button>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+          </>
         )}
 
         {/* Pagination */}
@@ -468,7 +527,7 @@ const AdminBookingsPage = () => {
                   key={n}
                   type="button"
                   onClick={() => setPage(n)}
-                  className={`min-w-[2rem] px-2 py-1.5 rounded-lg text-sm font-semibold ${
+                  className={`${n === page ? 'inline-flex' : 'hidden sm:inline-flex'} items-center justify-center min-w-[2rem] px-2 py-1.5 rounded-lg text-sm font-semibold ${
                     n === page ? 'bg-primary-600 text-white' : 'border border-gray-300 hover:bg-white'
                   }`}
                 >

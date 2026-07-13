@@ -212,7 +212,7 @@ const AdminFinancePage = () => {
       </div>
 
       {/* Row 2 — Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="hidden sm:grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
             Revenus ({stats?.chartGranularity === 'weekly' ? 'hebdomadaire' : 'quotidien'})
@@ -268,6 +268,9 @@ const AdminFinancePage = () => {
           </div>
         </div>
       </div>
+      <p className="sm:hidden mb-6 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
+        Graphiques disponibles sur tablette et plus
+      </p>
 
       {/* Row 3 — Transactions */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
@@ -315,7 +318,7 @@ const AdminFinancePage = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left text-slate-500 border-b border-slate-100">
@@ -362,6 +365,49 @@ const AdminFinancePage = () => {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="md:hidden divide-y divide-slate-100">
+          {loadingTx ? (
+            <div className="py-8 text-center text-gray-500">Chargement…</div>
+          ) : transactions.length === 0 ? (
+            <div className="py-8 text-center text-gray-500">Aucune transaction</div>
+          ) : (
+            transactions.map((tx) => (
+              <article key={`${tx.type}-${tx.id}`} className="py-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-gray-900">{tx.typeLabel}</p>
+                    <p className="text-xs text-gray-500">{tx.paymentMethodLabel || '—'}</p>
+                  </div>
+                  <p className="font-bold text-gray-900 text-right break-words">
+                    {formatMoney(tx.amount, tx.currency)}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-500">Statut</p>
+                    <p className="text-gray-800">{statusLabel(tx.status)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="text-gray-800">
+                      {tx.date
+                        ? new Date(tx.date).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '—'}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-500">Opérateur</p>
+                    <p className="text-gray-800">{tx.operator || '—'}</p>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
         </div>
 
         {pagination.totalPages > 1 && (

@@ -117,6 +117,7 @@ const AdminSidebar = ({
     return applyBadges(variant === 'operator' ? OPERATOR_SECTIONS : ADMIN_SECTIONS);
   }, [variant, messagesBadge, bookingsBadge]);
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
+  const drawerWidth = mobileOpen ? SIDEBAR_WIDTH : width;
 
   const isItemActive = (to) => {
     const path = to.split('#')[0];
@@ -138,11 +139,12 @@ const AdminSidebar = ({
       />
 
       <aside
-        style={{ width }}
+        style={{ width: drawerWidth }}
         className={`
           fixed top-0 left-0 z-50 h-full bg-slate-900 text-slate-100
           flex flex-col border-r border-slate-800
           transition-all duration-300 ease-in-out
+          max-md:max-w-[280px]
           md:translate-x-0
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
