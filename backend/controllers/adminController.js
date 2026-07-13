@@ -1622,6 +1622,294 @@ const adminCancelBooking = async (req, res) => {
   }
 };
 
+const mapPaymentMethodLabel = (method) => {
+  const m = String(method || '').toLowerCase();
+  if (m === 'stripe') return 'Stripe';
+  if (m === 'paypal') return 'PayPal';
+  if (m === 'cmi') return 'CMI';
+  if (m === 'bank_transfer' || m === 'cash_pickup' || m === 'cash_delivery') return 'Bank';
+  return method ? String(method) : 'Autre';
+};
+
+const getCommissionPercent = async () => {
+  try {
+    const Settings = (await import('../models/settingsModel.js')).default;
+    const row = await Settings.findOne({ key: 'platformCommissionPercent' }).lean();
+    const value = Number(row?.value);
+    if (Number.isFinite(value) && value >= 0) return value;
+  } catch {
+    /* defaults */
+  }
+  return 15;
+};
+
+/**
+ * [PROMPT-8] Finance KPIs + charts for admin finance page
+ * GET /api/admin/finance/stats?period=
+ */
+const getFinanceStats = async (req, res) => {
+  try {
+    const period = req.query.period || '30d';
+    const { start, end } = resolvePeriodRange(period, req.query.dateFrom, req.query.dateTo);
+    const commissionPercent = await getCommissionPercent();
+    const Withdrawal = (await import('../models/withdrawalModel.js')).default;
+
+    const bookingMatch = {
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: 'Cancelled' },
+    };
+
+    const [
+      revenueAgg,
+      paymentBreakdown,
+      revenueSeries,
+      withdrawalsProcessedAgg,
+      withdrawalsPendingAgg,
+    ] = await Promise.all([
+      Booking.aggregate([
+        { $match: bookingMatch },
+        {
+          $group: {
+            _id: null,
+            revenue: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      Booking.aggregate([
+        { $match: bookingMatch },
+        {
+          $group: {
+            _id: { $ifNull: ['$paymentMethod', 'unknown'] },
+            amount: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { amount: -1 } },
+      ]),
+      Booking.aggregate([
+        { $match: bookingMatch },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            revenue: { $sum: { $ifNull: ['$totalAmount', '$totalPrice'] } },
+            bookings: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Withdrawal.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            status: { $in: ['Approved', 'Processed'] },
+            type: 'operator_payout',
+          },
+        },
+        { $group: { _id: null, amount: { $sum: '$amount' }, count: { $sum: 1 } } },
+      ]),
+      Withdrawal.aggregate([
+        {
+          $match: {
+            status: 'Pending',
+            type: 'operator_payout',
+          },
+        },
+        { $group: { _id: null, amount: { $sum: '$amount' }, count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const revenue = revenueAgg[0]?.revenue || 0;
+    const commissions = Math.round(revenue * (commissionPercent / 100) * 100) / 100;
+
+    // Collapse payment methods into Stripe / PayPal / CMI / Bank
+    const pieMap = {};
+    for (const row of paymentBreakdown) {
+      const label = mapPaymentMethodLabel(row._id);
+      if (!pieMap[label]) pieMap[label] = { name: label, amount: 0, count: 0 };
+      pieMap[label].amount += row.amount || 0;
+      pieMap[label].count += row.count || 0;
+    }
+
+    const daySpan = Math.max(1, Math.ceil((end - start) / (24 * 60 * 60 * 1000)));
+    const useWeekly = daySpan > 21;
+    let revenueChart = revenueSeries.map((d) => ({
+      date: d._id,
+      label: d._id,
+      revenue: d.revenue || 0,
+      bookings: d.bookings || 0,
+    }));
+
+    if (useWeekly && revenueSeries.length) {
+      const weeks = {};
+      for (const d of revenueSeries) {
+        const dt = new Date(`${d._id}T00:00:00Z`);
+        const weekStart = new Date(dt);
+        weekStart.setUTCDate(dt.getUTCDate() - dt.getUTCDay());
+        const key = weekStart.toISOString().slice(0, 10);
+        if (!weeks[key]) weeks[key] = { date: key, label: key, revenue: 0, bookings: 0 };
+        weeks[key].revenue += d.revenue || 0;
+        weeks[key].bookings += d.bookings || 0;
+      }
+      revenueChart = Object.values(weeks).sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    res.json({
+      period,
+      range: { start, end },
+      commissionPercent,
+      chartGranularity: useWeekly ? 'weekly' : 'daily',
+      kpis: {
+        revenue,
+        commissions,
+        withdrawalsProcessedAmount: withdrawalsProcessedAgg[0]?.amount || 0,
+        withdrawalsProcessedCount: withdrawalsProcessedAgg[0]?.count || 0,
+        withdrawalsPending: {
+          count: withdrawalsPendingAgg[0]?.count || 0,
+          amount: withdrawalsPendingAgg[0]?.amount || 0,
+        },
+        bookingsCount: revenueAgg[0]?.count || 0,
+      },
+      revenueChart,
+      paymentMethodBreakdown: Object.values(pieMap),
+    });
+  } catch (error) {
+    logger.error('Get finance stats error:', error);
+    res.status(500).json({ message: 'Failed to fetch finance stats' });
+  }
+};
+
+/**
+ * [PROMPT-8] Unified paginated transactions (bookings + withdrawals)
+ * GET /api/admin/finance/transactions
+ */
+const getTransactions = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const { type, status, paymentMethod, dateFrom, dateTo } = req.query;
+
+    let rangeStart = null;
+    let rangeEnd = null;
+    if (dateFrom || dateTo) {
+      const resolved = resolvePeriodRange('custom', dateFrom, dateTo || dateFrom);
+      rangeStart = resolved.start;
+      rangeEnd = resolved.end;
+    } else if (req.query.period) {
+      const resolved = resolvePeriodRange(req.query.period);
+      rangeStart = resolved.start;
+      rangeEnd = resolved.end;
+    }
+
+    const Withdrawal = (await import('../models/withdrawalModel.js')).default;
+    const includeBooking = !type || type === 'booking' || type === 'all';
+    const includeWithdrawal =
+      !type || type === 'withdrawal' || type === 'refund' || type === 'all';
+
+    const rows = [];
+
+    if (includeBooking && type !== 'withdrawal' && type !== 'refund') {
+      const bookingQuery = { status: { $ne: 'Cancelled' } };
+      if (rangeStart && rangeEnd) {
+        bookingQuery.createdAt = { $gte: rangeStart, $lte: rangeEnd };
+      }
+      if (status) {
+        bookingQuery.status = status;
+      }
+      if (paymentMethod) {
+        const pm = String(paymentMethod).toLowerCase();
+        if (pm === 'bank') {
+          bookingQuery.paymentMethod = { $in: ['bank_transfer', 'cash_pickup', 'cash_delivery'] };
+        } else {
+          bookingQuery.paymentMethod = pm;
+        }
+      }
+
+      const bookings = await Booking.find(bookingQuery)
+        .populate('operator', 'companyName publicName')
+        .populate('user', 'name email')
+        .sort({ createdAt: -1 })
+        .limit(500)
+        .lean();
+
+      for (const b of bookings) {
+        rows.push({
+          id: b._id,
+          type: 'booking',
+          typeLabel: 'Réservation',
+          amount: b.totalAmount ?? b.totalPrice ?? 0,
+          currency: 'MAD',
+          paymentMethod: b.paymentMethod || null,
+          paymentMethodLabel: mapPaymentMethodLabel(b.paymentMethod),
+          status: b.status,
+          date: b.createdAt,
+          operator: b.operator?.companyName || b.operator?.publicName || '—',
+        });
+      }
+    }
+
+    if (includeWithdrawal) {
+      const wQuery = {};
+      if (type === 'withdrawal') wQuery.type = 'operator_payout';
+      if (type === 'refund') wQuery.type = { $in: ['client_refund', 'refund'] };
+      if (rangeStart && rangeEnd) {
+        wQuery.createdAt = { $gte: rangeStart, $lte: rangeEnd };
+      }
+      if (status) wQuery.status = status;
+      if (paymentMethod) {
+        const pm = String(paymentMethod).toLowerCase();
+        if (pm === 'bank') wQuery.paymentMethod = 'bank_transfer';
+        else wQuery.paymentMethod = pm;
+      }
+
+      const withdrawals = await Withdrawal.find(wQuery)
+        .populate('operator', 'companyName publicName')
+        .populate('user', 'name email')
+        .sort({ createdAt: -1 })
+        .limit(500)
+        .lean();
+
+      for (const w of withdrawals) {
+        const isRefund = w.type === 'client_refund' || w.type === 'refund';
+        rows.push({
+          id: w._id,
+          type: isRefund ? 'refund' : 'withdrawal',
+          typeLabel: isRefund ? 'Remboursement' : 'Retrait',
+          amount: w.amount || 0,
+          currency: w.currency || 'MAD',
+          paymentMethod: w.paymentMethod || null,
+          paymentMethodLabel: mapPaymentMethodLabel(w.paymentMethod),
+          status: w.status,
+          date: w.createdAt,
+          operator:
+            w.operator?.companyName ||
+            w.operator?.publicName ||
+            w.user?.name ||
+            '—',
+        });
+      }
+    }
+
+    rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const total = rows.length;
+    const transactions = rows.slice(skip, skip + limit);
+
+    res.json({
+      transactions,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    });
+  } catch (error) {
+    logger.error('Get finance transactions error:', error);
+    res.status(500).json({ message: 'Failed to fetch transactions' });
+  }
+};
+
 export {
   getAdminStats,
   getOperators, 
@@ -1647,4 +1935,6 @@ export {
   getAnalytics,
   getAdminBookings,
   adminCancelBooking,
+  getFinanceStats,
+  getTransactions,
 };

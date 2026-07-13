@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Settings as SettingsIcon,
   Banknote,
@@ -84,10 +85,19 @@ const FieldRow = ({ title, help, children }) => (
  */
 const AdminSettingsPage = () => {
   const { toast } = useToast();
-  const [tab, setTab] = useState('general');
+  const [searchParams] = useSearchParams();
+  const initialTab = TABS.some((t) => t.id === searchParams.get('tab'))
+    ? searchParams.get('tab')
+    : 'general';
+  const [tab, setTab] = useState(initialTab);
   const [settings, setSettings] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
+
+  useEffect(() => {
+    const q = searchParams.get('tab');
+    if (q && TABS.some((t) => t.id === q)) setTab(q);
+  }, [searchParams]);
 
   useEffect(() => {
     const load = async () => {
