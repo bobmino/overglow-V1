@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import {
   Building2,
@@ -21,6 +22,7 @@ import {
 
 const OperatorOnboardingPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [onboarding, setOnboarding] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -92,12 +94,12 @@ const OperatorOnboardingPage = () => {
   });
 
   const steps = [
-    { id: 1, key: 'providerType', label: 'Type de prestataire', icon: Building2 },
-    { id: 2, key: 'publicInfo', label: 'Vos informations', icon: User },
-    { id: 3, key: 'photos', label: 'Vos photos', icon: Camera },
-    { id: 4, key: 'address', label: 'Adresse de la société', icon: Home },
-    { id: 5, key: 'experiences', label: 'Expériences', icon: FileText },
-    { id: 6, key: 'privateInfo', label: 'Informations privées', icon: Lock },
+    { id: 1, key: 'providerType', label: t('operator.onboarding.steps.provider_type'), icon: Building2 },
+    { id: 2, key: 'publicInfo', label: t('operator.onboarding.steps.public_info'), icon: User },
+    { id: 3, key: 'photos', label: t('operator.onboarding.steps.photos'), icon: Camera },
+    { id: 4, key: 'address', label: t('operator.onboarding.steps.address'), icon: Home },
+    { id: 5, key: 'experiences', label: t('operator.onboarding.steps.experiences'), icon: FileText },
+    { id: 6, key: 'privateInfo', label: t('operator.onboarding.steps.private_info'), icon: Lock },
   ];
 
   useEffect(() => {
@@ -236,7 +238,7 @@ const OperatorOnboardingPage = () => {
       setUploading(false);
     } catch (error) {
       console.error('Upload error:', error);
-      setError('Erreur lors du téléchargement de l\'image');
+      setError(t('operator.onboarding.upload_error'));
       setUploading(false);
     }
   };
@@ -259,52 +261,52 @@ const OperatorOnboardingPage = () => {
     switch (step) {
       case 1:
         if (!formData.providerType) {
-          setError('Veuillez sélectionner un type de prestataire');
+          setError(t('operator.onboarding.validation_provider_type'));
           return false;
         }
         return true;
       case 2:
         if (!formData.publicName.trim()) {
-          setError('Le nom public est requis');
+          setError(t('operator.onboarding.validation_public_name'));
           return false;
         }
         if (!formData.experienceLocation?.city) {
-          setError('La ville de localisation est requise');
+          setError(t('operator.onboarding.validation_experience_city'));
           return false;
         }
         if (!formData.experienceDescription.trim() || formData.experienceDescription.trim().length < 100) {
-          setError('La description doit contenir au moins 100 caractères');
+          setError(t('operator.onboarding.validation_description_length'));
           return false;
         }
         return true;
       case 3:
         if (formData.publicPhotos.length === 0) {
-          setError('Au moins une photo est requise');
+          setError(t('operator.onboarding.validation_photo_required'));
           return false;
         }
         return true;
       case 4:
         if (!formData.companyAddress?.city) {
-          setError('La ville de l\'adresse est requise');
+          setError(t('operator.onboarding.validation_company_city'));
           return false;
         }
         return true;
       case 5:
-        const validTypes = formData.experienceTypes.filter(t => t.trim() !== '');
+        const validTypes = formData.experienceTypes.filter(type => type.trim() !== '');
         if (validTypes.length === 0) {
-          setError('Au moins un type d\'expérience est requis');
+          setError(t('operator.onboarding.validation_experience_type'));
           return false;
         }
         return true;
       case 6:
         if (formData.providerType === 'company') {
           if (!formData.companyInfo?.registrationNumber) {
-            setError('Le numéro d\'enregistrement est requis pour une société');
+            setError(t('operator.onboarding.validation_company_registration'));
             return false;
           }
         } else if (formData.providerType === 'individual_with_status') {
           if (!formData.individualWithStatusInfo?.registrationNumber) {
-            setError('Le numéro d\'enregistrement est requis');
+            setError(t('operator.onboarding.validation_individual_registration'));
             return false;
           }
         }
@@ -363,7 +365,7 @@ const OperatorOnboardingPage = () => {
         case 5:
           endpoint = '/api/operator/onboarding/experiences';
           payload = {
-            experienceTypes: formData.experienceTypes.filter(t => t.trim() !== ''),
+            experienceTypes: formData.experienceTypes.filter(type => type.trim() !== ''),
           };
           break;
         case 6:
@@ -381,7 +383,7 @@ const OperatorOnboardingPage = () => {
 
       const { data } = await api.put(endpoint, payload);
       setOnboarding(data);
-      setSuccess('Étape enregistrée avec succès');
+      setSuccess(t('operator.onboarding.step_saved'));
       setSaving(false);
       return true;
     } catch (error) {
@@ -397,14 +399,14 @@ const OperatorOnboardingPage = () => {
             if (typeof err === 'string') return err;
             return err.msg || err.message || JSON.stringify(err);
           }).join(', ');
-          setError(`Erreurs de validation : ${errorMessages}`);
+          setError(t('operator.onboarding.validation_errors', { errors: errorMessages }));
         } else if (errorData.message) {
           setError(errorData.message);
         } else {
-          setError('Erreur de validation. Veuillez vérifier tous les champs requis.');
+          setError(t('operator.onboarding.validation_check_fields'));
         }
       } else {
-        setError(error.response?.data?.message || 'Erreur lors de l\'enregistrement');
+        setError(error.response?.data?.message || t('operator.onboarding.save_error'));
       }
       
       setSaving(false);
@@ -448,10 +450,10 @@ const OperatorOnboardingPage = () => {
     try {
       const { data } = await api.post('/api/operator/onboarding/submit');
       setOnboarding(data.onboarding);
-      setSuccess('Votre demande a été soumise avec succès. En attente d\'approbation.');
+      setSuccess(t('operator.onboarding.submit_success'));
     } catch (error) {
       console.error('Submit error:', error);
-      setError(error.response?.data?.message || 'Erreur lors de la soumission');
+      setError(error.response?.data?.message || t('operator.onboarding.submit_error'));
       setSaving(false);
     }
   };
@@ -507,21 +509,20 @@ const OperatorOnboardingPage = () => {
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Demande soumise avec succès
+              {t('operator.onboarding.pending_title')}
             </h1>
             <p className="text-lg text-gray-600 mb-6">
-              Votre demande d'inscription est en cours d'examen par notre équipe.
-              Vous serez notifié une fois votre compte approuvé.
+              {t('operator.onboarding.pending_desc')}
             </p>
             {onboarding.rejectionReason && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-800 font-semibold mb-2">Raison du rejet précédent :</p>
+                <p className="text-red-800 font-semibold mb-2">{t('operator.onboarding.rejection_reason')}</p>
                 <p className="text-red-700">{onboarding.rejectionReason}</p>
               </div>
             )}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-blue-800">
-                <strong>Progression :</strong> {onboarding.progress || 0}%
+                <strong>{t('operator.onboarding.progress_label')}</strong> {onboarding.progress || 0}%
               </p>
             </div>
           </div>
@@ -540,7 +541,7 @@ const OperatorOnboardingPage = () => {
           <div className="lg:w-64 flex-shrink-0">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
               <div className="mb-6">
-                <h2 className="text-sm font-bold text-gray-500 uppercase mb-2">Progression</h2>
+                <h2 className="text-sm font-bold text-gray-500 uppercase mb-2">{t('operator.common.progress')}</h2>
                 <div className="text-2xl font-bold text-primary-600 mb-2">{progress}%</div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -588,10 +589,10 @@ const OperatorOnboardingPage = () => {
               {currentStep === 1 && (
                 <div>
                   <h1 id="step-1-title" className="text-3xl font-bold text-gray-900 mb-2">
-                    Parlez-nous de votre fonctionnement
+                    {t('operator.onboarding.step1_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Qu'entendons-nous par cela ?
+                    {t('operator.onboarding.step1_subtitle')}
                   </p>
 
                   <div className="space-y-4" role="radiogroup" aria-labelledby="step-1-title" aria-required="true">
@@ -608,10 +609,10 @@ const OperatorOnboardingPage = () => {
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
-                          J'exerce mes activités dans le cadre d'une entreprise immatriculée, comme une société.
+                          {t('operator.onboarding.provider_company_title')}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Exemple : je vends des expériences dans le cadre d'une société (ou toute autre entité commerciale) immatriculée dans un registre des entreprises officiel.
+                          {t('operator.onboarding.provider_company_desc')}
                         </div>
                       </div>
                     </label>
@@ -629,10 +630,10 @@ const OperatorOnboardingPage = () => {
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
-                          J'opère en tant que personne physique/opérateur individuel
+                          {t('operator.onboarding.provider_individual_status_title')}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Exemple : je vends des expériences en mon nom en tant que source principale de revenus/à titre professionnel. Je n'ai pas d'entreprise (comme une société) immatriculée au sein d'un registre des entreprises officiel.
+                          {t('operator.onboarding.provider_individual_status_desc')}
                         </div>
                       </div>
                     </label>
@@ -650,10 +651,10 @@ const OperatorOnboardingPage = () => {
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 mb-2">
-                          Je suis un particulier
+                          {t('operator.onboarding.provider_individual_title')}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Exemple : je vends des expériences à titre non professionnel. Je n'opère pas dans le cadre d'une entreprise.
+                          {t('operator.onboarding.provider_individual_desc')}
                         </div>
                       </div>
                     </label>
@@ -665,19 +666,19 @@ const OperatorOnboardingPage = () => {
               {currentStep === 2 && (
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Commençons par quelques informations de base
+                    {t('operator.onboarding.step2_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Cette information s'affichera sur votre page publique.
+                    {t('operator.onboarding.step2_subtitle')}
                   </p>
 
                   <div className="space-y-6">
                     <div>
                       <label htmlFor="public-name" className="block text-sm font-bold text-gray-700 mb-2">
-                        Nom public *
+                        {t('operator.onboarding.public_name_label')}
                       </label>
                       <p id="public-name-help" className="text-sm text-gray-600 mb-2">
-                        Il s'agit du nom utilisé pour la promotion de vos visites, activités ou expériences (par exemple, « Les randonnées de Paul »).
+                        {t('operator.onboarding.public_name_help')}
                       </p>
                       <input
                         type="text"
@@ -685,7 +686,7 @@ const OperatorOnboardingPage = () => {
                         name="public-name"
                         value={formData.publicName}
                         onChange={(e) => handleInputChange('publicName', e.target.value)}
-                        placeholder="Par exemple : « Les randonnées de Paul »"
+                        placeholder={t('operator.onboarding.public_name_placeholder')}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         aria-required="true"
                         aria-describedby="public-name-help"
@@ -695,10 +696,10 @@ const OperatorOnboardingPage = () => {
 
                     <div>
                       <label htmlFor="experience-city" className="block text-sm font-bold text-gray-700 mb-2">
-                        Où votre expérience se déroule-t-elle ? *
+                        {t('operator.onboarding.experience_location_label')}
                       </label>
                       <p id="experience-location-help" className="text-sm text-gray-600 mb-2">
-                        Si vous proposez plusieurs expériences, indiquez l'endroit où se situe la majorité d'entre elles.
+                        {t('operator.onboarding.experience_location_help')}
                       </p>
                       <input
                         type="text"
@@ -706,7 +707,7 @@ const OperatorOnboardingPage = () => {
                         name="experience-city"
                         value={formData.experienceLocation?.city || ''}
                         onChange={(e) => handleNestedInputChange('experienceLocation', 'city', e.target.value)}
-                        placeholder="Rechercher une municipalité"
+                        placeholder={t('operator.onboarding.experience_city_placeholder')}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         aria-required="true"
                         aria-describedby="experience-location-help"
@@ -718,7 +719,7 @@ const OperatorOnboardingPage = () => {
                         name="experience-address"
                         value={formData.experienceLocation?.address || ''}
                         onChange={(e) => handleNestedInputChange('experienceLocation', 'address', e.target.value)}
-                        placeholder="Adresse complète (optionnel)"
+                        placeholder={t('operator.onboarding.experience_address_placeholder')}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         autoComplete="street-address"
                       />
@@ -726,10 +727,10 @@ const OperatorOnboardingPage = () => {
 
                     <div>
                       <label htmlFor="experience-description" className="block text-sm font-bold text-gray-700 mb-2">
-                        Parlez-nous des expériences que vous proposez *
+                        {t('operator.onboarding.experience_description_label')}
                       </label>
                       <p id="experience-description-help" className="text-sm text-gray-600 mb-2">
-                        Écrivez une brève description des visites, activités ou autres expériences que vous offrez.
+                        {t('operator.onboarding.experience_description_help')}
                       </p>
                       <textarea
                         id="experience-description"
@@ -737,13 +738,13 @@ const OperatorOnboardingPage = () => {
                         value={formData.experienceDescription}
                         onChange={(e) => handleInputChange('experienceDescription', e.target.value)}
                         rows={6}
-                        placeholder="Décrivez vos expériences..."
+                        placeholder={t('operator.onboarding.experience_description_placeholder')}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         aria-required="true"
                         aria-describedby="experience-description-help experience-description-count"
                       />
                       <p id="experience-description-count" className="text-sm text-gray-500 mt-1" aria-live="polite">
-                        {formData.experienceDescription.length} caractères (minimum 100 requis)
+                        {t('operator.onboarding.experience_description_count', { count: formData.experienceDescription.length })}
                       </p>
                     </div>
                   </div>
@@ -754,10 +755,10 @@ const OperatorOnboardingPage = () => {
               {currentStep === 3 && (
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Vos photos
+                    {t('operator.onboarding.step3_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Ajoutez des photos pour présenter vos expériences.
+                    {t('operator.onboarding.step3_subtitle')}
                   </p>
 
                   <div className="space-y-4">
@@ -767,19 +768,21 @@ const OperatorOnboardingPage = () => {
                       <div key={index} className="relative group">
                         <img
                           src={photo.url}
-                          alt={`Photo ${index + 1}${photo.caption ? `: ${photo.caption}` : ''}`}
+                          alt={photo.caption
+                            ? t('operator.onboarding.photo_alt_caption', { index: index + 1, caption: photo.caption })
+                            : t('operator.onboarding.photo_alt', { index: index + 1 })}
                           className="w-full h-32 object-cover rounded-lg"
                         />
                         <button
                           type="button"
                           onClick={() => removePhoto(index)}
                           className="absolute top-2 end-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
-                          aria-label={`Supprimer la photo ${index + 1}`}
+                          aria-label={t('operator.onboarding.remove_photo', { index: index + 1 })}
                         >
                           <X size={16} />
                         </button>
                         <label htmlFor={`photo-caption-${index}`} className="sr-only">
-                          Légende pour la photo {index + 1}
+                          {t('operator.onboarding.photo_caption_sr', { index: index + 1 })}
                         </label>
                         <input
                           type="text"
@@ -791,9 +794,9 @@ const OperatorOnboardingPage = () => {
                             newPhotos[index].caption = e.target.value;
                             setFormData(prev => ({ ...prev, publicPhotos: newPhotos }));
                           }}
-                          placeholder="Légende (optionnel)"
+                          placeholder={t('operator.onboarding.photo_caption_placeholder')}
                           className="w-full mt-2 px-2 py-1 text-sm border border-gray-300 rounded"
-                          aria-label={`Légende pour la photo ${index + 1}`}
+                          aria-label={t('operator.onboarding.photo_caption_aria', { index: index + 1 })}
                         />
                       </div>
                     ))}
@@ -803,7 +806,7 @@ const OperatorOnboardingPage = () => {
                     <label htmlFor="photo-upload" className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer hover:border-primary-500 transition">
                       <Upload size={32} className="text-gray-400 mb-2" />
                       <span className="text-sm text-gray-600">
-                        {uploading ? 'Téléchargement...' : 'Ajouter une photo'}
+                        {uploading ? t('operator.common.uploading') : t('operator.onboarding.add_photo')}
                       </span>
                       <input
                         type="file"
@@ -813,11 +816,11 @@ const OperatorOnboardingPage = () => {
                         onChange={handleImageUpload}
                         accept="image/*"
                         disabled={uploading}
-                        aria-label="Télécharger une photo"
+                        aria-label={t('operator.onboarding.upload_photo_aria')}
                         aria-describedby="photo-upload-help"
                       />
                       <span id="photo-upload-help" className="sr-only">
-                        Format accepté : images (JPG, PNG, etc.). Au moins une photo est requise.
+                        {t('operator.onboarding.upload_photo_help')}
                       </span>
                     </label>
                   </div>
@@ -828,16 +831,16 @@ const OperatorOnboardingPage = () => {
               {currentStep === 4 && (
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Adresse de la société
+                    {t('operator.onboarding.step4_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Indiquez l'adresse de votre entreprise.
+                    {t('operator.onboarding.step4_subtitle')}
                   </p>
 
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="company-address-street" className="block text-sm font-bold text-gray-700 mb-2">
-                        Rue
+                        {t('operator.onboarding.street_label')}
                       </label>
                       <input
                         type="text"
@@ -853,7 +856,7 @@ const OperatorOnboardingPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="company-address-city" className="block text-sm font-bold text-gray-700 mb-2">
-                          Ville *
+                          {t('operator.onboarding.city_label')}
                         </label>
                         <input
                           type="text"
@@ -868,7 +871,7 @@ const OperatorOnboardingPage = () => {
 
                       <div>
                         <label htmlFor="company-address-postal" className="block text-sm font-bold text-gray-700 mb-2">
-                          Code postal
+                          {t('operator.onboarding.postal_code_label')}
                         </label>
                         <input
                           type="text"
@@ -884,7 +887,7 @@ const OperatorOnboardingPage = () => {
 
                     <div>
                       <label htmlFor="company-address-country" className="block text-sm font-bold text-gray-700 mb-2">
-                        Pays
+                        {t('operator.onboarding.country_label')}
                       </label>
                       <input
                         type="text"
@@ -904,17 +907,17 @@ const OperatorOnboardingPage = () => {
               {currentStep === 5 && (
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Expériences
+                    {t('operator.onboarding.step5_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Indiquez les types d'expériences que vous proposez.
+                    {t('operator.onboarding.step5_subtitle')}
                   </p>
 
                   <div className="space-y-4">
                     {formData.experienceTypes.map((type, index) => (
                       <div key={index} className="flex gap-2">
                         <label htmlFor={`experience-type-${index}`} className="sr-only">
-                          Type d'expérience {index + 1}
+                          {t('operator.onboarding.experience_type_sr', { index: index + 1 })}
                         </label>
                         <input
                           type="text"
@@ -922,16 +925,16 @@ const OperatorOnboardingPage = () => {
                           name={`experience-type-${index}`}
                           value={type}
                           onChange={(e) => handleArrayChange('experienceTypes', index, e.target.value)}
-                          placeholder="Ex: Randonnée, Visite guidée, Activité nautique..."
+                          placeholder={t('operator.onboarding.experience_type_placeholder')}
                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          aria-label={`Type d'expérience ${index + 1}`}
+                          aria-label={t('operator.onboarding.experience_type_aria', { index: index + 1 })}
                         />
                         {formData.experienceTypes.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeArrayItem('experienceTypes', index)}
                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                            aria-label={`Supprimer le type d'expérience ${index + 1}`}
+                            aria-label={t('operator.onboarding.remove_experience_type', { index: index + 1 })}
                           >
                             <X size={20} />
                           </button>
@@ -942,9 +945,9 @@ const OperatorOnboardingPage = () => {
                       type="button"
                       onClick={() => addArrayItem('experienceTypes')}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                      aria-label="Ajouter un nouveau type d'expérience"
+                      aria-label={t('operator.onboarding.add_experience_type_aria')}
                     >
-                      + Ajouter un type
+                      {t('operator.onboarding.add_experience_type')}
                     </button>
                   </div>
                 </div>
@@ -954,21 +957,21 @@ const OperatorOnboardingPage = () => {
               {currentStep === 6 && (
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Informations privées
+                    {t('operator.onboarding.step6_title')}
                   </h1>
                   <p className="text-gray-600 mb-6">
-                    Ces informations sont confidentielles et ne seront pas affichées publiquement.
+                    {t('operator.onboarding.step6_subtitle')}
                   </p>
 
                   <div className="space-y-6">
                     {/* Company Info */}
                     {formData.providerType === 'company' && (
                       <div className="border-t pt-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Informations de la société</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.company_info_title')}</h2>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="company-name" className="block text-sm font-bold text-gray-700 mb-2">
-                              Nom de la société *
+                              {t('operator.onboarding.company_name_label')}
                             </label>
                             <input
                               type="text"
@@ -983,7 +986,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div>
                             <label htmlFor="company-registration-number" className="block text-sm font-bold text-gray-700 mb-2">
-                              Numéro d'enregistrement (RC/KABIS) *
+                              {t('operator.onboarding.registration_number_label')}
                             </label>
                             <input
                               type="text"
@@ -997,7 +1000,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div>
                             <label htmlFor="company-registration-type" className="block text-sm font-bold text-gray-700 mb-2">
-                              Type d'enregistrement
+                              {t('operator.onboarding.registration_type_label')}
                             </label>
                             <input
                               type="text"
@@ -1005,13 +1008,13 @@ const OperatorOnboardingPage = () => {
                               name="company-registration-type"
                               value={formData.companyInfo?.registrationType || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'registrationType', e.target.value)}
-                              placeholder="RC, KABIS, SIRET..."
+                              placeholder={t('operator.onboarding.registration_type_placeholder')}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             />
                           </div>
                           <div>
                             <label htmlFor="company-tax-id" className="block text-sm font-bold text-gray-700 mb-2">
-                              Numéro TVA
+                              {t('operator.onboarding.tax_id_label')}
                             </label>
                             <input
                               type="text"
@@ -1025,7 +1028,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div>
                             <label htmlFor="company-legal-form" className="block text-sm font-bold text-gray-700 mb-2">
-                              Forme juridique
+                              {t('operator.onboarding.legal_form_label')}
                             </label>
                             <input
                               type="text"
@@ -1033,13 +1036,13 @@ const OperatorOnboardingPage = () => {
                               name="company-legal-form"
                               value={formData.companyInfo?.legalForm || ''}
                               onChange={(e) => handleNestedInputChange('companyInfo', 'legalForm', e.target.value)}
-                              placeholder="SARL, SAS, SA..."
+                              placeholder={t('operator.onboarding.legal_form_placeholder')}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             />
                           </div>
                           <div>
                             <label htmlFor="company-registration-date" className="block text-sm font-bold text-gray-700 mb-2">
-                              Date d'enregistrement
+                              {t('operator.onboarding.registration_date_label')}
                             </label>
                             <input
                               type="date"
@@ -1052,7 +1055,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div className="col-span-2">
                             <label htmlFor="company-registration-authority" className="block text-sm font-bold text-gray-700 mb-2">
-                              Autorité d'enregistrement
+                              {t('operator.onboarding.registration_authority_label')}
                             </label>
                             <input
                               type="text"
@@ -1070,11 +1073,11 @@ const OperatorOnboardingPage = () => {
                     {/* Individual with status */}
                     {formData.providerType === 'individual_with_status' && (
                       <div className="border-t pt-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Informations de statut</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.status_info_title')}</h2>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="individual-status-type" className="block text-sm font-bold text-gray-700 mb-2">
-                              Type de statut *
+                              {t('operator.onboarding.status_type_label')}
                             </label>
                             <select
                               id="individual-status-type"
@@ -1084,16 +1087,16 @@ const OperatorOnboardingPage = () => {
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                               aria-required="true"
                             >
-                              <option value="">Sélectionner...</option>
-                              <option value="auto-entrepreneur">Auto-entrepreneur</option>
-                              <option value="micro-entreprise">Micro-entreprise</option>
-                              <option value="profession-liberale">Profession libérale</option>
-                              <option value="autre">Autre</option>
+                              <option value="">{t('operator.common.select')}</option>
+                              <option value="auto-entrepreneur">{t('operator.onboarding.status_auto_entrepreneur')}</option>
+                              <option value="micro-entreprise">{t('operator.onboarding.status_micro_enterprise')}</option>
+                              <option value="profession-liberale">{t('operator.onboarding.status_profession_liberale')}</option>
+                              <option value="autre">{t('operator.onboarding.status_other')}</option>
                             </select>
                           </div>
                           <div>
                             <label htmlFor="individual-registration-number" className="block text-sm font-bold text-gray-700 mb-2">
-                              Numéro d'enregistrement *
+                              {t('operator.onboarding.individual_registration_number_label')}
                             </label>
                             <input
                               type="text"
@@ -1107,7 +1110,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div>
                             <label htmlFor="individual-registration-date" className="block text-sm font-bold text-gray-700 mb-2">
-                              Date d'enregistrement
+                              {t('operator.onboarding.individual_registration_date_label')}
                             </label>
                             <input
                               type="date"
@@ -1120,7 +1123,7 @@ const OperatorOnboardingPage = () => {
                           </div>
                           <div>
                             <label htmlFor="individual-tax-id" className="block text-sm font-bold text-gray-700 mb-2">
-                              Numéro TVA
+                              {t('operator.onboarding.tax_id_label')}
                             </label>
                             <input
                               type="text"
@@ -1139,10 +1142,10 @@ const OperatorOnboardingPage = () => {
                     {/* Individual without status */}
                     {formData.providerType === 'individual_without_status' && (
                       <div className="border-t pt-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Informations complémentaires</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.additional_info_title')}</h2>
                         <div>
                           <label htmlFor="individual-notes" className="block text-sm font-bold text-gray-700 mb-2">
-                            Notes (optionnel)
+                            {t('operator.onboarding.notes_optional_label')}
                           </label>
                           <textarea
                             id="individual-notes"
@@ -1158,11 +1161,11 @@ const OperatorOnboardingPage = () => {
 
                     {/* Bank Info */}
                     <div className="border-t pt-6">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4">Informations bancaires</h2>
+                      <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.bank_info_title')}</h2>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="bank-account-holder" className="block text-sm font-bold text-gray-700 mb-2">
-                            Nom du titulaire
+                            {t('operator.onboarding.account_holder_label')}
                           </label>
                           <input
                             type="text"
@@ -1176,7 +1179,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="bank-name" className="block text-sm font-bold text-gray-700 mb-2">
-                            Nom de la banque
+                            {t('operator.onboarding.bank_name_label')}
                           </label>
                           <input
                             type="text"
@@ -1190,7 +1193,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="bank-account-number" className="block text-sm font-bold text-gray-700 mb-2">
-                            Numéro de compte
+                            {t('operator.onboarding.account_number_label')}
                           </label>
                           <input
                             type="text"
@@ -1204,7 +1207,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="bank-iban" className="block text-sm font-bold text-gray-700 mb-2">
-                            IBAN
+                            {t('operator.onboarding.iban_label')}
                           </label>
                           <input
                             type="text"
@@ -1218,7 +1221,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="bank-swift" className="block text-sm font-bold text-gray-700 mb-2">
-                            SWIFT/BIC
+                            {t('operator.onboarding.swift_label')}
                           </label>
                           <input
                             type="text"
@@ -1235,11 +1238,11 @@ const OperatorOnboardingPage = () => {
 
                     {/* Contact Info */}
                     <div className="border-t pt-6">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4">Contact privé</h2>
+                      <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.private_contact_title')}</h2>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="private-phone" className="block text-sm font-bold text-gray-700 mb-2">
-                            Téléphone
+                            {t('operator.onboarding.phone_label')}
                           </label>
                           <input
                             type="tel"
@@ -1253,7 +1256,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="private-email" className="block text-sm font-bold text-gray-700 mb-2">
-                            Email
+                            {t('operator.common.email')}
                           </label>
                           <input
                             type="email"
@@ -1267,7 +1270,7 @@ const OperatorOnboardingPage = () => {
                         </div>
                         <div>
                           <label htmlFor="private-alternate-email" className="block text-sm font-bold text-gray-700 mb-2">
-                            Email alternatif
+                            {t('operator.onboarding.alternate_email_label')}
                           </label>
                           <input
                             type="email"
@@ -1284,14 +1287,14 @@ const OperatorOnboardingPage = () => {
 
                     {/* Documents */}
                     <div className="border-t pt-6">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4">Documents</h2>
+                      <h2 className="text-xl font-bold text-gray-900 mb-4">{t('operator.onboarding.documents_title')}</h2>
                       <div className="space-y-4">
                         {formData.documents.map((doc, index) => (
                           <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                             <FileText size={24} className="text-gray-400" />
                             <div className="flex-1">
                               <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
-                                Document {index + 1}
+                                {t('operator.common.document', { index: index + 1 })}
                               </a>
                             </div>
                             <button
@@ -1306,7 +1309,7 @@ const OperatorOnboardingPage = () => {
                         <label htmlFor="document-upload" className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-primary-500 transition">
                           <Upload size={24} className="text-gray-400 mb-2" />
                           <span className="text-sm text-gray-600">
-                            {uploading ? 'Téléchargement...' : 'Ajouter un document'}
+                            {uploading ? t('operator.common.uploading') : t('operator.onboarding.add_document')}
                           </span>
                           <input
                             type="file"
@@ -1315,7 +1318,7 @@ const OperatorOnboardingPage = () => {
                             className="hidden"
                             onChange={(e) => handleImageUpload(e, true)}
                             disabled={uploading}
-                            aria-label="Télécharger un document"
+                            aria-label={t('operator.onboarding.upload_document_aria')}
                           />
                         </label>
                       </div>
@@ -1348,7 +1351,7 @@ const OperatorOnboardingPage = () => {
                   className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   <ChevronLeft size={20} />
-                  Précédent
+                  {t('operator.common.previous')}
                 </button>
 
                 <div className="flex gap-4">
@@ -1362,11 +1365,11 @@ const OperatorOnboardingPage = () => {
                       {saving ? (
                         <>
                           <Loader className="animate-spin" size={20} />
-                          Enregistrement...
+                          {t('operator.common.saving')}
                         </>
                       ) : (
                         <>
-                          Suivant
+                          {t('operator.common.next')}
                           <ChevronRight size={20} />
                         </>
                       )}
@@ -1381,12 +1384,12 @@ const OperatorOnboardingPage = () => {
                       {saving ? (
                         <>
                           <Loader className="animate-spin" size={20} />
-                          Soumission...
+                          {t('operator.onboarding.submitting')}
                         </>
                       ) : (
                         <>
                           <CheckCircle size={20} />
-                          Soumettre pour approbation
+                          {t('operator.onboarding.submit_for_approval')}
                         </>
                       )}
                     </button>
@@ -1402,4 +1405,3 @@ const OperatorOnboardingPage = () => {
 };
 
 export default OperatorOnboardingPage;
-

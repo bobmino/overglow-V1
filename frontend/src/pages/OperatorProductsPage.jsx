@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -8,6 +9,7 @@ import BadgeRequestModal from '../components/BadgeRequestModal';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 
 const OperatorProductsPage = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestingApproval, setRequestingApproval] = useState({});
@@ -28,14 +30,20 @@ const OperatorProductsPage = () => {
     }
   };
 
+  const getProductStatusLabel = (status) => {
+    if (status === 'Published') return t('operator.products.status_published');
+    if (status === 'Pending Review') return t('operator.products.status_pending_review');
+    return t('operator.products.status_draft');
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    if (!window.confirm(t('operator.products.confirm_delete'))) return;
 
     try {
       await api.delete(`/api/products/${id}`);
       fetchProducts();
     } catch (error) {
-      alert('Failed to delete product');
+      alert(t('operator.products.delete_error'));
     }
   };
 
@@ -59,7 +67,7 @@ const OperatorProductsPage = () => {
       await api.put(`/api/products/${product._id}`, payload);
       fetchProducts();
     } catch (error) {
-      alert('Failed to update product status');
+      alert(t('operator.products.status_update_error'));
     }
   };
 
@@ -78,7 +86,7 @@ const OperatorProductsPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('operator.products.title')}</h1>
         <DashboardNavBar />
       </div>
 
@@ -88,20 +96,20 @@ const OperatorProductsPage = () => {
           className="flex items-center bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
         >
           <Plus size={20} className="me-2" />
-          Create Product
+          {t('operator.common.create_product')}
         </Link>
       </div>
 
       {products.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No products yet</h2>
-          <p className="text-gray-600 mb-6">Create your first tour product to get started!</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('operator.products.empty_title')}</h2>
+          <p className="text-gray-600 mb-6">{t('operator.products.empty_desc')}</p>
           <Link
             to="/operator/products/new"
             className="inline-block bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
           >
-            Create Product
+            {t('operator.common.create_product')}
           </Link>
         </div>
       ) : (
@@ -127,7 +135,7 @@ const OperatorProductsPage = () => {
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {product.status}
+                      {getProductStatusLabel(product.status)}
                     </span>
                   </div>
                   <p className="text-gray-700 mb-4 line-clamp-2">{product.description}</p>
@@ -137,14 +145,14 @@ const OperatorProductsPage = () => {
                       className="flex items-center text-gray-700 hover:text-green-700 transition"
                     >
                       <Eye size={16} className="me-1" />
-                      View
+                      {t('operator.common.view')}
                     </Link>
                     <Link
                       to={`/operator/products/${product._id}/edit`}
                       className="flex items-center text-blue-600 hover:text-blue-700 transition"
                     >
                       <Edit size={16} className="me-1" />
-                      Edit
+                      {t('operator.common.edit')}
                     </Link>
                     {product.status === 'Pending Review' && (
                       <button
@@ -153,7 +161,7 @@ const OperatorProductsPage = () => {
                         className="flex items-center text-orange-600 hover:text-orange-700 transition disabled:opacity-50"
                       >
                         <AlertCircle size={16} className="me-1" />
-                        {requestingApproval[product._id] ? 'Envoi...' : 'Demander approbation'}
+                        {requestingApproval[product._id] ? t('operator.products.request_approval_sending') : t('operator.products.request_approval')}
                       </button>
                     )}
                     {product.status !== 'Pending Review' && (
@@ -166,12 +174,12 @@ const OperatorProductsPage = () => {
                         {product.status === 'Published' ? (
                           <>
                             <PauseCircle size={16} className="me-1" />
-                            Unpublish
+                            {t('operator.products.unpublish')}
                           </>
                         ) : (
                           <>
                             <Rocket size={16} className="me-1" />
-                            Publish
+                            {t('operator.products.publish')}
                           </>
                         )}
                       </button>
@@ -179,17 +187,17 @@ const OperatorProductsPage = () => {
                     <button
                       onClick={() => setBadgeRequestModal({ isOpen: true, productId: product._id, productTitle: product.title })}
                       className="flex items-center text-purple-600 hover:text-purple-700 transition"
-                      title="Demander un badge (Artisan, Éco-responsable, Traditionnel)"
+                      title={t('operator.products.request_badge_title')}
                     >
                       <Award size={16} className="me-1" />
-                      Demander badge
+                      {t('operator.products.request_badge')}
                     </button>
                     <button
                       onClick={() => handleDelete(product._id)}
                       className="flex items-center text-red-600 hover:text-red-700 transition"
                     >
                       <Trash2 size={16} className="me-1" />
-                      Delete
+                      {t('operator.common.delete')}
                     </button>
                   </div>
                 </div>

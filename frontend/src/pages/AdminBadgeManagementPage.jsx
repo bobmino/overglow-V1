@@ -1,79 +1,69 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Award, Plus, Edit, Trash2, Package, Building2, Save, X, Info } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
+const BOOLEAN_CRITERIA_FLAGS = [
+  'isVerified',
+  'isLocal',
+  'isLocal100',
+  'isArtisan',
+  'isAuthenticLocal',
+  'isEcoFriendly',
+  'isTraditional',
+  'isNew',
+  'isBestValue',
+  'isLastMinute',
+];
+
 // Fonction pour formater les critères d'un badge de manière lisible
-const formatCriteria = (criteria) => {
+const formatCriteria = (criteria, t) => {
   if (!criteria || Object.keys(criteria).length === 0) {
-    return 'Aucun critère défini';
+    return t('admin.badges.criteria_none');
   }
 
   const criteriaList = [];
 
   // Critères numériques
   if (criteria.minRating) {
-    criteriaList.push(`Note moyenne ≥ ${criteria.minRating}/5`);
+    criteriaList.push(t('admin.badges.criteria.min_rating', { value: criteria.minRating }));
   }
   if (criteria.minReviews) {
-    criteriaList.push(`≥ ${criteria.minReviews} avis`);
+    criteriaList.push(t('admin.badges.criteria.min_reviews', { value: criteria.minReviews }));
   }
   if (criteria.minBookings) {
-    criteriaList.push(`≥ ${criteria.minBookings} réservations`);
+    criteriaList.push(t('admin.badges.criteria.min_bookings', { value: criteria.minBookings }));
   }
   if (criteria.minRevenue) {
-    criteriaList.push(`Revenus ≥ ${criteria.minRevenue.toLocaleString()} MAD`);
+    criteriaList.push(t('admin.badges.criteria.min_revenue', { value: criteria.minRevenue.toLocaleString() }));
   }
   if (criteria.minViewCount) {
-    criteriaList.push(`≥ ${criteria.minViewCount} vues`);
+    criteriaList.push(t('admin.badges.criteria.min_views', { value: criteria.minViewCount }));
   }
   if (criteria.minBookingCount) {
-    criteriaList.push(`≥ ${criteria.minBookingCount} réservations`);
+    criteriaList.push(t('admin.badges.criteria.min_bookings', { value: criteria.minBookingCount }));
   }
   if (criteria.maxResponseTime) {
-    criteriaList.push(`Temps de réponse ≤ ${criteria.maxResponseTime}h`);
+    criteriaList.push(t('admin.badges.criteria.max_response', { value: criteria.maxResponseTime }));
   }
   if (criteria.minCompletionRate) {
-    criteriaList.push(`Taux de complétion ≥ ${criteria.minCompletionRate}%`);
+    criteriaList.push(t('admin.badges.criteria.min_completion', { value: criteria.minCompletionRate }));
   }
 
   // Critères booléens
-  if (criteria.isVerified === true) {
-    criteriaList.push('Opérateur vérifié');
-  }
-  if (criteria.isLocal === true) {
-    criteriaList.push('Local');
-  }
-  if (criteria.isLocal100 === true) {
-    criteriaList.push('100% local');
-  }
-  if (criteria.isArtisan === true) {
-    criteriaList.push('Artisan');
-  }
-  if (criteria.isAuthenticLocal === true) {
-    criteriaList.push('Authentique local');
-  }
-  if (criteria.isEcoFriendly === true) {
-    criteriaList.push('Éco-responsable');
-  }
-  if (criteria.isTraditional === true) {
-    criteriaList.push('Traditionnel');
-  }
-  if (criteria.isNew === true) {
-    criteriaList.push('Nouveau (créé < 30 jours)');
-  }
-  if (criteria.isBestValue === true) {
-    criteriaList.push('Meilleure valeur');
-  }
-  if (criteria.isLastMinute === true) {
-    criteriaList.push('Dernières places (< 24h)');
-  }
+  BOOLEAN_CRITERIA_FLAGS.forEach((key) => {
+    if (criteria[key] === true) {
+      criteriaList.push(t(`admin.badges.flags.${key}_long`));
+    }
+  });
 
-  return criteriaList.length > 0 ? criteriaList.join(' • ') : 'Aucun critère défini';
+  return criteriaList.length > 0 ? criteriaList.join(' • ') : t('admin.badges.criteria_none');
 };
 
 const AdminBadgeManagementPage = () => {
+  const { t } = useTranslation();
   const [badges, setBadges] = useState([]);
   const [products, setProducts] = useState([]);
   const [operators, setOperators] = useState([]);
@@ -113,18 +103,18 @@ const AdminBadgeManagementPage = () => {
   }, [activeTab]);
 
   const handleInitializeBadges = async () => {
-    if (!window.confirm('Voulez-vous initialiser les badges par défaut ? Cela créera les badges Artisan, Éco-responsable et Traditionnel s\'ils n\'existent pas.')) {
+    if (!window.confirm(t('admin.badges.init_confirm'))) {
       return;
     }
 
     try {
       setLoading(true);
       await api.post('/api/admin/initialize-badges');
-      setMessage('Badges initialisés avec succès!');
+      setMessage(t('admin.badges.init_success'));
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de l\'initialisation');
+      setMessage(error.response?.data?.message || t('admin.badges.init_error'));
     } finally {
       setLoading(false);
     }
@@ -197,7 +187,7 @@ const AdminBadgeManagementPage = () => {
       setBadgeEntitiesModal({ open: true, badge, type, items, loading: false });
     } catch (error) {
       setBadgeEntitiesModal({ open: true, badge, type, items: [], loading: false });
-      setMessage(error.response?.data?.message || 'Impossible de charger les éléments associés à ce badge');
+      setMessage(error.response?.data?.message || t('admin.badges.load_entities_error'));
     }
   };
 
@@ -205,7 +195,7 @@ const AdminBadgeManagementPage = () => {
     e.preventDefault();
     try {
       await api.post('/api/admin/badges', newBadge);
-      setMessage('Badge créé avec succès!');
+      setMessage(t('admin.badges.create_success'));
       setShowCreateModal(false);
       setNewBadge({
         name: '',
@@ -220,7 +210,7 @@ const AdminBadgeManagementPage = () => {
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de la création du badge');
+      setMessage(error.response?.data?.message || t('admin.badges.create_error'));
     }
   };
 
@@ -247,7 +237,7 @@ const AdminBadgeManagementPage = () => {
 
   const handleAssignToProducts = async () => {
     if (selectedBadges.length === 0 || selectedProducts.length === 0) {
-      setMessage('Veuillez sélectionner au moins un badge et un produit');
+      setMessage(t('admin.badges.select_badge_product'));
       return;
     }
 
@@ -260,19 +250,19 @@ const AdminBadgeManagementPage = () => {
         });
         totalAssigned += data.assigned || 0;
       }
-      setMessage(`${totalAssigned} attribution(s) effectuée(s) avec succès!`);
+      setMessage(t('admin.badges.assign_success', { count: totalAssigned }));
       setSelectedBadges([]);
       setSelectedProducts([]);
       fetchProducts(); // Refresh to show new badges
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de l\'attribution');
+      setMessage(error.response?.data?.message || t('admin.badges.assign_error'));
     }
   };
 
   const handleAssignToOperators = async () => {
     if (selectedBadges.length === 0 || selectedOperators.length === 0) {
-      setMessage('Veuillez sélectionner au moins un badge et un opérateur');
+      setMessage(t('admin.badges.select_badge_operator'));
       return;
     }
 
@@ -285,13 +275,13 @@ const AdminBadgeManagementPage = () => {
         });
         totalAssigned += data.assigned || 0;
       }
-      setMessage(`${totalAssigned} attribution(s) effectuée(s) avec succès!`);
+      setMessage(t('admin.badges.assign_success', { count: totalAssigned }));
       setSelectedBadges([]);
       setSelectedOperators([]);
       fetchOperators(); // Refresh to show new badges
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de l\'attribution');
+      setMessage(error.response?.data?.message || t('admin.badges.assign_error'));
     }
   };
 
@@ -323,7 +313,7 @@ const AdminBadgeManagementPage = () => {
       };
       
       await api.put(`/api/admin/badges/${selectedBadge._id}`, payload);
-      setMessage('Badge modifié avec succès!');
+      setMessage(t('admin.badges.update_success'));
       setShowEditModal(false);
       setSelectedBadge(null);
       setNewBadge({
@@ -339,24 +329,26 @@ const AdminBadgeManagementPage = () => {
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de la modification');
+      setMessage(error.response?.data?.message || t('admin.badges.update_error'));
     }
   };
 
   const handleDeleteBadge = async (badgeId) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir désactiver ce badge ?')) {
+    if (!window.confirm(t('admin.badges.deactivate_confirm'))) {
       return;
     }
 
     try {
       await api.delete(`/api/admin/badges/${badgeId}`);
-      setMessage('Badge désactivé avec succès!');
+      setMessage(t('admin.badges.deactivate_success'));
       fetchBadges();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Erreur lors de la désactivation');
+      setMessage(error.response?.data?.message || t('admin.badges.deactivate_error'));
     }
   };
+
+  const isSuccessMessage = message.toLowerCase().includes(t('admin.common.success_keyword').toLowerCase());
 
   if (loading) {
     return (
@@ -371,13 +363,13 @@ const AdminBadgeManagementPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Badges</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.badges.title')}</h1>
         <DashboardNavBar />
       </div>
 
       {message && (
         <div className={`mb-6 p-4 rounded-lg ${
-          message.includes('succès') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+          isSuccessMessage ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
         }`}>
           {message}
         </div>
@@ -394,7 +386,7 @@ const AdminBadgeManagementPage = () => {
           }`}
         >
           <Award size={20} className="inline me-2" />
-          Liste des Badges
+          {t('admin.badges.tab_list')}
         </button>
         <button
           onClick={() => setActiveTab('assign-products')}
@@ -405,7 +397,7 @@ const AdminBadgeManagementPage = () => {
           }`}
         >
           <Package size={20} className="inline me-2" />
-          Attribuer aux Produits
+          {t('admin.badges.tab_assign_products')}
         </button>
         <button
           onClick={() => setActiveTab('assign-operators')}
@@ -416,7 +408,7 @@ const AdminBadgeManagementPage = () => {
           }`}
         >
           <Building2 size={20} className="inline me-2" />
-          Attribuer aux Opérateurs
+          {t('admin.badges.tab_assign_operators')}
         </button>
       </div>
 
@@ -424,21 +416,21 @@ const AdminBadgeManagementPage = () => {
       {activeTab === 'badges' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Tous les Badges</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('admin.badges.all_badges')}</h2>
             <div className="flex gap-2">
               <button
                 onClick={handleInitializeBadges}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2"
               >
                 <Award size={20} />
-                Initialiser les Badges
+                {t('admin.badges.init_badges')}
               </button>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition flex items-center gap-2"
               >
                 <Plus size={20} />
-                Créer un Badge
+                {t('admin.badges.create_badge')}
               </button>
             </div>
           </div>
@@ -459,12 +451,12 @@ const AdminBadgeManagementPage = () => {
                       <span className={`text-xs px-2 py-1 rounded ${
                         badge.type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
                       }`}>
-                        {badge.type === 'product' ? 'Produit' : 'Opérateur'}
+                        {badge.type === 'product' ? t('admin.common.product') : t('admin.common.operator')}
                       </span>
                     </div>
                   </div>
                   {!badge.isActive && (
-                    <span className="text-xs text-gray-500">Désactivé</span>
+                    <span className="text-xs text-gray-500">{t('admin.common.disabled')}</span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mb-3">{badge.description}</p>
@@ -473,16 +465,16 @@ const AdminBadgeManagementPage = () => {
                     className="w-4 h-4 rounded-full inline-block"
                     style={{ backgroundColor: badge.color }}
                   ></span>
-                  <span>{badge.isAutomatic ? 'Automatique' : 'Manuel'}</span>
+                  <span>{badge.isAutomatic ? t('admin.common.automatic') : t('admin.common.manual')}</span>
                 </div>
                 {badge.isAutomatic && badge.criteria && (
                   <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start gap-2">
                       <Info size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-xs font-bold text-blue-900 mb-1">Critères d'attribution :</p>
+                        <p className="text-xs font-bold text-blue-900 mb-1">{t('admin.badges.criteria_title')}</p>
                         <p className="text-xs text-blue-700 leading-relaxed">
-                          {formatCriteria(badge.criteria)}
+                          {formatCriteria(badge.criteria, t)}
                         </p>
                       </div>
                     </div>
@@ -494,26 +486,26 @@ const AdminBadgeManagementPage = () => {
                     className="text-blue-600 hover:text-blue-700 text-sm font-bold"
                   >
                     <Edit size={16} className="inline me-1" />
-                    Modifier
+                    {t('admin.common.edit')}
                   </button>
                   <button
                     onClick={() => handleDeleteBadge(badge._id)}
                     className="text-red-600 hover:text-red-700 text-sm font-bold"
                   >
                     <Trash2 size={16} className="inline me-1" />
-                    Désactiver
+                    {t('admin.common.deactivate')}
                   </button>
                   <button
                     onClick={() => openBadgeEntities(badge, 'products')}
                     className="text-green-600 hover:text-green-700 text-sm font-bold"
                   >
-                    Produits
+                    {t('admin.common.products')}
                   </button>
                   <button
                     onClick={() => openBadgeEntities(badge, 'operators')}
                     className="text-purple-600 hover:text-purple-700 text-sm font-bold"
                   >
-                    Opérateurs
+                    {t('admin.common.operators')}
                   </button>
                 </div>
               </div>
@@ -525,11 +517,11 @@ const AdminBadgeManagementPage = () => {
       {/* Assign to Products Tab */}
       {activeTab === 'assign-products' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Attribuer des Badges aux Produits</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.badges.assign_products_title')}</h2>
           
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Sélectionner un ou plusieurs Badges (Produit)
+              {t('admin.badges.select_product_badges')}
             </label>
             <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-4">
               {badges
@@ -564,13 +556,13 @@ const AdminBadgeManagementPage = () => {
                 ))}
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              {selectedBadges.length} badge(s) sélectionné(s)
+              {t('admin.badges.badges_selected', { count: selectedBadges.length })}
             </p>
           </div>
 
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Sélectionner les Produits
+              {t('admin.badges.select_products')}
             </label>
             <div className="max-h-96 overflow-y-auto border border-gray-300 rounded-lg p-4">
               {products.map((product) => {
@@ -625,7 +617,7 @@ const AdminBadgeManagementPage = () => {
               })}
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              {selectedProducts.length} produit(s) sélectionné(s)
+              {t('admin.badges.products_selected', { count: selectedProducts.length })}
             </p>
           </div>
 
@@ -635,7 +627,7 @@ const AdminBadgeManagementPage = () => {
             className="px-6 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Save size={20} />
-            Attribuer les Badges
+            {t('admin.badges.assign_badges')}
           </button>
         </div>
       )}
@@ -643,11 +635,11 @@ const AdminBadgeManagementPage = () => {
       {/* Assign to Operators Tab */}
       {activeTab === 'assign-operators' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Attribuer des Badges aux Opérateurs</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">{t('admin.badges.assign_operators_title')}</h2>
           
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Sélectionner un ou plusieurs Badges (Opérateur)
+              {t('admin.badges.select_operator_badges')}
             </label>
             <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-4">
               {badges
@@ -682,13 +674,13 @@ const AdminBadgeManagementPage = () => {
                 ))}
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              {selectedBadges.length} badge(s) sélectionné(s)
+              {t('admin.badges.badges_selected', { count: selectedBadges.length })}
             </p>
           </div>
 
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Sélectionner les Opérateurs
+              {t('admin.badges.select_operators')}
             </label>
             <div className="max-h-96 overflow-y-auto border border-gray-300 rounded-lg p-4">
               {operators.map((operator) => {
@@ -743,7 +735,7 @@ const AdminBadgeManagementPage = () => {
               })}
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              {selectedOperators.length} opérateur(s) sélectionné(s)
+              {t('admin.badges.operators_selected', { count: selectedOperators.length })}
             </p>
           </div>
 
@@ -753,7 +745,7 @@ const AdminBadgeManagementPage = () => {
             className="px-6 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Save size={20} />
-            Attribuer les Badges
+            {t('admin.badges.assign_badges')}
           </button>
         </div>
       )}
@@ -763,7 +755,7 @@ const AdminBadgeManagementPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Modifier un Badge</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('admin.badges.edit_badge')}</h2>
               <button
                 onClick={() => {
                   setShowEditModal(false);
@@ -788,7 +780,7 @@ const AdminBadgeManagementPage = () => {
             <form onSubmit={handleUpdateBadge} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Nom du Badge *
+                  {t('admin.badges.name_label')}
                 </label>
                 <input
                   type="text"
@@ -801,7 +793,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Type *
+                  {t('admin.badges.type_label')}
                 </label>
                 <select
                   value={newBadge.type}
@@ -810,15 +802,15 @@ const AdminBadgeManagementPage = () => {
                   disabled
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 bg-gray-100"
                 >
-                  <option value="product">Produit</option>
-                  <option value="operator">Opérateur</option>
+                  <option value="product">{t('admin.common.product')}</option>
+                  <option value="operator">{t('admin.common.operator')}</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Le type ne peut pas être modifié</p>
+                <p className="text-xs text-gray-500 mt-1">{t('admin.badges.type_locked')}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Icône (Emoji)
+                  {t('admin.badges.icon_label')}
                 </label>
                 <input
                   type="text"
@@ -832,7 +824,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Couleur (Hex)
+                  {t('admin.badges.color_label')}
                 </label>
                 <input
                   type="color"
@@ -844,7 +836,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Description *
+                  {t('admin.badges.description_label')}
                 </label>
                 <textarea
                   value={newBadge.description}
@@ -864,7 +856,7 @@ const AdminBadgeManagementPage = () => {
                   className="w-5 h-5 text-primary-600 rounded"
                 />
                 <label htmlFor="isAutomaticEdit" className="text-sm text-gray-700">
-                  Badge automatique (attribué automatiquement selon les critères)
+                  {t('admin.badges.automatic_badge')}
                 </label>
               </div>
 
@@ -873,28 +865,28 @@ const AdminBadgeManagementPage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="block text-sm font-bold text-gray-700">
-                      Critères d'attribution
+                      {t('admin.badges.criteria_title')}
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowCriteriaForm(!showCriteriaForm)}
                       className="text-sm text-primary-600 hover:text-primary-700 font-bold"
                     >
-                      {showCriteriaForm ? 'Masquer' : 'Afficher/Modifier'}
+                      {showCriteriaForm ? t('admin.common.hide') : t('admin.common.show_edit')}
                     </button>
                   </div>
 
                   {showCriteriaForm && (
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                       <p className="text-xs text-gray-600 mb-3">
-                        Définissez les critères pour l'attribution automatique de ce badge. Laissez vide pour ignorer un critère.
+                        {t('admin.badges.criteria_help')}
                       </p>
 
                       {/* Numerical Criteria */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Note min. (0-5)
+                            {t('admin.badges.criteria.min_rating_label')}
                           </label>
                           <input
                             type="number"
@@ -904,12 +896,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minRating || ''}
                             onChange={(e) => updateCriteria('minRating', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 4.5"
+                            placeholder={t('admin.badges.criteria.placeholder_rating')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Avis min.
+                            {t('admin.badges.criteria.min_reviews_label')}
                           </label>
                           <input
                             type="number"
@@ -917,12 +909,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minReviews || ''}
                             onChange={(e) => updateCriteria('minReviews', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 10"
+                            placeholder={t('admin.badges.criteria.placeholder_reviews')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Réservations min.
+                            {t('admin.badges.criteria.min_bookings_label')}
                           </label>
                           <input
                             type="number"
@@ -930,12 +922,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minBookings || ''}
                             onChange={(e) => updateCriteria('minBookings', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 50"
+                            placeholder={t('admin.badges.criteria.placeholder_bookings')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Revenus min. (MAD)
+                            {t('admin.badges.criteria.min_revenue_label')}
                           </label>
                           <input
                             type="number"
@@ -943,12 +935,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minRevenue || ''}
                             onChange={(e) => updateCriteria('minRevenue', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 10000"
+                            placeholder={t('admin.badges.criteria.placeholder_revenue')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Vues min.
+                            {t('admin.badges.criteria.min_views_label')}
                           </label>
                           <input
                             type="number"
@@ -956,12 +948,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minViewCount || ''}
                             onChange={(e) => updateCriteria('minViewCount', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 100"
+                            placeholder={t('admin.badges.criteria.placeholder_views')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Temps réponse max. (h)
+                            {t('admin.badges.criteria.max_response_label')}
                           </label>
                           <input
                             type="number"
@@ -969,12 +961,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.maxResponseTime || ''}
                             onChange={(e) => updateCriteria('maxResponseTime', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 2"
+                            placeholder={t('admin.badges.criteria.placeholder_response')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Taux complétion min. (%)
+                            {t('admin.badges.criteria.min_completion_label')}
                           </label>
                           <input
                             type="number"
@@ -983,25 +975,14 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minCompletionRate || ''}
                             onChange={(e) => updateCriteria('minCompletionRate', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 95"
+                            placeholder={t('admin.badges.criteria.placeholder_completion')}
                           />
                         </div>
                       </div>
 
                       {/* Boolean Criteria */}
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-300">
-                        {[
-                          { key: 'isVerified', label: 'Vérifié' },
-                          { key: 'isLocal', label: 'Local' },
-                          { key: 'isLocal100', label: '100% Local' },
-                          { key: 'isArtisan', label: 'Artisan' },
-                          { key: 'isAuthenticLocal', label: 'Authentique Local' },
-                          { key: 'isEcoFriendly', label: 'Éco-responsable' },
-                          { key: 'isTraditional', label: 'Traditionnel' },
-                          { key: 'isNew', label: 'Nouveau (< 30j)' },
-                          { key: 'isBestValue', label: 'Meilleure Valeur' },
-                          { key: 'isLastMinute', label: 'Dernières Places' },
-                        ].map(({ key, label }) => (
+                        {BOOLEAN_CRITERIA_FLAGS.map((key) => (
                           <label key={key} className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
@@ -1009,7 +990,7 @@ const AdminBadgeManagementPage = () => {
                               onChange={(e) => updateCriteria(key, e.target.checked ? true : undefined)}
                               className="w-4 h-4 text-primary-600 rounded"
                             />
-                            <span className="text-xs text-gray-700">{label}</span>
+                            <span className="text-xs text-gray-700">{t(`admin.badges.flags.${key}`)}</span>
                           </label>
                         ))}
                       </div>
@@ -1017,9 +998,9 @@ const AdminBadgeManagementPage = () => {
                       {/* Display current criteria summary */}
                       {Object.keys(newBadge.criteria || {}).filter(k => newBadge.criteria[k] !== undefined && newBadge.criteria[k] !== '').length > 0 && (
                         <div className="p-2 bg-blue-50 rounded border border-blue-200">
-                          <p className="text-xs font-bold text-blue-900 mb-1">Aperçu des critères :</p>
+                          <p className="text-xs font-bold text-blue-900 mb-1">{t('admin.badges.criteria_preview')}</p>
                           <p className="text-xs text-blue-700">
-                            {formatCriteria(newBadge.criteria)}
+                            {formatCriteria(newBadge.criteria, t)}
                           </p>
                         </div>
                       )}
@@ -1033,7 +1014,7 @@ const AdminBadgeManagementPage = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition"
                 >
-                  Enregistrer
+                  {t('admin.common.save')}
                 </button>
                 <button
                   type="button"
@@ -1051,7 +1032,7 @@ const AdminBadgeManagementPage = () => {
                   }}
                   className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition"
                 >
-                  Annuler
+                  {t('admin.common.cancel')}
                 </button>
               </div>
             </form>
@@ -1064,7 +1045,7 @@ const AdminBadgeManagementPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Créer un Badge</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('admin.badges.create_badge')}</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -1076,7 +1057,7 @@ const AdminBadgeManagementPage = () => {
             <form onSubmit={handleCreateBadge} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Nom du Badge *
+                  {t('admin.badges.name_label')}
                 </label>
                 <input
                   type="text"
@@ -1089,7 +1070,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Type *
+                  {t('admin.badges.type_label')}
                 </label>
                 <select
                   value={newBadge.type}
@@ -1097,14 +1078,14 @@ const AdminBadgeManagementPage = () => {
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600"
                 >
-                  <option value="product">Produit</option>
-                  <option value="operator">Opérateur</option>
+                  <option value="product">{t('admin.common.product')}</option>
+                  <option value="operator">{t('admin.common.operator')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Icône (Emoji)
+                  {t('admin.badges.icon_label')}
                 </label>
                 <input
                   type="text"
@@ -1118,7 +1099,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Couleur (Hex)
+                  {t('admin.badges.color_label')}
                 </label>
                 <input
                   type="color"
@@ -1130,7 +1111,7 @@ const AdminBadgeManagementPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Description *
+                  {t('admin.badges.description_label')}
                 </label>
                 <textarea
                   value={newBadge.description}
@@ -1150,7 +1131,7 @@ const AdminBadgeManagementPage = () => {
                   className="w-5 h-5 text-primary-600 rounded"
                 />
                 <label htmlFor="isAutomatic" className="text-sm text-gray-700">
-                  Badge automatique (attribué automatiquement selon les critères)
+                  {t('admin.badges.automatic_badge')}
                 </label>
               </div>
 
@@ -1159,28 +1140,28 @@ const AdminBadgeManagementPage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="block text-sm font-bold text-gray-700">
-                      Critères d'attribution
+                      {t('admin.badges.criteria_title')}
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowCriteriaForm(!showCriteriaForm)}
                       className="text-sm text-primary-600 hover:text-primary-700 font-bold"
                     >
-                      {showCriteriaForm ? 'Masquer' : 'Afficher/Définir'}
+                      {showCriteriaForm ? t('admin.common.hide') : t('admin.common.show_define')}
                     </button>
                   </div>
 
                   {showCriteriaForm && (
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                       <p className="text-xs text-gray-600 mb-3">
-                        Définissez les critères pour l'attribution automatique de ce badge. Laissez vide pour ignorer un critère.
+                        {t('admin.badges.criteria_help')}
                       </p>
 
                       {/* Numerical Criteria */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Note min. (0-5)
+                            {t('admin.badges.criteria.min_rating_label')}
                           </label>
                           <input
                             type="number"
@@ -1190,12 +1171,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minRating || ''}
                             onChange={(e) => updateCriteria('minRating', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 4.5"
+                            placeholder={t('admin.badges.criteria.placeholder_rating')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Avis min.
+                            {t('admin.badges.criteria.min_reviews_label')}
                           </label>
                           <input
                             type="number"
@@ -1203,12 +1184,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minReviews || ''}
                             onChange={(e) => updateCriteria('minReviews', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 10"
+                            placeholder={t('admin.badges.criteria.placeholder_reviews')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Réservations min.
+                            {t('admin.badges.criteria.min_bookings_label')}
                           </label>
                           <input
                             type="number"
@@ -1216,12 +1197,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minBookings || ''}
                             onChange={(e) => updateCriteria('minBookings', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 50"
+                            placeholder={t('admin.badges.criteria.placeholder_bookings')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Revenus min. (MAD)
+                            {t('admin.badges.criteria.min_revenue_label')}
                           </label>
                           <input
                             type="number"
@@ -1229,12 +1210,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minRevenue || ''}
                             onChange={(e) => updateCriteria('minRevenue', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 10000"
+                            placeholder={t('admin.badges.criteria.placeholder_revenue')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Vues min.
+                            {t('admin.badges.criteria.min_views_label')}
                           </label>
                           <input
                             type="number"
@@ -1242,12 +1223,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minViewCount || ''}
                             onChange={(e) => updateCriteria('minViewCount', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 100"
+                            placeholder={t('admin.badges.criteria.placeholder_views')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Temps réponse max. (h)
+                            {t('admin.badges.criteria.max_response_label')}
                           </label>
                           <input
                             type="number"
@@ -1255,12 +1236,12 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.maxResponseTime || ''}
                             onChange={(e) => updateCriteria('maxResponseTime', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 2"
+                            placeholder={t('admin.badges.criteria.placeholder_response')}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Taux complétion min. (%)
+                            {t('admin.badges.criteria.min_completion_label')}
                           </label>
                           <input
                             type="number"
@@ -1269,25 +1250,14 @@ const AdminBadgeManagementPage = () => {
                             value={newBadge.criteria?.minCompletionRate || ''}
                             onChange={(e) => updateCriteria('minCompletionRate', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
-                            placeholder="Ex: 95"
+                            placeholder={t('admin.badges.criteria.placeholder_completion')}
                           />
                         </div>
                       </div>
 
                       {/* Boolean Criteria */}
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-300">
-                        {[
-                          { key: 'isVerified', label: 'Vérifié' },
-                          { key: 'isLocal', label: 'Local' },
-                          { key: 'isLocal100', label: '100% Local' },
-                          { key: 'isArtisan', label: 'Artisan' },
-                          { key: 'isAuthenticLocal', label: 'Authentique Local' },
-                          { key: 'isEcoFriendly', label: 'Éco-responsable' },
-                          { key: 'isTraditional', label: 'Traditionnel' },
-                          { key: 'isNew', label: 'Nouveau (< 30j)' },
-                          { key: 'isBestValue', label: 'Meilleure Valeur' },
-                          { key: 'isLastMinute', label: 'Dernières Places' },
-                        ].map(({ key, label }) => (
+                        {BOOLEAN_CRITERIA_FLAGS.map((key) => (
                           <label key={key} className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
@@ -1295,7 +1265,7 @@ const AdminBadgeManagementPage = () => {
                               onChange={(e) => updateCriteria(key, e.target.checked ? true : undefined)}
                               className="w-4 h-4 text-primary-600 rounded"
                             />
-                            <span className="text-xs text-gray-700">{label}</span>
+                            <span className="text-xs text-gray-700">{t(`admin.badges.flags.${key}`)}</span>
                           </label>
                         ))}
                       </div>
@@ -1303,9 +1273,9 @@ const AdminBadgeManagementPage = () => {
                       {/* Display current criteria summary */}
                       {Object.keys(newBadge.criteria || {}).filter(k => newBadge.criteria[k] !== undefined && newBadge.criteria[k] !== '').length > 0 && (
                         <div className="p-2 bg-blue-50 rounded border border-blue-200">
-                          <p className="text-xs font-bold text-blue-900 mb-1">Aperçu des critères :</p>
+                          <p className="text-xs font-bold text-blue-900 mb-1">{t('admin.badges.criteria_preview')}</p>
                           <p className="text-xs text-blue-700">
-                            {formatCriteria(newBadge.criteria)}
+                            {formatCriteria(newBadge.criteria, t)}
                           </p>
                         </div>
                       )}
@@ -1319,14 +1289,14 @@ const AdminBadgeManagementPage = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition"
                 >
-                  Créer
+                  {t('admin.common.create')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
                   className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition"
                 >
-                  Annuler
+                  {t('admin.common.cancel')}
                 </button>
               </div>
             </form>
@@ -1339,12 +1309,12 @@ const AdminBadgeManagementPage = () => {
           <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-gray-500 uppercase font-bold">Badge</p>
+                <p className="text-xs text-gray-500 uppercase font-bold">{t('admin.badges.badge_label')}</p>
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   <span className="text-2xl">{badgeEntitiesModal.badge?.icon}</span>
                   <span>{badgeEntitiesModal.badge?.name}</span>
                   <span className={`text-xs px-2 py-1 rounded ${badgeEntitiesModal.badge?.type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                    {badgeEntitiesModal.badge?.type === 'product' ? 'Produit' : 'Opérateur'}
+                    {badgeEntitiesModal.badge?.type === 'product' ? t('admin.common.product') : t('admin.common.operator')}
                   </span>
                 </h2>
               </div>
@@ -1358,14 +1328,14 @@ const AdminBadgeManagementPage = () => {
 
             <div className="mb-4">
               <h3 className="text-sm font-bold text-gray-800 mb-2">
-                {badgeEntitiesModal.type === 'products' ? 'Produits avec ce badge' : 'Opérateurs avec ce badge'}
+                {badgeEntitiesModal.type === 'products' ? t('admin.badges.products_with_badge') : t('admin.badges.operators_with_badge')}
               </h3>
               {badgeEntitiesModal.loading ? (
-                <p className="text-sm text-gray-600">Chargement...</p>
+                <p className="text-sm text-gray-600">{t('admin.common.loading_short')}</p>
               ) : (
                 <>
                   {badgeEntitiesModal.items.length === 0 && (
-                    <p className="text-sm text-gray-600">Aucun élément trouvé pour ce badge.</p>
+                    <p className="text-sm text-gray-600">{t('admin.badges.no_entities')}</p>
                   )}
                   <div className="space-y-3">
                     {badgeEntitiesModal.type === 'products' && badgeEntitiesModal.items.map((p) => (
@@ -1392,7 +1362,7 @@ const AdminBadgeManagementPage = () => {
                           rel="noreferrer"
                           className="text-primary-600 hover:text-primary-700 text-sm font-bold"
                         >
-                          Ouvrir
+                          {t('admin.common.open')}
                         </a>
                       </div>
                     ))}
@@ -1400,7 +1370,7 @@ const AdminBadgeManagementPage = () => {
                     {badgeEntitiesModal.type === 'operators' && badgeEntitiesModal.items.map((op) => (
                       <div key={op._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start">
                         <div>
-                          <p className="font-bold text-gray-900">{op.companyName || 'Opérateur'}</p>
+                          <p className="font-bold text-gray-900">{op.companyName || t('admin.common.operator')}</p>
                           <p className="text-sm text-gray-600">{op.user?.name} • {op.status}</p>
                           {Array.isArray(op.badges) && op.badges.length > 0 && (
                             <div className="mt-1 flex flex-wrap gap-1 text-xs">
@@ -1419,7 +1389,7 @@ const AdminBadgeManagementPage = () => {
                           href={`/admin/operators`}
                           className="text-primary-600 hover:text-primary-700 text-sm font-bold"
                         >
-                          Aller aux opérateurs
+                          {t('admin.badges.go_operators')}
                         </a>
                       </div>
                     ))}
@@ -1437,4 +1407,3 @@ const AdminBadgeManagementPage = () => {
 };
 
 export default AdminBadgeManagementPage;
-

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkIcon } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -7,15 +8,25 @@ import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const AdminBlogPage = () => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const { toast } = useToast();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [previewPost, setPreviewPost] = useState(null);
-  const [copyStatus, setCopyStatus] = useState({ postId: null, ok: false, message: '' }); // keep for button label state
-  const [actionLoading, setActionLoading] = useState({}); // { [postId]: { publish?: boolean, delete?: boolean } }
+  const [copyStatus, setCopyStatus] = useState({ postId: null, ok: false, message: '' });
+  const [actionLoading, setActionLoading] = useState({});
 
   const fetchPosts = async () => {
     try {
@@ -36,7 +47,6 @@ const AdminBlogPage = () => {
     fetchPosts();
   }, [filter, pagination.page]);
 
-
   const handleTogglePublish = async (postId, currentStatus) => {
     try {
       setActionLoading((prev) => ({
@@ -47,11 +57,11 @@ const AdminBlogPage = () => {
         isPublished: !currentStatus,
         publishedAt: !currentStatus ? new Date() : null,
       });
-      toast(!currentStatus ? 'Article publié ✅' : 'Article dépublié', { type: 'success' });
+      toast(!currentStatus ? t('admin.blog.toast_published') : t('admin.blog.toast_unpublished'), { type: 'success' });
       fetchPosts();
     } catch (error) {
       console.error('Failed to update post status:', error);
-      toast('Erreur lors de la mise à jour du statut', { type: 'error' });
+      toast(t('admin.blog.toast_status_error'), { type: 'error' });
     } finally {
       setActionLoading((prev) => ({
         ...prev,
@@ -61,7 +71,7 @@ const AdminBlogPage = () => {
   };
 
   const handleDelete = async (postId) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
+    if (!window.confirm(t('admin.blog.confirm_delete'))) {
       return;
     }
 
@@ -71,11 +81,11 @@ const AdminBlogPage = () => {
         [postId]: { ...(prev[postId] || {}), delete: true },
       }));
       await api.delete(`/api/blog/${postId}`);
-      toast('Article supprimé', { type: 'success' });
+      toast(t('admin.blog.toast_deleted'), { type: 'success' });
       fetchPosts();
     } catch (error) {
       console.error('Failed to delete post:', error);
-      toast('Erreur lors de la suppression', { type: 'error' });
+      toast(t('admin.blog.toast_delete_error'), { type: 'error' });
     } finally {
       setActionLoading((prev) => ({
         ...prev,
@@ -89,14 +99,14 @@ const AdminBlogPage = () => {
       return (
         <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 flex items-center gap-1">
           <CheckCircle size={12} />
-          Publié
+          {t('admin.blog.status_published')}
         </span>
       );
     }
     return (
       <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 flex items-center gap-1">
         <Clock size={12} />
-        Brouillon
+        {t('admin.blog.status_draft')}
       </span>
     );
   };
@@ -104,14 +114,13 @@ const AdminBlogPage = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
-      return new Date(dateString).toLocaleDateString('fr-FR');
+      return new Date(dateString).toLocaleDateString(dateLocale);
     } catch {
       return '';
     }
   };
 
   const getPublicUrlForPost = (post) => {
-    // Prefer frontend origin if running in browser; fallback to production frontend
     const origin = getSiteUrl();
     return `${origin}/blog/${post.slug}`;
   };
@@ -122,7 +131,6 @@ const AdminBlogPage = () => {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
       } else {
-        // Fallback for older browsers
         const textarea = document.createElement('textarea');
         textarea.value = url;
         textarea.style.position = 'fixed';
@@ -134,13 +142,13 @@ const AdminBlogPage = () => {
         document.body.removeChild(textarea);
       }
 
-      toast('Lien copié !', { type: 'success' });
-      setCopyStatus({ postId: post._id, ok: true, message: 'Copié !' });
+      toast(t('admin.blog.link_copied'), { type: 'success' });
+      setCopyStatus({ postId: post._id, ok: true, message: t('admin.blog.copied') });
       setTimeout(() => setCopyStatus({ postId: null, ok: false, message: '' }), 1500);
     } catch (err) {
       console.error('Copy link failed:', err);
-      toast('Impossible de copier le lien', { type: 'error' });
-      setCopyStatus({ postId: post._id, ok: false, message: 'Erreur' });
+      toast(t('admin.blog.link_copy_error'), { type: 'error' });
+      setCopyStatus({ postId: post._id, ok: false, message: t('admin.blog.copy_error') });
       setTimeout(() => setCopyStatus({ postId: null, ok: false, message: '' }), 1800);
     }
   };
@@ -160,22 +168,20 @@ const AdminBlogPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion du Blog</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.blog.title')}</h1>
         <DashboardNavBar />
       </div>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-3 mb-6">
         <Link
           to="/admin/blog/new"
           className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
         >
           <Plus size={18} />
-          Nouvel article
+          {t('admin.blog.new_article')}
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => {
@@ -186,7 +192,7 @@ const AdminBlogPage = () => {
             filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Tous ({pagination.total})
+          {t('admin.blog.filter_all', { count: pagination.total })}
         </button>
         <button
           onClick={() => {
@@ -197,7 +203,7 @@ const AdminBlogPage = () => {
             filter === 'published' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Publiés
+          {t('admin.blog.filter_published')}
         </button>
         <button
           onClick={() => {
@@ -208,21 +214,21 @@ const AdminBlogPage = () => {
             filter === 'draft' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Brouillons
+          {t('admin.blog.filter_drafts')}
         </button>
       </div>
 
       {posts.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucun article</h2>
-          <p className="text-gray-600 mb-4">Aucun article trouvé avec ce filtre</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.blog.empty_title')}</h2>
+          <p className="text-gray-600 mb-4">{t('admin.blog.empty_desc')}</p>
           <Link
             to="/admin/blog/new"
             className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
           >
             <Plus size={18} />
-            Créer le premier article
+            {t('admin.blog.create_first')}
           </Link>
         </div>
       ) : (
@@ -253,12 +259,12 @@ const AdminBlogPage = () => {
                   <p className="text-sm text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
                   {!post.isPublished && (
                     <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-                      Cet article est en <span className="font-semibold">brouillon</span> : il n’apparaît pas sur la page publique <span className="font-semibold">/blog</span>.
+                      {t('admin.blog.draft_notice')}
                     </div>
                   )}
                   {post.isPublished && (
                     <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
-                      ✅ Visible sur <span className="font-semibold">/blog</span>
+                      {t('admin.blog.published_notice')}
                     </div>
                   )}
                   <div className="flex flex-wrap gap-1 mb-4">
@@ -269,18 +275,18 @@ const AdminBlogPage = () => {
                     ))}
                   </div>
                   <div className="text-xs text-gray-500 mb-4">
-                    <span className="font-semibold">Auteur:</span> {post.author?.name || 'N/A'}
+                    <span className="font-semibold">{t('admin.blog.author')}</span> {post.author?.name || t('admin.common.na')}
                     {post.publishedAt && (
                       <>
                         <br />
-                        <span className="font-semibold">Publié:</span>{' '}
+                        <span className="font-semibold">{t('admin.blog.published_label')}</span>{' '}
                         {formatDate(post.publishedAt)}
                       </>
                     )}
                     {post.views !== undefined && (
                       <>
                         <br />
-                        <span className="font-semibold">Vues:</span> {post.views}
+                        <span className="font-semibold">{t('admin.blog.views')}</span> {post.views}
                       </>
                     )}
                   </div>
@@ -289,10 +295,10 @@ const AdminBlogPage = () => {
                       type="button"
                       onClick={() => setPreviewPost(post)}
                       className="px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center justify-center gap-2"
-                      title="Prévisualiser (même en brouillon)"
+                      title={t('admin.blog.preview_title')}
                     >
                       <Eye size={16} />
-                      <span className="hidden sm:inline">Prévisualiser</span>
+                      <span className="hidden sm:inline">{t('admin.blog.preview')}</span>
                     </button>
                     <button
                       type="button"
@@ -304,25 +310,25 @@ const AdminBlogPage = () => {
                             ? 'border-red-300 text-red-700 bg-red-50'
                             : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                       }`}
-                      title="Copier le lien public"
+                      title={t('admin.blog.copy_link_title')}
                     >
                       <LinkIcon size={16} />
                       <span className="hidden sm:inline">
-                        {copyStatus.postId === post._id && copyStatus.message ? copyStatus.message : 'Copier le lien'}
+                        {copyStatus.postId === post._id && copyStatus.message ? copyStatus.message : t('admin.blog.copy_link')}
                       </span>
                     </button>
                     <Link
                       to={`/blog/${post.slug}`}
                       target="_blank"
                       className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
-                      title="Voir l'article"
+                      title={t('admin.blog.view_article')}
                     >
                       <Eye size={16} />
                     </Link>
                     <Link
                       to={`/admin/blog/${post._id}/edit`}
                       className="px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                      title="Modifier l'article"
+                      title={t('admin.blog.edit_article')}
                     >
                       <Edit size={16} />
                     </Link>
@@ -334,9 +340,9 @@ const AdminBlogPage = () => {
                           ? 'bg-yellow-600 text-white hover:bg-yellow-700'
                           : 'bg-green-600 text-white hover:bg-green-700'
                       } ${actionLoading[post._id]?.publish ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      title={post.isPublished ? 'Dépublier' : 'Publier'}
+                      title={post.isPublished ? t('admin.common.unpublish') : t('admin.common.publish')}
                     >
-                      {actionLoading[post._id]?.publish ? '...' : post.isPublished ? 'Dépublier' : 'Publier'}
+                      {actionLoading[post._id]?.publish ? t('admin.blog.loading_dots') : post.isPublished ? t('admin.common.unpublish') : t('admin.common.publish')}
                     </button>
                     <button
                       onClick={() => handleDelete(post._id)}
@@ -344,7 +350,7 @@ const AdminBlogPage = () => {
                       className={`px-3 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center ${
                         actionLoading[post._id]?.delete ? 'opacity-60 cursor-not-allowed' : ''
                       }`}
-                      title="Supprimer l'article"
+                      title={t('admin.blog.delete_article')}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -354,7 +360,6 @@ const AdminBlogPage = () => {
             ))}
           </div>
 
-          {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8">
               <button
@@ -362,24 +367,23 @@ const AdminBlogPage = () => {
                 disabled={pagination.page === 1}
                 className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition"
               >
-                Précédent
+                {t('admin.common.previous')}
               </button>
               <span className="px-4 py-2 text-gray-700">
-                Page {pagination.page} sur {pagination.totalPages}
+                {t('admin.common.page_of', { page: pagination.page, totalPages: pagination.totalPages })}
               </span>
               <button
                 onClick={() => setPagination({ ...pagination, page: Math.min(pagination.totalPages, pagination.page + 1) })}
                 disabled={pagination.page === pagination.totalPages}
                 className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition"
               >
-                Suivant
+                {t('admin.common.next')}
               </button>
             </div>
           )}
         </>
       )}
 
-      {/* Preview modal */}
       {previewPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl">
@@ -391,14 +395,16 @@ const AdminBlogPage = () => {
                 </div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{previewPost.title}</h2>
                 <p className="text-xs text-gray-500">
-                  {previewPost.publishedAt ? `Publié: ${formatDate(previewPost.publishedAt)}` : `Créé: ${formatDate(previewPost.createdAt)}`}
+                  {previewPost.publishedAt
+                    ? t('admin.blog.preview_published', { date: formatDate(previewPost.publishedAt) })
+                    : t('admin.blog.preview_created', { date: formatDate(previewPost.createdAt) })}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewPost(null)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"
-                aria-label="Fermer"
+                aria-label={t('common.close')}
               >
                 <X size={18} />
               </button>
@@ -419,7 +425,7 @@ const AdminBlogPage = () => {
               )}
               <div
                 className="prose prose-sm sm:prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary-600 prose-strong:text-slate-900 prose-img:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: previewPost.content || '<p><em>Aucun contenu</em></p>' }}
+                dangerouslySetInnerHTML={{ __html: previewPost.content || `<p><em>${t('admin.blog.no_content')}</em></p>` }}
               />
             </div>
 
@@ -430,21 +436,21 @@ const AdminBlogPage = () => {
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition inline-flex items-center gap-2"
               >
                 <LinkIcon size={16} />
-                Copier le lien
+                {t('admin.blog.copy_link')}
               </button>
               <Link
                 to={`/admin/blog/${previewPost._id}/edit`}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
                 onClick={() => setPreviewPost(null)}
               >
-                Modifier
+                {t('admin.common.edit')}
               </Link>
               <button
                 type="button"
                 onClick={() => setPreviewPost(null)}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
               >
-                Fermer
+                {t('common.close')}
               </button>
             </div>
           </div>
@@ -457,4 +463,3 @@ const AdminBlogPage = () => {
 };
 
 export default AdminBlogPage;
-

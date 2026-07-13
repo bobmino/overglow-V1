@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Users, Building2, Package, Calendar, DollarSign, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
+import { Users, Building2, Package, Calendar, DollarSign, CheckCircle, Clock } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import AdminAnalytics from '../components/AdminAnalytics';
 
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
-  <div 
+  <div
     className={`bg-white rounded-xl border border-gray-200 p-6 ${onClick ? 'cursor-pointer hover:border-primary-600 hover:shadow-lg transition' : ''}`}
     onClick={onClick && typeof onClick === 'function' ? onClick : undefined}
   >
@@ -22,6 +23,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
 );
 
 const AdminDashboardPage = () => {
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOperators: 0,
@@ -62,7 +64,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="container mx-auto px-4 py-12 bg-slate-50 min-h-screen">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 font-heading">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 font-heading">{t('admin.dashboard.title')}</h1>
         <DashboardNavBar />
       </div>
 
@@ -75,64 +77,63 @@ const AdminDashboardPage = () => {
           to="/admin/operators"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
         >
-          Gérer les Opérateurs
+          {t('admin.dashboard.nav_manage_operators')}
         </Link>
         <Link
           to="/admin/products"
           className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition"
         >
-          Valider les Produits
+          {t('admin.dashboard.nav_validate_products')}
         </Link>
         <Link
           to="/admin/users"
           className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 transition"
         >
-          Gérer les Utilisateurs
+          {t('admin.dashboard.nav_manage_users')}
         </Link>
         <Link
           to="/admin/settings"
           className="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition"
         >
-          Paramètres
+          {t('admin.dashboard.nav_settings')}
         </Link>
         <Link
           to="/admin/withdrawals"
           className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition"
         >
-          Retraits
+          {t('admin.dashboard.nav_withdrawals')}
         </Link>
         <Link
           to="/admin/approval-requests"
           className="bg-orange-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-700 transition"
         >
-          Demandes d'approbation
+          {t('admin.dashboard.nav_approval_requests')}
         </Link>
         <Link
           to="/admin/badge-requests"
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition"
         >
-          Demandes de badges
+          {t('admin.dashboard.nav_badge_requests')}
         </Link>
         <Link
           to="/admin/blog"
           className="bg-pink-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-pink-700 transition"
         >
-          Gérer le Blog
+          {t('admin.dashboard.nav_manage_blog')}
         </Link>
         <Link
           to="/admin/pending-payments"
           className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-amber-700 transition"
         >
-          Paiements à valider
+          {t('admin.dashboard.nav_pending_payments')}
         </Link>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Link to="/admin/users">
           <StatCard
             icon={Users}
-            label="Total Utilisateurs"
+            label={t('admin.dashboard.stats_total_users')}
             value={stats.totalUsers}
             color="bg-blue-600"
           />
@@ -140,7 +141,7 @@ const AdminDashboardPage = () => {
         <Link to="/admin/operators">
           <StatCard
             icon={Building2}
-            label="Total Opérateurs"
+            label={t('admin.dashboard.stats_total_operators')}
             value={stats.totalOperators}
             color="bg-green-600"
           />
@@ -148,20 +149,19 @@ const AdminDashboardPage = () => {
         <Link to="/admin/products">
           <StatCard
             icon={Package}
-            label="Total Produits"
+            label={t('admin.dashboard.stats_total_products')}
             value={stats.totalProducts}
             color="bg-purple-600"
           />
         </Link>
         <StatCard
           icon={Calendar}
-          label="Total Réservations"
+          label={t('admin.dashboard.stats_total_bookings')}
           value={stats.totalBookings}
           color="bg-orange-600"
         />
       </div>
 
-      {/* Secondary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Link to="/admin/products?status=Pending Review">
           <div className="bg-white rounded-xl border border-gray-200 p-6 hover:border-yellow-500 hover:shadow-lg transition">
@@ -170,7 +170,7 @@ const AdminDashboardPage = () => {
                 <Clock size={24} className="text-white" />
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-1">Produits en attente</p>
+            <p className="text-gray-600 text-sm mb-1">{t('admin.dashboard.stats_pending_products')}</p>
             <p className="text-3xl font-bold text-gray-900">{stats.pendingProducts}</p>
           </div>
         </Link>
@@ -181,7 +181,7 @@ const AdminDashboardPage = () => {
                 <CheckCircle size={24} className="text-white" />
               </div>
             </div>
-            <p className="text-gray-600 text-sm mb-1">Produits publiés</p>
+            <p className="text-gray-600 text-sm mb-1">{t('admin.dashboard.stats_published_products')}</p>
             <p className="text-3xl font-bold text-gray-900">{stats.publishedProducts}</p>
           </div>
         </Link>
@@ -191,20 +191,19 @@ const AdminDashboardPage = () => {
               <DollarSign size={24} className="text-white" />
             </div>
           </div>
-          <p className="text-gray-600 text-sm mb-1">Revenus totaux</p>
+          <p className="text-gray-600 text-sm mb-1">{t('admin.dashboard.stats_total_revenue')}</p>
           <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(2)}</p>
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
           to="/admin/operators"
           className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-blue-600 hover:shadow-lg transition"
         >
           <Building2 size={32} className="text-blue-600 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Gérer les Opérateurs</h3>
-          <p className="text-gray-600">Approuver, suspendre ou gérer les opérateurs</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('admin.dashboard.quick_manage_operators')}</h3>
+          <p className="text-gray-600">{t('admin.dashboard.quick_manage_operators_desc')}</p>
         </Link>
 
         <Link
@@ -212,8 +211,8 @@ const AdminDashboardPage = () => {
           className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-green-600 hover:shadow-lg transition"
         >
           <Package size={32} className="text-green-600 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Valider les Produits</h3>
-          <p className="text-gray-600">Approuver ou rejeter les produits en attente</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('admin.dashboard.quick_validate_products')}</h3>
+          <p className="text-gray-600">{t('admin.dashboard.quick_validate_products_desc')}</p>
         </Link>
 
         <Link
@@ -221,8 +220,8 @@ const AdminDashboardPage = () => {
           className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-purple-600 hover:shadow-lg transition"
         >
           <Users size={32} className="text-purple-600 mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Gérer les Utilisateurs</h3>
-          <p className="text-gray-600">Voir et gérer tous les utilisateurs</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('admin.dashboard.quick_manage_users')}</h3>
+          <p className="text-gray-600">{t('admin.dashboard.quick_manage_users_desc')}</p>
         </Link>
       </div>
 
@@ -232,4 +231,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-

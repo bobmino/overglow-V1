@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { formatImageUrl } from '../utils/formatImage';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
@@ -7,9 +8,36 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
 const OperatorProductFormPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
+
+  const getFieldLabel = (field) => {
+    switch (field) {
+      case 'highlights':
+        return t('operator.product_form.field_highlights');
+      case 'included':
+        return t('operator.product_form.field_included');
+      case 'requirements':
+        return t('operator.product_form.field_requirements');
+      default:
+        return field;
+    }
+  };
+
+  const getAddFieldLabel = (field) => {
+    switch (field) {
+      case 'highlights':
+        return t('operator.product_form.add_highlight');
+      case 'included':
+        return t('operator.product_form.add_included');
+      case 'requirements':
+        return t('operator.product_form.add_requirement');
+      default:
+        return t('operator.common.add');
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -104,7 +132,7 @@ const OperatorProductFormPage = () => {
       setError('');
     } catch (err) {
       console.error('Failed to fetch product details:', err.response?.data || err.message);
-      setError(err.response?.data?.message || 'Failed to fetch product details');
+      setError(err.response?.data?.message || t('operator.product_form.fetch_error'));
     }
   };
 
@@ -172,13 +200,13 @@ const OperatorProductFormPage = () => {
       const numericPrice = Number(formData.price);
 
       if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-        setError('Price must be a positive number greater than 0');
+        setError(t('operator.product_form.price_positive_error'));
         setLoading(false);
         return;
       }
 
       if (formData.status === 'Published' && numericPrice <= 0) {
-        setError('Published products require a price greater than 0');
+        setError(t('operator.product_form.published_price_error'));
         setLoading(false);
         return;
       }
@@ -236,7 +264,7 @@ const OperatorProductFormPage = () => {
                           err.response?.data?.error ||
                           err.response?.data?.errors?.[0]?.msg || 
                           err.message ||
-                          'Failed to save product';
+                          t('operator.product_form.save_error');
       setError(errorMessage);
       setLoading(false);
     }
@@ -247,7 +275,7 @@ const OperatorProductFormPage = () => {
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {isEditMode ? 'Edit Product' : 'Create New Product'}
+            {isEditMode ? t('operator.product_form.edit_title') : t('operator.product_form.create_title')}
           </h1>
           <DashboardNavBar />
         </div>
@@ -262,7 +290,7 @@ const OperatorProductFormPage = () => {
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.title_label')}</label>
               <input
                 type="text"
                 name="title"
@@ -274,51 +302,51 @@ const OperatorProductFormPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.category_label')}</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               >
-                <option value="Tours">Tours</option>
-                <option value="Activities">Activities</option>
-                <option value="Tickets">Tickets</option>
-                <option value="Rentals">Rentals</option>
-                <option value="LuxuryStay">Séjours Luxe</option>
-                <option value="Services">Services</option>
+                <option value="Tours">{t('operator.product_form.category_tours')}</option>
+                <option value="Activities">{t('operator.product_form.category_activities')}</option>
+                <option value="Tickets">{t('operator.product_form.category_tickets')}</option>
+                <option value="Rentals">{t('operator.product_form.category_rentals')}</option>
+                <option value="LuxuryStay">{t('operator.product_form.category_luxury_stay')}</option>
+                <option value="Services">{t('operator.product_form.category_services')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Type de Produit</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.product_type_label')}</label>
               <select
                 name="productType"
                 value={formData.productType}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               >
-                <option value="tour">Tour / Excursion</option>
-                <option value="luxury_stay">Séjour Luxe</option>
-                <option value="service">Service (Transport, Guide, etc.)</option>
+                <option value="tour">{t('operator.product_form.type_tour')}</option>
+                <option value="luxury_stay">{t('operator.product_form.type_luxury_stay')}</option>
+                <option value="service">{t('operator.product_form.type_service')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.status_label')}</label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               >
-                <option value="Draft">Draft</option>
-                <option value="Published">Published</option>
+                <option value="Draft">{t('operator.product_form.status_draft')}</option>
+                <option value="Published">{t('operator.product_form.status_published')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">City</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.city_label')}</label>
               <input
                 type="text"
                 name="city"
@@ -330,33 +358,33 @@ const OperatorProductFormPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Address</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.address_label')}</label>
               <input
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                placeholder="e.g. 123 Main St"
+                placeholder={t('operator.product_form.address_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Duration</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.duration_label')}</label>
               <input
                 type="text"
                 name="duration"
                 value={formData.duration}
                 onChange={handleChange}
-                placeholder="e.g. 2 hours"
+                placeholder={t('operator.product_form.duration_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Price (€)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.price_label')}</label>
               <input
                 type="number"
                 name="price"
@@ -364,17 +392,17 @@ const OperatorProductFormPage = () => {
                 onChange={handleChange}
                 min="0.01"
                 step="0.01"
-                placeholder="0.00"
+                placeholder={t('operator.product_form.price_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Enter the final price per person. Required to publish the product.
+                {t('operator.product_form.price_hint')}
               </p>
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.description_label')}</label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -389,7 +417,7 @@ const OperatorProductFormPage = () => {
           {formData.category === 'LuxuryStay' && (
             <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de chambres</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.luxury_rooms')}</label>
                 <input
                   type="number"
                   name="luxuryRooms"
@@ -403,7 +431,7 @@ const OperatorProductFormPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Capacité d'accueil (personnes)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.luxury_capacity')}</label>
                 <input
                   type="number"
                   name="luxuryCapacity"
@@ -417,7 +445,7 @@ const OperatorProductFormPage = () => {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Équipements</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.luxury_amenities')}</label>
                 <div className="flex space-x-4">
                   <label className="flex items-center">
                     <input
@@ -428,7 +456,7 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, pool: e.target.checked } },
                       }))}
                     />
-                    <span className="ms-2">Piscine</span>
+                    <span className="ms-2">{t('operator.product_form.amenity_pool')}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -439,7 +467,7 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, wifi: e.target.checked } },
                       }))}
                     />
-                    <span className="ms-2">Wifi</span>
+                    <span className="ms-2">{t('operator.product_form.amenity_wifi')}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -450,12 +478,12 @@ const OperatorProductFormPage = () => {
                         luxuryStay: { ...prev.luxuryStay, amenities: { ...prev.luxuryStay.amenities, jacuzzi: e.target.checked } },
                       }))}
                     />
-                    <span className="ms-2">Jacuzzi</span>
+                    <span className="ms-2">{t('operator.product_form.amenity_jacuzzi')}</span>
                   </label>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Standing (Étoiles Luxe 1-3)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.luxury_standing')}</label>
                 <select
                   name="luxuryStanding"
                   value={formData.luxuryStay.standing}
@@ -477,10 +505,10 @@ const OperatorProductFormPage = () => {
           {(formData.category === 'Services' || formData.productType === 'service') && (
             <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
               <div className="col-span-2">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Détails du Service</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.service_details_title')}</h3>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Type de véhicule</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.vehicle_type')}</label>
                 <select
                   name="serviceVehicleType"
                   value={formData.serviceDetails.vehicleType}
@@ -490,19 +518,19 @@ const OperatorProductFormPage = () => {
                   }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
-                  <option value="">-- Sélectionner --</option>
-                  <option value="sedan">Berline</option>
-                  <option value="suv">SUV / 4x4</option>
-                  <option value="minivan">Minivan</option>
-                  <option value="bus">Bus / Autocar</option>
-                  <option value="boat">Bateau</option>
-                  <option value="quad">Quad</option>
-                  <option value="camel">Chameau</option>
-                  <option value="other">Autre</option>
+                  <option value="">{t('operator.product_form.vehicle_select')}</option>
+                  <option value="sedan">{t('operator.product_form.vehicle_sedan')}</option>
+                  <option value="suv">{t('operator.product_form.vehicle_suv')}</option>
+                  <option value="minivan">{t('operator.product_form.vehicle_minivan')}</option>
+                  <option value="bus">{t('operator.product_form.vehicle_bus')}</option>
+                  <option value="boat">{t('operator.product_form.vehicle_boat')}</option>
+                  <option value="quad">{t('operator.product_form.vehicle_quad')}</option>
+                  <option value="camel">{t('operator.product_form.vehicle_camel')}</option>
+                  <option value="other">{t('operator.product_form.vehicle_other')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de véhicules</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.vehicle_count')}</label>
                 <input
                   type="number"
                   name="serviceVehicleCount"
@@ -526,11 +554,11 @@ const OperatorProductFormPage = () => {
                     }))}
                     className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
-                  <span className="ms-2 text-sm font-semibold text-gray-700">Guide touristique inclus</span>
+                  <span className="ms-2 text-sm font-semibold text-gray-700">{t('operator.product_form.guide_included')}</span>
                 </label>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Langues parlées</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.languages_spoken')}</label>
                 <div className="space-y-2">
                   {Array.isArray(formData.serviceDetails.languages) && formData.serviceDetails.languages.map((lang, index) => (
                     <div key={index} className="flex gap-2">
@@ -545,7 +573,7 @@ const OperatorProductFormPage = () => {
                             serviceDetails: { ...prev.serviceDetails, languages: newLangs },
                           }));
                         }}
-                        placeholder="ex: Français, Anglais, Arabe..."
+                        placeholder={t('operator.product_form.language_placeholder')}
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                       />
                       {formData.serviceDetails.languages.length > 1 && (
@@ -575,7 +603,7 @@ const OperatorProductFormPage = () => {
                     }}
                     className="text-sm text-green-700 font-bold hover:underline"
                   >
-                    + Ajouter une langue
+                    {t('operator.product_form.add_language')}
                   </button>
                 </div>
               </div>
@@ -584,26 +612,26 @@ const OperatorProductFormPage = () => {
 
           {/* Payment Preference */}
           <div className="col-span-2">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Préférence de paiement</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.payment_preference')}</label>
             <select
               name="paymentPreference"
               value={formData.paymentPreference}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             >
-              <option value="Paiement par virement bancaire">Paiement par virement bancaire</option>
-              <option value="Paiement sur place">Paiement sur place</option>
+              <option value="Paiement par virement bancaire">{t('operator.product_form.payment_bank_transfer')}</option>
+              <option value="Paiement sur place">{t('operator.product_form.payment_on_site')}</option>
             </select>
           </div>
           </div>
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Images</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.images_label')}</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               {Array.isArray(formData.images) && formData.images.map((img, index) => (
                 <div key={index} className="relative group">
-                  <img src={formatImageUrl(img)} alt={`Product ${index}`} className="w-full h-24 object-cover rounded-lg" />
+                  <img src={formatImageUrl(img)} alt={t('operator.product_form.product_image_alt', { index: index + 1 })} className="w-full h-24 object-cover rounded-lg" />
                   <button
                     type="button"
                     onClick={() => {
@@ -618,7 +646,7 @@ const OperatorProductFormPage = () => {
               ))}
               <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-green-500 transition">
                 <ImageIcon className="text-gray-400 mb-1" />
-                <span className="text-xs text-gray-500">{uploading ? 'Uploading...' : 'Add Image'}</span>
+                <span className="text-xs text-gray-500">{uploading ? t('operator.common.uploading') : t('operator.product_form.add_image')}</span>
                 <input type="file" className="hidden" onChange={handleImageUpload} disabled={uploading} />
               </label>
             </div>
@@ -627,14 +655,14 @@ const OperatorProductFormPage = () => {
           {/* Dynamic Lists */}
           {['highlights', 'included', 'requirements'].map((field) => (
             <div key={field}>
-              <label className="block text-sm font-bold text-gray-700 mb-2 capitalize">
-                {field}
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                {getFieldLabel(field)}
               </label>
               {Array.isArray(formData[field]) && formData[field].map((item, index) => {
                 const inputId = `${field}-${index}`;
                 return (
                   <div key={index} className="flex gap-2 mb-2">
-                    <label htmlFor={inputId} className="sr-only">{field} item {index + 1}</label>
+                    <label htmlFor={inputId} className="sr-only">{t('operator.product_form.field_item_sr', { field: getFieldLabel(field), index: index + 1 })}</label>
                     <input
                       type="text"
                       id={inputId}
@@ -642,7 +670,7 @@ const OperatorProductFormPage = () => {
                       value={item}
                       onChange={(e) => handleArrayChange(index, e.target.value, field)}
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                      aria-label={`${field} item ${index + 1}`}
+                      aria-label={t('operator.product_form.field_item_sr', { field: getFieldLabel(field), index: index + 1 })}
                     />
                   <button
                     type="button"
@@ -659,14 +687,14 @@ const OperatorProductFormPage = () => {
                 onClick={() => addArrayItem(field)}
                 className="text-sm text-green-700 font-bold hover:underline"
               >
-                + Add {field.slice(0, -1)}
+                {getAddFieldLabel(field)}
               </button>
             </div>
           ))}
 
           {/* Inquiry Settings */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Paramètres d'inquiry</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.inquiry_settings_title')}</h3>
             <div className="space-y-4">
               <div className="flex items-center">
                 <input
@@ -677,22 +705,22 @@ const OperatorProductFormPage = () => {
                   className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                 />
                 <label htmlFor="requiresInquiry" className="ms-2 text-sm font-semibold text-gray-700">
-                  Ce produit nécessite une inquiry
+                  {t('operator.product_form.requires_inquiry')}
                 </label>
               </div>
               
               {formData.requiresInquiry && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Type d'inquiry</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.inquiry_type')}</label>
                   <select
                     name="inquiryType"
                     value={formData.inquiryType}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
-                    <option value="none">Aucune</option>
-                    <option value="manual">Manuelle (Q&A)</option>
-                    <option value="automatic">Automatique (validation requise)</option>
+                    <option value="none">{t('operator.product_form.inquiry_none')}</option>
+                    <option value="manual">{t('operator.product_form.inquiry_manual')}</option>
+                    <option value="automatic">{t('operator.product_form.inquiry_automatic')}</option>
                   </select>
                 </div>
               )}
@@ -701,7 +729,7 @@ const OperatorProductFormPage = () => {
 
           {/* Skip-the-Line */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Skip-the-Line</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.skip_the_line_title')}</h3>
             <div className="space-y-4">
               <div className="flex items-center">
                 <input
@@ -718,14 +746,14 @@ const OperatorProductFormPage = () => {
                   className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                 />
                 <label htmlFor="skipTheLineEnabled" className="ms-2 text-sm font-semibold text-gray-700">
-                  Activer Skip-the-Line pour ce produit
+                  {t('operator.product_form.skip_the_line_enable')}
                 </label>
               </div>
               
               {formData.skipTheLine?.enabled && (
                 <>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.skip_the_line_type')}</label>
                     <select
                       value={formData.skipTheLine?.type || 'Fast Track'}
                       onChange={(e) => setFormData(prev => ({
@@ -737,15 +765,15 @@ const OperatorProductFormPage = () => {
                       }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                     >
-                      <option value="Fast Track">Fast Track</option>
-                      <option value="VIP">VIP</option>
-                      <option value="Early Access">Early Access</option>
+                      <option value="Fast Track">{t('operator.product_form.skip_type_fast_track')}</option>
+                      <option value="VIP">{t('operator.product_form.skip_type_vip')}</option>
+                      <option value="Early Access">{t('operator.product_form.skip_type_early_access')}</option>
                     </select>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Prix supplémentaire (MAD)
+                      {t('operator.product_form.skip_additional_price')}
                     </label>
                     <input
                       type="number"
@@ -764,7 +792,7 @@ const OperatorProductFormPage = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.description_label')}</label>
                     <textarea
                       value={formData.skipTheLine?.description || ''}
                       onChange={(e) => setFormData(prev => ({
@@ -776,7 +804,7 @@ const OperatorProductFormPage = () => {
                       }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                       rows="2"
-                      placeholder="Évitez les files d'attente avec cette option"
+                      placeholder={t('operator.product_form.skip_description_placeholder')}
                     />
                   </div>
                 </>
@@ -786,10 +814,10 @@ const OperatorProductFormPage = () => {
 
           {/* Cancellation Policy */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Politique d'Annulation</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.cancellation_title')}</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Type de politique</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.cancellation_type')}</label>
                 <select
                   value={formData.cancellationPolicy?.type || 'moderate'}
                   onChange={(e) => {
@@ -805,22 +833,22 @@ const OperatorProductFormPage = () => {
                       case 'free':
                         defaultPolicy.freeCancellationHours = 24;
                         defaultPolicy.refundPercentage = 100;
-                        defaultPolicy.description = 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience';
+                        defaultPolicy.description = t('operator.product_form.cancellation_default_free');
                         break;
                       case 'moderate':
                         defaultPolicy.freeCancellationHours = 48;
                         defaultPolicy.refundPercentage = 100;
-                        defaultPolicy.description = 'Annulation possible jusqu\'à 48h avant. Remboursement partiel après ce délai.';
+                        defaultPolicy.description = t('operator.product_form.cancellation_default_moderate');
                         break;
                       case 'strict':
                         defaultPolicy.freeCancellationHours = 168; // 7 days
                         defaultPolicy.refundPercentage = 100;
-                        defaultPolicy.description = 'Annulation possible jusqu\'à 7 jours avant. Remboursement partiel après ce délai.';
+                        defaultPolicy.description = t('operator.product_form.cancellation_default_strict');
                         break;
                       case 'non_refundable':
                         defaultPolicy.freeCancellationHours = 0;
                         defaultPolicy.refundPercentage = 0;
-                        defaultPolicy.description = 'Cette réservation n\'est pas remboursable. Aucun remboursement ne sera effectué en cas d\'annulation.';
+                        defaultPolicy.description = t('operator.product_form.cancellation_default_non_refundable');
                         break;
                     }
 
@@ -834,10 +862,10 @@ const OperatorProductFormPage = () => {
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
-                  <option value="free">Annulation Gratuite</option>
-                  <option value="moderate">Annulation Modérée</option>
-                  <option value="strict">Annulation Stricte</option>
-                  <option value="non_refundable">Non Remboursable</option>
+                  <option value="free">{t('operator.product_form.cancellation_free')}</option>
+                  <option value="moderate">{t('operator.product_form.cancellation_moderate')}</option>
+                  <option value="strict">{t('operator.product_form.cancellation_strict')}</option>
+                  <option value="non_refundable">{t('operator.product_form.cancellation_non_refundable')}</option>
                 </select>
               </div>
 
@@ -845,7 +873,7 @@ const OperatorProductFormPage = () => {
                 <>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Heures avant le début pour annulation gratuite
+                      {t('operator.product_form.cancellation_hours')}
                     </label>
                     <input
                       type="number"
@@ -866,7 +894,7 @@ const OperatorProductFormPage = () => {
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Pourcentage de remboursement (%)
+                      {t('operator.product_form.cancellation_refund_percent')}
                     </label>
                     <input
                       type="number"
@@ -890,7 +918,7 @@ const OperatorProductFormPage = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Description de la politique (optionnel)
+                  {t('operator.product_form.cancellation_description_optional')}
                 </label>
                 <textarea
                   value={formData.cancellationPolicy?.description || ''}
@@ -905,7 +933,7 @@ const OperatorProductFormPage = () => {
                   }}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  placeholder="Décrivez votre politique d'annulation..."
+                  placeholder={t('operator.product_form.cancellation_description_placeholder')}
                 />
               </div>
             </div>
@@ -913,12 +941,12 @@ const OperatorProductFormPage = () => {
 
           {/* Time Slots */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Plages horaires</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.time_slots_title')}</h3>
             <div className="space-y-3">
               {Array.isArray(formData.timeSlots) && formData.timeSlots.map((slot, index) => (
                 <div key={index} className="flex gap-3 items-center">
                   <div className="flex-1">
-                    <label className="block text-xs text-gray-600 mb-1">Début</label>
+                    <label className="block text-xs text-gray-600 mb-1">{t('operator.product_form.time_slot_start')}</label>
                     <input
                       type="time"
                       value={slot.startTime}
@@ -931,7 +959,7 @@ const OperatorProductFormPage = () => {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs text-gray-600 mb-1">Fin</label>
+                    <label className="block text-xs text-gray-600 mb-1">{t('operator.product_form.time_slot_end')}</label>
                     <input
                       type="time"
                       value={slot.endTime}
@@ -964,7 +992,7 @@ const OperatorProductFormPage = () => {
                 }}
                 className="text-sm text-green-700 font-bold hover:underline"
               >
-                + Ajouter une plage horaire
+                {t('operator.product_form.add_time_slot')}
               </button>
             </div>
           </div>
@@ -975,17 +1003,17 @@ const OperatorProductFormPage = () => {
               onClick={() => navigate('/operator/products')}
               className="me-4 px-6 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition"
             >
-              Cancel
+              {t('operator.common.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="bg-green-700 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-800 transition flex items-center"
             >
-              {loading ? 'Saving...' : (
+              {loading ? t('operator.common.saving') : (
                 <>
                   <Save size={20} className="me-2" />
-                  Save Product
+                  {t('operator.product_form.save_product')}
                 </>
               )}
             </button>

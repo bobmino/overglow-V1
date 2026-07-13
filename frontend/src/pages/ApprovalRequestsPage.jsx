@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { AlertCircle, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const ApprovalRequestsPage = () => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     fetchRequests();
@@ -16,7 +27,7 @@ const ApprovalRequestsPage = () => {
 
   const fetchRequests = async () => {
     try {
-      const url = filter === 'all' 
+      const url = filter === 'all'
         ? '/api/approval-requests'
         : `/api/approval-requests?status=${filter}`;
       const { data } = await api.get(url);
@@ -35,64 +46,71 @@ const ApprovalRequestsPage = () => {
       await api.put(`/api/approval-requests/${requestId}/approve`);
       fetchRequests();
     } catch (error) {
-      alert('Failed to approve request');
+      alert(t('admin.approvals.approve_error'));
     }
   };
 
   const handleReject = async (requestId) => {
-    const reason = prompt('Raison du rejet (optionnel):');
+    const reason = prompt(t('admin.approvals.rejection_prompt'));
     try {
       await api.put(`/api/approval-requests/${requestId}/reject`, { reason });
       fetchRequests();
     } catch (error) {
-      alert('Failed to reject request');
+      alert(t('admin.approvals.reject_error'));
     }
   };
 
   const getStatusBadge = (status) => {
     const badges = {
-      'pending': { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      'approved': { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-      'rejected': { color: 'bg-red-100 text-red-800', icon: XCircle },
+      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+      approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
-    const badge = badges[status] || badges['pending'];
+    const badge = badges[status] || badges.pending;
     const Icon = badge.icon;
+    const statusLabel = t(`admin.approvals.status.${status}`, { defaultValue: status });
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-bold ${badge.color} flex items-center gap-1`}>
         <Icon size={12} />
-        {status}
+        {statusLabel}
       </span>
     );
   };
 
   const getEntityLink = (request) => {
     if (!request.entityId) return null;
-    
+
     switch (request.entityType) {
       case 'Product':
         return `/products/${request.entityId._id || request.entityId}`;
       case 'Review':
-        return `/admin/products`; // Reviews are managed via products
+        return '/admin/products';
       case 'Operator':
-        return `/admin/operators`;
+        return '/admin/operators';
       default:
         return null;
     }
   };
 
   const getEntityName = (request) => {
-    if (!request.entityId) return 'N/A';
-    
+    if (!request.entityId) return t('admin.common.na');
+
     if (typeof request.entityId === 'object') {
       if (request.entityType === 'Product') {
-        return request.entityId.title || 'Product';
-      } else if (request.entityType === 'Operator') {
-        return request.entityId.companyName || 'Operator';
-      } else if (request.entityType === 'Review') {
-        return 'Review';
+        return request.entityId.title || t('admin.approvals.entity_fallback.Product');
+      }
+      if (request.entityType === 'Operator') {
+        return request.entityId.companyName || t('admin.approvals.entity_fallback.Operator');
+      }
+      if (request.entityType === 'Review') {
+        return t('admin.approvals.entity_fallback.Review');
       }
     }
-    return request.entityType;
+    return t(`admin.approvals.entity_types.${request.entityType}`, { defaultValue: request.entityType });
+  };
+
+  const getEntityTypeLabel = (entityType) => {
+    return t(`admin.approvals.entity_types.${entityType}`, { defaultValue: entityType });
   };
 
   if (loading) {
@@ -110,15 +128,14 @@ const ApprovalRequestsPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Demandes d'Approbation</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.approvals.title')}</h1>
         <DashboardNavBar />
       </div>
 
-      {/* Filters */}
       <div className="flex gap-3 mb-6">
         <div className="flex items-center gap-2">
           <Filter size={18} className="text-gray-600" />
-          <span className="text-sm font-semibold text-gray-700">Statut:</span>
+          <span className="text-sm font-semibold text-gray-700">{t('admin.common.filter_status')}</span>
         </div>
         <button
           onClick={() => setFilter('all')}
@@ -126,7 +143,7 @@ const ApprovalRequestsPage = () => {
             filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Toutes
+          {t('admin.approvals.filter_all')}
         </button>
         <button
           onClick={() => setFilter('pending')}
@@ -134,7 +151,7 @@ const ApprovalRequestsPage = () => {
             filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          En attente
+          {t('admin.approvals.filter_pending')}
         </button>
         <button
           onClick={() => setFilter('approved')}
@@ -142,7 +159,7 @@ const ApprovalRequestsPage = () => {
             filter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Approuvées
+          {t('admin.approvals.filter_approved')}
         </button>
         <button
           onClick={() => setFilter('rejected')}
@@ -150,22 +167,22 @@ const ApprovalRequestsPage = () => {
             filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Rejetées
+          {t('admin.approvals.filter_rejected')}
         </button>
       </div>
 
       {!Array.isArray(requests) || requests.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <AlertCircle size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucune demande</h2>
-          <p className="text-gray-600">Aucune demande d'approbation trouvée avec ces filtres</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.approvals.empty_title')}</h2>
+          <p className="text-gray-600">{t('admin.approvals.empty_desc')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {requests.map((request) => {
             const entityLink = getEntityLink(request);
             const entityName = getEntityName(request);
-            
+
             return (
               <div key={request._id} className="bg-white rounded-xl border border-gray-200 p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -173,21 +190,24 @@ const ApprovalRequestsPage = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <AlertCircle size={24} className="text-primary-600" />
                       <h3 className="text-xl font-bold text-gray-900">
-                        Demande pour {request.entityType}: {entityName}
+                        {t('admin.approvals.request_for', {
+                          entityType: getEntityTypeLabel(request.entityType),
+                          entityName,
+                        })}
                       </h3>
                       {getStatusBadge(request.status)}
                     </div>
                     <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Utilisateur:</strong> {request.user?.name} ({request.user?.email})</p>
+                      <p><strong>{t('admin.common.user')}:</strong> {request.user?.name} ({request.user?.email})</p>
                       {request.message && (
-                        <p><strong>Message:</strong> {request.message}</p>
+                        <p><strong>{t('admin.common.message')}:</strong> {request.message}</p>
                       )}
                       <p className="text-xs text-gray-500">
-                        Demandé le: {new Date(request.requestedAt || request.createdAt).toLocaleDateString('fr-FR')}
+                        {t('admin.approvals.requested_on')} {new Date(request.requestedAt || request.createdAt).toLocaleDateString(dateLocale)}
                       </p>
                       {request.respondedAt && (
                         <p className="text-xs text-gray-500">
-                          Répondu le: {new Date(request.respondedAt).toLocaleDateString('fr-FR')}
+                          {t('admin.approvals.responded_on')} {new Date(request.respondedAt).toLocaleDateString(dateLocale)}
                         </p>
                       )}
                     </div>
@@ -200,7 +220,7 @@ const ApprovalRequestsPage = () => {
                       to={entityLink}
                       className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
                     >
-                      Voir l'entité
+                      {t('admin.approvals.view_entity')}
                     </Link>
                   )}
                   {request.status === 'pending' && (
@@ -210,14 +230,14 @@ const ApprovalRequestsPage = () => {
                         className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
                       >
                         <CheckCircle size={16} />
-                        Approuver
+                        {t('admin.common.approve')}
                       </button>
                       <button
                         onClick={() => handleReject(request._id)}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center gap-2"
                       >
                         <XCircle size={16} />
-                        Rejeter
+                        {t('admin.common.reject')}
                       </button>
                     </>
                   )}

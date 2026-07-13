@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCircle, CheckCircle, CreditCard } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -7,7 +8,17 @@ import InternalNoteModal from '../components/InternalNoteModal';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
+};
+
 const OperatorBookingsPage = () => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -26,7 +37,7 @@ const OperatorBookingsPage = () => {
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
       setBookings([]);
-      toast('Impossible de charger les reservations pour le moment.', { type: 'error' });
+      toast(t('operator.bookings.load_error'), { type: 'error' });
       setLoading(false);
     }
   };
@@ -40,10 +51,10 @@ const OperatorBookingsPage = () => {
       setHandlingBookingId(bookingId);
       await api.put(`/api/bookings/${bookingId}/handle`);
       fetchBookings();
-      toast('Reservation marquee comme geree.', { type: 'success' });
+      toast(t('operator.bookings.marked_handled'), { type: 'success' });
     } catch (error) {
       console.error('Failed to mark booking as handled:', error);
-      toast('Action impossible pour le moment. Merci de reessayer.', { type: 'error' });
+      toast(t('operator.bookings.action_error'), { type: 'error' });
     } finally {
       setHandlingBookingId(null);
     }
@@ -54,10 +65,10 @@ const OperatorBookingsPage = () => {
       setConfirmingPaymentId(bookingId);
       await api.put(`/api/bookings/${bookingId}/status`, { status: 'CONFIRMED' });
       fetchBookings();
-      toast('Paiement confirmé avec succès.', { type: 'success' });
+      toast(t('operator.bookings.payment_confirmed'), { type: 'success' });
     } catch (error) {
       console.error('Failed to confirm payment:', error);
-      toast('Erreur lors de la confirmation du paiement.', { type: 'error' });
+      toast(t('operator.bookings.payment_confirm_error'), { type: 'error' });
     } finally {
       setConfirmingPaymentId(null);
     }
@@ -66,6 +77,24 @@ const OperatorBookingsPage = () => {
   const handleOpenNoteModal = (booking) => {
     setSelectedBooking(booking);
     setShowNoteModal(true);
+  };
+
+  const getBookingStatusLabel = (status) => {
+    switch (status) {
+      case 'Confirmed':
+      case 'CONFIRMED':
+        return t('operator.bookings.status_confirmed');
+      case 'Pending':
+      case 'PENDING':
+        return t('operator.bookings.status_pending');
+      case 'Cancelled':
+      case 'CANCELLED':
+        return t('operator.bookings.status_cancelled');
+      case 'PENDING_PAYMENT':
+        return t('operator.bookings.status_pending_payment');
+      default:
+        return status;
+    }
   };
 
   const getStatusColor = (status) => {
@@ -79,10 +108,10 @@ const OperatorBookingsPage = () => {
 
   const getPaymentStatusLabel = (paymentStatus) => {
     const normalized = (paymentStatus || 'pending').toLowerCase();
-    if (normalized === 'paid') return 'Paye';
-    if (normalized === 'refunded') return 'Rembourse';
-    if (normalized === 'failed') return 'Echec';
-    return 'En attente';
+    if (normalized === 'paid') return t('operator.bookings.payment_paid');
+    if (normalized === 'refunded') return t('operator.bookings.payment_refunded');
+    if (normalized === 'failed') return t('operator.bookings.payment_failed');
+    return t('operator.bookings.payment_pending');
   };
 
   const getPaymentStatusColor = (paymentStatus) => {
@@ -108,15 +137,15 @@ const OperatorBookingsPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Réservations reçues</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('operator.bookings.title')}</h1>
         <DashboardNavBar />
       </div>
 
       {!Array.isArray(bookings) || bookings.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
           <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No bookings yet</h2>
-          <p className="text-gray-600">Bookings will appear here once customers book your products</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('operator.bookings.empty_title')}</h2>
+          <p className="text-gray-600">{t('operator.bookings.empty_desc')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -134,17 +163,17 @@ const OperatorBookingsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.status)}`}>
-                    {booking.status}
+                    {getBookingStatusLabel(booking.status)}
                   </span>
                   {user?.role?.toLowerCase() === 'admin' && (booking.status === 'Pending' || booking.status === 'PENDING_PAYMENT') && (
                     <button
                       onClick={() => handleConfirmPaymentAdmin(booking._id)}
                       disabled={confirmingPaymentId === booking._id}
                       className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition disabled:opacity-50"
-                      title="Confirmer le paiement"
+                      title={t('operator.bookings.confirm_payment_title')}
                     >
                       <CreditCard size={12} />
-                      {confirmingPaymentId === booking._id ? 'Confirmation...' : 'Confirmer le paiement'}
+                      {confirmingPaymentId === booking._id ? t('operator.common.confirming') : t('operator.bookings.confirm_payment')}
                     </button>
                   )}
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPaymentStatusColor(booking.paymentStatus)}`}>
@@ -153,12 +182,12 @@ const OperatorBookingsPage = () => {
                   {booking.isHandled && (
                     <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1">
                       <CheckCircle size={12} />
-                      Géré
+                      {t('operator.bookings.handled')}
                     </span>
                   )}
                   {booking.internalNote && (
                     <span className="px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                      Note
+                      {t('operator.bookings.note_badge')}
                     </span>
                   )}
                 </div>
@@ -168,34 +197,34 @@ const OperatorBookingsPage = () => {
                 <div className="flex items-center text-gray-700">
                   <Calendar size={16} className="me-2 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="text-xs text-gray-500">{t('operator.common.date')}</p>
                     <p className="font-semibold">
-                      {new Date(booking.schedule?.date).toLocaleDateString('fr-FR')}
+                      {new Date(booking.schedule?.date).toLocaleDateString(dateLocale)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <Clock size={16} className="me-2 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500">Time</p>
+                    <p className="text-xs text-gray-500">{t('operator.common.time')}</p>
                     <p className="font-semibold">{booking.schedule?.time}</p>
                   </div>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <Users size={16} className="me-2 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500">Tickets</p>
+                    <p className="text-xs text-gray-500">{t('operator.bookings.tickets')}</p>
                     <p className="font-semibold">{booking.numberOfTickets}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500">Revenue</p>
+                  <p className="text-xs text-gray-500">{t('operator.bookings.revenue')}</p>
                   <p className="text-xl font-bold text-green-700">€{booking.totalAmount.toFixed(2)}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500">Versement estime</p>
+                  <p className="text-xs text-gray-500">{t('operator.bookings.estimated_payout')}</p>
                   <p className="font-semibold text-gray-900">
-                    {booking.payoutDate ? new Date(booking.payoutDate).toLocaleDateString('fr-FR') : 'A definir'}
+                    {booking.payoutDate ? new Date(booking.payoutDate).toLocaleDateString(dateLocale) : t('operator.common.payout_tbd')}
                   </p>
                 </div>
               </div>
@@ -206,21 +235,21 @@ const OperatorBookingsPage = () => {
                   className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold"
                 >
                   <Mail size={16} />
-                  Contacter
+                  {t('operator.bookings.contact')}
                 </a>
                 <button
                   onClick={() => window.open(`/products/${booking.schedule?.product?._id || booking.schedule?.product}`, '_blank')}
                   className="inline-flex items-center gap-2 text-gray-700 hover:text-green-700 font-semibold"
                 >
                   <ExternalLink size={16} />
-                  Voir le produit
+                  {t('operator.bookings.view_product')}
                 </button>
                 <button
                   onClick={() => handleOpenNoteModal(booking)}
                   className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-semibold"
                 >
                   <MessageSquare size={16} />
-                  {booking.internalNote ? 'Modifier note' : 'Note interne'}
+                  {booking.internalNote ? t('operator.bookings.edit_note') : t('operator.bookings.internal_note')}
                 </button>
                 {!booking.isHandled && (
                   <button
@@ -229,13 +258,13 @@ const OperatorBookingsPage = () => {
                     className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ArrowRightCircle size={16} />
-                    {handlingBookingId === booking._id ? 'Traitement...' : 'Marquer comme gere'}
+                    {handlingBookingId === booking._id ? t('operator.common.processing') : t('operator.bookings.mark_handled')}
                   </button>
                 )}
                 {booking.isHandled && (
                   <span className="inline-flex items-center gap-2 text-gray-500 font-semibold">
                     <CheckCircle size={16} />
-                    Déjà géré
+                    {t('operator.bookings.already_handled')}
                   </span>
                 )}
               </div>

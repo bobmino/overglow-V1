@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
 
-const STEPS = [
-  { id: 'providerType', label: 'Type de prestataire', icon: Building2 },
-  { id: 'publicInfo', label: 'Vos informations', icon: User },
-  { id: 'photos', label: 'Vos photos', icon: Camera },
-  { id: 'address', label: 'Adresse de la société', icon: MapPin },
-  { id: 'experiences', label: 'Expériences', icon: FileText },
-  { id: 'privateInfo', label: 'Informations privées', icon: Home },
-];
-
 const OperatorWizardPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [wizardData, setWizardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const STEPS = useMemo(() => [
+    { id: 'providerType', label: t('operator.wizard.steps.provider_type'), icon: Building2 },
+    { id: 'publicInfo', label: t('operator.wizard.steps.public_info'), icon: User },
+    { id: 'photos', label: t('operator.wizard.steps.photos'), icon: Camera },
+    { id: 'address', label: t('operator.wizard.steps.address'), icon: MapPin },
+    { id: 'experiences', label: t('operator.wizard.steps.experiences'), icon: FileText },
+    { id: 'privateInfo', label: t('operator.wizard.steps.private_info'), icon: Home },
+  ], [t]);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -124,7 +126,7 @@ const OperatorWizardPage = () => {
         setCurrentStep(currentStep + 1);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save step');
+      setError(err.response?.data?.message || t('operator.wizard.save_step_error'));
     } finally {
       setSaving(false);
     }
@@ -136,10 +138,10 @@ const OperatorWizardPage = () => {
 
     try {
       await api.post('/api/operator/wizard/submit');
-      alert('Votre demande a été soumise avec succès. Elle est en cours d\'examen par notre équipe.');
+      alert(t('operator.wizard.submit_success'));
       navigate('/operator/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit wizard');
+      setError(err.response?.data?.message || t('operator.wizard.submit_error'));
     } finally {
       setSaving(false);
     }
@@ -177,8 +179,8 @@ const OperatorWizardPage = () => {
       case 'providerType':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Type de prestataire</h2>
-            <p className="text-gray-600">Sélectionnez le type de prestataire qui correspond à votre situation.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.provider_type_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.provider_type_subtitle')}</p>
             
             <div className="space-y-4">
               <label className="flex items-start p-4 border-2 rounded-lg cursor-pointer hover:border-primary-600 transition">
@@ -191,11 +193,11 @@ const OperatorWizardPage = () => {
                   className="mt-1 me-4"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Personne morale (Société)</div>
+                  <div className="font-semibold text-gray-900">{t('operator.wizard.company_title')}</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    J'exerce mes activités dans le cadre d'une entreprise immatriculée, comme une société.
+                    {t('operator.wizard.company_desc')}
                     <br />
-                    <span className="text-xs italic">Exemple : je vends des expériences dans le cadre d'une société (ou toute autre entité commerciale) immatriculée dans un registre des entreprises officiel.</span>
+                    <span className="text-xs italic">{t('operator.wizard.company_example')}</span>
                   </div>
                 </div>
               </label>
@@ -210,11 +212,11 @@ const OperatorWizardPage = () => {
                   className="mt-1 me-4"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Personne physique avec statut</div>
+                  <div className="font-semibold text-gray-900">{t('operator.wizard.individual_status_title')}</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    J'opère en tant que personne physique/opérateur individuel (auto-entrepreneur, micro-entreprise, etc.)
+                    {t('operator.wizard.individual_status_desc')}
                     <br />
-                    <span className="text-xs italic">Exemple : je vends des expériences en mon nom en tant que source principale de revenus/à titre professionnel.</span>
+                    <span className="text-xs italic">{t('operator.wizard.individual_status_example')}</span>
                   </div>
                 </div>
               </label>
@@ -229,11 +231,11 @@ const OperatorWizardPage = () => {
                   className="mt-1 me-4"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Personne physique sans statut</div>
+                  <div className="font-semibold text-gray-900">{t('operator.wizard.individual_no_status_title')}</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    Je suis un particulier
+                    {t('operator.wizard.individual_no_status_desc')}
                     <br />
-                    <span className="text-xs italic">Exemple : je vends des expériences à titre non professionnel. Je n'opère pas dans le cadre d'une entreprise.</span>
+                    <span className="text-xs italic">{t('operator.wizard.individual_no_status_example')}</span>
                   </div>
                 </div>
               </label>
@@ -244,45 +246,45 @@ const OperatorWizardPage = () => {
       case 'publicInfo':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Vos informations</h2>
-            <p className="text-gray-600">Ces informations s'afficheront sur votre page publique.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.public_info_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.public_info_subtitle')}</p>
             
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Nom public <span className="text-red-500">*</span>
+                {t('operator.wizard.public_name_label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.publicName}
                 onChange={(e) => setFormData({ ...formData, publicName: e.target.value })}
-                placeholder="Par exemple : « Les randonnées de Paul »"
+                placeholder={t('operator.wizard.public_name_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Il s'agit du nom utilisé pour la promotion de vos visites, activités ou expériences.</p>
+              <p className="text-xs text-gray-500 mt-1">{t('operator.wizard.public_name_hint')}</p>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Parlez-nous des expériences que vous proposez <span className="text-red-500">*</span>
+                {t('operator.wizard.description_label')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Écrivez une brève description des visites, activités ou autres expériences que vous offrez."
+                placeholder={t('operator.wizard.description_placeholder')}
                 rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
                 minLength={100}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {formData.description.length}/100 caractères nécessaires
+                {t('operator.wizard.description_count', { count: formData.description.length })}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Où votre expérience se déroule-t-elle ? <span className="text-red-500">*</span>
+                {t('operator.wizard.location_label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -291,11 +293,11 @@ const OperatorWizardPage = () => {
                   ...formData, 
                   location: { ...formData.location, city: e.target.value }
                 })}
-                placeholder="Rechercher une municipalité"
+                placeholder={t('operator.wizard.location_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Si vous proposez plusieurs expériences, indiquez l'endroit où se situe la majorité d'entre elles.</p>
+              <p className="text-xs text-gray-500 mt-1">{t('operator.wizard.location_hint')}</p>
             </div>
           </div>
         );
@@ -303,34 +305,34 @@ const OperatorWizardPage = () => {
       case 'photos':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Vos photos</h2>
-            <p className="text-gray-600">Ajoutez votre logo et des photos pour votre profil.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.photos_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.photos_subtitle')}</p>
             
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Logo</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.logo_label')}</label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 {formData.logo ? (
-                  <img src={formData.logo} alt="Logo" className="max-h-32 mx-auto" />
+                  <img src={formData.logo} alt={t('operator.wizard.logo_alt')} className="max-h-32 mx-auto" />
                 ) : (
                   <div>
                     <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-600">Cliquez pour télécharger votre logo</p>
+                    <p className="text-sm text-gray-600">{t('operator.wizard.upload_logo')}</p>
                   </div>
                 )}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Galerie de photos</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.gallery_label')}</label>
               <div className="grid grid-cols-3 gap-4">
                 {formData.gallery.map((photo, index) => (
                   <div key={index} className="border rounded-lg p-2">
-                    <img src={photo} alt={`Photo ${index + 1}`} className="w-full h-32 object-cover rounded" />
+                    <img src={photo} alt={t('operator.wizard.gallery_photo_alt', { index: index + 1 })} className="w-full h-32 object-cover rounded" />
                   </div>
                 ))}
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-600 transition">
                   <Upload size={24} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-xs text-gray-600">Ajouter une photo</p>
+                  <p className="text-xs text-gray-600">{t('operator.wizard.add_photo')}</p>
                 </div>
               </div>
             </div>
@@ -340,12 +342,12 @@ const OperatorWizardPage = () => {
       case 'address':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Adresse de la société</h2>
-            <p className="text-gray-600">Renseignez l'adresse complète de votre entreprise.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.address_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.address_subtitle')}</p>
             
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Rue <span className="text-red-500">*</span>
+                {t('operator.wizard.street_label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -362,7 +364,7 @@ const OperatorWizardPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Ville <span className="text-red-500">*</span>
+                  {t('operator.wizard.city_label')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -377,7 +379,7 @@ const OperatorWizardPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Code postal <span className="text-red-500">*</span>
+                  {t('operator.wizard.postal_code_label')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -397,12 +399,12 @@ const OperatorWizardPage = () => {
       case 'experiences':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Expériences</h2>
-            <p className="text-gray-600">Décrivez en détail les expériences que vous proposez.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.experiences_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.experiences_subtitle')}</p>
             
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Description des expériences <span className="text-red-500">*</span>
+                {t('operator.wizard.experiences_description_label')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={formData.experiences}
@@ -418,13 +420,13 @@ const OperatorWizardPage = () => {
       case 'privateInfo':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Informations privées</h2>
-            <p className="text-gray-600">Ces informations sont confidentielles et ne seront pas affichées publiquement.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.private_info_title')}</h2>
+            <p className="text-gray-600">{t('operator.wizard.private_info_subtitle')}</p>
             
             {formData.providerType === 'company' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nom de la société *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.company_name_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.companyName || ''}
@@ -437,7 +439,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro RC (Registre du Commerce) *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.rc_number_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.registrationNumber || ''}
@@ -450,7 +452,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro KABIS *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.kbis_number_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.kbis || ''}
@@ -463,7 +465,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro SIRET *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.siret_number_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.siret || ''}
@@ -476,7 +478,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro TVA</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.vat_number_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.vatNumber || ''}
@@ -488,7 +490,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Forme juridique *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.legal_form_label')}</label>
                   <select
                     value={formData.companyInfo.legalForm || ''}
                     onChange={(e) => setFormData({ 
@@ -498,17 +500,17 @@ const OperatorWizardPage = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   >
-                    <option value="">Sélectionner</option>
-                    <option value="SARL">SARL</option>
-                    <option value="SAS">SAS</option>
-                    <option value="SA">SA</option>
-                    <option value="EURL">EURL</option>
-                    <option value="SNC">SNC</option>
-                    <option value="Autre">Autre</option>
+                    <option value="">{t('operator.common.select')}</option>
+                    <option value="SARL">{t('operator.wizard.legal_form_sarl')}</option>
+                    <option value="SAS">{t('operator.wizard.legal_form_sas')}</option>
+                    <option value="SA">{t('operator.wizard.legal_form_sa')}</option>
+                    <option value="EURL">{t('operator.wizard.legal_form_eurl')}</option>
+                    <option value="SNC">{t('operator.wizard.legal_form_snc')}</option>
+                    <option value="Autre">{t('operator.wizard.legal_form_other')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Capital social</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.share_capital_label')}</label>
                   <input
                     type="number"
                     value={formData.companyInfo.capital || ''}
@@ -520,7 +522,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Siège social</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.headquarters_label')}</label>
                   <input
                     type="text"
                     value={formData.companyInfo.headquarters || ''}
@@ -538,7 +540,7 @@ const OperatorWizardPage = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.first_name_label')}</label>
                     <input
                       type="text"
                       value={formData.individualWithStatusInfo.firstName || ''}
@@ -551,7 +553,7 @@ const OperatorWizardPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.last_name_label')}</label>
                     <input
                       type="text"
                       value={formData.individualWithStatusInfo.lastName || ''}
@@ -565,7 +567,7 @@ const OperatorWizardPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Statut *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.status_label')}</label>
                   <select
                     value={formData.individualWithStatusInfo.status || ''}
                     onChange={(e) => setFormData({ 
@@ -575,15 +577,15 @@ const OperatorWizardPage = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   >
-                    <option value="">Sélectionner</option>
-                    <option value="auto-entrepreneur">Auto-entrepreneur</option>
-                    <option value="micro-entreprise">Micro-entreprise</option>
-                    <option value="profession-liberale">Profession libérale</option>
-                    <option value="autre">Autre</option>
+                    <option value="">{t('operator.common.select')}</option>
+                    <option value="auto-entrepreneur">{t('operator.wizard.status_auto_entrepreneur')}</option>
+                    <option value="micro-entreprise">{t('operator.wizard.status_micro_enterprise')}</option>
+                    <option value="profession-liberale">{t('operator.wizard.status_profession_liberale')}</option>
+                    <option value="autre">{t('operator.wizard.status_other')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro SIRET *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.siret_number_label')}</label>
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.siret || ''}
@@ -596,7 +598,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Code APE</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.ape_code_label')}</label>
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.apeCode || ''}
@@ -608,7 +610,7 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Régime fiscal</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.tax_regime_label')}</label>
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.taxStatus || ''}
@@ -626,7 +628,7 @@ const OperatorWizardPage = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="wizard-first-name" className="block text-sm font-semibold text-gray-700 mb-2">Prénom *</label>
+                    <label htmlFor="wizard-first-name" className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.first_name_label')}</label>
                     <input
                       type="text"
                       id="wizard-first-name"
@@ -642,7 +644,7 @@ const OperatorWizardPage = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="wizard-last-name" className="block text-sm font-semibold text-gray-700 mb-2">Nom *</label>
+                    <label htmlFor="wizard-last-name" className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.last_name_label')}</label>
                     <input
                       type="text"
                       id="wizard-last-name"
@@ -659,7 +661,7 @@ const OperatorWizardPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="wizard-id-number" className="block text-sm font-semibold text-gray-700 mb-2">Numéro de pièce d'identité *</label>
+                  <label htmlFor="wizard-id-number" className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.id_number_label')}</label>
                   <input
                     type="text"
                     id="wizard-id-number"
@@ -689,7 +691,7 @@ const OperatorWizardPage = () => {
         {/* Sidebar */}
         <div className="w-64 bg-white border-e border-gray-200 p-6">
           <div className="mb-8">
-            <h3 className="text-sm font-bold text-gray-500 mb-2">Progression : {getProgress()}%</h3>
+            <h3 className="text-sm font-bold text-gray-500 mb-2">{t('operator.wizard.progress', { percent: getProgress() })}</h3>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-primary-600 h-2 rounded-full transition-all duration-300"
@@ -756,7 +758,7 @@ const OperatorWizardPage = () => {
                 className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={20} />
-                Précédent
+                {t('operator.common.previous')}
               </button>
 
               {currentStep < STEPS.length - 1 ? (
@@ -765,7 +767,7 @@ const OperatorWizardPage = () => {
                   disabled={saving}
                   className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Suivant
+                  {t('operator.common.next')}
                   <ChevronRight size={20} />
                 </button>
               ) : (
@@ -774,7 +776,7 @@ const OperatorWizardPage = () => {
                   disabled={saving}
                   className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {saving ? 'Envoi...' : 'Valider et soumettre'}
+                  {saving ? t('operator.wizard.submitting') : t('operator.wizard.validate_submit')}
                 </button>
               )}
             </div>
@@ -786,4 +788,3 @@ const OperatorWizardPage = () => {
 };
 
 export default OperatorWizardPage;
-

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Settings, Save, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
 const AdminSettingsPage = () => {
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState({
     autoApproveProducts: false,
     autoApproveReviews: false,
@@ -13,6 +15,7 @@ const AdminSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   useEffect(() => {
     fetchSettings();
@@ -30,30 +33,36 @@ const AdminSettingsPage = () => {
   };
 
   const handleToggle = (key) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
   const handleSave = async () => {
     setSaving(true);
     setMessage('');
+    setMessageType('');
     try {
       await Promise.all([
-        api.put(`/api/settings/autoApproveProducts`, { 
+        api.put('/api/settings/autoApproveProducts', {
           value: settings.autoApproveProducts,
-          description: 'Auto-approve products from approved operators'
+          description: 'Auto-approve products from approved operators',
         }),
-        api.put(`/api/settings/autoApproveReviews`, { 
+        api.put('/api/settings/autoApproveReviews', {
           value: settings.autoApproveReviews,
-          description: 'Auto-approve reviews from approved users'
+          description: 'Auto-approve reviews from approved users',
         }),
       ]);
-      setMessage('Settings saved successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage(t('admin.settings.save_success'));
+      setMessageType('success');
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 3000);
     } catch (error) {
-      setMessage('Failed to save settings');
+      setMessage(t('admin.settings.save_error'));
+      setMessageType('error');
     } finally {
       setSaving(false);
     }
@@ -72,12 +81,12 @@ const AdminSettingsPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.settings.title')}</h1>
         <DashboardNavBar />
       </div>
 
       {message && (
-        <div className={`mb-6 p-4 rounded-lg ${message.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`mb-6 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
           {message}
         </div>
       )}
@@ -85,29 +94,29 @@ const AdminSettingsPage = () => {
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <div className="flex items-center gap-3 mb-6">
           <Settings size={24} className="text-primary-600" />
-          <h2 className="text-xl font-bold text-gray-900">Auto-Approval Settings</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t('admin.settings.auto_approval_title')}</h2>
         </div>
 
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-bold text-blue-900 mb-2">Gestion des Badges</h3>
+          <h3 className="font-bold text-blue-900 mb-2">{t('admin.settings.badge_management_title')}</h3>
           <p className="text-sm text-blue-700 mb-4">
-            Créez et gérez les badges, attribuez-les en masse aux produits et opérateurs.
+            {t('admin.settings.badge_management_desc')}
           </p>
           <Link
             to="/admin/badges"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
           >
             <Award size={20} />
-            Gérer les Badges
+            {t('admin.settings.manage_badges')}
           </Link>
         </div>
 
         <div className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">Auto-Approve Products</h3>
+              <h3 className="font-bold text-gray-900 mb-1">{t('admin.settings.auto_approve_products_title')}</h3>
               <p className="text-sm text-gray-600">
-                When enabled, products from approved operators will be automatically published without admin review.
+                {t('admin.settings.auto_approve_products_desc')}
               </p>
             </div>
             <button
@@ -126,9 +135,9 @@ const AdminSettingsPage = () => {
 
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">Auto-Approve Reviews</h3>
+              <h3 className="font-bold text-gray-900 mb-1">{t('admin.settings.auto_approve_reviews_title')}</h3>
               <p className="text-sm text-gray-600">
-                When enabled, reviews from approved users will be automatically published without admin review.
+                {t('admin.settings.auto_approve_reviews_desc')}
               </p>
             </div>
             <button
@@ -152,7 +161,7 @@ const AdminSettingsPage = () => {
           className="mt-6 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition disabled:opacity-50 flex items-center gap-2"
         >
           <Save size={20} />
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? t('admin.common.saving') : t('admin.settings.save_settings')}
         </button>
       </div>
 
@@ -162,4 +171,3 @@ const AdminSettingsPage = () => {
 };
 
 export default AdminSettingsPage;
-

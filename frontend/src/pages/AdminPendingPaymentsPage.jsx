@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { useToast } from '../context/ToastContext';
 import {
@@ -13,51 +14,21 @@ import {
   User,
   Package,
   DollarSign,
-  AlertCircle,
   X,
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 
-// Format date helper
-const formatDate = (rawDate) => {
-  if (!rawDate) return '—';
-  const date = new Date(rawDate);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+const getDateLocale = (language) => {
+  const locale = language?.slice(0, 2) || 'fr';
+  if (locale === 'ar') return 'ar-MA';
+  if (locale === 'es') return 'es-ES';
+  if (locale === 'en') return 'en-GB';
+  return 'fr-FR';
 };
 
-// Format time helper
-const formatTime = (time) => {
-  if (!time) return '—';
-  return time;
-};
-
-// Format amount in MAD
-const formatAmount = (value) => {
-  const amount = Number(value || 0);
-  return `${amount.toLocaleString('fr-FR')} MAD`;
-};
-
-// Get payment method label
-const getPaymentMethodLabel = (method) => {
-  const labels = {
-    bank_transfer: 'Virement bancaire',
-    cash_pickup: 'Paiement sur place',
-    cash_delivery: 'Paiement à la livraison',
-    stripe: 'Carte bancaire',
-    paypal: 'PayPal',
-    cmi: 'CMI',
-  };
-  return labels[method] || method || '—';
-};
-
-// Reject Modal Component
 const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
+  const { t, i18n } = useTranslation();
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -67,7 +38,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!reason.trim()) {
-      toast('Le motif de rejet est obligatoire', { type: 'error' });
+      toast(t('admin.pending_payments.rejection_reason_required'), { type: 'error' });
       return;
     }
 
@@ -76,13 +47,13 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
       await api.put(`/api/admin/bookings/${bookingId}/reject-payment`, {
         rejectionReason: reason.trim(),
       });
-      toast('Paiement rejeté avec succès', { type: 'success' });
+      toast(t('admin.pending_payments.reject_success'), { type: 'success' });
       onConfirm();
       onClose();
       setReason('');
     } catch (error) {
       console.error('Reject payment error:', error);
-      toast(error.response?.data?.message || 'Erreur lors du rejet', { type: 'error' });
+      toast(error.response?.data?.message || t('admin.pending_payments.reject_error'), { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -90,19 +61,16 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <XCircle size={24} className="text-white" />
-            <h2 className="text-xl font-bold text-white">Rejeter le paiement</h2>
+            <h2 className="text-xl font-bold text-white">{t('admin.pending_payments.reject_modal_title')}</h2>
           </div>
           <button
             onClick={onClose}
@@ -112,20 +80,19 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
           </button>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <p className="text-gray-600 text-sm">
-            Client : <span className="font-semibold text-gray-900">{clientName}</span>
+            {t('admin.pending_payments.client_label')} <span className="font-semibold text-gray-900">{clientName}</span>
           </p>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Motif de rejet <span className="text-red-500">*</span>
+              {t('admin.pending_payments.rejection_reason')} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Ex: Virement non reçu, Référence incorrecte..."
+              placeholder={t('admin.pending_payments.rejection_reason_placeholder')}
               rows={4}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-none"
               required
@@ -138,14 +105,14 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
               onClick={onClose}
               className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition"
             >
-              Annuler
+              {t('admin.common.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Envoi...' : 'Confirmer le rejet'}
+              {loading ? t('admin.pending_payments.sending') : t('admin.pending_payments.confirm_rejection')}
             </button>
           </div>
         </form>
@@ -155,10 +122,37 @@ const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
 };
 
 const AdminPendingPaymentsPage = () => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rejectModal, setRejectModal] = useState({ isOpen: false, bookingId: null, clientName: '' });
   const { toast } = useToast();
+
+  const formatDate = (rawDate) => {
+    if (!rawDate) return '—';
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleDateString(dateLocale, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const formatTime = (time) => {
+    if (!time) return '—';
+    return time;
+  };
+
+  const formatAmount = (value) => {
+    const amount = Number(value || 0);
+    return `${amount.toLocaleString(dateLocale)} MAD`;
+  };
+
+  const getPaymentMethodLabel = (method) => {
+    return t(`admin.pending_payments.payment_methods.${method}`, { defaultValue: method || '—' });
+  };
 
   const fetchPendingPayments = async () => {
     try {
@@ -167,7 +161,7 @@ const AdminPendingPaymentsPage = () => {
       setBookings(data);
     } catch (error) {
       console.error('Failed to fetch pending payments:', error);
-      toast('Impossible de charger les paiements en attente', { type: 'error' });
+      toast(t('admin.pending_payments.load_error'), { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -180,11 +174,11 @@ const AdminPendingPaymentsPage = () => {
   const handleConfirmPayment = async (bookingId) => {
     try {
       await api.put(`/api/admin/bookings/${bookingId}/confirm-payment`);
-      toast('Paiement confirmé avec succès', { type: 'success' });
+      toast(t('admin.pending_payments.confirm_success'), { type: 'success' });
       fetchPendingPayments();
     } catch (error) {
       console.error('Confirm payment error:', error);
-      toast(error.response?.data?.message || 'Erreur lors de la confirmation', { type: 'error' });
+      toast(error.response?.data?.message || t('admin.pending_payments.confirm_error'), { type: 'error' });
     }
   };
 
@@ -203,7 +197,6 @@ const AdminPendingPaymentsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30">
       <div className="container mx-auto px-4 py-12">
-        {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link
@@ -213,16 +206,15 @@ const AdminPendingPaymentsPage = () => {
               <ArrowLeft size={20} className="text-gray-700" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Paiements à valider</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{t('admin.pending_payments.title')}</h1>
               <p className="text-gray-500 text-sm mt-1">
-                Gérez les réservations en attente de paiement offline
+                {t('admin.pending_payments.subtitle')}
               </p>
             </div>
           </div>
           <DashboardNavBar />
         </div>
 
-        {/* Stats Banner */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center gap-4">
@@ -230,7 +222,7 @@ const AdminPendingPaymentsPage = () => {
                 <Clock size={24} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">En attente</p>
+                <p className="text-gray-500 text-sm">{t('admin.pending_payments.pending_count')}</p>
                 <p className="text-2xl font-bold text-gray-900">{bookings.length}</p>
               </div>
             </div>
@@ -239,7 +231,7 @@ const AdminPendingPaymentsPage = () => {
                 <DollarSign size={24} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Montant total</p>
+                <p className="text-gray-500 text-sm">{t('admin.pending_payments.total_amount')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {formatAmount(bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0))}
                 </p>
@@ -250,59 +242,55 @@ const AdminPendingPaymentsPage = () => {
                 <CreditCard size={24} className="text-blue-600" />
               </div>
               <div>
-                <p className="text-gray-500 text-sm">Méthodes</p>
-                <p className="text-sm text-gray-700 font-medium">Virement / Sur place</p>
+                <p className="text-gray-500 text-sm">{t('admin.pending_payments.methods_label')}</p>
+                <p className="text-sm text-gray-700 font-medium">{t('admin.pending_payments.methods_value')}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-600" />
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && bookings.length === 0 && (
           <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 p-16 text-center shadow-sm">
             <div className="inline-flex p-4 rounded-full bg-emerald-100 mb-4">
               <CheckCircle size={40} className="text-emerald-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun paiement en attente</h3>
-            <p className="text-gray-500">Toutes les réservations ont été traitées</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('admin.pending_payments.empty_title')}</h3>
+            <p className="text-gray-500">{t('admin.pending_payments.empty_desc')}</p>
           </div>
         )}
 
-        {/* Bookings Table */}
         {!loading && bookings.length > 0 && (
           <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-            {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-200">
                     <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Référence
+                      {t('admin.common.reference')}
                     </th>
                     <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Client
+                      {t('admin.common.client')}
                     </th>
                     <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Produit
+                      {t('admin.common.product')}
                     </th>
                     <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Date
+                      {t('admin.common.date')}
                     </th>
                     <th className="text-end px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Montant
+                      {t('admin.common.amount')}
                     </th>
                     <th className="text-start px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Méthode
+                      {t('admin.common.method')}
                     </th>
                     <th className="text-center px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('admin.common.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -312,7 +300,6 @@ const AdminPendingPaymentsPage = () => {
                       key={booking._id}
                       className="hover:bg-emerald-50/30 transition"
                     >
-                      {/* Reference */}
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-mono font-bold text-amber-700">
                           <Clock size={12} />
@@ -320,7 +307,6 @@ const AdminPendingPaymentsPage = () => {
                         </span>
                       </td>
 
-                      {/* Client */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-gray-100">
@@ -335,7 +321,6 @@ const AdminPendingPaymentsPage = () => {
                         </div>
                       </td>
 
-                      {/* Product */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-emerald-100">
@@ -352,7 +337,6 @@ const AdminPendingPaymentsPage = () => {
                         </div>
                       </td>
 
-                      {/* Date */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-gray-400" />
@@ -367,17 +351,15 @@ const AdminPendingPaymentsPage = () => {
                         </div>
                       </td>
 
-                      {/* Amount */}
                       <td className="px-6 py-4 text-end">
                         <p className="text-lg font-bold text-gray-900">
                           {formatAmount(booking.totalAmount)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {booking.numberOfTickets} billet{booking.numberOfTickets > 1 ? 's' : ''}
+                          {t('admin.pending_payments.tickets', { count: booking.numberOfTickets })}
                         </p>
                       </td>
 
-                      {/* Payment Method */}
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
                           booking.paymentMethod === 'bank_transfer'
@@ -393,7 +375,6 @@ const AdminPendingPaymentsPage = () => {
                         </span>
                       </td>
 
-                      {/* Actions */}
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -401,14 +382,14 @@ const AdminPendingPaymentsPage = () => {
                             className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm hover:shadow-md"
                           >
                             <CheckCircle size={14} />
-                            Confirmer
+                            {t('admin.pending_payments.confirm_payment')}
                           </button>
                           <button
-                            onClick={() => handleOpenRejectModal(booking._id, booking.user?.name || 'Client')}
+                            onClick={() => handleOpenRejectModal(booking._id, booking.user?.name || t('admin.common.client'))}
                             className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition shadow-sm hover:shadow-md"
                           >
                             <XCircle size={14} />
-                            Rejeter
+                            {t('admin.common.reject')}
                           </button>
                         </div>
                       </td>
@@ -418,11 +399,9 @@ const AdminPendingPaymentsPage = () => {
               </table>
             </div>
 
-            {/* Mobile Cards */}
             <div className="lg:hidden divide-y divide-gray-100">
               {bookings.map((booking) => (
                 <div key={booking._id} className="p-4 space-y-3">
-                  {/* Header */}
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg text-xs font-mono font-bold text-amber-700">
                       {booking.paymentReference || `OG-${booking._id.slice(-8).toUpperCase()}`}
@@ -432,7 +411,6 @@ const AdminPendingPaymentsPage = () => {
                     </p>
                   </div>
 
-                  {/* Client */}
                   <div className="flex items-center gap-2">
                     <User size={14} className="text-gray-400" />
                     <span className="text-sm text-gray-700 font-medium">
@@ -440,7 +418,6 @@ const AdminPendingPaymentsPage = () => {
                     </span>
                   </div>
 
-                  {/* Product */}
                   <div className="flex items-center gap-2">
                     <Package size={14} className="text-gray-400" />
                     <span className="text-sm text-gray-700">
@@ -448,7 +425,6 @@ const AdminPendingPaymentsPage = () => {
                     </span>
                   </div>
 
-                  {/* Date & Time */}
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-gray-400" />
                     <span className="text-sm text-gray-700">
@@ -456,7 +432,6 @@ const AdminPendingPaymentsPage = () => {
                     </span>
                   </div>
 
-                  {/* Payment Method */}
                   <div className="flex items-center gap-2">
                     <CreditCard size={14} className="text-gray-400" />
                     <span className="text-sm text-gray-700">
@@ -464,21 +439,20 @@ const AdminPendingPaymentsPage = () => {
                     </span>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => handleConfirmPayment(booking._id)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition"
                     >
                       <CheckCircle size={16} />
-                      Confirmer le paiement
+                      {t('admin.pending_payments.confirm_payment_mobile')}
                     </button>
                     <button
-                      onClick={() => handleOpenRejectModal(booking._id, booking.user?.name || 'Client')}
+                      onClick={() => handleOpenRejectModal(booking._id, booking.user?.name || t('admin.common.client'))}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition"
                     >
                       <XCircle size={16} />
-                      Rejeter
+                      {t('admin.common.reject')}
                     </button>
                   </div>
                 </div>
@@ -490,7 +464,6 @@ const AdminPendingPaymentsPage = () => {
         <ScrollToTopButton />
       </div>
 
-      {/* Reject Modal */}
       <RejectModal
         isOpen={rejectModal.isOpen}
         onClose={handleCloseRejectModal}

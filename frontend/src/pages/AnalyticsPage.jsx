@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart
 } from 'recharts';
-import { 
-  DollarSign, Users, TrendingUp, Package, Eye, MessageSquare, 
-  Download, AlertCircle, CheckCircle, Info, Target 
+import {
+  DollarSign, Users, TrendingUp, Package, Eye, MessageSquare,
+  Download, AlertCircle, CheckCircle, Info, Target
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
@@ -28,12 +29,20 @@ const StatCard = ({ icon: Icon, label, value, color, subtitle }) => (
 );
 
 const AnalyticsPage = () => {
+  const { t } = useTranslation();
   const [basicData, setBasicData] = useState(null);
   const [advancedData, setAdvancedData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+
+  const tabs = [
+    { id: 'overview', label: t('analytics.tabs.overview') },
+    { id: 'funnel', label: t('analytics.tabs.funnel') },
+    { id: 'competition', label: t('analytics.tabs.competition') },
+    { id: 'recommendations', label: t('analytics.tabs.recommendations') },
+  ];
 
   useEffect(() => {
     fetchAnalytics();
@@ -55,7 +64,7 @@ const AnalyticsPage = () => {
       setAdvancedData(advancedRes.data);
       setLoading(false);
     } catch (err) {
-      setError('Failed to load analytics data');
+      setError(t('analytics.load_error'));
       setLoading(false);
     }
   };
@@ -78,7 +87,7 @@ const AnalyticsPage = () => {
       link.remove();
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Failed to export analytics');
+      alert(t('analytics.export_error'));
     }
   };
 
@@ -113,10 +122,16 @@ const AnalyticsPage = () => {
   const competition = advancedData?.competition || [];
   const productPerformance = advancedData?.productPerformance || [];
 
+  const funnelChartData = [
+    { name: t('analytics.charts.funnel_views'), value: funnel.views || 0, rate: 100 },
+    { name: t('analytics.charts.funnel_inquiries'), value: funnel.inquiries || 0, rate: funnel.viewToInquiryRate || 0 },
+    { name: t('analytics.charts.funnel_bookings'), value: funnel.bookings || 0, rate: funnel.viewToBookingRate || 0 },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('analytics.title')}</h1>
         <div className="flex gap-2">
           <DashboardNavBar />
           <button
@@ -124,16 +139,15 @@ const AnalyticsPage = () => {
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
           >
             <Download size={16} />
-            Export CSV
+            {t('analytics.export_csv')}
           </button>
         </div>
       </div>
 
-      {/* Date Range Filter */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Date de début</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">{t('analytics.start_date')}</label>
             <input
               type="date"
               value={dateRange.startDate}
@@ -142,7 +156,7 @@ const AnalyticsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Date de fin</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">{t('analytics.end_date')}</label>
             <input
               type="date"
               value={dateRange.endDate}
@@ -155,21 +169,15 @@ const AnalyticsPage = () => {
               onClick={() => setDateRange({ startDate: '', endDate: '' })}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
             >
-              Réinitialiser
+              {t('common.reset')}
             </button>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex space-x-8">
-          {[
-            { id: 'overview', label: 'Vue d\'ensemble' },
-            { id: 'funnel', label: 'Funnel de conversion' },
-            { id: 'competition', label: 'Concurrence' },
-            { id: 'recommendations', label: 'Recommandations' },
-          ].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -185,31 +193,30 @@ const AnalyticsPage = () => {
         </nav>
       </div>
 
-      {/* Overview Tab */}
       {activeTab === 'overview' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
               icon={DollarSign}
-              label="Revenu Total"
+              label={t('analytics.stats.total_revenue')}
               value={`€${totalRevenue.toFixed(2)}`}
               color="bg-green-600"
             />
             <StatCard
               icon={Users}
-              label="Réservations"
+              label={t('analytics.stats.bookings')}
               value={totalBookings}
               color="bg-blue-600"
             />
             <StatCard
               icon={TrendingUp}
-              label="Revenu Moyen"
+              label={t('analytics.stats.avg_revenue')}
               value={`€${avgRevenue.toFixed(2)}`}
               color="bg-purple-600"
             />
             <StatCard
               icon={Package}
-              label="Produits Actifs"
+              label={t('analytics.stats.active_products')}
               value={activeProducts}
               color="bg-orange-600"
             />
@@ -217,7 +224,7 @@ const AnalyticsPage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Revenus Mensuels</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('analytics.charts.monthly_revenue')}</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData}>
@@ -226,14 +233,14 @@ const AnalyticsPage = () => {
                     <YAxis />
                     <Tooltip formatter={(value) => `€${Number(value).toFixed(2)}`} />
                     <Legend />
-                    <Bar dataKey="revenue" fill="#15803d" name="Revenu (€)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" fill="#15803d" name={t('analytics.charts.revenue_label')} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Réservations par Produit</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{t('analytics.charts.bookings_by_product')}</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -260,41 +267,36 @@ const AnalyticsPage = () => {
         </>
       )}
 
-      {/* Conversion Funnel Tab */}
       {activeTab === 'funnel' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
               icon={Eye}
-              label="Vues"
+              label={t('analytics.stats.views')}
               value={funnel.views || 0}
               color="bg-blue-600"
             />
             <StatCard
               icon={MessageSquare}
-              label="Inquiries"
+              label={t('analytics.stats.inquiries')}
               value={funnel.inquiries || 0}
               color="bg-yellow-600"
-              subtitle={`${funnel.viewToInquiryRate?.toFixed(2) || 0}% conversion`}
+              subtitle={t('analytics.stats.conversion', { rate: funnel.viewToInquiryRate?.toFixed(2) || 0 })}
             />
             <StatCard
               icon={Users}
-              label="Réservations"
+              label={t('analytics.stats.bookings')}
               value={funnel.bookings || 0}
               color="bg-green-600"
-              subtitle={`${funnel.viewToBookingRate?.toFixed(2) || 0}% conversion`}
+              subtitle={t('analytics.stats.conversion', { rate: funnel.viewToBookingRate?.toFixed(2) || 0 })}
             />
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Funnel de Conversion</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">{t('analytics.charts.conversion_funnel')}</h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={[
-                  { name: 'Vues', value: funnel.views || 0, rate: 100 },
-                  { name: 'Inquiries', value: funnel.inquiries || 0, rate: funnel.viewToInquiryRate || 0 },
-                  { name: 'Réservations', value: funnel.bookings || 0, rate: funnel.viewToBookingRate || 0 },
-                ]}>
+                <AreaChart data={funnelChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -306,16 +308,16 @@ const AnalyticsPage = () => {
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Performance par Produit</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('analytics.performance_title')}</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-start py-3 px-4 font-semibold text-gray-700">Produit</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Vues</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Réservations</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Revenu</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Taux Conversion</th>
+                    <th className="text-start py-3 px-4 font-semibold text-gray-700">{t('analytics.table.product')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.views')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.bookings')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.revenue')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.conversion_rate')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -343,29 +345,28 @@ const AnalyticsPage = () => {
         </div>
       )}
 
-      {/* Competition Tab */}
       {activeTab === 'competition' && (
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Analyse de Concurrence par Catégorie</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('analytics.competition_title')}</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-start py-3 px-4 font-semibold text-gray-700">Catégorie</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Prix Moyen Marché</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Votre Prix Moyen</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Différence</th>
-                    <th className="text-end py-3 px-4 font-semibold text-gray-700">Produits Marché</th>
+                    <th className="text-start py-3 px-4 font-semibold text-gray-700">{t('analytics.table.category')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.market_avg_price')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.your_avg_price')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.difference')}</th>
+                    <th className="text-end py-3 px-4 font-semibold text-gray-700">{t('analytics.table.market_products')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {competition.map((cat) => (
                     <tr key={cat.category} className="border-b border-gray-100">
                       <td className="py-3 px-4 font-medium">{cat.category}</td>
-                      <td className="text-end py-3 px-4">€{cat.marketAvgPrice?.toFixed(2) || 'N/A'}</td>
+                      <td className="text-end py-3 px-4">€{cat.marketAvgPrice?.toFixed(2) || t('admin.common.na')}</td>
                       <td className="text-end py-3 px-4">
-                        {cat.operatorAvgPrice ? `€${cat.operatorAvgPrice.toFixed(2)}` : 'N/A'}
+                        {cat.operatorAvgPrice ? `€${cat.operatorAvgPrice.toFixed(2)}` : t('admin.common.na')}
                       </td>
                       <td className="text-end py-3 px-4">
                         {cat.priceDifference !== null ? (
@@ -375,7 +376,7 @@ const AnalyticsPage = () => {
                             {cat.priceDifference > 0 ? '+' : ''}€{cat.priceDifference.toFixed(2)}
                             {cat.priceDifferencePercent !== null && ` (${cat.priceDifferencePercent > 0 ? '+' : ''}${cat.priceDifferencePercent.toFixed(1)}%)`}
                           </span>
-                        ) : 'N/A'}
+                        ) : t('admin.common.na')}
                       </td>
                       <td className="text-end py-3 px-4">{cat.marketCount}</td>
                     </tr>
@@ -387,13 +388,12 @@ const AnalyticsPage = () => {
         </div>
       )}
 
-      {/* Recommendations Tab */}
       {activeTab === 'recommendations' && (
         <div className="space-y-4">
           {recommendations.length === 0 ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
               <CheckCircle className="mx-auto h-12 w-12 text-green-600 mb-4" />
-              <p className="text-green-800 font-semibold">Excellent ! Aucune recommandation urgente.</p>
+              <p className="text-green-800 font-semibold">{t('analytics.no_recommendations')}</p>
             </div>
           ) : (
             recommendations.map((rec, index) => (
@@ -426,7 +426,7 @@ const AnalyticsPage = () => {
                     </div>
                     {rec.products && rec.products.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-sm text-gray-600 mb-1">Produits concernés:</p>
+                        <p className="text-sm text-gray-600 mb-1">{t('analytics.affected_products')}</p>
                         <ul className="list-disc list-inside text-sm text-gray-700">
                           {rec.products.map((product, idx) => (
                             <li key={idx}>{product}</li>
