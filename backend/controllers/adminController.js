@@ -1153,6 +1153,190 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * [PROMPT-2] Admin bookings list — paginated + filters.
+ * Schema fields: user, operator, schedule→product (not userId/productId).
+ * @route GET /api/admin/bookings
+ */
+const getAdminBookings = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const {
+      status,
+      search,
+      productId,
+      operatorId,
+      dateFrom,
+      dateTo,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = req.query;
+
+    const filter = {};
+
+    if (status) {
+      const statuses = String(status)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (statuses.length) filter.status = { $in: statuses };
+    }
+
+    if (operatorId) {
+      filter.operator = operatorId;
+    }
+
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
+      const users = await User.find({
+        $or: [
+          { name: { $regex: q, $options: 'i' } },
+          { email: { $regex: q, $options: 'i' } },
+        ],
+      })
+        .select('_id')
+        .lean();
+      const userIds = users.map((u) => u._id);
+      if (!userIds.length) {
+        return res.json({
+          bookings: [],
+          total: 0,
+          page,
+          totalPages: 0,
+          filters: { status, search, productId, operatorId, dateFrom, dateTo, sortBy, sortOrder },
+          stats: await buildBookingStats(),
+        });
+      }
+      filter.user = { $in: userIds };
+    }
+
+    if (productId) {
+      const schedules = await Schedule.find({ product: productId }).select('_id').lean();
+      const scheduleIds = schedules.map((s) => s._id);
+      if (!scheduleIds.length) {
+        return res.json({
+          bookings: [],
+          total: 0,
+          page,
+          totalPages: 0,
+          filters: { status, search, productId, operatorId, dateFrom, dateTo, sortBy, sortOrder },
+          stats: await buildBookingStats(),
+        });
+      }
+      filter.schedule = { $in: scheduleIds };
+    }
+
+    const sortField = sortBy === 'amount' || sortBy === 'totalAmount' ? 'totalAmount' : 'createdAt';
+    const sortDir = String(sortOrder).toLowerCase() === 'asc' ? 1 : -1;
+
+    const [total, bookings, stats] = await Promise.all([
+      Booking.countDocuments(filter),
+      Booking.find(filter)
+        .populate('user', 'name email phone')
+        .populate({
+          path: 'schedule',
+          select: 'date time price',
+          populate: { path: 'product', select: 'title city images' },
+        })
+        .populate('operator', 'companyName publicName')
+        .sort({ [sortField]: sortDir })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      buildBookingStats(),
+    ]);
+
+    res.json({
+      bookings,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit) || 0,
+      filters: { status, search, productId, operatorId, dateFrom, dateTo, sortBy, sortOrder },
+      stats,
+    });
+  } catch (error) {
+    logger.error('Get admin bookings error:', error);
+    res.status(500).json({ message: 'Failed to fetch bookings' });
+  }
+};
+
+const buildBookingStats = async () => {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const [total, thisMonth, cancelled, revenueAgg] = await Promise.all([
+    Booking.countDocuments(),
+    Booking.countDocuments({ createdAt: { $gte: monthStart } }),
+    Booking.countDocuments({ status: 'Cancelled' }),
+    Booking.aggregate([
+      { $match: { status: { $in: ['Confirmed', 'Pending', 'PENDING_PAYMENT'] } } },
+      { $group: { _id: null, revenue: { $sum: '$totalAmount' } } },
+    ]),
+  ]);
+  const revenue = revenueAgg[0]?.revenue || 0;
+  const cancellationRate = total > 0 ? Math.round((cancelled / total) * 1000) / 10 : 0;
+  return {
+    total,
+    thisMonth,
+    revenue,
+    cancellationRate,
+    cancelled,
+  };
+};
+
+/**
+ * [PROMPT-2] Admin cancel booking.
+ * @route PUT /api/admin/bookings/:id/cancel
+ */
+const adminCancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('user', 'name email')
+      .populate({
+        path: 'schedule',
+        populate: { path: 'product', select: 'title' },
+      });
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Réservation introuvable' });
+    }
+
+    if (booking.status === 'Cancelled') {
+      return res.status(400).json({ message: 'Cette réservation est déjà annulée' });
+    }
+
+    booking.status = 'Cancelled';
+    booking.cancelledAt = new Date();
+    booking.cancellationReason = req.body?.reason || 'Annulée par l’administrateur';
+    await booking.save();
+
+    if (booking.user?.email) {
+      try {
+        await sendCancellationEmail(booking, booking.user);
+      } catch (emailErr) {
+        logger.warn('Cancel email failed', { message: emailErr?.message });
+      }
+    }
+
+    res.json({ message: 'Réservation annulée', booking });
+  } catch (error) {
+    logger.error('Admin cancel booking error:', error);
+    res.status(500).json({ message: 'Failed to cancel booking' });
+  }
+};
+
 export {
   getAdminStats,
   getOperators, 
@@ -1176,4 +1360,6 @@ export {
   confirmPayment,
   rejectPayment,
   getAnalytics,
+  getAdminBookings,
+  adminCancelBooking,
 };

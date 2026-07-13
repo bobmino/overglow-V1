@@ -69,7 +69,7 @@ import PlaceholderPage from './components/PlaceholderPage';
 import DashboardShell from './components/DashboardShell';
 const AdminPendingPaymentsPage = lazy(() => import('./pages/AdminPendingPaymentsPage'));
 const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
-const AdminBookingsPlaceholderPage = lazy(() => import('./pages/AdminBookingsPlaceholderPage'));
+const AdminBookingsPage = lazy(() => import('./pages/AdminBookingsPage'));
 const AdminFinancePage = lazy(() => import('./pages/AdminFinancePage'));
 
 // Loading fallback component
@@ -283,7 +283,7 @@ function App() {
             } />
             <Route path="bookings" element={
               <Suspense fallback={<LoadingFallback />}>
-                <AdminBookingsPlaceholderPage />
+                <AdminBookingsPage />
               </Suspense>
             } />
             <Route path="settings" element={

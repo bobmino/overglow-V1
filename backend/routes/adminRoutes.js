@@ -22,6 +22,8 @@ import {
   confirmPayment,
   rejectPayment,
   getAnalytics,
+  getAdminBookings,
+  adminCancelBooking,
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -49,9 +51,11 @@ router.delete('/badges/:id', protect, authorize('Admin'), deleteBadge);
 router.get('/badges/:id/products', protect, authorize('Admin'), getProductsByBadge);
 router.get('/badges/:id/operators', protect, authorize('Admin'), getOperatorsByBadge);
 
-// Pending payment validation routes
+// [PROMPT-2] Bookings management
+router.get('/bookings', protect, authorize('Admin'), getAdminBookings);
 router.get('/bookings/pending-payments', protect, authorize('Admin'), getPendingPaymentBookings);
 router.put('/bookings/:id/confirm-payment', protect, authorize('Admin'), confirmPayment);
 router.put('/bookings/:id/reject-payment', protect, authorize('Admin'), rejectPayment);
+router.put('/bookings/:id/cancel', protect, authorize('Admin'), adminCancelBooking);
 
 export default router;

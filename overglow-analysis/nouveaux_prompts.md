@@ -7,7 +7,7 @@ Ordre = dépendances respectées
 
 ## Tracker
 - [x] PROMPT 1 — Sidebar Admin Persistante
-- [ ] PROMPT 2 — Page Réservations Admin
+- [x] PROMPT 2 — Page Réservations Admin
 - [ ] PROMPT 3 — Cloche de Notifications Header
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
