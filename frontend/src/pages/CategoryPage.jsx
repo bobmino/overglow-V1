@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
-import { Filter, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+
+const categoryIcons = {
+  Tours: '🗺️',
+  Attractions: '🎡',
+  'Day Trips': '🚌',
+  'Outdoor Activities': '🏔️',
+  'Shows & Performances': '🎭',
+  'Food & Drink': '🍷',
+  'Classes & Workshops': '🎨',
+};
 
 const CategoryPage = () => {
   const { category } = useParams();
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cities, setCities] = useState([]);
@@ -24,11 +36,10 @@ const CategoryPage = () => {
 
         const { data } = await api.get(`/api/search/advanced?${params.toString()}`);
         setProducts(Array.isArray(data.products) ? data.products : []);
-        
-        // Get unique cities from products
-        const uniqueCities = [...new Set(data.products?.map(p => p.city).filter(Boolean) || [])];
+
+        const uniqueCities = [...new Set(data.products?.map((p) => p.city).filter(Boolean) || [])];
         setCities(uniqueCities);
-        
+
         setLoading(false);
       } catch (error) {
         console.error('Failed to load products:', error);
@@ -40,57 +51,25 @@ const CategoryPage = () => {
     fetchData();
   }, [category, selectedCity]);
 
-  const categoryInfo = {
-    'Tours': {
-      name: 'Tours',
-      description: 'Découvrez les meilleurs tours guidés au Maroc avec des guides locaux expérimentés.',
-      icon: '🗺️'
-    },
-    'Attractions': {
-      name: 'Attractions',
-      description: 'Visitez les attractions incontournables du Maroc.',
-      icon: '🎡'
-    },
-    'Day Trips': {
-      name: 'Excursions d\'une journée',
-      description: 'Explorez les environs avec nos excursions d\'une journée.',
-      icon: '🚌'
-    },
-    'Outdoor Activities': {
-      name: 'Activités de plein air',
-      description: 'Aventurez-vous dans la nature marocaine.',
-      icon: '🏔️'
-    },
-    'Shows & Performances': {
-      name: 'Spectacles et représentations',
-      description: 'Découvrez la culture marocaine à travers ses spectacles.',
-      icon: '🎭'
-    },
-    'Food & Drink': {
-      name: 'Gastronomie',
-      description: 'Savourez les délices de la cuisine marocaine authentique.',
-      icon: '🍷'
-    },
-    'Classes & Workshops': {
-      name: 'Cours et ateliers',
-      description: 'Apprenez les arts et traditions marocains.',
-      icon: '🎨'
-    },
-  };
+  const categoryName = t(`category.items.${category}.name`, { defaultValue: category });
+  const categoryDescription = t(`category.items.${category}.description`, {
+    defaultValue: `Découvrez les meilleures expériences ${category} au Maroc`,
+  });
+  const categoryIcon = categoryIcons[category] || '✨';
 
-  const info = categoryInfo[category] || {
-    name: category,
-    description: `Découvrez les meilleures expériences ${category} au Maroc`,
-    icon: '✨'
-  };
+  const getCityName = (city) => t(`destination.cities.${city}.name`, { defaultValue: city });
+
+  const sectionTitle = selectedCity
+    ? t('category.in_city', { name: categoryName, city: getCityName(selectedCity) })
+    : t('category.in_morocco', { name: categoryName });
 
   return (
     <div className="bg-slate-50 min-h-screen">
       <Helmet>
-        <title>{info.name} au Maroc | Overglow Trip</title>
-        <meta name="description" content={info.description} />
-        <meta property="og:title" content={`${info.name} au Maroc | Overglow Trip`} />
-        <meta property="og:description" content={info.description} />
+        <title>{t('category.meta_title', { name: categoryName })}</title>
+        <meta name="description" content={categoryDescription} />
+        <meta property="og:title" content={t('category.meta_title', { name: categoryName })} />
+        <meta property="og:description" content={categoryDescription} />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="website" />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
@@ -99,10 +78,10 @@ const CategoryPage = () => {
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-5xl">{info.icon}</span>
-            <h1 className="text-4xl md:text-5xl font-bold">{info.name}</h1>
+            <span className="text-5xl">{categoryIcon}</span>
+            <h1 className="text-4xl md:text-5xl font-bold">{categoryName}</h1>
           </div>
-          <p className="text-xl text-primary-50 max-w-2xl">{info.description}</p>
+          <p className="text-xl text-primary-50 max-w-2xl">{categoryDescription}</p>
         </div>
       </div>
 
@@ -112,7 +91,7 @@ const CategoryPage = () => {
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
               <MapPin size={20} />
-              <h3 className="font-bold text-lg">Filtrer par destination</h3>
+              <h3 className="font-bold text-lg">{t('category.filter_city')}</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -123,7 +102,7 @@ const CategoryPage = () => {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                Toutes
+                {t('category.all')}
               </button>
               {cities.map((city) => (
                 <Link
@@ -135,7 +114,7 @@ const CategoryPage = () => {
                       : 'bg-white text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  {city}
+                  {getCityName(city)}
                 </Link>
               ))}
             </div>
@@ -150,10 +129,10 @@ const CategoryPage = () => {
         ) : products.length > 0 ? (
           <>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">
-                {selectedCity ? `${info.name} à ${selectedCity}` : `${info.name} au Maroc`}
-              </h2>
-              <p className="text-slate-600">{products.length} expérience{products.length > 1 ? 's' : ''} disponible{products.length > 1 ? 's' : ''}</p>
+              <h2 className="text-2xl font-bold">{sectionTitle}</h2>
+              <p className="text-slate-600">
+                {t('category.count', { count: products.length })}
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
@@ -163,9 +142,9 @@ const CategoryPage = () => {
           </>
         ) : (
           <div className="text-center py-12 bg-white rounded-xl">
-            <p className="text-slate-600 text-lg">Aucune expérience disponible pour le moment.</p>
+            <p className="text-slate-600 text-lg">{t('category.empty')}</p>
             <Link to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
-              Voir toutes les expériences
+              {t('category.see_all')}
             </Link>
           </div>
         )}
@@ -175,4 +154,3 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
-

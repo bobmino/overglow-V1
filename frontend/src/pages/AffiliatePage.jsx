@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { 
-  User, Mail, Lock, AlertCircle, Briefcase, 
-  CheckCircle, TrendingUp, Globe, Shield, DollarSign,
-  Users, BarChart3, Star, Zap, Headphones as Support
+import {
+  User,
+  Mail,
+  Lock,
+  AlertCircle,
+  Briefcase,
+  CheckCircle,
+  TrendingUp,
+  Globe,
+  Shield,
+  Users,
+  BarChart3,
+  Star,
+  Headphones as Support,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const AffiliatePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -20,12 +32,11 @@ const AffiliatePage = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
     setError('');
   };
@@ -35,17 +46,17 @@ const AffiliatePage = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError(t('affiliate.err_password_match'));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
+      setError(t('affiliate.err_password_length'));
       return;
     }
 
     if (!formData.companyName.trim()) {
-      setError('Le nom de l\'entreprise est requis');
+      setError(t('affiliate.err_company'));
       return;
     }
 
@@ -60,53 +71,51 @@ const AffiliatePage = () => {
         companyName: formData.companyName,
       });
       login(data);
-      // Redirect to onboarding after registration
       navigate('/operator/onboarding');
     } catch (err) {
-      setError(err.response?.data?.message || 'L\'inscription a échoué. Veuillez réessayer.');
+      setError(err.response?.data?.message || t('affiliate.err_register'));
       setLoading(false);
     }
   };
 
-  const benefits = [
-    {
-      icon: Globe,
-      title: 'Portée mondiale',
-      description: 'Accédez à des millions de voyageurs du monde entier et augmentez votre visibilité.',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Croissance des revenus',
-      description: 'Augmentez vos réservations et développez votre activité avec notre plateforme performante.',
-    },
-    {
-      icon: Shield,
-      title: 'Paiements sécurisés',
-      description: 'Transactions sécurisées et paiements rapides pour vous et vos clients.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Analyses détaillées',
-      description: 'Suivez vos performances avec des statistiques et analyses en temps réel.',
-    },
-    {
-      icon: Users,
-      title: 'Gestion simplifiée',
-      description: 'Outil de gestion complet pour vos produits, réservations et clients.',
-    },
-    {
-      icon: Support,
-      title: 'Support dédié',
-      description: 'Équipe de support disponible pour vous accompagner dans votre croissance.',
-    },
-  ];
+  const benefitIcons = [Globe, TrendingUp, Shield, BarChart3, Users, Support];
+
+  const benefits = benefitIcons.map((icon, index) => ({
+    icon,
+    titleKey: `affiliate.benefit_${index + 1}_title`,
+    bodyKey: `affiliate.benefit_${index + 1}_body`,
+  }));
 
   const stats = [
-    { number: '10M+', label: 'Voyageurs actifs' },
-    { number: '50K+', label: 'Expériences disponibles' },
-    { number: '150+', label: 'Pays couverts' },
-    { number: '4.8/5', label: 'Note moyenne' },
+    { numberKey: 'affiliate.stat_destinations', labelKey: 'affiliate.stat_destinations_label' },
+    { numberKey: 'affiliate.stat_partners', labelKey: 'affiliate.stat_partners_label' },
+    { numberKey: 'affiliate.stat_experiences', labelKey: 'affiliate.stat_experiences_label' },
+    { numberKey: 'affiliate.stat_focus', labelKey: 'affiliate.stat_focus_label' },
   ];
+
+  const steps = [
+    { titleKey: 'affiliate.step1_title', bodyKey: 'affiliate.step1_body' },
+    { titleKey: 'affiliate.step2_title', bodyKey: 'affiliate.step2_body' },
+    { titleKey: 'affiliate.step3_title', bodyKey: 'affiliate.step3_body' },
+  ];
+
+  const testimonials = [
+    { nameKey: 'affiliate.t1_name', companyKey: 'affiliate.t1_company', textKey: 'affiliate.t1_text' },
+    { nameKey: 'affiliate.t2_name', companyKey: 'affiliate.t2_company', textKey: 'affiliate.t2_text' },
+    { nameKey: 'affiliate.t3_name', companyKey: 'affiliate.t3_company', textKey: 'affiliate.t3_text' },
+  ];
+
+  const pricingFeatures = [
+    'affiliate.price_1',
+    'affiliate.price_2',
+    'affiliate.price_3',
+    'affiliate.price_4',
+    'affiliate.price_5',
+  ];
+
+  const scrollToForm = () => {
+    document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -115,29 +124,27 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Rejoignez Overglow-Trip
+              {t('affiliate.hero_title')}
               <br />
-              <span className="text-primary-200">Devenez Partenaire</span>
+              <span className="text-primary-200">{t('affiliate.hero_accent')}</span>
             </h1>
             <p className="text-xl md:text-2xl text-primary-100 mb-8">
-              Proposez vos expériences à des millions de voyageurs et développez votre activité
+              {t('affiliate.hero_subtitle')}
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-12">
               {stats.map((stat, index) => (
                 <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-4">
-                  <div className="text-3xl font-bold">{stat.number}</div>
-                  <div className="text-sm text-primary-100">{stat.label}</div>
+                  <div className="text-3xl font-bold">{t(stat.numberKey)}</div>
+                  <div className="text-sm text-primary-100">{t(stat.labelKey)}</div>
                 </div>
               ))}
             </div>
             <button
-              onClick={() => {
-                setShowForm(true);
-                document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              type="button"
+              onClick={scrollToForm}
               className="bg-white text-primary-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-primary-50 transition shadow-lg"
             >
-              Commencer maintenant - C'est gratuit
+              {t('affiliate.cta')}
             </button>
           </div>
         </div>
@@ -148,10 +155,10 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Pourquoi choisir Overglow-Trip ?
+              {t('affiliate.why_title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Rejoignez la plateforme de référence pour les opérateurs touristiques
+              {t('affiliate.why_subtitle')}
             </p>
           </div>
 
@@ -163,8 +170,8 @@ const AffiliatePage = () => {
                   <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
                     <Icon className="text-primary-700" size={32} />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{benefit.title}</h3>
-                  <p className="text-gray-600">{benefit.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{t(benefit.titleKey)}</h3>
+                  <p className="text-gray-600">{t(benefit.bodyKey)}</p>
                 </div>
               );
             })}
@@ -177,42 +184,24 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Comment ça fonctionne ?
+              {t('affiliate.how_title')}
             </h2>
             <p className="text-xl text-gray-600">
-              En quelques étapes simples, commencez à vendre vos expériences
+              {t('affiliate.how_subtitle')}
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="bg-primary-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  1
+              {steps.map((step, index) => (
+                <div key={index} className="text-center">
+                  <div className="bg-primary-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                    {index + 1}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{t(step.titleKey)}</h3>
+                  <p className="text-gray-600">{t(step.bodyKey)}</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Inscrivez-vous</h3>
-                <p className="text-gray-600">
-                  Créez votre compte opérateur en quelques minutes. C'est gratuit et sans engagement.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-primary-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  2
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Ajoutez vos expériences</h3>
-                <p className="text-gray-600">
-                  Remplissez le formulaire d'onboarding et ajoutez vos produits avec photos et descriptions.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-primary-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  3
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Commencez à vendre</h3>
-                <p className="text-gray-600">
-                  Une fois approuvé, vos expériences sont visibles par des millions de voyageurs.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -223,41 +212,22 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Ce que disent nos partenaires
+              {t('affiliate.testimonials_title')}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                name: 'Marie Dubois',
-                company: 'Agadir Tours & Co',
-                text: 'Overglow-Trip a transformé notre activité. Nos réservations ont augmenté de 300% en 6 mois !',
-                rating: 5,
-              },
-              {
-                name: 'Jean Martin',
-                company: 'Alpine Adventures',
-                text: 'Plateforme intuitive, support réactif et paiements rapides. Tout ce dont nous avions besoin.',
-                rating: 5,
-              },
-              {
-                name: 'Sophie Laurent',
-                company: 'Mediterranean Experiences',
-                text: 'La meilleure décision que nous ayons prise. Notre visibilité a explosé grâce à Overglow-Trip.',
-                rating: 5,
-              },
-            ].map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white p-8 rounded-xl shadow-lg">
                 <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
+                  {[...Array(5)].map((_, i) => (
                     <Star key={i} className="text-yellow-400 fill-current" size={20} />
                   ))}
                 </div>
-                <p className="text-gray-700 mb-6 italic">"{testimonial.text}"</p>
+                <p className="text-gray-700 mb-6 italic">&ldquo;{t(testimonial.textKey)}&rdquo;</p>
                 <div>
-                  <p className="font-bold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-600">{testimonial.company}</p>
+                  <p className="font-bold text-gray-900">{t(testimonial.nameKey)}</p>
+                  <p className="text-sm text-gray-600">{t(testimonial.companyKey)}</p>
                 </div>
               </div>
             ))}
@@ -270,40 +240,26 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Tarification transparente
+              {t('affiliate.pricing_title')}
             </h2>
             <p className="text-xl text-gray-600">
-              Pas de frais cachés, pas de surprises
+              {t('affiliate.pricing_subtitle')}
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
             <div className="bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-2xl p-12 shadow-2xl">
               <div className="text-center mb-8">
-                <div className="text-5xl font-bold mb-2">0€</div>
-                <div className="text-xl text-primary-100">Frais d'inscription</div>
+                <div className="text-5xl font-bold mb-2">{t('affiliate.price_zero')}</div>
+                <div className="text-xl text-primary-100">{t('affiliate.price_label')}</div>
               </div>
               <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3">
-                  <CheckCircle size={24} />
-                  <span>Inscription gratuite</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle size={24} />
-                  <span>Pas de frais mensuels</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle size={24} />
-                  <span>Commission uniquement sur les ventes</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle size={24} />
-                  <span>Paiements rapides et sécurisés</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle size={24} />
-                  <span>Support client inclus</span>
-                </div>
+                {pricingFeatures.map((featureKey, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <CheckCircle size={24} />
+                    <span>{t(featureKey)}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -316,10 +272,10 @@ const AffiliatePage = () => {
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Créez votre compte opérateur
+                {t('affiliate.form_title')}
               </h2>
               <p className="text-gray-600">
-                Commencez votre parcours avec Overglow-Trip dès aujourd'hui
+                {t('affiliate.form_subtitle')}
               </p>
             </div>
 
@@ -334,7 +290,7 @@ const AffiliatePage = () => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="affiliate-name" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nom complet *
+                    {t('affiliate.label_name')}
                   </label>
                   <div className="relative">
                     <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -346,7 +302,6 @@ const AffiliatePage = () => {
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Jean Dupont"
                       autoComplete="name"
                     />
                   </div>
@@ -354,7 +309,7 @@ const AffiliatePage = () => {
 
                 <div>
                   <label htmlFor="affiliate-email" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Adresse email *
+                    {t('affiliate.label_email')}
                   </label>
                   <div className="relative">
                     <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -366,62 +321,64 @@ const AffiliatePage = () => {
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="contact@votre-entreprise.com"
                       autoComplete="email"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nom de l'entreprise *
+                  <label htmlFor="affiliate-company" className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('affiliate.label_company')}
                   </label>
                   <div className="relative">
                     <Briefcase size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
+                      id="affiliate-company"
                       name="companyName"
                       value={formData.companyName}
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Votre Entreprise"
+                      autoComplete="organization"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Mot de passe *
+                  <label htmlFor="affiliate-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('affiliate.label_password')}
                   </label>
                   <div className="relative">
                     <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="password"
+                      id="affiliate-password"
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="••••••••"
+                      autoComplete="new-password"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Confirmer le mot de passe *
+                  <label htmlFor="affiliate-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('affiliate.label_confirm')}
                   </label>
                   <div className="relative">
                     <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="password"
+                      id="affiliate-confirm-password"
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="••••••••"
+                      autoComplete="new-password"
                     />
                   </div>
                 </div>
@@ -430,36 +387,36 @@ const AffiliatePage = () => {
                   type="submit"
                   disabled={loading}
                   className={`w-full py-3 rounded-lg font-bold text-white transition ${
-                    loading 
-                      ? 'bg-gray-400 cursor-not-allowed' 
+                    loading
+                      ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-primary-600 hover:bg-primary-700'
                   }`}
                 >
-                  {loading ? 'Création du compte...' : 'Créer mon compte opérateur'}
+                  {loading ? t('affiliate.submitting') : t('affiliate.submit')}
                 </button>
               </form>
 
               <div className="mt-6 text-center">
                 <p className="text-gray-600 text-sm">
-                  En vous inscrivant, vous acceptez nos{' '}
+                  {t('affiliate.accept')}{' '}
                   <Link to="/terms" className="text-primary-600 font-semibold hover:underline">
-                    Conditions d'utilisation
+                    {t('affiliate.terms')}
                   </Link>
-                  {' '}et notre{' '}
+                  {' '}{t('affiliate.and')}{' '}
                   <Link to="/privacy" className="text-primary-600 font-semibold hover:underline">
-                    Politique de confidentialité
+                    {t('affiliate.privacy')}
                   </Link>
                 </p>
                 <p className="text-gray-600 mt-4">
-                  Vous avez déjà un compte ?{' '}
+                  {t('affiliate.has_account')}{' '}
                   <Link to="/login" className="text-primary-600 font-semibold hover:underline">
-                    Se connecter
+                    {t('affiliate.login')}
                   </Link>
                 </p>
                 <p className="text-gray-600 mt-2">
-                  Vous êtes un voyageur ?{' '}
+                  {t('affiliate.traveler')}{' '}
                   <Link to="/register" className="text-primary-600 font-semibold hover:underline">
-                    Inscrivez-vous ici
+                    {t('affiliate.register_here')}
                   </Link>
                 </p>
               </div>
@@ -473,44 +430,44 @@ const AffiliatePage = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-white font-bold mb-4">À propos</h3>
+              <h3 className="text-white font-bold mb-4">{t('affiliate.footer_about')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/about" className="hover:text-white transition">Qui sommes-nous</Link></li>
-                <li><Link to="/careers" className="hover:text-white transition">Carrières</Link></li>
-                <li><Link to="/press" className="hover:text-white transition">Presse</Link></li>
-                <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
+                <li><Link to="/about" className="hover:text-white transition">{t('affiliate.footer_who')}</Link></li>
+                <li><Link to="/careers" className="hover:text-white transition">{t('affiliate.footer_careers')}</Link></li>
+                <li><Link to="/press" className="hover:text-white transition">{t('affiliate.footer_press')}</Link></li>
+                <li><Link to="/blog" className="hover:text-white transition">{t('affiliate.footer_blog')}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Pour les opérateurs</h3>
+              <h3 className="text-white font-bold mb-4">{t('affiliate.footer_operators')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/affiliate" className="hover:text-white transition">Devenir partenaire</Link></li>
-                <li><Link to="/operator/help" className="hover:text-white transition">Centre d'aide</Link></li>
-                <li><Link to="/operator/resources" className="hover:text-white transition">Ressources</Link></li>
-                <li><Link to="/operator/community" className="hover:text-white transition">Communauté</Link></li>
+                <li><Link to="/affiliate" className="hover:text-white transition">{t('affiliate.footer_partner')}</Link></li>
+                <li><Link to="/operator/help" className="hover:text-white transition">{t('affiliate.footer_help')}</Link></li>
+                <li><Link to="/operator/resources" className="hover:text-white transition">{t('affiliate.footer_resources')}</Link></li>
+                <li><Link to="/operator/community" className="hover:text-white transition">{t('affiliate.footer_community')}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Support</h3>
+              <h3 className="text-white font-bold mb-4">{t('affiliate.footer_support')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/help" className="hover:text-white transition">Centre d'aide</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition">Nous contacter</Link></li>
-                <li><Link to="/faq" className="hover:text-white transition">FAQ</Link></li>
-                <li><Link to="/safety" className="hover:text-white transition">Sécurité</Link></li>
+                <li><Link to="/help" className="hover:text-white transition">{t('affiliate.footer_help')}</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition">{t('affiliate.footer_contact')}</Link></li>
+                <li><Link to="/faq" className="hover:text-white transition">{t('affiliate.footer_faq')}</Link></li>
+                <li><Link to="/safety" className="hover:text-white transition">{t('affiliate.footer_safety')}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-4">Légal</h3>
+              <h3 className="text-white font-bold mb-4">{t('affiliate.footer_legal')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/terms" className="hover:text-white transition">Conditions d'utilisation</Link></li>
-                <li><Link to="/privacy" className="hover:text-white transition">Confidentialité</Link></li>
-                <li><Link to="/cookies" className="hover:text-white transition">Cookies</Link></li>
-                <li><Link to="/accessibility" className="hover:text-white transition">Accessibilité</Link></li>
+                <li><Link to="/terms" className="hover:text-white transition">{t('affiliate.footer_terms')}</Link></li>
+                <li><Link to="/privacy" className="hover:text-white transition">{t('affiliate.footer_privacy')}</Link></li>
+                <li><Link to="/cookies" className="hover:text-white transition">{t('affiliate.footer_cookies')}</Link></li>
+                <li><Link to="/accessibility" className="hover:text-white transition">{t('affiliate.footer_a11y')}</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} Overglow-Trip. Tous droits réservés.</p>
+            <p>{t('affiliate.footer_rights', { year: new Date().getFullYear() })}</p>
           </div>
         </div>
       </section>
@@ -519,4 +476,3 @@ const AffiliatePage = () => {
 };
 
 export default AffiliatePage;
-

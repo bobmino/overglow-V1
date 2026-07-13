@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import DestinationGuide from '../components/DestinationGuide';
 import { MapPin, Star, Filter, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
 const DestinationPage = () => {
-  const { city } = useParams();
+  const { city: cityKey } = useParams();
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -18,7 +20,7 @@ const DestinationPage = () => {
     const fetchData = async () => {
       try {
         const params = new URLSearchParams();
-        params.append('city', city);
+        params.append('city', cityKey);
         if (selectedCategory) {
           params.append('category', selectedCategory);
         }
@@ -40,7 +42,7 @@ const DestinationPage = () => {
     };
 
     fetchData();
-  }, [city, selectedCategory]);
+  }, [cityKey, selectedCategory]);
 
   const cityInfo = {
     'Marrakech': {
@@ -337,20 +339,27 @@ const DestinationPage = () => {
     },
   };
 
-  const info = cityInfo[city] || {
-    name: city,
-    description: `Découvrez les meilleures expériences et activités à ${city}`,
+  const info = cityInfo[cityKey] || {
+    name: cityKey,
+    description: `Découvrez les meilleures expériences et activités à ${cityKey}`,
     highlights: [],
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200'
+    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200',
   };
+
+  const displayName = t(`destination.cities.${cityKey}.name`, { defaultValue: info.name });
+  const displayDescription = t(`destination.cities.${cityKey}.description`, { defaultValue: info.description });
+
+  const productsSectionTitle = selectedCategory
+    ? t('destination.category_at', { category: selectedCategory, city: displayName })
+    : t('destination.experiences_at', { city: displayName });
 
   return (
     <div className="bg-slate-50 min-h-screen">
       <Helmet>
-        <title>Expériences à {info.name} | Overglow Trip</title>
-        <meta name="description" content={info.description} />
-        <meta property="og:title" content={`Expériences à ${info.name} | Overglow Trip`} />
-        <meta property="og:description" content={info.description} />
+        <title>{t('destination.meta_title', { city: displayName })}</title>
+        <meta name="description" content={displayDescription} />
+        <meta property="og:title" content={t('destination.meta_title', { city: displayName })} />
+        <meta property="og:description" content={displayDescription} />
         <meta property="og:image" content={info.image} />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:type" content="website" />
@@ -360,13 +369,13 @@ const DestinationPage = () => {
       <div className="relative h-64 md:h-96 overflow-hidden">
         <img 
           src={info.image} 
-          alt={info.name}
+          alt={displayName}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">{info.name}</h1>
-          <p className="text-lg md:text-xl">{info.description}</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-2">{displayName}</h1>
+          <p className="text-lg md:text-xl">{displayDescription}</p>
         </div>
       </div>
 
@@ -381,7 +390,7 @@ const DestinationPage = () => {
         {/* Highlights */}
         {info.highlights.length > 0 && (
           <div className="bg-white rounded-xl p-6 mb-8 shadow-sm">
-            <h2 className="text-2xl font-bold mb-4">À ne pas manquer</h2>
+            <h2 className="text-2xl font-bold mb-4">{t('destination.highlights')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {info.highlights.map((highlight, idx) => (
                 <div key={idx} className="flex items-center text-slate-700">
@@ -402,13 +411,13 @@ const DestinationPage = () => {
             >
               <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                 <BookOpen size={24} />
-                Guide de voyage complet
+                {t('destination.guide_title')}
               </h2>
               {showGuide ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
             </button>
             {showGuide && (
               <div className="mt-4">
-                <DestinationGuide city={city} guide={info.guide} />
+                <DestinationGuide city={cityKey} guide={info.guide} />
               </div>
             )}
           </div>
@@ -419,7 +428,7 @@ const DestinationPage = () => {
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Filter size={20} />
-              <h3 className="font-bold text-lg">Filtrer par catégorie</h3>
+              <h3 className="font-bold text-lg">{t('destination.filter_category')}</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -430,7 +439,7 @@ const DestinationPage = () => {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                Toutes
+                {t('destination.all')}
               </button>
               {categories.map((cat) => (
                 <button
@@ -457,10 +466,8 @@ const DestinationPage = () => {
         ) : products.length > 0 ? (
           <>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">
-                {selectedCategory ? `${selectedCategory} à ${info.name}` : `Expériences à ${info.name}`}
-              </h2>
-              <p className="text-slate-600">{products.length} expérience{products.length > 1 ? 's' : ''} disponible{products.length > 1 ? 's' : ''}</p>
+              <h2 className="text-2xl font-bold">{productsSectionTitle}</h2>
+              <p className="text-slate-600">{t('destination.count', { count: products.length })}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
@@ -470,9 +477,9 @@ const DestinationPage = () => {
           </>
         ) : (
           <div className="text-center py-12 bg-white rounded-xl">
-            <p className="text-slate-600 text-lg">Aucune expérience disponible pour le moment.</p>
+            <p className="text-slate-600 text-lg">{t('destination.empty')}</p>
             <Link to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
-              Voir toutes les expériences
+              {t('destination.see_all')}
             </Link>
           </div>
         )}
