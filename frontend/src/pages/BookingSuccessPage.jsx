@@ -1,13 +1,19 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { trackBooking } from '../utils/analytics';
 import { useCurrency } from '../context/CurrencyContext';
 
 const BookingSuccessPage = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const { formatPrice } = useCurrency();
   const { booking, bookings, isCircuit, paymentReference } = location.state || {};
+
+  const locale = i18n.language?.slice(0, 2) || 'fr';
+  const dateLocale =
+    locale === 'ar' ? 'ar-MA' : locale === 'es' ? 'es-ES' : locale === 'en' ? 'en-GB' : 'fr-FR';
 
   // Track booking conversion
   useEffect(() => {
@@ -48,9 +54,9 @@ const BookingSuccessPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Aucune information de réservation trouvée</p>
+          <p className="text-gray-600 mb-4">{t('booking_success.no_booking')}</p>
           <Link to="/" className="text-emerald-700 font-semibold hover:underline">
-            Retour à l'accueil
+            {t('booking_success.back_home')}
           </Link>
         </div>
       </div>
@@ -76,30 +82,30 @@ const BookingSuccessPage = () => {
               <CheckCircle size={48} className="text-emerald-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isCircuit ? 'Circuit Confirmé !' : 'Réservation Confirmée !'}
+              {isCircuit ? t('booking_success.title_circuit') : t('booking_success.title')}
             </h1>
-            <p className="text-gray-600">Votre réservation a été confirmée avec succès</p>
+            <p className="text-gray-600">{t('booking_success.confirmed')}</p>
           </div>
 
           {/* Booking Details */}
           <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6 shadow-sm">
-            <h2 className="text-xl font-bold mb-6">Détails de la réservation</h2>
+            <h2 className="text-xl font-bold mb-6">{t('booking_success.details')}</h2>
             
             <div className="space-y-6">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Référence de paiement</p>
+                <p className="text-sm text-gray-500 mb-1">{t('booking_success.payment_ref')}</p>
                 <p className="font-bold text-lg text-emerald-700">{referenceGlobal}</p>
               </div>
 
               <div className="border-t border-gray-100 pt-6">
                 <h3 className="font-bold text-gray-900 mb-4">
-                  {isCircuit ? 'Votre itinéraire' : 'Votre expérience'}
+                  {isCircuit ? t('booking_success.your_itinerary') : t('booking_success.your_experience')}
                 </h3>
                 
                 <div className="space-y-6">
                   {itemsToDisplay.map((item, idx) => (
                     <div key={item._id || idx} className={`space-y-2 text-gray-700 ${idx !== 0 ? 'pt-4 border-t border-gray-50' : ''}`}>
-                      <p className="font-semibold text-gray-900">{item.schedule?.product?.title || 'Expérience'}</p>
+                      <p className="font-semibold text-gray-900">{item.schedule?.product?.title || t('booking_success.experience_fallback')}</p>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex items-center">
                           <MapPin size={14} className="mr-2 text-emerald-500" />
@@ -107,7 +113,7 @@ const BookingSuccessPage = () => {
                         </div>
                         <div className="flex items-center">
                           <Calendar size={14} className="mr-2 text-emerald-500" />
-                          {new Date(item.schedule?.date).toLocaleDateString('fr-FR')}
+                          {new Date(item.schedule?.date).toLocaleDateString(dateLocale)}
                         </div>
                         <div className="flex items-center">
                           <Clock size={14} className="mr-2 text-emerald-500" />
@@ -115,7 +121,7 @@ const BookingSuccessPage = () => {
                         </div>
                         <div className="flex items-center">
                           <Users size={14} className="mr-2 text-emerald-500" />
-                          {item.numberOfTickets} billet{item.numberOfTickets > 1 ? 's' : ''}
+                          {t('booking_success.tickets', { count: item.numberOfTickets })}
                         </div>
                       </div>
                     </div>
@@ -125,7 +131,7 @@ const BookingSuccessPage = () => {
 
               <div className="border-t border-gray-100 pt-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total à payer</span>
+                  <span className="text-gray-600">{t('booking_success.total')}</span>
                   <span className="text-2xl font-bold text-emerald-600">
                     {formatPrice(totalAmountGlobal, 'EUR')}
                   </span>
@@ -136,11 +142,11 @@ const BookingSuccessPage = () => {
 
           {/* Next Steps */}
           <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 mb-6">
-            <h3 className="font-bold text-blue-900 mb-3">Et ensuite ?</h3>
+            <h3 className="font-bold text-blue-900 mb-3">{t('booking_success.next_title')}</h3>
             <ul className="space-y-2 text-blue-800 text-sm">
-              <li>• Un email de confirmation a été envoyé à votre adresse</li>
-              <li>• Vous pouvez gérer vos réservations depuis votre tableau de bord</li>
-              <li>• Annulation gratuite jusqu'à 24h avant le début de l'expérience</li>
+              <li>• {t('booking_success.next_1')}</li>
+              <li>• {t('booking_success.next_2')}</li>
+              <li>• {t('booking_success.next_3')}</li>
             </ul>
           </div>
 
@@ -150,13 +156,13 @@ const BookingSuccessPage = () => {
               to="/dashboard" 
               className="flex-1 bg-emerald-600 text-white text-center py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
             >
-              Voir mes réservations
+              {t('booking_success.view_bookings')}
             </Link>
             <Link 
               to="/" 
               className="flex-1 bg-white border-2 border-gray-200 text-gray-700 text-center py-3 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-300 transition"
             >
-              Retour à l'accueil
+              {t('booking_success.back_home_cta')}
             </Link>
           </div>
         </div>

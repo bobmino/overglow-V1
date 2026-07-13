@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +9,7 @@ import FormField from '../components/FormField';
 import { trackLogin } from '../utils/analytics';
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -32,7 +34,7 @@ const LoginPage = () => {
     },
     {
       email: ['required', 'email'],
-      password: ['required', { type: 'minLength', value: 6, message: 'Le mot de passe doit contenir au moins 6 caractères' }],
+      password: ['required', { type: 'minLength', value: 6, message: t('auth.login.err_password_min') }],
     }
   );
 
@@ -102,7 +104,7 @@ const LoginPage = () => {
       });
 
       const errorData = err.response?.data;
-      let errorMessage = 'Login failed. Please try again.';
+      let errorMessage = t('auth.login.err_failed');
       
       if (errorData) {
         if (errorData.message) {
@@ -115,7 +117,7 @@ const LoginPage = () => {
       } else if (err.message) {
         errorMessage = err.message;
       } else if (!err.response && err.request) {
-        errorMessage = 'Network error. Please check your connection and try again.';
+        errorMessage = t('auth.login.err_network');
       }
       
       setSubmitError(errorMessage);
@@ -128,8 +130,8 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-600">Sign in to your Overglow-Trip account</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('auth.login.title')}</h1>
+          <p className="text-gray-600">{t('auth.login.subtitle')}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8" role="form" aria-labelledby="login-title">
@@ -142,7 +144,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormField
-              label="Email address"
+              label={t('auth.login.email_label')}
               name="email"
               type="email"
               value={formData.email}
@@ -150,15 +152,15 @@ const LoginPage = () => {
               onBlur={handleBlur}
               error={errors.email}
               touched={touched.email}
-              placeholder="you@example.com"
+              placeholder={t('auth.login.email_placeholder')}
               required
               icon={Mail}
               autoComplete="email"
-              helpText="Enter the email you used to register"
+              helpText={t('auth.login.email_help')}
             />
 
             <FormField
-              label="Password"
+              label={t('auth.login.password_label')}
               name="password"
               type="password"
               value={formData.password}
@@ -170,7 +172,7 @@ const LoginPage = () => {
               required
               icon={Lock}
               autoComplete="current-password"
-              helpText="At least 6 characters"
+              helpText={t('auth.login.password_help')}
             />
 
             <button
@@ -182,15 +184,15 @@ const LoginPage = () => {
                   : 'bg-green-700 hover:bg-green-800'
               }`}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('auth.login.submitting') : t('auth.login.submit')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              {t('auth.login.no_account')}{' '}
               <Link to="/register" state={{ from: location.state?.from }} className="text-green-700 font-semibold hover:underline">
-                Sign up
+                {t('auth.login.sign_up')}
               </Link>
             </p>
           </div>

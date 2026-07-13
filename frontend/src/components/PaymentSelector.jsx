@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { CreditCard, Building, Wallet, Banknote, Truck, Copy, CheckCircle, AlertCircle, Landmark } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, Wallet, Banknote, Truck, Copy, CheckCircle, AlertCircle, Landmark } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 
 // FIX TDZ : Ne pas appeler loadStripe() au niveau module car cela cause un
@@ -20,6 +21,7 @@ const getStripePromise = () => {
 };
 
 const StripeForm = ({ amount, onSuccess, onError }) => {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -60,16 +62,18 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
         }
       }
     } catch {
-      onError('Payment failed');
+      onError(t('payment.err_payment_failed'));
     }
     setProcessing(false);
   };
 
+  const formattedAmount = amount.toFixed(2);
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" aria-label="Paiement par carte">
+    <form onSubmit={handleSubmit} className="space-y-4" aria-label={t('payment.pay_card')}>
       <div className="p-4 border border-gray-300 rounded-lg">
         <p className="text-sm font-semibold text-gray-700 mb-2" id="card-element-label">
-          Détails de la carte
+          {t('payment.card_label')}
         </p>
         <CardElement
           options={{
@@ -92,15 +96,16 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
         type="submit"
         disabled={!stripe || processing}
         className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-3 rounded-xl font-bold hover:from-emerald-700 hover:to-emerald-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
-        aria-label={processing ? 'Paiement en cours' : `Payer ${amount.toFixed(2)} euros`}
+        aria-label={processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
       >
-        {processing ? 'Traitement en cours...' : `Payer €${amount.toFixed(2)}`}
+        {processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
       </button>
     </form>
   );
 };
 
 const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
+  const { t } = useTranslation();
   const [method, setMethod] = useState('stripe');
   const [error, setError] = useState('');
   const [madAmount, setMadAmount] = useState(null);
@@ -138,7 +143,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       setPaymentReference(data.paymentReference || '');
     } catch (err) {
       console.error('Failed to fetch bank details:', err);
-      setError('Impossible de charger les détails bancaires');
+      setError(t('payment.err_bank_details'));
     } finally {
       setLoadingBankDetails(false);
     }
@@ -166,7 +171,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
       setPaymentReference(data.paymentReference);
       handleSuccess({ type: 'bank_transfer', ...data });
     } catch (err) {
-      handleError(err.response?.data?.message || 'Échec de l\'initiation du virement');
+      handleError(err.response?.data?.message || t('payment.err_bank_init'));
     }
   };
 
@@ -179,7 +184,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         });
         handleSuccess({ type: 'cash_pickup', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Échec du traitement du paiement sur place');
+        handleError(err.response?.data?.message || t('payment.err_cash'));
       }
     } else {
       handleSuccess({ type: 'cash_pickup', id: 'cash_pickup_' + Date.now() });
@@ -188,7 +193,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
 
   const handleCashDelivery = async () => {
     if (!deliveryAddress.trim()) {
-      handleError('Veuillez fournir une adresse de livraison');
+      handleError(t('payment.err_delivery_addr'));
       return;
     }
     if (bookingId) {
@@ -200,7 +205,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         });
         handleSuccess({ type: 'cash_delivery', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Échec du traitement du paiement à la livraison');
+        handleError(err.response?.data?.message || t('payment.err_delivery'));
       }
     } else {
       handleSuccess({
@@ -221,7 +226,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         });
         handleSuccess({ type: 'cmi', ...data });
       } catch (err) {
-        handleError(err.response?.data?.message || 'Échec de l\'initialisation du paiement CMI');
+        handleError(err.response?.data?.message || t('payment.err_cmi'));
       }
     } else {
       handleSuccess({ type: 'cmi', id: 'cmi_' + Date.now() });
@@ -235,22 +240,28 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
     });
   };
 
+  const formattedEurAmount = amount.toFixed(2);
+  const formattedMadAmount = madAmount ? madAmount.toFixed(2) : null;
+  const cmiPayAmount = madAmount
+    ? `${formattedMadAmount} MAD`
+    : `${formattedEurAmount} EUR`;
+
   return (
     <div className="space-y-8">
       {/* Header with amount display */}
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-gray-900">Méthode de Paiement</h3>
+        <h3 className="text-2xl font-bold text-gray-900">{t('payment.method_title')}</h3>
         {madAmount && (
           <div className="text-right backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Montant total</p>
-            <p className="text-2xl font-bold text-emerald-700">{madAmount.toFixed(2)} MAD</p>
-            <p className="text-xs text-gray-400">≈ {amount.toFixed(2)} €</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">{t('payment.total_amount')}</p>
+            <p className="text-2xl font-bold text-emerald-700">{formattedMadAmount} MAD</p>
+            <p className="text-xs text-gray-400">≈ {formattedEurAmount} €</p>
           </div>
         )}
       </div>
 
       {/* Payment method selection grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Choisir une méthode de paiement">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label={t('payment.choose_method')}>
         <button
           onClick={() => setMethod('stripe')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
@@ -260,11 +271,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'stripe'}
-          aria-label="Paiement par carte bancaire avec Stripe"
+          aria-label={t('payment.aria_card')}
         >
           <CreditCard size={36} className={`mb-3 ${method === 'stripe' ? 'text-emerald-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">Carte Bancaire</span>
-          <span className="text-xs text-gray-500 mt-1">Visa, Mastercard</span>
+          <span className="font-bold text-gray-800">{t('payment.card')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.card_hint')}</span>
         </button>
 
         <button
@@ -276,11 +287,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'paypal'}
-          aria-label="Paiement avec PayPal"
+          aria-label={t('payment.aria_paypal')}
         >
           <Wallet size={36} className={`mb-3 ${method === 'paypal' ? 'text-blue-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">PayPal</span>
-          <span className="text-xs text-gray-500 mt-1">Paiement sécurisé</span>
+          <span className="font-bold text-gray-800">{t('payment.paypal')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.paypal_hint')}</span>
         </button>
 
         <button
@@ -292,11 +303,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cmi'}
-          aria-label="Paiement avec CMI (cartes bancaires marocaines)"
+          aria-label={t('payment.aria_cmi')}
         >
           <CreditCard size={36} className={`mb-3 ${method === 'cmi' ? 'text-orange-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">CMI</span>
-          <span className="text-xs text-gray-500 mt-1">Cartes Marocaines</span>
+          <span className="font-bold text-gray-800">{t('payment.cmi')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.cmi_hint')}</span>
         </button>
 
         <button
@@ -308,11 +319,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cash_pickup'}
-          aria-label="Paiement en espèces sur place"
+          aria-label={t('payment.aria_cash')}
         >
           <Banknote size={36} className={`mb-3 ${method === 'cash_pickup' ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">Espèces</span>
-          <span className="text-xs text-gray-500 mt-1">Paiement sur place</span>
+          <span className="font-bold text-gray-800">{t('payment.cash')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.cash_hint')}</span>
         </button>
 
         <button
@@ -324,11 +335,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'cash_delivery'}
-          aria-label="Paiement à la livraison"
+          aria-label={t('payment.aria_delivery')}
         >
           <Truck size={36} className={`mb-3 ${method === 'cash_delivery' ? 'text-purple-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">À la livraison</span>
-          <span className="text-xs text-gray-500 mt-1">Paiement comptant</span>
+          <span className="font-bold text-gray-800">{t('payment.delivery')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.delivery_hint')}</span>
         </button>
 
         <button
@@ -340,11 +351,11 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           }`}
           role="radio"
           aria-checked={method === 'bank'}
-          aria-label="Paiement par virement bancaire"
+          aria-label={t('payment.aria_bank')}
         >
           <Landmark size={36} className={`mb-3 ${method === 'bank' ? 'text-indigo-600' : 'text-gray-400'}`} aria-hidden="true" />
-          <span className="font-bold text-gray-800">Virement</span>
-          <span className="text-xs text-gray-500 mt-1">Bancaire</span>
+          <span className="font-bold text-gray-800">{t('payment.bank')}</span>
+          <span className="text-xs text-gray-500 mt-1">{t('payment.bank_hint')}</span>
         </button>
       </div>
 
@@ -369,12 +380,12 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
         {method === 'paypal' && (
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200 text-center">
             <Wallet size={48} className="mx-auto mb-4 text-blue-600" />
-            <p className="mb-6 text-gray-600 text-lg">Vous serez redirigé vers PayPal pour finaliser votre paiement.</p>
+            <p className="mb-6 text-gray-600 text-lg">{t('payment.paypal_redirect')}</p>
             <button
               onClick={() => handleSuccess({ type: 'paypal', id: 'mock_paypal_id' })}
               className="w-full bg-[#0070ba] text-white py-4 rounded-xl font-bold hover:bg-[#003087] transition-all shadow-lg"
             >
-              Payer avec PayPal
+              {t('payment.pay_paypal')}
             </button>
           </div>
         )}
@@ -383,26 +394,26 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           <div className="backdrop-blur-md bg-orange-50/80 rounded-2xl p-8 shadow-xl border border-orange-200">
             <div className="mb-6 text-center">
               <CreditCard size={48} className="mx-auto mb-4 text-orange-600" />
-              <p className="text-gray-700 font-bold text-xl mb-2">Paiement Sécurisé CMI</p>
+              <p className="text-gray-700 font-bold text-xl mb-2">{t('payment.cmi_title')}</p>
               <p className="text-sm text-gray-600 mb-4">
-                Vous serez redirigé vers la passerelle de paiement sécurisée CMI pour finaliser votre transaction.
+                {t('payment.cmi_body')}
               </p>
               {madAmount && (
                 <div className="backdrop-blur-md bg-white/60 rounded-xl p-4 border border-orange-200 inline-block">
-                  <p className="text-sm text-gray-500">Montant à payer</p>
-                  <p className="text-3xl font-bold text-orange-700">{madAmount.toFixed(2)} MAD</p>
+                  <p className="text-sm text-gray-500">{t('payment.amount_to_pay')}</p>
+                  <p className="text-3xl font-bold text-orange-700">{formattedMadAmount} MAD</p>
                 </div>
               )}
             </div>
             <button
               onClick={handleCMI}
               className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg shadow-orange-200"
-              aria-label={`Payer ${madAmount ? madAmount.toFixed(2) + ' MAD' : amount.toFixed(2) + ' euros'} avec CMI`}
+              aria-label={t('payment.pay_cmi_aria', { amount: cmiPayAmount })}
             >
-              Payer avec CMI
+              {t('payment.pay_cmi')}
             </button>
             <p className="text-xs text-gray-500 mt-4 text-center">
-              Accepte toutes les cartes bancaires marocaines (Visa, Mastercard, CMI)
+              {t('payment.cmi_accepts')}
             </p>
           </div>
         )}
@@ -412,15 +423,15 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <Banknote size={40} className="text-green-600" />
-                <h4 className="font-bold text-gray-900 text-xl">Paiement en Espèces sur Place</h4>
+                <h4 className="font-bold text-gray-900 text-xl">{t('payment.cash_title')}</h4>
               </div>
               <p className="text-gray-700 mb-4">
-                Vous paierez en espèces directement à l'arrivée au point de rendez-vous.
+                {t('payment.cash_body')}
               </p>
               {madAmount && (
                 <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-green-200">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à payer</p>
-                  <p className="text-3xl font-bold text-green-700">{madAmount.toFixed(2)} MAD</p>
+                  <p className="text-sm text-gray-500 uppercase tracking-wide">{t('payment.amount_to_pay')}</p>
+                  <p className="text-3xl font-bold text-green-700">{formattedMadAmount} MAD</p>
                 </div>
               )}
             </div>
@@ -428,16 +439,16 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               <div className="flex items-start gap-3">
                 <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
-                  Veuillez apporter le montant exact en espèces. Le paiement sera collecté au point de rendez-vous par notre équipe.
+                  {t('payment.cash_warning')}
                 </p>
               </div>
             </div>
             <button
               onClick={handleCashPickup}
               className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-200"
-              aria-label="Confirmer le paiement en espèces sur place"
+              aria-label={t('payment.confirm_cash')}
             >
-              Confirmer — Paiement sur Place
+              {t('payment.confirm_cash')}
             </button>
           </div>
         )}
@@ -447,28 +458,28 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <Truck size={40} className="text-purple-600" />
-                <h4 className="font-bold text-gray-900 text-xl">Paiement à la Livraison</h4>
+                <h4 className="font-bold text-gray-900 text-xl">{t('payment.delivery_title')}</h4>
               </div>
               <p className="text-gray-700 mb-4">
-                Le paiement sera collecté lors de la livraison de votre confirmation de réservation.
+                {t('payment.delivery_body')}
               </p>
               {madAmount && (
                 <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-purple-200 mb-6">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à payer</p>
-                  <p className="text-3xl font-bold text-purple-700">{madAmount.toFixed(2)} MAD</p>
+                  <p className="text-sm text-gray-500 uppercase tracking-wide">{t('payment.amount_to_pay')}</p>
+                  <p className="text-3xl font-bold text-purple-700">{formattedMadAmount} MAD</p>
                 </div>
               )}
             </div>
             <div className="mb-6">
               <label htmlFor="delivery-address" className="block text-sm font-bold text-gray-700 mb-2">
-                Adresse de livraison *
+                {t('payment.delivery_address')}
               </label>
               <textarea
                 id="delivery-address"
                 name="delivery-address"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Entrez votre adresse complète (rue, ville, code postal)..."
+                placeholder={t('payment.delivery_placeholder')}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none backdrop-blur-md bg-white/80"
                 required
@@ -480,7 +491,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               <div className="flex items-start gap-3">
                 <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
-                  Un agent de livraison viendra à votre adresse pour collecter le paiement et remettre votre confirmation de réservation.
+                  {t('payment.delivery_warning')}
                 </p>
               </div>
             </div>
@@ -488,9 +499,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               onClick={handleCashDelivery}
               disabled={!deliveryAddress.trim()}
               className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg shadow-purple-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
-              aria-label="Confirmer le paiement à la livraison"
+              aria-label={t('payment.confirm_delivery')}
             >
-              Confirmer — Paiement à la Livraison
+              {t('payment.confirm_delivery')}
             </button>
           </div>
         )}
@@ -500,40 +511,40 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <Landmark size={40} className="text-indigo-600" />
-                <h4 className="font-bold text-gray-900 text-xl">Virement Bancaire</h4>
+                <h4 className="font-bold text-gray-900 text-xl">{t('payment.bank_title')}</h4>
               </div>
               <p className="text-gray-700 mb-6">
-                Effectuez un virement vers le compte ci-dessous. Votre réservation sera confirmée dès réception du paiement.
+                {t('payment.bank_body')}
               </p>
 
               {loadingBankDetails ? (
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
-                  <p className="text-gray-500 mt-3">Chargement des détails bancaires...</p>
+                  <p className="text-gray-500 mt-3">{t('payment.bank_loading')}</p>
                 </div>
               ) : (
                 <>
                   {/* Bank Details Card */}
                   <div className="backdrop-blur-md bg-white/80 rounded-xl p-6 border border-indigo-200 mb-6">
-                    <h5 className="font-bold text-gray-800 mb-4 text-lg">Coordonnées Bancaires</h5>
+                    <h5 className="font-bold text-gray-800 mb-4 text-lg">{t('payment.bank_details')}</h5>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Banque</span>
+                        <span className="text-sm text-gray-500">{t('payment.bank_name')}</span>
                         <span className="font-semibold text-gray-800">{bankDetails?.bankName || '—'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Titulaire</span>
+                        <span className="text-sm text-gray-500">{t('payment.bank_account')}</span>
                         <span className="font-semibold text-gray-800">{bankDetails?.accountName || '—'}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">IBAN</span>
+                        <span className="text-sm text-gray-500">{t('payment.bank_iban')}</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || 'Non configuré'}</span>
+                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || t('payment.bank_not_configured')}</span>
                           {bankDetails?.iban ? (
                             <button
                               onClick={() => copyToClipboard(bankDetails.iban)}
                               className="p-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
-                              aria-label="Copier l'IBAN"
+                              aria-label={copied ? t('payment.bank_copied') : t('payment.bank_copy')}
                               type="button"
                             >
                               {copied ? <CheckCircle size={16} className="text-green-600" /> : <Copy size={16} className="text-indigo-600" />}
@@ -542,8 +553,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">SWIFT/BIC</span>
-                        <span className="font-mono font-semibold text-gray-800">{bankDetails?.swift || 'Non configuré'}</span>
+                        <span className="text-sm text-gray-500">{t('payment.bank_swift')}</span>
+                        <span className="font-mono font-semibold text-gray-800">{bankDetails?.swift || t('payment.bank_not_configured')}</span>
                       </div>
                     </div>
                   </div>
@@ -552,10 +563,10 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                   <div className="backdrop-blur-md bg-emerald-50/80 rounded-xl p-6 border border-emerald-200 mb-6">
                     <div className="flex items-center gap-3 mb-3">
                       <CheckCircle size={24} className="text-emerald-600" />
-                      <h5 className="font-bold text-gray-800 text-lg">Référence de Paiement</h5>
+                      <h5 className="font-bold text-gray-800 text-lg">{t('payment.bank_ref')}</h5>
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
-                      <strong>IMPORTANT :</strong> Incluez cette référence dans le motif de votre virement pour que nous puissions identifier votre paiement.
+                      {t('payment.bank_instructions')}
                     </p>
                     <div className="flex items-center justify-between backdrop-blur-md bg-white/80 rounded-lg p-4 border border-emerald-200">
                       <span className="font-mono text-xl font-bold text-emerald-700 tracking-wider">
@@ -564,7 +575,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                       <button
                         onClick={() => copyToClipboard(paymentReference || bankDetails?.paymentReference || '')}
                         className="p-2 rounded-lg hover:bg-emerald-100 transition-colors"
-                        aria-label="Copier la référence"
+                        aria-label={copied ? t('payment.bank_copied') : t('payment.bank_copy_ref')}
                       >
                         {copied ? <CheckCircle size={20} className="text-green-600" /> : <Copy size={20} className="text-emerald-600" />}
                       </button>
@@ -574,8 +585,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
                   {/* Amount Card */}
                   {madAmount && (
                     <div className="backdrop-blur-md bg-white/80 rounded-xl p-5 border border-indigo-200 mb-6">
-                      <p className="text-sm text-gray-500 uppercase tracking-wide">Montant à virer</p>
-                      <p className="text-3xl font-bold text-indigo-700">{madAmount.toFixed(2)} MAD</p>
+                      <p className="text-sm text-gray-500 uppercase tracking-wide">{t('payment.bank_amount_transfer')}</p>
+                      <p className="text-3xl font-bold text-indigo-700">{formattedMadAmount} MAD</p>
                     </div>
                   )}
                 </>
@@ -586,8 +597,8 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               <div className="flex items-start gap-3">
                 <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-amber-800">
-                  <p className="font-semibold mb-1">Délai de traitement</p>
-                  <p>Les virements bancaires peuvent prendre 1 à 3 jours ouvrables. Votre réservation sera confirmée dès réception du virement.</p>
+                  <p className="font-semibold mb-1">{t('payment.bank_processing_title')}</p>
+                  <p>{t('payment.bank_processing_body')}</p>
                 </div>
               </div>
             </div>
@@ -596,9 +607,9 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
               onClick={handleBankTransfer}
               disabled={loadingBankDetails}
               className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-xl font-bold hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
-              aria-label="Confirmer le virement bancaire"
+              aria-label={t('payment.confirm_bank')}
             >
-              J'effectue le virement
+              {t('payment.confirm_bank')}
             </button>
           </div>
         )}
