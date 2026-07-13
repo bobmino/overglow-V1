@@ -1,5 +1,5 @@
-import {
 import { logger } from '../utils/logger.js';
+import {
   getPersonalizedRecommendations,
   getSimilarProducts,
   getTrendingProducts,

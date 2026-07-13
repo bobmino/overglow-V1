@@ -1,6 +1,6 @@
 import User from '../models/userModel.js';
-import {
 import { logger } from '../utils/logger.js';
+import {
   getLoyaltyBenefits,
   redeemPoints,
   calculatePointsForBooking,

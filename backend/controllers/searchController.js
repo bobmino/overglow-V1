@@ -2,8 +2,8 @@ import Product from '../models/productModel.js';
 import Review from '../models/reviewModel.js';
 import Schedule from '../models/scheduleModel.js';
 import { popularDestinations, activityCategories, popularActivities } from '../data/popularDestinations.js';
-import {
 import { logger } from '../utils/logger.js';
+import {
   escapeRegex,
   normalizeCategory,
   matchesDurationFilter,

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import {
 import { logger } from '../utils/logger.js';
+import {
   Building2,
   User,
   Camera,

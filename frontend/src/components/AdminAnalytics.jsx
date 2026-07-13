@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
 import { logger } from '../utils/logger.js';
+import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';

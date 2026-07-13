@@ -3,8 +3,8 @@ import Operator from '../models/operatorModel.js';
 import Product from '../models/productModel.js';
 import Booking from '../models/bookingModel.js';
 import Schedule from '../models/scheduleModel.js';
-import {
 import { logger } from '../utils/logger.js';
+import {
   notifyProductApproved,
   notifyOperatorApproved,
   notifyOnboardingApproved,

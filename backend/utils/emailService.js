@@ -1,7 +1,7 @@
 import pkg from 'nodemailer';
 const { createTransport } = pkg;
-import {
 import { logger } from './logger.js';
+import {
   getBookingConfirmationTemplate,
   getCancellationTemplate,
   getOperatorBookingNotificationTemplate,
