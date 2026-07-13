@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import MobileBottomNav from './MobileBottomNav';
+import DynamicManifest from './DynamicManifest';
 import { usePageTracking } from '../hooks/useAnalytics';
 import ToastContainer from './ToastContainer';
 
@@ -15,6 +16,7 @@ const Layout = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-slate-800">
+      <DynamicManifest />
       <Header />
       <ToastContainer />
       <main className="flex-grow w-full pb-24 md:pb-0">

@@ -1,8 +1,8 @@
 {
-  "name": "Overglow Trip - Expériences Authentiques au Maroc",
+  "name": "Overglow Trip - Authentic Experiences in Morocco",
   "short_name": "Overglow",
-  "description": "Découvrez des expériences authentiques et des activités uniques au Maroc",
-  "start_url": "/?lang=fr",
+  "description": "Discover authentic experiences and unique activities in Morocco",
+  "start_url": "/?lang=en",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#059669",
@@ -19,7 +19,7 @@
     "travel",
     "lifestyle"
   ],
-  "lang": "fr",
+  "lang": "en",
   "dir": "ltr",
   "scope": "/",
   "screenshots": []

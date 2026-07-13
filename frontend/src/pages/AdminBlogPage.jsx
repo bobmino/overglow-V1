@@ -5,6 +5,7 @@ import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkI
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { useToast } from '../context/ToastContext';
+import { getSiteUrl } from '../utils/siteUrl';
 
 const AdminBlogPage = () => {
   const { toast } = useToast();
@@ -111,7 +112,7 @@ const AdminBlogPage = () => {
 
   const getPublicUrlForPost = (post) => {
     // Prefer frontend origin if running in browser; fallback to production frontend
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://overglow-v1-3jqp.vercel.app';
+    const origin = getSiteUrl();
     return `${origin}/blog/${post.slug}`;
   };
 

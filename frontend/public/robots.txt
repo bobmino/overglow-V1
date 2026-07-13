@@ -1,4 +1,16 @@
+# Production
 User-agent: *
 Allow: /
 
-Sitemap: https://overglow-v1-3jqp.vercel.app/sitemap.xml
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /operator/
+Disallow: /_next/
+Disallow: /login
+Disallow: /register
+Disallow: /checkout
+Disallow: /booking-success
+
+Sitemap: https://www.overglowtrip.com/sitemap.xml
+Sitemap: https://www.overglowtrip.com/api/sitemap.xml

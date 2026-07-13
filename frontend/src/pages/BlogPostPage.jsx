@@ -8,6 +8,7 @@ import ShareButtons from '../components/ShareButtons';
 import { Calendar, Clock, Eye, Tag, ArrowLeft, User } from 'lucide-react';
 import { trackBlogView } from '../utils/analytics';
 import { formatImageUrl, formatImageUrlWithFallback } from '../utils/formatImage';
+import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -118,11 +119,11 @@ const BlogPostPage = () => {
         <meta name="description" content={post.metaDescription || post.excerpt} />
         <meta property="og:title" content={post.metaTitle || post.title} />
         <meta property="og:description" content={post.metaDescription || post.excerpt} />
-        <meta property="og:image" content={formatImageUrlWithFallback(post.featuredImage)} />
-        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:image" content={post.featuredImage ? absoluteUrl(formatImageUrlWithFallback(post.featuredImage)) : DEFAULT_OG_IMAGE} />
+        <meta property="og:url" content={canonicalUrl(`/blog/${slug}`)} />
         <meta property="og:type" content="article" />
         <meta name="keywords" content={post.keywords?.join(', ')} />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <link rel="canonical" href={canonicalUrl(`/blog/${slug}`)} />
       </Helmet>
 
       <div className="container mx-auto px-4">
@@ -186,7 +187,7 @@ const BlogPostPage = () => {
 
             <ShareButtons
               product={post}
-              url={typeof window !== 'undefined' ? window.location.href : ''}
+              url={canonicalUrl(`/blog/${slug}`)}
               title={post.title}
               description={post.excerpt}
               contentType="blog_post"

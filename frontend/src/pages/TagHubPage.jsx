@@ -5,6 +5,7 @@ import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
 import ProductCard from '../components/ProductCard';
 import { Hash, ArrowLeft, Search } from 'lucide-react';
+import { canonicalUrl } from '../utils/siteUrl';
 
 const slugToTag = (slug) => decodeURIComponent(String(slug || '').replace(/-/g, ' ')).trim();
 
@@ -47,7 +48,7 @@ const TagHubPage = () => {
       <Helmet>
         <title>#{tag} — Résultats | Overglow Trip</title>
         <meta name="description" content={`Tous les contenus Overglow Trip liés au tag ${tag}: articles et expériences.`} />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <link rel="canonical" href={canonicalUrl(`/tags/${encodeURIComponent(tagSlug || '')}`)} />
       </Helmet>
 
       <div className="container mx-auto px-4">

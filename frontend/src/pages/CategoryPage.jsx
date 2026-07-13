@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import { MapPin } from 'lucide-react';
+import { canonicalUrl } from '../utils/siteUrl';
 
 const categoryIcons = {
   Tours: '🗺️',
@@ -70,9 +71,9 @@ const CategoryPage = () => {
         <meta name="description" content={categoryDescription} />
         <meta property="og:title" content={t('category.meta_title', { name: categoryName })} />
         <meta property="og:description" content={categoryDescription} />
-        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:url" content={canonicalUrl(`/categories/${encodeURIComponent(category || '')}`)} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <link rel="canonical" href={canonicalUrl(`/categories/${encodeURIComponent(category || '')}`)} />
       </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">

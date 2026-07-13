@@ -12,6 +12,7 @@
 - [x] [11] Header + Footer + Mobile Nav i18n (P1, S3)
 - [x] [12] Legal + Support Pages i18n (Privacy, Help, BlogPost) (P1, S3)
 - [x] [13] Destination + Category + Partner + Affiliate i18n (P1, S3)
+- [x] [14] SEO Fix: Canonical URLs + Manifest + Sitemap + Robots (P1, S3)
 
 ---
 

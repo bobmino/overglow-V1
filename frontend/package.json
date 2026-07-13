@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node ../scripts/generateSeoAssets.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "seo:generate": "node ../scripts/generateSeoAssets.js",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:run:chrome": "cypress run --browser chrome",

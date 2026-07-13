@@ -22,6 +22,7 @@ import OthersAlsoBooked from '../components/OthersAlsoBooked';
 import ShareButtons from '../components/ShareButtons';
 import TrustBar from '../components/TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
+import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useTranslation } from 'react-i18next';
@@ -409,9 +410,11 @@ const ProductDetailPage = () => {
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
   const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://overglow-backend.vercel.app/products/${product?._id || ''}`;
+  const currentUrl = canonicalUrl(`/products/${product?._id || ''}`);
   const normalizedImages = Array.isArray(product?.images) ? product.images.map(formatImageUrl).filter(Boolean) : [];
-  const ogImage = normalizedImages[0] || 'https://overglow-v1-3jqp.vercel.app/vite.svg';
+  const ogImage = normalizedImages[0]
+    ? absoluteUrl(normalizedImages[0])
+    : DEFAULT_OG_IMAGE;
   const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'} | Overglow`;
   const shortDescription = (product?.description || 'Experience locale verifiee, paiement securise et support 24/7 sur Overglow.')
     .trim()

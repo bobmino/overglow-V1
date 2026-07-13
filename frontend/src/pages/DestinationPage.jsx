@@ -6,6 +6,7 @@ import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import DestinationGuide from '../components/DestinationGuide';
 import { MapPin, Star, Filter, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { canonicalUrl } from '../utils/siteUrl';
 
 const DestinationPage = () => {
   const { city: cityKey } = useParams();
@@ -361,9 +362,9 @@ const DestinationPage = () => {
         <meta property="og:title" content={t('destination.meta_title', { city: displayName })} />
         <meta property="og:description" content={displayDescription} />
         <meta property="og:image" content={info.image} />
-        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:url" content={canonicalUrl(`/destinations/${encodeURIComponent(cityKey)}`)} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <link rel="canonical" href={canonicalUrl(`/destinations/${encodeURIComponent(cityKey)}`)} />
       </Helmet>
       {/* Hero Section */}
       <div className="relative h-64 md:h-96 overflow-hidden">
