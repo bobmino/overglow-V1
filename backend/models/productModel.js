@@ -12,6 +12,8 @@ const productSchema = mongoose.Schema({
   },
   slug: {
     type: String,
+    unique: true,
+    sparse: true, // Allows multiple documents without a slug while enforcing uniqueness when set
     index: true, // Optimisation : Ajout d'un index pour les recherches par slug
   },
   description: {
@@ -232,6 +234,9 @@ productSchema.index({ status: 1, tags: 1 });
 productSchema.index({ status: 1, categoryGroup: 1 });
 productSchema.index({ status: 1, city: 1 });
 productSchema.index({ status: 1, 'metrics.averageRating': -1 });
+// Sprint [8]: sorting/filtering by recency and operator dashboards
+productSchema.index({ status: 1, createdAt: -1 });
+productSchema.index({ operator: 1, status: 1, createdAt: -1 });
 
 const Product = mongoose.model('Product', productSchema, 'products');
 

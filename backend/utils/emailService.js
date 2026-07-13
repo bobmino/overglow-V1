@@ -11,6 +11,34 @@ import {
 } from './emailTemplates.js';
 import { getBookingConfirmationPremiumTemplate } from '../services/emailService.js';
 
+/**
+ * Single entry point for outbound email delivery (Sprint [8] consolidation).
+ * Wraps transporter.sendMail with a lightweight retry + exponential backoff,
+ * so every function below benefits without duplicating retry logic per call site.
+ */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const sendMailWithRetry = async (mailOptions, { retries = 2, baseDelayMs = 500 } = {}) => {
+  if (!transporter) {
+    throw new Error('Email transporter is not configured');
+  }
+
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await transporter.sendMail(mailOptions);
+    } catch (error) {
+      lastError = error;
+      const isLastAttempt = attempt === retries;
+      console.warn(`⚠️  Email send attempt ${attempt + 1}/${retries + 1} failed for ${mailOptions.to}: ${error.message}`);
+      if (!isLastAttempt) {
+        await sleep(baseDelayMs * 2 ** attempt); // 500ms, 1000ms, 2000ms...
+      }
+    }
+  }
+  throw lastError;
+};
+
 // Check if email is enabled
 const isEmailEnabled = () => {
   return process.env.EMAIL_ENABLED !== 'false' && 
@@ -57,8 +85,8 @@ if (isEmailEnabled()) {
 }
 
 // Send booking confirmation email
-export const sendBookingConfirmation = async (booking, user, customHtml) => {
-  const premium = getBookingConfirmationPremiumTemplate({ booking, user });
+export const sendBookingConfirmation = async (booking, user, customHtml, whatsappLink) => {
+  const premium = getBookingConfirmationPremiumTemplate({ booking, user, whatsappLink });
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
@@ -76,7 +104,7 @@ export const sendBookingConfirmation = async (booking, user, customHtml) => {
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
     console.log('✅ Booking confirmation email sent to:', user.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the booking
@@ -107,7 +135,7 @@ export const sendCancellationEmail = async (booking, user, refundInfo = null) =>
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
     console.log('✅ Cancellation email sent to:', user.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the cancellation
@@ -147,7 +175,7 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
     console.log('✅ Operator booking notification email sent to:', operatorUser.email);
   } catch (error) {
     // Don't throw error, just log it - email failure shouldn't break the booking
@@ -174,7 +202,7 @@ export const sendRefundProcessedEmail = async (withdrawal, user) => {
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
     console.log('✅ Refund processed email sent to:', user.email);
   } catch (error) {
     console.error('❌ Error sending refund processed email:', error.message);
@@ -193,7 +221,7 @@ export const sendWelcomeEmail = async (user) => {
   if (!transporter || !isEmailEnabled()) return;
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
   } catch (error) {
     console.error('❌ Error sending welcome email:', error.message);
   }
@@ -211,7 +239,7 @@ export const sendOperatorOnboardingPendingEmail = async (user) => {
   if (!transporter || !isEmailEnabled()) return;
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
   } catch (error) {
     console.error('❌ Error sending operator onboarding pending email:', error.message);
   }
@@ -229,7 +257,7 @@ export const sendOperatorApprovedEmail = async (user) => {
   if (!transporter || !isEmailEnabled()) return;
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
   } catch (error) {
     console.error('❌ Error sending operator approved email:', error.message);
   }
@@ -289,7 +317,7 @@ export const sendCircuitBookingConfirmation = async (bookings, user, paymentRefe
   }
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendMailWithRetry(mailOptions);
     console.log('✅ Circuit booking confirmation email sent to:', user.email);
   } catch (error) {
     console.error('❌ Error sending circuit booking confirmation email:', error.message);

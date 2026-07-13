@@ -90,6 +90,11 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+// Sprint [8]: filtering/sorting for user order history and admin listings
+orderSchema.index({ 'customer.userId': 1, createdAt: -1 });
+orderSchema.index({ 'customer.email': 1 });
+orderSchema.index({ status: 1, createdAt: -1 });
+
 // Auto-generate orderId in format OG-YYYY-XXXXXXXX before save
 orderSchema.pre('save', async function (next) {
   if (!this.orderId) {

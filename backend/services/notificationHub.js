@@ -1,5 +1,8 @@
 import EventEmitter from 'events';
-import { sendBookingConfirmationEmail } from './emailService.js';
+// Sprint [8]: consolidated on backend/utils/emailService.js (single provider + retry)
+// instead of the legacy Resend-only sender, which used to fire a second, duplicate
+// confirmation email alongside the nodemailer one sent directly by the controllers.
+import { sendBookingConfirmation } from '../utils/emailService.js';
 
 class NotificationHub extends EventEmitter {
   constructor() {
@@ -11,13 +14,14 @@ class NotificationHub extends EventEmitter {
     // Écouteur pour l'événement BOOKING_SUCCESS
     this.on('BOOKING_SUCCESS', async (payload) => {
       const { to, booking, user, whatsappLink } = payload;
-      
-      const emailPromise = sendBookingConfirmationEmail({
-        to: to || user?.email,
+      const recipient = to || user?.email;
+
+      const emailPromise = sendBookingConfirmation(
         booking,
-        user,
-        whatsappLink
-      });
+        { ...user, email: recipient },
+        null,
+        whatsappLink,
+      );
 
       const operatorLogPromise = (async () => {
         const bookingId = booking?._id || 'N/A';

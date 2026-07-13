@@ -113,6 +113,9 @@ bookingSchema.index({ status: 1, operator: 1 });
 bookingSchema.index({ status: 1, paymentStatus: 1 });
 bookingSchema.index({ paymentIntentId: 1 });
 bookingSchema.index({ lastWebhookEventId: 1 });
+// Sprint [8]: getMyBookings / operator dashboards sorted by recency
+bookingSchema.index({ user: 1, createdAt: -1 });
+bookingSchema.index({ operator: 1, createdAt: -1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 

@@ -104,6 +104,11 @@ const reviewSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: product review listings + admin moderation queues
+reviewSchema.index({ product: 1, status: 1, createdAt: -1 });
+reviewSchema.index({ user: 1, createdAt: -1 });
+reviewSchema.index({ status: 1, createdAt: -1 });
+
 const Review = mongoose.model('Review', reviewSchema);
 
 export default Review;

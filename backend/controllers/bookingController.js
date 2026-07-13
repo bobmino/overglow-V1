@@ -396,12 +396,10 @@ const createBooking = async (req, res, next) => {
         logger.error('Error updating user loyalty stats', { message: err?.message })
       );
 
-      // Send booking confirmation email to the client (Nodemailer legacy)
-      sendBookingConfirmation(populatedBooking, req.user).catch(err => 
-        logger.error('Error sending booking confirmation email to client', { message: err?.message })
-      );
-
-      // ── Resend premium email + Operator alert via NotificationHub ────────
+      // Send booking confirmation email to the client + operator alert.
+      // Sprint [8]: single entry point via NotificationHub -> utils/emailService.js
+      // (previously this also called sendBookingConfirmation() directly, which sent
+      // a duplicate confirmation email through a second provider — removed).
       notificationHub.dispatch('BOOKING_SUCCESS', {
         to: req.user.email,
         booking: populatedBooking,
@@ -726,18 +724,15 @@ const bulkManualCheckout = async (req, res, next) => {
 
     // Post-booking notifications (asynchrones)
     try {
+      // Sprint [8]: the circuit (multi-booking) email already summarizes every leg
+      // of the trip via sendCircuitBookingConfirmation. We intentionally do NOT also
+      // dispatch BOOKING_SUCCESS here — that path sends a single-item confirmation
+      // (createdBookings[0]) which would be a second, misleading duplicate email.
       if (typeof sendCircuitBookingConfirmation === 'function') {
         sendCircuitBookingConfirmation(createdBookings, req.user, paymentReference).catch(err => 
           logger.error('Error sending circuit booking confirmation', { message: err?.message })
         );
       }
-
-      // ── Resend premium email + Operator alert via NotificationHub ────────
-      notificationHub.dispatch('BOOKING_SUCCESS', {
-        to: req.user.email,
-        booking: createdBookings[0], // Or handle multi-booking email
-        user: req.user,
-      });
 
       // ── Invalidation du cache Upstash Redis ──────────────────────────────
       clearCache('cache:*').catch((err) =>

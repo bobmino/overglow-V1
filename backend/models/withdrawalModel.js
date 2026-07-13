@@ -61,6 +61,11 @@ const withdrawalSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: admin/operator withdrawal listings sorted by recency + status filtering
+withdrawalSchema.index({ user: 1, createdAt: -1 });
+withdrawalSchema.index({ operator: 1, status: 1 });
+withdrawalSchema.index({ status: 1, createdAt: -1 });
+
 const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
 
 export default Withdrawal;

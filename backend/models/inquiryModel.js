@@ -52,6 +52,13 @@ const inquirySchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: user/operator inquiry lists sorted by recency + status filtering
+inquirySchema.index({ user: 1, createdAt: -1 });
+inquirySchema.index({ operator: 1, createdAt: -1 });
+inquirySchema.index({ operator: 1, status: 1 });
+inquirySchema.index({ product: 1, status: 1 });
+inquirySchema.index({ status: 1, createdAt: -1 });
+
 const Inquiry = mongoose.model('Inquiry', inquirySchema);
 
 export default Inquiry;

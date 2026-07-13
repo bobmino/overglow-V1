@@ -40,6 +40,9 @@ const scheduleSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: availability lookups sorted by date/time for a given product
+scheduleSchema.index({ product: 1, date: 1, time: 1 });
+
 const Schedule = mongoose.model('Schedule', scheduleSchema);
 
 export default Schedule;

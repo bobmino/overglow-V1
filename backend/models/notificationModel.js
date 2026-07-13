@@ -66,6 +66,10 @@ const notificationSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: notification center listing sorted by recency + unread filtering
+notificationSchema.index({ user: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ user: 1, createdAt: -1 });
+
 const Notification = mongoose.model('Notification', notificationSchema);
 
 export default Notification;

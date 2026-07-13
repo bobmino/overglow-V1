@@ -329,7 +329,7 @@ const updateProduct = async (req, res) => {
       }
 
       if (product.operator.toString() !== operator._id.toString()) {
-        return res.status(401).json({ message: 'Not authorized to update this product' });
+        return res.status(403).json({ message: 'Not authorized to update this product' });
       }
     }
 
@@ -448,8 +448,8 @@ const deleteProduct = async (req, res) => {
 
     if (product) {
       const operator = await Operator.findOne({ user: req.user._id });
-      if (product.operator.toString() !== operator._id.toString()) {
-        return res.status(401).json({ message: 'Not authorized to delete this product' });
+      if (!operator || product.operator.toString() !== operator._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to delete this product' });
       }
 
       await product.deleteOne();

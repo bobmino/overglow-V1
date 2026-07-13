@@ -25,7 +25,7 @@ const createSchedule = async (req, res) => {
   if (req.user.role !== 'Admin') {
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator || product.operator.toString() !== operator._id.toString()) {
-      res.status(401);
+      res.status(403);
       throw new Error('Not authorized to add schedule to this product');
     }
   }
@@ -104,7 +104,7 @@ const updateSchedule = async (req, res) => {
     if (req.user.role !== 'Admin') {
       const operator = await Operator.findOne({ user: req.user._id });
       if (!operator || schedule.product.operator.toString() !== operator._id.toString()) {
-        res.status(401);
+        res.status(403);
         throw new Error('Not authorized to update this schedule');
       }
     }
@@ -135,7 +135,7 @@ const deleteSchedule = async (req, res) => {
     if (req.user.role !== 'Admin') {
       const operator = await Operator.findOne({ user: req.user._id });
       if (!operator || schedule.product.operator.toString() !== operator._id.toString()) {
-        res.status(401);
+        res.status(403);
         throw new Error('Not authorized to delete this schedule');
       }
     }

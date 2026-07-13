@@ -46,7 +46,7 @@ const markAsRead = async (req, res) => {
 
     // Check if user owns this notification
     if (notification.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: 'Not authorized' });
     }
 
     notification.isRead = true;
@@ -90,7 +90,7 @@ const deleteNotification = async (req, res) => {
 
     // Check if user owns this notification
     if (notification.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: 'Not authorized' });
     }
 
     await notification.deleteOne();

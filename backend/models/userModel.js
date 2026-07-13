@@ -103,6 +103,12 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// Sprint [8]: role-based filtering + admin listings sorted by recency
+// (email unique index already declared above via `unique: true`)
+userSchema.index({ role: 1 });
+userSchema.index({ isApproved: 1 });
+userSchema.index({ createdAt: -1 });
+
 const User = mongoose.model('User', userSchema);
 
 export default User;

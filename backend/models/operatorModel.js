@@ -170,6 +170,10 @@ const operatorSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Sprint [8]: one operator profile per user + admin status filtering
+operatorSchema.index({ user: 1 }, { unique: true });
+operatorSchema.index({ status: 1, createdAt: -1 });
+
 const Operator = mongoose.model('Operator', operatorSchema);
 
 export default Operator;
