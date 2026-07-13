@@ -9,6 +9,7 @@ import { logger } from '../utils/logger.js';
 import { randomBytes } from 'crypto';
 import { sendWelcomeEmail } from '../utils/emailService.js';
 import connectDB from '../../config/db.js';
+import { setCORSHeaders } from '../config/cors.js';
 
 
 // Normalize roles to avoid issues with older data / accent variants
@@ -51,31 +52,6 @@ const parseCookies = (req) => {
     acc[rawKey] = decodeURIComponent(rest.join('='));
     return acc;
   }, {});
-};
-
-// Helper to set CORS headers
-const setCORSHeaders = (req, res) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://overglow-v1-3jqp.vercel.app',
-    'https://overglow-v1.vercel.app',
-    'https://overglow-frontend.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5174',
-  ];
-  
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
 };
 
 // @desc    Register a new user

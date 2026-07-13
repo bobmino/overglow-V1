@@ -71,7 +71,8 @@ router.route('/')
   );
 
 router.get('/my-products', protect, authorize('Opérateur'), getMyProducts);
-router.post('/webhook/import', webhookImportProduct);
+// [TASK-1] Import webhook: JWT Admin obligatoire (+ clé API optionnelle en défense en profondeur côté controller)
+router.post('/webhook/import', protect, authorize('Admin'), webhookImportProduct);
 
 router.post('/webhook/clear-cache', async (req, res) => {
   const apiKey = req.headers['x-api-key'] || req.query.key;

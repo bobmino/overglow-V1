@@ -640,12 +640,16 @@ const getProductById = async (req, res) => {
 
 // @desc    Secure webhook import for AI pipelines
 // @route   POST /api/products/webhook/import
-// @access  Private via X-API-KEY
+// @access  Private/Admin (JWT) + optional X-API-KEY if IMPORT_WEBHOOK_API_KEY is set
 const webhookImportProduct = async (req, res) => {
   try {
-    const apiKey = req.headers['x-api-key'];
-    if (!process.env.IMPORT_WEBHOOK_API_KEY || apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
-      return res.status(401).json({ success: false, message: 'Unauthorized webhook key' });
+    // [TASK-1] JWT Admin déjà validé par protect + authorize('Admin').
+    // Défense en profondeur : si une clé webhook est configurée, elle est aussi exigée.
+    if (process.env.IMPORT_WEBHOOK_API_KEY) {
+      const apiKey = req.headers['x-api-key'];
+      if (apiKey !== process.env.IMPORT_WEBHOOK_API_KEY) {
+        return res.status(401).json({ success: false, message: 'Unauthorized webhook key' });
+      }
     }
 
     const {

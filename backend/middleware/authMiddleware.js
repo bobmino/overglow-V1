@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
+import { setCORSHeaders } from '../config/cors.js';
 
 // Normalize roles to avoid issues with older data / accent variants
 const normalizeRole = (role) => {
@@ -19,31 +20,6 @@ const normalizeRole = (role) => {
   return raw;
 };
 
-// Helper to set CORS headers
-const setCORSHeaders = (req, res) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://overglow-v1-3jqp.vercel.app',
-    'https://overglow-v1.vercel.app',
-    'https://overglow-frontend.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5174',
-  ];
-  
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-};
-
 const parseCookies = (req) => {
   const rawCookie = req.headers?.cookie;
   if (!rawCookie) return {};
@@ -56,9 +32,9 @@ const parseCookies = (req) => {
 };
 
 const protect = async (req, res, next) => {
-  // Always set CORS headers first
+  // Always set CORS headers first (centralized allowlist)
   setCORSHeaders(req, res);
-  
+
   // Check if JWT_SECRET is configured
   if (!process.env.JWT_SECRET) {
     console.error('Protect middleware error: JWT_SECRET is not defined in environment variables');
@@ -119,14 +95,14 @@ const protect = async (req, res, next) => {
 
 const authorize = (...roles) => {
   return (req, res, next) => {
-    // Always set CORS headers first
+    // Always set CORS headers first (centralized allowlist)
     setCORSHeaders(req, res);
-    
+
     if (!req.user) {
       res.status(401);
       return next(new Error('User not authenticated'));
     }
-    
+
     const userRole = normalizeRole(req.user.role);
     if (!roles.includes(userRole)) {
       res.status(403);
@@ -140,7 +116,7 @@ const authorize = (...roles) => {
 // @usage   Used for endpoints that work with or without auth (e.g., checkFavorite during checkout)
 const optionalAuth = async (req, res, next) => {
   setCORSHeaders(req, res);
-  
+
   let token;
   const cookies = parseCookies(req);
   const cookieToken = cookies.accessToken;
@@ -164,7 +140,7 @@ const optionalAuth = async (req, res, next) => {
       req.user = null;
       return next();
     }
-    
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.type && decoded.type !== 'access') {
       req.user = null;
@@ -181,7 +157,7 @@ const optionalAuth = async (req, res, next) => {
     // Token is invalid or expired, continue without user context
     req.user = null;
   }
-  
+
   return next();
 };
 

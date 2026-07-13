@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
+import { corsOptions } from './backend/config/cors.js';
 import { initSentry } from './backend/utils/sentry.js';
 import { apiLimiter } from './backend/middleware/rateLimiter.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
@@ -56,62 +57,7 @@ const app = express();
 // Requis pour express-rate-limit derrière le proxy Vercel
 app.set('trust proxy', 1);
 
-// ─── CORS ───────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-  'https://overglow-v1-3jqp.vercel.app',
-  'https://overglow-v1.vercel.app',
-  'https://overglow-frontend.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5174',
-  'http://127.0.0.1:5173',
-];
-
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
-}
-
-const corsOptions = {
-  origin(origin, callback) {
-    // Allow non-browser clients (webhooks, health checks, server-to-server)
-    if (!origin) return callback(null, true);
-
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1');
-
-    if (isAllowed) {
-      return callback(null, true);
-    }
-
-    if (process.env.NODE_ENV === 'production') {
-      console.warn(`CORS blocked origin: ${origin}`);
-      return callback(new Error(`CORS: origin ${origin} not allowed`), false);
-    }
-
-    // Dev: permissive for local tooling
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-    'Origin',
-    'stripe-signature',
-    'paypal-transmission-id',
-    'paypal-transmission-time',
-    'paypal-cert-url',
-    'paypal-auth-algo',
-    'paypal-transmission-sig',
-  ],
-  maxAge: 86400,
-};
-
+// ─── CORS (allowlist centralisée — backend/config/cors.js) ───────────────────
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 

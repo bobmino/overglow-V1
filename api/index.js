@@ -2,6 +2,8 @@
 // This file handles requests BEFORE importing the Express app
 // This ensures CORS headers are ALWAYS set, even on errors
 
+import { setCORSHeaders } from '../backend/config/cors.js';
+
 // Try to import server.js, but handle failures gracefully
 let app = null;
 let appPromise = null;
@@ -10,7 +12,7 @@ let appPromise = null;
 const loadApp = async () => {
   if (app) return app;
   if (appPromise) return appPromise;
-  
+
   appPromise = (async () => {
     try {
       const module = await import('../server.js');
@@ -23,35 +25,13 @@ const loadApp = async () => {
         name: error.name,
         code: error.code,
         cause: error.cause,
-        // Log the full error for debugging
-        fullError: error
+        fullError: error,
       });
       throw error;
     }
   })();
-  
+
   return appPromise;
-};
-
-const allowedOrigins = [
-  'https://overglow-v1-3jqp.vercel.app',
-  'https://overglow-v1.vercel.app',
-  'http://localhost:5173',
-];
-
-const setCORSHeaders = (req, res) => {
-  const origin = req.headers.origin;
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
 };
 
 export default async (req, res) => {
@@ -60,12 +40,12 @@ export default async (req, res) => {
     setCORSHeaders(req, res);
     return res.status(200).end();
   }
-  
+
   // Load the app (lazy loading)
   let expressApp;
   try {
     expressApp = await loadApp();
-    
+
     if (!expressApp) {
       throw new Error('Express app not loaded');
     }
@@ -75,20 +55,20 @@ export default async (req, res) => {
       stack: loadError.stack,
       name: loadError.name,
       code: loadError.code,
-      cause: loadError.cause
+      cause: loadError.cause,
     });
-    
+
     // Set CORS only on error fallback (Express won't handle this)
     setCORSHeaders(req, res);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: 'Server initialization error',
       error: loadError.message,
       errorType: loadError.name,
       errorCode: loadError.code,
-      stack: loadError.stack
+      stack: loadError.stack,
     });
   }
-  
+
   // Let Express handle the request — Express cors() middleware sets CORS headers.
   // Do NOT set CORS here to avoid duplicate Access-Control-Allow-Origin values.
   try {
@@ -97,14 +77,14 @@ export default async (req, res) => {
     console.error('Express app error:', {
       message: appError.message,
       stack: appError.stack,
-      name: appError.name
+      name: appError.name,
     });
-    
+
     if (!res.headersSent) {
       setCORSHeaders(req, res);
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? appError.message : undefined
+        error: process.env.NODE_ENV === 'development' ? appError.message : undefined,
       });
     }
   }

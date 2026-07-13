@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { logger } from '../utils/logger.js';
+import { setCORSHeaders } from '../config/cors.js';
 
 const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 
@@ -16,28 +17,15 @@ export const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
   skipFailedRequests: false,
   handler: (req, res) => {
-    // Set CORS headers before sending error
-    const origin = req.headers.origin;
-    const allowedOrigins = [
-      'https://overglow-v1-3jqp.vercel.app',
-      'https://overglow-v1.vercel.app',
-      'https://overglow-frontend.vercel.app',
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:5174',
-    ];
-    
-    if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost'))) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
+    // CORS allowlist centralisée avant la réponse 429
+    setCORSHeaders(req, res);
+
     logger.security.rateLimitExceeded(
       req.ip || req.connection.remoteAddress,
       req.path,
       5
     );
-    
+
     res.status(429).json({
       error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
       retryAfter: 15,
@@ -70,4 +58,3 @@ export const strictLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-

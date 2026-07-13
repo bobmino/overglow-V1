@@ -92,16 +92,17 @@ const compressAfterUpload = async (req, res, next) => {
   next();
 };
 
-// Allowed MIME types (strict validation)
+// Allowed MIME types (strict validation) — images only
 const allowedMimeTypes = [
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
+  'image/gif',
 ];
 
 // Allowed file extensions
-const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
 function checkFileType(file, cb) {
   const extname = path.extname(file.originalname).toLowerCase();
@@ -123,6 +124,7 @@ function checkFileType(file, cb) {
     '.jpeg': ['image/jpeg', 'image/jpg'],
     '.png': ['image/png'],
     '.webp': ['image/webp'],
+    '.gif': ['image/gif'],
   };
 
   if (!extensionMimeMap[extname]?.includes(mimetype)) {
@@ -135,7 +137,7 @@ function checkFileType(file, cb) {
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max per file
+    fileSize: 5 * 1024 * 1024, // [TASK-1] 5MB max per file
   },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
