@@ -161,7 +161,7 @@ const ReviewItem = ({ review, onVote }) => {
               onClick={() => {
                 const response = prompt('Votre réponse à ce commentaire:');
                 if (response && response.trim()) {
-                  api.post(`/api/reviews/${review._id}/response`, { message: response.trim() })
+                  api.post(`/api/reviews/${review._id}/reply`, { message: response.trim() })
                     .then(() => {
                       alert('Réponse ajoutée avec succès');
                       window.location.reload();
@@ -182,6 +182,7 @@ const ReviewItem = ({ review, onVote }) => {
 
 const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
   const [reviews, setReviews] = useState(initialReviews);
+  const [breakdown, setBreakdown] = useState(null);
   const [filter, setFilter] = useState('all'); // all, with-photos, verified
   const [sort, setSort] = useState('helpful'); // helpful, recent, rating
 
@@ -194,7 +195,13 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
         if (sort) params.append('sort', sort);
         
         const { data } = await api.get(`/api/products/${productId}/reviews?${params.toString()}`);
-        setReviews(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setReviews(data);
+          setBreakdown(null);
+        } else {
+          setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+          setBreakdown(data.breakdown || null);
+        }
       } catch (error) {
         logger.error('Failed to fetch reviews:', error);
       }
@@ -202,17 +209,21 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
     fetchReviews();
   }, [productId, filter, sort]);
 
-  if (!Array.isArray(reviews) || reviews.length === 0) {
+  const averageRating = breakdown?.average
+    ?? (reviews.length
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+      : '0.0');
+  const totalCount = breakdown?.total ?? reviews.length;
+  const verifiedCount = reviews.filter(r => r.isVerified).length;
+  const withPhotosCount = reviews.filter(r => Array.isArray(r.photos) && r.photos.length > 0).length;
+
+  if ((!Array.isArray(reviews) || reviews.length === 0) && !breakdown?.total) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
         <p className="text-gray-600">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
       </div>
     );
   }
-
-  const averageRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
-  const verifiedCount = reviews.filter(r => r.isVerified).length;
-  const withPhotosCount = reviews.filter(r => Array.isArray(r.photos) && r.photos.length > 0).length;
 
   return (
     <div>
@@ -222,7 +233,7 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
           <div className="flex items-center">
             <Star size={20} className="text-yellow-500 fill-yellow-500 me-1" />
             <span className="font-bold text-lg">{averageRating}</span>
-            <span className="text-gray-500 ms-2">({reviews.length} avis)</span>
+            <span className="text-gray-500 ms-2">({totalCount} avis)</span>
           </div>
         </div>
 
@@ -257,6 +268,33 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
         </div>
       </div>
 
+      {/* Rating breakdown bars */}
+      {breakdown && breakdown.total > 0 && (
+        <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+          <p className="text-sm font-semibold text-slate-600 mb-3">Répartition des notes</p>
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map((star) => {
+              const pct = breakdown.percentages?.[star] ?? 0;
+              const count = breakdown.counts?.[star] ?? 0;
+              return (
+                <div key={star} className="flex items-center gap-3 text-sm">
+                  <span className="w-8 font-medium text-slate-700 shrink-0">{star}★</span>
+                  <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-400 rounded-full transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-16 text-end text-slate-500 shrink-0">
+                    {pct}% <span className="text-xs">({count})</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-0">
         {reviews.map((review) => (
           <ReviewItem 
@@ -267,7 +305,12 @@ const ReviewsList = ({ reviews: initialReviews = [], productId }) => {
               const fetchReviews = async () => {
                 try {
                   const { data } = await api.get(`/api/products/${productId}/reviews?filter=${filter}&sort=${sort}`);
-                  setReviews(Array.isArray(data) ? data : []);
+                  if (Array.isArray(data)) {
+                    setReviews(data);
+                  } else {
+                    setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+                    setBreakdown(data.breakdown || null);
+                  }
                 } catch (error) {
                   logger.error('Failed to refresh reviews:', error);
                 }

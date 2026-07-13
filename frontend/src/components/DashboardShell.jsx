@@ -23,6 +23,7 @@ const TITLE_MAP = {
   '/admin/finance': 'Finances',
   '/admin/blog': 'Blog',
   '/admin/chat': 'Messages',
+  '/admin/reviews': 'Avis',
   '/admin/badges': 'Badges',
   '/admin/approval-requests': 'Demandes opérateurs',
   '/admin/badge-requests': 'Demandes badges',

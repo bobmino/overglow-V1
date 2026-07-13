@@ -190,8 +190,36 @@ const getProductReviews = async (req, res) => {
       // Default: most helpful first
       reviews.sort((a, b) => (b.helpfulVotes || 0) - (a.helpfulVotes || 0));
     }
-    
-    res.json(reviews);
+
+    // Rating breakdown (all approved reviews for this product, independent of filter)
+    const allApproved = await Review.find({
+      product: req.params.productId,
+      status: 'Approved',
+    }).select('rating').lean();
+
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let sum = 0;
+    for (const r of allApproved) {
+      const star = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 0)));
+      counts[star] += 1;
+      sum += star;
+    }
+    const total = allApproved.length;
+    const average = total > 0 ? Math.round((sum / total) * 10) / 10 : 0;
+    const percentages = {};
+    for (let s = 1; s <= 5; s += 1) {
+      percentages[s] = total > 0 ? Math.round((counts[s] / total) * 1000) / 10 : 0;
+    }
+
+    res.json({
+      reviews,
+      breakdown: {
+        average,
+        total,
+        counts,
+        percentages,
+      },
+    });
   } catch (error) {
     logger.error('Get product reviews error:', error);
     res.status(500).json({ message: 'Failed to fetch reviews' });
@@ -245,26 +273,34 @@ const voteReview = async (req, res) => {
   }
 };
 
-// @desc    Add operator response to a review
-// @route   POST /api/reviews/:id/response
-// @access  Private/Operator
+// @desc    Add operator (or admin) response to a review
+// @route   POST /api/reviews/:id/response | POST /api/reviews/:id/reply
+// @access  Private/Operator|Admin
 const addOperatorResponse = async (req, res) => {
   try {
     const { message } = req.body;
+    if (!message || !String(message).trim()) {
+      return res.status(400).json({ message: 'Le message de réponse est requis' });
+    }
+
     const review = await Review.findById(req.params.id).populate('product');
     
     if (!review) {
       return res.status(404).json({ message: 'Review not found' });
     }
+
+    const role = String(req.user.role || '').toLowerCase();
+    const isAdmin = ['admin', 'administrator', 'superadmin'].includes(role);
     
-    // Check if user is the operator of this product
-    const operator = await Operator.findOne({ user: req.user._id });
-    if (!operator || review.product.operator.toString() !== operator._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to respond to this review' });
+    if (!isAdmin) {
+      const operator = await Operator.findOne({ user: req.user._id });
+      if (!operator || review.product.operator.toString() !== operator._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to respond to this review' });
+      }
     }
     
     review.operatorResponse = {
-      message,
+      message: sanitizeText(String(message).trim()),
       respondedAt: new Date(),
       respondedBy: req.user._id,
     };
@@ -274,6 +310,128 @@ const addOperatorResponse = async (req, res) => {
   } catch (error) {
     logger.error('Add operator response error:', error);
     res.status(500).json({ message: 'Failed to add response' });
+  }
+};
+
+/**
+ * [PROMPT-11] Admin list reviews (paginated + filters)
+ * GET /api/admin/reviews
+ */
+const getAdminReviews = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const { rating, status, productId, operatorId, search } = req.query;
+
+    const filter = {};
+    if (status) {
+      const statuses = String(status)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (statuses.length === 1) filter.status = statuses[0];
+      else if (statuses.length > 1) filter.status = { $in: statuses };
+    }
+    if (rating) filter.rating = Number(rating);
+    if (productId) filter.product = productId;
+
+    let productIdsForOperator = null;
+    if (operatorId) {
+      const products = await Product.find({ operator: operatorId }).select('_id').lean();
+      productIdsForOperator = products.map((p) => p._id);
+      filter.product = { $in: productIdsForOperator };
+    }
+
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
+      const products = await Product.find({
+        title: { $regex: q, $options: 'i' },
+        ...(productIdsForOperator ? { _id: { $in: productIdsForOperator } } : {}),
+      })
+        .select('_id')
+        .lean();
+      const ids = products.map((p) => p._id);
+      filter.product = { $in: ids.length ? ids : [] };
+    }
+
+    const [reviews, total, pendingCount, avgAgg] = await Promise.all([
+      Review.find(filter)
+        .populate('user', 'name email')
+        .populate({
+          path: 'product',
+          select: 'title city operator',
+          populate: { path: 'operator', select: 'companyName publicName' },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Review.countDocuments(filter),
+      Review.countDocuments({ status: 'Pending' }),
+      Review.aggregate([
+        { $match: { status: 'Approved' } },
+        { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    res.json({
+      reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      stats: {
+        averageRating: Math.round((avgAgg[0]?.avg || 0) * 10) / 10,
+        totalApproved: avgAgg[0]?.count || 0,
+        pendingModeration: pendingCount,
+      },
+    });
+  } catch (error) {
+    logger.error('Get admin reviews error:', error);
+    res.status(500).json({ message: 'Failed to fetch reviews' });
+  }
+};
+
+/**
+ * [PROMPT-11] Admin set review status (approve / reject)
+ * PUT /api/admin/reviews/:id/status
+ */
+const updateAdminReviewStatus = async (req, res) => {
+  try {
+    const { status, reason } = req.body;
+    const next = String(status || '').trim();
+    if (!['Approved', 'Rejected', 'Pending'].includes(next)) {
+      return res.status(400).json({
+        message: 'Statut invalide (Approved | Rejected | Pending)',
+      });
+    }
+
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    review.status = next;
+    if (next === 'Approved') {
+      review.approvedAt = new Date();
+      review.rejectedAt = undefined;
+      await review.save();
+      await notifyReviewApproved(review, review.user);
+    } else if (next === 'Rejected') {
+      review.rejectedAt = new Date();
+      review.rejectionReason = reason || '';
+      await review.save();
+    } else {
+      await review.save();
+    }
+
+    res.json({ message: 'Statut mis à jour', review });
+  } catch (error) {
+    logger.error('Update admin review status error:', error);
+    res.status(500).json({ message: 'Failed to update review status' });
   }
 };
 
@@ -337,4 +495,6 @@ export {
   voteReview,
   addOperatorResponse,
   reportReview,
+  getAdminReviews,
+  updateAdminReviewStatus,
 };

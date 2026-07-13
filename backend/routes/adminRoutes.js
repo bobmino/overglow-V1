@@ -27,6 +27,10 @@ import {
   getFinanceStats,
   getTransactions,
 } from '../controllers/adminController.js';
+import {
+  getAdminReviews,
+  updateAdminReviewStatus,
+} from '../controllers/reviewController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -34,6 +38,8 @@ const router = express.Router();
 router.get('/stats', protect, authorize('Admin'), getAdminStats);
 router.get('/finance/stats', protect, authorize('Admin'), getFinanceStats);
 router.get('/finance/transactions', protect, authorize('Admin'), getTransactions);
+router.get('/reviews', protect, authorize('Admin'), getAdminReviews);
+router.put('/reviews/:id/status', protect, authorize('Admin'), updateAdminReviewStatus);
 router.get('/analytics', protect, authorize('Admin'), getAnalytics);
 router.get('/operators', protect, authorize('Admin'), getOperators);
 router.put('/operators/:id/status', protect, authorize('Admin'), updateOperatorStatus);

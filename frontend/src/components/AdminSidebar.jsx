@@ -56,6 +56,7 @@ const ADMIN_SECTIONS = [
     items: [
       { to: '/admin/blog', label: 'Blog', icon: FileText },
       { to: '/admin/chat', label: 'Messages', icon: MessageSquare, badge: 0 },
+      { to: '/admin/reviews', label: 'Avis', icon: Star, badge: 0 },
       { to: '/admin/badges', label: 'Badges', icon: Award },
       { to: '/admin/approval-requests', label: 'Demandes opérateurs', icon: Handshake },
       { to: '/admin/badge-requests', label: 'Demandes badges', icon: Award },

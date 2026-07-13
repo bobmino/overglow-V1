@@ -13,7 +13,8 @@ const router = express.Router();
 router.put('/:id/approve', protect, authorize('Admin'), approveReview);
 router.put('/:id/reject', protect, authorize('Admin'), rejectReview);
 router.post('/:id/vote', protect, voteReview);
-router.post('/:id/response', protect, authorize('Opérateur'), addOperatorResponse);
+router.post('/:id/response', protect, authorize('Opérateur', 'Admin'), addOperatorResponse);
+router.post('/:id/reply', protect, authorize('Opérateur', 'Admin'), addOperatorResponse);
 router.post('/:id/report', protect, reportReview);
 
 export default router;

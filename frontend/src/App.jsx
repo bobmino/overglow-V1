@@ -72,6 +72,7 @@ const AdminAnalyticsPage = lazy(() => import('./pages/AdminAnalyticsPage'));
 const AdminBookingsPage = lazy(() => import('./pages/AdminBookingsPage'));
 const AdminFinancePage = lazy(() => import('./pages/AdminFinancePage'));
 const AdminChatInbox = lazy(() => import('./pages/AdminChatInbox'));
+const AdminReviewsPage = lazy(() => import('./pages/AdminReviewsPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -340,6 +341,11 @@ function App() {
             <Route path="chat" element={
               <Suspense fallback={<LoadingFallback />}>
                 <AdminChatInbox />
+              </Suspense>
+            } />
+            <Route path="reviews" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminReviewsPage />
               </Suspense>
             } />
           </Route>
