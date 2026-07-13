@@ -69,7 +69,7 @@ export const generateAIResponse = async (prompt) => {
       }
     );
 
-    return response.data;
+    return { ...response.data, model };
   } catch (error) {
     logger.error('AI response generation failed', {
       message: error.message,

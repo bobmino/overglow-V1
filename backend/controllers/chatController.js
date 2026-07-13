@@ -186,40 +186,53 @@ const sendMessageHandler = async (req, res) => {
       content: safeContent,
       type,
       attachments,
+      isAI: false,
     });
 
-    // Extraction du destinataire (l'opÃ©rateur ou le bot)
-    const receiverId = chat.participants.find(p => p.toString() !== req.user._id.toString());
+    // Extraction du destinataire (opérateur / autre participant)
+    const receiverId = chat.participants.find((p) => p.toString() !== req.user._id.toString());
 
-    // MODIFICATION COMMENTÃ‰E : Appel sÃ©curisÃ© au service d'IA externe (Tunnel localtunnel Ollama)
     let aiResponse;
+    let aiModel = process.env.AI_MODEL?.trim() || 'unknown';
     try {
       aiResponse = await generateAIResponse(safeContent);
+      if (aiResponse?.model) aiModel = String(aiResponse.model);
     } catch (error) {
       logger.error('Error generating AI response:', error);
-      // Fallback non bloquant : On enregistre au moins l'action utilisateur sur le chat
       chat.lastMessage = userMessage._id;
       chat.lastMessageAt = new Date();
       await chat.save();
       await userMessage.populate('sender', 'name email role');
-      return res.status(201).json(userMessage);
+      return res.status(201).json({ userMessage, aiMessage: null });
     }
 
-    // MODIFICATION COMMENTÃ‰E : Parsing sÃ©curisÃ© pour accepter le format texte brut ou le format d'objet OpenAI/Ollama choices
     const aiTextContent = sanitizeText(
       aiResponse?.choices?.[0]?.message?.content ||
         (typeof aiResponse === 'string' ? aiResponse : 'No response content')
     );
 
-    // MODIFICATION COMMENTÃ‰E : CrÃ©ation du message de rÃ©ponse IA, assignÃ© Ã  l'autre participant
+    // [TASK-22] SEC-08 — never present AI text as written by the human user
+    const aiSenderId = receiverId || req.user._id;
     const aiMessage = await Message.create({
       chat: chat._id,
-      sender: receiverId || req.user._id,
+      sender: aiSenderId,
       content: aiTextContent,
       type: 'text',
+      isAI: true,
+      aiMeta: {
+        model: aiModel,
+        generatedAt: new Date(),
+        confidence: typeof aiResponse?.confidence === 'number' ? aiResponse.confidence : undefined,
+      },
     });
 
-    // Mises Ã  jour structurelles du Chat finalisÃ©
+    logger.info('AI chat interaction logged', {
+      chatId: chat._id?.toString(),
+      userId: req.user._id?.toString(),
+      model: aiModel,
+      messageId: aiMessage._id?.toString(),
+    });
+
     chat.lastMessage = aiMessage._id;
     chat.lastMessageAt = new Date();
 
@@ -234,7 +247,6 @@ const sendMessageHandler = async (req, res) => {
     await userMessage.populate('sender', 'name email role');
     await aiMessage.populate('sender', 'name email role');
 
-    // Retourne les deux entitÃ©s crÃ©Ã©es pour synchroniser l'UI du chat
     res.status(201).json({ userMessage, aiMessage });
   } catch (error) {
     logger.error('Send message error:', error);

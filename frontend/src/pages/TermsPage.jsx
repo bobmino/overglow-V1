@@ -45,6 +45,10 @@ const TermsPage = () => {
             </section>
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('legal.terms_s6_title')}</h2>
+              <p className="text-gray-700 leading-relaxed">{t('legal.terms_s6_body')}</p>
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('legal.terms_s7_title')}</h2>
               <p className="text-gray-700 leading-relaxed">
                 <Link to="/contact" className="text-primary-600 font-semibold hover:underline">
                   {t('legal.help_link')}

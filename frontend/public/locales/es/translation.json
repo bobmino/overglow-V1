@@ -151,9 +151,25 @@
     "terms_s4_body": "Los operadores se comprometen a ofrecer experiencias conformes a la descripción publicada y a respetar capacidades y horarios.",
     "terms_s5_title": "5. Responsabilidad",
     "terms_s5_body": "Overglow actúa como intermediario técnico. La realización de la experiencia corresponde al operador, dentro de los límites previstos por la ley.",
-    "terms_s6_title": "6. Contacto",
+    "terms_s6_title": "6. Asistencia y contenidos generados por IA",
+    "terms_s6_body": "Algunas funciones de chat pueden usar asistencia automatizada (IA). Las respuestas de IA están claramente identificadas, pueden contener errores y no constituyen asesoramiento jurídico, médico o contractual. No sustituyen a un asesor humano. Conforme al RGPD, se le informa de este tratamiento automatizado; puede solicitar seguimiento humano a través del centro de ayuda.",
+    "terms_s7_title": "7. Contacto",
     "privacy_link": "política de privacidad",
     "help_link": "Centro de ayuda"
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Cerrar",
+    "empty": "Aún no hay mensajes",
+    "empty_hint": "¡Empieza la conversación!",
+    "placeholder": "Escribe tu mensaje...",
+    "send": "Enviar",
+    "load_error": "Error al cargar el chat",
+    "load_error_support": "Error al cargar el chat de soporte",
+    "send_error": "Error al enviar el mensaje",
+    "ai_badge": "Asistente IA",
+    "ai_disclaimer": "Esta respuesta fue generada por IA y puede ser inexacta.",
+    "ai_ack": "Acepto que este chat puede usar asistencia de IA y que sus respuestas se etiquetarán como tales."
   },
   "how_it_works": {
     "title": "Cómo funciona",

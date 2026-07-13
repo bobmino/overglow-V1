@@ -35,6 +35,17 @@ const messageSchema = mongoose.Schema(
     readAt: {
       type: Date,
     },
+    /** [TASK-22] SEC-08 — distinguish AI-generated content from human messages */
+    isAI: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    aiMeta: {
+      model: { type: String },
+      generatedAt: { type: Date },
+      confidence: { type: Number },
+    },
   },
   {
     timestamps: true,
