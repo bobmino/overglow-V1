@@ -7,26 +7,42 @@ import { logger } from '../utils/logger.js';
 // @access  Private
 const getNotifications = async (req, res) => {
   try {
-    const { limit = 50, unreadOnly = false } = req.query;
+    const { limit = 50, unreadOnly = false, countOnly = false, skip = 0, page } = req.query;
+
+    if (countOnly === 'true') {
+      const count = await Notification.countDocuments({
+        user: req.user._id,
+        isRead: false,
+      });
+      return res.json({ count, unreadCount: count });
+    }
+
     const query = { user: req.user._id };
-    
     if (unreadOnly === 'true') {
       query.isRead = false;
     }
 
-    const notifications = await Notification.find(query)
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .populate('relatedEntity.id', 'title name companyName');
+    const lim = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
+    const sk =
+      page != null
+        ? (Math.max(1, parseInt(page, 10) || 1) - 1) * lim
+        : Math.max(0, parseInt(skip, 10) || 0);
 
-    const unreadCount = await Notification.countDocuments({
-      user: req.user._id,
-      isRead: false,
-    });
+    const [notifications, unreadCount, total] = await Promise.all([
+      Notification.find(query)
+        .sort({ createdAt: -1 })
+        .skip(sk)
+        .limit(lim)
+        .populate('relatedEntity.id', 'title name companyName'),
+      Notification.countDocuments({ user: req.user._id, isRead: false }),
+      Notification.countDocuments(query),
+    ]);
 
     res.json({
       notifications,
       unreadCount,
+      total,
+      hasMore: sk + notifications.length < total,
     });
   } catch (error) {
     logger.error('Get notifications error:', error);
@@ -112,7 +128,7 @@ const getUnreadCount = async (req, res) => {
       isRead: false,
     });
 
-    res.json({ unreadCount: count });
+    res.json({ count, unreadCount: count });
   } catch (error) {
     logger.error('Get unread count error:', error);
     res.status(500).json({ message: 'Failed to get unread count' });

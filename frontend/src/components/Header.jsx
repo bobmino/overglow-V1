@@ -8,7 +8,7 @@ import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
-import NotificationBadge from './NotificationBadge';
+import NotificationBell from './NotificationBell';
 import { logger } from '../utils/logger.js';
 
 const Header = () => {
@@ -206,6 +206,7 @@ const Header = () => {
             )}
           </div>
           
+          <NotificationBell />
           <LanguageSelector />
           <CurrencySelector />
 
@@ -224,9 +225,6 @@ const Header = () => {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <NotificationBadge />
-              
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>
                 <button

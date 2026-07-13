@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -93,9 +93,20 @@ const AdminSidebar = ({
   mobileOpen,
   onCloseMobile,
   variant = 'admin',
+  messagesBadge = 0,
 }) => {
   const location = useLocation();
-  const sections = variant === 'operator' ? OPERATOR_SECTIONS : ADMIN_SECTIONS;
+  const sections = useMemo(() => {
+    if (variant !== 'operator') return ADMIN_SECTIONS;
+    return OPERATOR_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.map((item) =>
+        item.to === '/operator/inquiries'
+          ? { ...item, badge: messagesBadge }
+          : item
+      ),
+    }));
+  }, [variant, messagesBadge]);
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
 
   const isItemActive = (to) => {

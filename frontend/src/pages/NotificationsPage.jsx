@@ -1,67 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import api from '../config/axios';
-import { Bell, Check, CheckCheck, Trash2, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  CalendarDays,
+  Package,
+  Star,
+  MessageSquare,
+  Banknote,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import api from '../config/axios';
 import ScrollToTopButton from '../components/ScrollToTopButton';
-import DashboardNavBar from '../components/DashboardNavBar';
 import { logger } from '../utils/logger.js';
 
-const getDateLocale = (language) => {
-  const locale = language?.slice(0, 2) || 'fr';
-  if (locale === 'ar') return 'ar-MA';
-  if (locale === 'es') return 'es-ES';
-  if (locale === 'en') return 'en-GB';
-  return 'fr-FR';
+const PAGE_SIZE = 20;
+
+const iconForType = (type = '') => {
+  if (type.startsWith('booking') || type.includes('payment')) {
+    return { Icon: CalendarDays, className: 'bg-blue-100 text-blue-600' };
+  }
+  if (type.startsWith('product')) {
+    return { Icon: Package, className: 'bg-green-100 text-green-600' };
+  }
+  if (type.startsWith('review')) {
+    return { Icon: Star, className: 'bg-yellow-100 text-yellow-700' };
+  }
+  if (type.startsWith('inquiry')) {
+    return { Icon: MessageSquare, className: 'bg-purple-100 text-purple-600' };
+  }
+  if (type.startsWith('withdrawal') || type.includes('refund')) {
+    return { Icon: Banknote, className: 'bg-emerald-100 text-emerald-700' };
+  }
+  return { Icon: Bell, className: 'bg-gray-100 text-gray-600' };
+};
+
+const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+
+const groupKeyForDate = (dateStr) => {
+  const date = startOfDay(dateStr);
+  const today = startOfDay(new Date());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  if (date.getTime() === today.getTime()) return 'Aujourd’hui';
+  if (date.getTime() === yesterday.getTime()) return 'Hier';
+  if (date >= weekAgo) return 'Cette semaine';
+  return 'Plus ancien';
+};
+
+const GROUP_ORDER = ['Aujourd’hui', 'Hier', 'Cette semaine', 'Plus ancien'];
+
+const getNotificationLink = (notification) => {
+  if (!notification.relatedEntity?.id) return null;
+  const { type, id } = notification.relatedEntity;
+  const entityId = id?._id || id;
+  switch (type) {
+    case 'Product':
+      return `/products/${entityId}`;
+    case 'Booking':
+      return '/dashboard';
+    case 'Review':
+      return '/dashboard';
+    case 'Inquiry':
+      return '/operator/inquiries';
+    case 'Withdrawal':
+      return '/operator/withdrawals';
+    default:
+      return null;
+  }
 };
 
 const NotificationsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, unread
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
 
-  const dateLocale = getDateLocale(i18n.language);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [filter]);
-
-  const fetchNotifications = async () => {
+  const fetchPage = useCallback(async (pageNum, replace = false) => {
+    if (replace) setLoading(true);
+    else setLoadingMore(true);
     try {
-      const url = filter === 'unread' 
-        ? '/api/notifications?unreadOnly=true'
-        : '/api/notifications';
-      const { data } = await api.get(url);
-      setNotifications(data.notifications || []);
+      const { data } = await api.get('/api/notifications', {
+        params: {
+          limit: PAGE_SIZE,
+          page: pageNum,
+          unreadOnly: filter === 'unread' ? 'true' : 'false',
+        },
+      });
+      const list = data.notifications || [];
+      setNotifications((prev) => (replace ? list : [...prev, ...list]));
       setUnreadCount(data.unreadCount || 0);
-      setLoading(false);
-      
-      // Auto-mark as read once loaded if there are unread notifications
-      if (data.unreadCount > 0) {
-        api.put('/api/notifications/mark-all-read')
-          .then(() => {
-            window.dispatchEvent(new CustomEvent('notificationsRead'));
-            // If filter was unread, we might want to keep the list or clear it, but let's just set unreadCount to 0
-            setUnreadCount(0);
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
-          })
-          .catch(err => logger.error('Failed to auto-mark all as read:', err));
-      }
+      setHasMore(Boolean(data.hasMore));
+      setPage(pageNum);
     } catch (error) {
       logger.error('Failed to fetch notifications:', error);
+    } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    // [PROMPT-3] Do NOT auto-mark all as read on load
+    fetchPage(1, true);
+  }, [fetchPage]);
 
   const markAsRead = async (notificationId) => {
     try {
       await api.put(`/api/notifications/${notificationId}/read`);
-      setNotifications(prev => 
-        prev.map(n => n._id === notificationId ? { ...n, isRead: true, readAt: new Date() } : n)
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n._id === notificationId ? { ...n, isRead: true, readAt: new Date() } : n
+        )
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      window.dispatchEvent(new CustomEvent('notificationsRead'));
     } catch (error) {
       logger.error('Failed to mark as read:', error);
     }
@@ -70,8 +136,9 @@ const NotificationsPage = () => {
   const markAllAsRead = async () => {
     try {
       await api.put('/api/notifications/mark-all-read');
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date() })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true, readAt: new Date() })));
       setUnreadCount(0);
+      window.dispatchEvent(new CustomEvent('notificationsRead'));
     } catch (error) {
       logger.error('Failed to mark all as read:', error);
     }
@@ -80,70 +147,34 @@ const NotificationsPage = () => {
   const deleteNotification = async (notificationId) => {
     try {
       await api.delete(`/api/notifications/${notificationId}`);
-      setNotifications(prev => {
-        const notif = prev.find(n => n._id === notificationId);
+      setNotifications((prev) => {
+        const notif = prev.find((n) => n._id === notificationId);
         if (notif && !notif.isRead) {
-          setUnreadCount(prev => Math.max(0, prev - 1));
+          setUnreadCount((c) => Math.max(0, c - 1));
         }
-        return prev.filter(n => n._id !== notificationId);
+        return prev.filter((n) => n._id !== notificationId);
       });
     } catch (error) {
       logger.error('Failed to delete notification:', error);
     }
   };
 
-  const getNotificationLink = (notification) => {
-    if (!notification.relatedEntity || !notification.relatedEntity.id) {
-      return null;
+  const grouped = useMemo(() => {
+    const map = {};
+    for (const n of notifications) {
+      const key = groupKeyForDate(n.createdAt);
+      if (!map[key]) map[key] = [];
+      map[key].push(n);
     }
-
-    const { type, id } = notification.relatedEntity;
-    
-    switch (type) {
-      case 'Product':
-        return `/products/${id}`;
-      case 'Booking':
-        return `/dashboard`;
-      case 'Review':
-        return `/dashboard`;
-      case 'Inquiry':
-        return notification.user?.role === 'Opérateur' ? '/operator/inquiries' : '/my-inquiries';
-      case 'Withdrawal':
-        return notification.user?.role === 'Opérateur' ? '/operator/withdrawals' : '/dashboard';
-      default:
-        return null;
-    }
-  };
-
-  const getNotificationIcon = (type) => {
-    const iconClass = "w-10 h-10 rounded-full flex items-center justify-center";
-    switch (type) {
-      case 'booking_created':
-      case 'booking_confirmed':
-        return <div className={`${iconClass} bg-blue-100 text-blue-600`}>📅</div>;
-      case 'product_pending':
-      case 'product_approved':
-        return <div className={`${iconClass} bg-green-100 text-green-600`}>📦</div>;
-      case 'review_pending':
-      case 'review_approved':
-        return <div className={`${iconClass} bg-yellow-100 text-yellow-600`}>⭐</div>;
-      case 'inquiry_received':
-      case 'inquiry_answered':
-        return <div className={`${iconClass} bg-purple-100 text-purple-600`}>💬</div>;
-      case 'withdrawal_requested':
-      case 'withdrawal_approved':
-        return <div className={`${iconClass} bg-emerald-100 text-emerald-600`}>💰</div>;
-      default:
-        return <div className={`${iconClass} bg-gray-100 text-gray-600`}><Bell size={20} /></div>;
-    }
-  };
+    return GROUP_ORDER.filter((k) => map[k]?.length).map((k) => ({ label: k, items: map[k] }));
+  }, [notifications]);
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-24 bg-gray-200 rounded-xl"></div>
+            <div key={n} className="h-24 bg-gray-200 rounded-xl" />
           ))}
         </div>
       </div>
@@ -151,132 +182,158 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 max-w-3xl">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('notifications.page_title')}</h1>
+          <h1 className="text-3xl font-heading font-bold text-gray-900">
+            {t('notifications.page_title', 'Notifications')}
+          </h1>
           {unreadCount > 0 && (
             <p className="text-sm text-gray-600 mt-1">
-              {t('notifications.unread_count', { count: unreadCount })}
+              {unreadCount} non lue{unreadCount > 1 ? 's' : ''}
             </p>
           )}
         </div>
-        <DashboardNavBar />
+        {unreadCount > 0 && (
+          <button
+            type="button"
+            onClick={markAllAsRead}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+          >
+            <CheckCheck size={18} />
+            Tout marquer comme lu
+          </button>
+        )}
       </div>
 
-      {/* Filters and Actions */}
       <div className="flex flex-wrap gap-3 mb-6">
         <button
+          type="button"
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
             filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          {t('notifications.filter_all')}
+          Toutes
         </button>
         <button
+          type="button"
           onClick={() => setFilter('unread')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
             filter === 'unread' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          {t('notifications.filter_unread', { count: unreadCount })}
+          Non lues ({unreadCount})
         </button>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllAsRead}
-            className="ms-auto px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
-          >
-            <CheckCheck size={18} />
-            {t('notifications.mark_all_read')}
-          </button>
-        )}
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
+        <div className="bg-gray-50 rounded-xl p-12 text-center border border-gray-100">
           <Bell size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('notifications.empty_title')}</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucune notification</h2>
           <p className="text-gray-600">
-            {filter === 'unread' 
-              ? t('notifications.empty_unread')
-              : t('notifications.empty_all')
-            }
+            {filter === 'unread'
+              ? 'Vous êtes à jour — rien de non lu.'
+              : 'Les alertes de réservations et messages apparaîtront ici.'}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {notifications.map((notification) => {
-            const link = getNotificationLink(notification);
-            const NotificationContent = (
-              <div
-                className={`bg-white rounded-xl border p-4 transition ${
-                  notification.isRead 
-                    ? 'border-gray-200' 
-                    : 'border-primary-300 bg-primary-50'
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  {getNotificationIcon(notification.type)}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <h3 className={`font-bold mb-1 ${notification.isRead ? 'text-gray-700' : 'text-gray-900'}`}>
-                          {notification.title}
-                        </h3>
-                        <p className={`text-sm ${notification.isRead ? 'text-gray-600' : 'text-gray-800'}`}>
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(notification.createdAt).toLocaleDateString(dateLocale, {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        {!notification.isRead && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead(notification._id);
-                            }}
-                            className="p-2 text-primary-600 hover:bg-primary-100 rounded-lg transition"
-                            title={t('notifications.mark_read')}
+        <div className="space-y-6">
+          {grouped.map((group) => (
+            <section key={group.label}>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
+                {group.label}
+              </h2>
+              <div className="space-y-2">
+                {group.items.map((notification) => {
+                  const link = getNotificationLink(notification);
+                  const { Icon, className } = iconForType(notification.type);
+                  const card = (
+                    <div
+                      className={`group bg-white rounded-xl border p-4 transition ${
+                        notification.isRead
+                          ? 'border-gray-200'
+                          : 'border-primary-300 bg-primary-50/40'
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${className}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3
+                            className={`mb-1 ${
+                              notification.isRead ? 'font-medium text-gray-700' : 'font-bold text-gray-900'
+                            }`}
                           >
-                            <Check size={18} />
+                            {notification.title}
+                          </h3>
+                          <p className="text-sm text-gray-600">{notification.message}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(notification.createdAt).toLocaleString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
+                          {!notification.isRead && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                markAsRead(notification._id);
+                              }}
+                              className="p-2 text-primary-600 hover:bg-primary-100 rounded-lg"
+                              title="Marquer comme lu"
+                            >
+                              <Check size={18} />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              deleteNotification(notification._id);
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={18} />
                           </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notification._id);
-                          }}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
-                          title={t('notifications.delete')}
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            );
+                  );
 
-            return link ? (
-              <Link key={notification._id} to={link}>
-                {NotificationContent}
-              </Link>
-            ) : (
-              <div key={notification._id}>
-                {NotificationContent}
+                  return link ? (
+                    <Link key={notification._id} to={link} onClick={() => !notification.isRead && markAsRead(notification._id)}>
+                      {card}
+                    </Link>
+                  ) : (
+                    <div key={notification._id}>{card}</div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </section>
+          ))}
+
+          {hasMore && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                disabled={loadingMore}
+                onClick={() => fetchPage(page + 1, false)}
+                className="px-5 py-2.5 rounded-lg border border-gray-300 font-semibold text-gray-800 hover:bg-white disabled:opacity-50"
+              >
+                {loadingMore ? 'Chargement…' : 'Charger plus'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

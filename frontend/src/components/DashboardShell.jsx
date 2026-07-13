@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Menu, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import AdminSidebar, {
   SIDEBAR_WIDTH,
   SIDEBAR_COLLAPSED,
   STORAGE_KEY,
 } from './AdminSidebar';
+import api from '../config/axios';
+import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 const TITLE_MAP = {
   '/admin/dashboard': 'Tableau de bord',
@@ -40,10 +43,10 @@ const resolveTitle = (pathname) => {
 
 /**
  * Shell layout for admin & operator areas: persistent sidebar + mobile top bar.
- * Used as a nested route element with <Outlet />.
  */
 const DashboardShell = ({ variant = 'admin' }) => {
   const location = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === '1';
@@ -52,6 +55,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
     }
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [messagesBadge, setMessagesBadge] = useState(0);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
   );
@@ -76,6 +80,27 @@ const DashboardShell = ({ variant = 'admin' }) => {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
+  // [PROMPT-3] Unread badge for operator Messages
+  useEffect(() => {
+    if (variant !== 'operator' || authLoading || !isAuthenticated) return undefined;
+    const fetchBadge = async () => {
+      try {
+        const { data } = await api.get('/api/notifications/unread-count');
+        setMessagesBadge(data.count ?? data.unreadCount ?? 0);
+      } catch {
+        /* silent */
+      }
+    };
+    fetchBadge();
+    const onRead = () => fetchBadge();
+    window.addEventListener('notificationsRead', onRead);
+    const id = setInterval(fetchBadge, 30000);
+    return () => {
+      window.removeEventListener('notificationsRead', onRead);
+      clearInterval(id);
+    };
+  }, [variant, authLoading, isAuthenticated]);
+
   const contentOffset = useMemo(
     () => (collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH),
     [collapsed]
@@ -91,6 +116,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
         onToggleCollapse={() => setCollapsed((v) => !v)}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
+        messagesBadge={messagesBadge}
       />
 
       <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-3 bg-white border-b border-gray-200 shadow-sm">
@@ -105,14 +131,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
         <h1 className="flex-1 text-base font-heading font-bold text-slate-900 truncate">
           {pageTitle}
         </h1>
-        <button
-          type="button"
-          className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 relative"
-          aria-label="Notifications"
-          title="Notifications (bientôt)"
-        >
-          <Bell size={20} />
-        </button>
+        <NotificationBell />
       </div>
 
       <div
