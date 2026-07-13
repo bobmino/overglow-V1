@@ -7,6 +7,8 @@
 - [x] [6] Rate Limiting Migration + Mass Assignment Protection (P1, S2)
 - [x] [7] Blog Route Order + Async Error Handling (P1, S2)
 - [x] [8] DB Indexes + Status Codes + Email Consolidation (P1, S2)
+- [x] [9] CSV Sanitization + Upload Security + Health Endpoint (P1, S2)
+- [ ] [10] Layout Integration + 404 Page + Design System (P0, S3)
 
 ---
 

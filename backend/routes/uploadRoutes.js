@@ -1,12 +1,25 @@
 import express from 'express';
-import upload, { compressAfterUpload } from '../middleware/uploadMiddleware.js';
+import upload, { compressAfterUpload, uploadCsv, uploadDocument } from '../middleware/uploadMiddleware.js';
 import { strictLimiter } from '../middleware/rateLimiter.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { sanitizeCsvRows } from '../utils/csvSanitize.js';
+import crypto from 'crypto';
+import path from 'path';
 
 const router = express.Router();
 
-// [TASK-1] Uploads authentifiés uniquement (opérateur / admin)
-// Single image upload with compression
+const PRODUCT_CSV_COLUMNS = [
+  'title',
+  'description',
+  'price',
+  'city',
+  'category',
+  'address',
+  'duration',
+  'imageUrl',
+];
+
+// [TASK-1/9] Uploads images authentifiés (opérateur / admin)
 router.post(
   '/',
   protect,
@@ -19,22 +32,20 @@ router.post(
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Return Cloudinary URL if available, otherwise data URL (base64)
     if (req.file.dataUrl) {
       const isCloudinaryUrl = req.file.dataUrl.startsWith('http');
       return res.json({
         url: req.file.dataUrl,
+        filename: req.file.storedName,
         message: 'Image uploaded successfully',
         source: isCloudinaryUrl ? 'cloudinary' : 'base64',
       });
     }
 
-    // Fallback (should not happen)
     return res.status(500).json({ message: 'Error processing image' });
   }
 );
 
-// Multiple images upload with compression
 router.post(
   '/images',
   protect,
@@ -47,18 +58,101 @@ router.post(
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    // Return Cloudinary URLs if available, otherwise data URLs (base64)
-    const urls = req.files
-      .filter((file) => file.dataUrl)
-      .map((file) => file.dataUrl);
-
+    const urls = req.files.filter((file) => file.dataUrl).map((file) => file.dataUrl);
     if (urls.length === 0) {
       return res.status(500).json({ message: 'Error processing images' });
     }
 
     const source = urls[0]?.startsWith('http') ? 'cloudinary' : 'base64';
+    res.json({
+      urls,
+      images: urls,
+      filenames: req.files.map((f) => f.storedName).filter(Boolean),
+      source,
+    });
+  }
+);
 
-    res.json({ urls, images: urls, source });
+/**
+ * [TASK-9] Bulk CSV upload — Admin only.
+ * Attend un fichier .csv; parse basique UTF-8 (colonnes séparées par virgule).
+ */
+router.post(
+  '/csv',
+  protect,
+  authorize('Admin'),
+  strictLimiter,
+  uploadCsv.single('file'),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No CSV file uploaded' });
+    }
+
+    try {
+      const text = req.file.buffer.toString('utf8').replace(/^\uFEFF/, '');
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (lines.length < 2) {
+        return res.status(400).json({ message: 'CSV must include a header and at least one row' });
+      }
+
+      const headers = lines[0].split(',').map((h) => h.trim());
+      const extras = headers.filter((h) => !PRODUCT_CSV_COLUMNS.includes(h));
+      if (extras.length) {
+        return res.status(400).json({
+          message: 'Unexpected CSV columns rejected',
+          extras,
+          allowed: PRODUCT_CSV_COLUMNS,
+        });
+      }
+
+      const rows = lines.slice(1).map((line) => {
+        const cols = line.split(',');
+        const row = {};
+        headers.forEach((h, i) => {
+          row[h] = (cols[i] || '').trim();
+        });
+        return row;
+      });
+
+      const result = sanitizeCsvRows(rows, PRODUCT_CSV_COLUMNS, { maxRows: 1000 });
+      if (!result.ok) {
+        return res.status(400).json({ message: 'CSV validation failed', errors: result.errors });
+      }
+
+      return res.status(200).json({
+        message: 'CSV validated and sanitized',
+        count: result.rows.length,
+        rows: result.rows,
+        filename: `${crypto.randomUUID()}${path.extname(req.file.originalname || '.csv')}`,
+      });
+    } catch (error) {
+      return res.status(400).json({ message: 'Failed to parse CSV', error: error.message });
+    }
+  }
+);
+
+/**
+ * [TASK-9] Document upload — Admin only (pdf/doc/docx, 10MB).
+ */
+router.post(
+  '/document',
+  protect,
+  authorize('Admin'),
+  strictLimiter,
+  uploadDocument.single('document'),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No document uploaded' });
+    }
+
+    const storedName = `${crypto.randomUUID()}${path.extname(req.file.originalname || '').toLowerCase()}`;
+    // Pas de stockage disque sur Vercel — retourne métadonnées + base64 court-circuité volontairement
+    return res.status(200).json({
+      message: 'Document accepted',
+      filename: storedName,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+    });
   }
 );
 
