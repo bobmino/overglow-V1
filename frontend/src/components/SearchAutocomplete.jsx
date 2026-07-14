@@ -75,13 +75,13 @@ const SearchAutocomplete = ({ value = '', onChange, onSelect, placeholder = "Sea
   const defaultCities = [
     { name: 'Agadir' },
     { name: 'Taghazout' },
-    { name: 'Marrakech' }
+    { name: 'Marrakech' },
   ];
   const apiCities = Array.isArray(suggestions?.cities) ? suggestions.cities : [];
   const activities = Array.isArray(suggestions?.activities) ? suggestions.activities : [];
-  
-  const isFallback = value.length < 2 || (apiCities.length === 0 && activities.length === 0);
-  const cities = isFallback ? defaultCities : apiCities;
+
+  // Fallback 3 villes uniquement au focus (saisie < 2). Après saisie, on respecte l’API.
+  const cities = value.length >= 2 ? apiCities : defaultCities;
   const hasSuggestions = cities.length > 0 || activities.length > 0;
 
   return (

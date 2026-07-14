@@ -23,7 +23,7 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, renderCard 
     if (searchTag) {
       navigate(`/search?q=${encodeURIComponent(searchTag)}`);
     } else if (categoryId) {
-      navigate(`/search?category=${categoryId}`);
+      navigate(`/search?categoryGroup=${categoryId}`);
     } else {
       navigate('/search');
     }

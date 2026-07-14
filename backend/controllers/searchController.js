@@ -26,48 +26,52 @@ export const getAutocomplete = async (req, res) => {
 
     const searchRegex = new RegExp(escapeRegex(q), 'i');
 
-    // Search in products
-    const products = await Product.find({
-      status: { $regex: /^published$/i },
-      $or: [
-        { city: searchRegex },
-        { title: searchRegex }
-      ]
-    })
-    .select('city title category')
-    .limit(10);
+    const [matchedCities, products] = await Promise.all([
+      Product.distinct('city', {
+        status: { $regex: /^published$/i },
+        city: searchRegex,
+      }),
+      Product.find({
+        status: { $regex: /^published$/i },
+        title: searchRegex,
+      })
+        .select('city title category')
+        .limit(8)
+        .lean(),
+    ]);
 
-    // Extract unique cities from products
-    const productCities = [...new Set(products.map(p => p.city))];
+    const matchingDestinations = popularDestinations
+      .filter(
+        (dest) =>
+          dest.city.toLowerCase().includes(q.toLowerCase()) ||
+          dest.country.toLowerCase().includes(q.toLowerCase())
+      )
+      .slice(0, 8);
 
-    // Search in popular destinations
-    const matchingDestinations = popularDestinations.filter(dest =>
-      dest.city.toLowerCase().includes(q.toLowerCase()) ||
-      dest.country.toLowerCase().includes(q.toLowerCase())
-    ).slice(0, 5);
+    const cityMap = new Map();
+    matchingDestinations.forEach((d) => {
+      if (d.city) cityMap.set(d.city.toLowerCase(), { name: d.city, country: d.country || '' });
+    });
+    matchedCities.forEach((c) => {
+      if (c && !cityMap.has(String(c).toLowerCase())) {
+        cityMap.set(String(c).toLowerCase(), { name: c, country: '' });
+      }
+    });
 
-    // Combine and deduplicate cities
-    const allCities = [...new Set([
-      ...matchingDestinations.map(d => ({ name: d.city, country: d.country })),
-      ...productCities.map(c => ({ name: c, country: '' }))
-    ])].slice(0, 5);
+    const allCities = Array.from(cityMap.values()).slice(0, 15);
 
-    // Get matching activities
-    const activities = products
-      .filter(p => p.title.toLowerCase().includes(q.toLowerCase()))
-      .slice(0, 5)
-      .map(p => ({
-        id: p._id,
-        slug: p?.slug || null,
-        title: p?.title || '',
-        city: p?.city || '',
-        category: p?.category || ''
-      }));
+    const activities = products.slice(0, 8).map((p) => ({
+      id: p._id,
+      slug: p?.slug || null,
+      title: p?.title || '',
+      city: p?.city || '',
+      category: p?.category || '',
+    }));
 
     res.json({
       cities: allCities,
       activities,
-      showNearby: true
+      showNearby: true,
     });
   } catch (error) {
     logger.error('Autocomplete error:', error);

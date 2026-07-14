@@ -468,14 +468,14 @@ const Header = () => {
             {t('header.discover')}
           </Link>
           <Link 
-            to="/search?category=Villas%20de%20Prestige" 
+            to="/search?productType=luxury_stay" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.luxury')} <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
           </Link>
           <Link 
-            to="/search?category=Mobilité%20%26%20Chauffeurs" 
+            to="/search?productType=service" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >

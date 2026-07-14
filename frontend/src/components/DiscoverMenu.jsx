@@ -138,6 +138,11 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   const currentMapping = data.mapping[activeCategory] || data.mapping[data.categories[0].name];
   const CategoryIcon = data.icon;
+  const productTypeForMenu =
+    menuType === 'luxury' ? 'luxury_stay' : menuType === 'services' ? 'service' : '';
+  const viewAllHref = productTypeForMenu
+    ? `/search?productType=${productTypeForMenu}`
+    : `/search?q=${encodeURIComponent(activeCategory)}`;
 
   return (
     <div 
@@ -254,11 +259,11 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
       {/* View All Link */}
       <div className="mt-10 pt-6 border-t border-slate-100 flex justify-end">
         <Link
-          to={`/search?category=${encodeURIComponent(activeCategory)}`}
+          to={viewAllHref}
           onClick={onClose}
           className="inline-flex items-center gap-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40"
         >
-          {t('menu.viewCategory')} {activeCategory}
+          {t('menu.viewCategory')} {data.title}
           <ChevronRight size={16} strokeWidth={2} />
         </Link>
       </div>

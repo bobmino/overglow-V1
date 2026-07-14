@@ -7,7 +7,7 @@ Ordre = dépendances respectées
 
 ## Tracker
 - [x] HOTFIX S0 — Shell backoffice hors Layout public
-- [ ] HOTFIX S1 — Catalogue productType + galerie + villes
+- [x] HOTFIX S1 — Catalogue productType + galerie + villes
 - [ ] HOTFIX S2 — Loyalty + perf
 - [x] PROMPT 1 — Sidebar Admin Persistante
 - [x] PROMPT 2 — Page Réservations Admin

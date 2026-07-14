@@ -100,10 +100,32 @@ export const parseFilterParams = (query = {}) => {
     tags = tagsRaw.split(',').map((t) => t.trim()).filter(Boolean);
   }
 
+  const OBJECT_ID_RE = /^[a-f\d]{24}$/i;
+  let categoryGroup =
+    typeof query.categoryGroup === 'string' && OBJECT_ID_RE.test(query.categoryGroup.trim())
+      ? query.categoryGroup.trim()
+      : null;
+
+  // Legacy carousel links used ?category=<ObjectId>
+  if (!categoryGroup && categories.length === 1 && OBJECT_ID_RE.test(categories[0])) {
+    categoryGroup = categories[0];
+    categories = [];
+  } else {
+    categories = categories.filter((c) => !OBJECT_ID_RE.test(c));
+  }
+
+  const rawProductType =
+    typeof query.productType === 'string' ? query.productType.trim().toLowerCase() : '';
+  const productType = ['tour', 'luxury_stay', 'service'].includes(rawProductType)
+    ? rawProductType
+    : '';
+
   return {
     q: typeof query.q === 'string' ? query.q.trim() : (typeof query.search === 'string' ? query.search.trim() : ''),
     city: typeof query.city === 'string' ? query.city.trim() : '',
     categories,
+    productType,
+    categoryGroup,
     minPrice: query.minPrice != null && query.minPrice !== '' ? Number(query.minPrice) : null,
     maxPrice: query.maxPrice != null && query.maxPrice !== '' ? Number(query.maxPrice) : null,
     minRating: query.minRating != null && query.minRating !== '' ? Number(query.minRating) : null,
@@ -154,6 +176,14 @@ export const buildPublishedProductQuery = (filters) => {
     and.push({
       $or: categoryRegexes.map((rx) => ({ category: { $regex: rx } })),
     });
+  }
+
+  if (filters.productType) {
+    and.push({ productType: filters.productType });
+  }
+
+  if (filters.categoryGroup) {
+    and.push({ categoryGroup: filters.categoryGroup });
   }
 
   if (filters.skipTheLine) {

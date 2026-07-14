@@ -21,13 +21,16 @@ const SearchPage = () => {
 
   const filtersFromUrl = useMemo(() => {
     const tagsParam = searchParams.get('tags');
+    const categoryParam = searchParams.get('category') || '';
+    const categoryGroupParam = searchParams.get('categoryGroup') || '';
+    const productTypeParam = searchParams.get('productType') || '';
     return {
       q: searchParams.get('q') || '',
       city: searchParams.get('city') || '',
-      category: searchParams.get('category') || '',
-      categories: searchParams.get('category')
-        ? searchParams.get('category').split(',').filter(Boolean)
-        : [],
+      category: categoryParam,
+      categories: categoryParam ? categoryParam.split(',').filter(Boolean) : [],
+      productType: productTypeParam,
+      categoryGroup: categoryGroupParam,
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : null,
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : null,
       minRating: searchParams.get('minRating') ? Number(searchParams.get('minRating')) : null,
@@ -82,6 +85,8 @@ const SearchPage = () => {
       params.set('categories', filtersFromUrl.categories.join(','));
       params.set('category', filtersFromUrl.categories[0]);
     }
+    if (filtersFromUrl.productType) params.set('productType', filtersFromUrl.productType);
+    if (filtersFromUrl.categoryGroup) params.set('categoryGroup', filtersFromUrl.categoryGroup);
     if (filtersFromUrl.minPrice != null) params.set('minPrice', String(filtersFromUrl.minPrice));
     if (filtersFromUrl.maxPrice != null) params.set('maxPrice', String(filtersFromUrl.maxPrice));
     if (filtersFromUrl.minRating != null) params.set('minRating', String(filtersFromUrl.minRating));
@@ -165,6 +170,15 @@ const SearchPage = () => {
   const activeChips = [];
   if (filtersFromUrl.q) activeChips.push({ key: 'q', label: filtersFromUrl.q });
   if (filtersFromUrl.city) activeChips.push({ key: 'city', label: filtersFromUrl.city });
+  if (filtersFromUrl.productType === 'luxury_stay') {
+    activeChips.push({ key: 'productType', label: 'Logements de luxe', productType: 'luxury_stay' });
+  }
+  if (filtersFromUrl.productType === 'service') {
+    activeChips.push({ key: 'productType', label: 'Extras & services', productType: 'service' });
+  }
+  if (filtersFromUrl.categoryGroup) {
+    activeChips.push({ key: 'categoryGroup', label: 'Catégorie', categoryGroup: filtersFromUrl.categoryGroup });
+  }
   filtersFromUrl.categories.forEach((c) =>
     activeChips.push({ key: `cat-${c}`, label: c, category: c })
   );
@@ -193,6 +207,8 @@ const SearchPage = () => {
   const removeChip = (chip) => {
     if (chip.key === 'q') updateParams({ q: '' });
     else if (chip.key === 'city') updateParams({ city: '' });
+    else if (chip.key === 'productType') updateParams({ productType: null });
+    else if (chip.key === 'categoryGroup') updateParams({ categoryGroup: null });
     else if (chip.category) {
       setSelectedCategories((prev) => prev.filter((c) => c !== chip.category));
     } else if (chip.tag) {
