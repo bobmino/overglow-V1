@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Users, Mail, Shield, Trash2, AlertCircle } from 'lucide-react';
+import { Users, Shield } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import AdvancedFilters from '../components/AdvancedFilters';
+import DataTable from '../components/DataTable';
 import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
@@ -87,86 +89,93 @@ const AdminUsersPage = () => {
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.users.title')}</h1>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.users.filter_all', { count: users.length })}
-        </button>
-        <button
-          onClick={() => setFilter('Client')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Client' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.users.filter_clients', { count: users.filter((u) => u.role === 'Client').length })}
-        </button>
-        <button
-          onClick={() => setFilter('Opérateur')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Opérateur' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.users.filter_operators', { count: users.filter((u) => u.role === 'Opérateur').length })}
-        </button>
-        <button
-          onClick={() => setFilter('Admin')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Admin' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.users.filter_admins', { count: users.filter((u) => u.role === 'Admin').length })}
-        </button>
-      </div>
+      <AdvancedFilters
+        persistUrl={false}
+        values={{ role: filter === 'all' ? '' : filter, search: '' }}
+        onChange={(_m, patch) => {
+          if ('role' in patch) setFilter(patch.role || 'all');
+        }}
+        filters={[
+          {
+            key: 'role',
+            type: 'select',
+            label: 'Rôle',
+            placeholder: t('admin.users.filter_all', { count: users.length }),
+            options: [
+              { value: 'Client', label: t('admin.users.filter_clients', { count: users.filter((u) => u.role === 'Client').length }) },
+              { value: 'Opérateur', label: t('admin.users.filter_operators', { count: users.filter((u) => u.role === 'Opérateur').length }) },
+              { value: 'Admin', label: t('admin.users.filter_admins', { count: users.filter((u) => u.role === 'Admin').length }) },
+            ],
+          },
+        ]}
+      />
 
-      {filteredUsers.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Users size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.users.empty_title')}</h2>
-          <p className="text-gray-600">{t('admin.users.empty_desc')}</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredUsers.map((user) => (
-            <div key={user._id} className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Users size={24} className="text-primary-600" />
-                    <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
-                    {getRoleBadge(user.role)}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail size={14} />
-                    {user.email}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-2">
-                    {t('admin.users.registered_on')} {new Date(user.createdAt).toLocaleDateString(dateLocale)}
-                  </div>
-                </div>
-                {user.role !== 'Admin' && (
-                  <button
-                    onClick={() => handleDeleteUser(user._id, user.name)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center gap-2"
-                  >
-                    <Trash2 size={16} />
-                    {t('admin.common.delete')}
-                  </button>
-                )}
-                {user.role === 'Admin' && (
-                  <div className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg font-semibold flex items-center gap-2">
-                    <AlertCircle size={16} />
-                    {t('admin.users.protected')}
-                  </div>
-                )}
+      <DataTable
+        loading={false}
+        data={filteredUsers}
+        emptyState={(
+          <div className="bg-gray-50 rounded-xl p-12 text-center">
+            <Users size={48} className="mx-auto text-gray-400 mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.users.empty_title')}</h2>
+            <p className="text-gray-600">{t('admin.users.empty_desc')}</p>
+          </div>
+        )}
+        columns={[
+          {
+            key: 'name',
+            label: 'Nom',
+            render: (user) => (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{user.name}</span>
+                {getRoleBadge(user.role)}
               </div>
+            ),
+          },
+          { key: 'email', label: 'Email', render: (user) => user.email },
+          {
+            key: 'createdAt',
+            label: 'Inscrit le',
+            render: (user) => new Date(user.createdAt).toLocaleDateString(dateLocale),
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (user) =>
+              user.role === 'Admin' ? (
+                <span className="text-xs text-gray-500">{t('admin.users.protected')}</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteUser(user._id, user.name);
+                  }}
+                  className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold"
+                >
+                  {t('admin.common.delete')}
+                </button>
+              ),
+          },
+        ]}
+        renderMobileCard={(user) => (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-gray-900">{user.name}</h3>
+              {getRoleBadge(user.role)}
             </div>
-          ))}
-        </div>
-      )}
+            <p className="text-sm text-gray-600 break-all">{user.email}</p>
+            {user.role !== 'Admin' && (
+              <button
+                type="button"
+                onClick={() => handleDeleteUser(user._id, user.name)}
+                className="min-h-11 w-full px-4 py-2 bg-red-600 text-white rounded-lg font-semibold"
+              >
+                {t('admin.common.delete')}
+              </button>
+            )}
+          </div>
+        )}
+      />
 
       <ScrollToTopButton />
     </div>
@@ -174,3 +183,4 @@ const AdminUsersPage = () => {
 };
 
 export default AdminUsersPage;
+

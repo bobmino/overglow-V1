@@ -5,8 +5,6 @@ import {
   XCircle,
   Download,
   CalendarDays,
-  Search,
-  RotateCcw,
   Banknote,
   Percent,
   Users,
@@ -16,7 +14,8 @@ import { useToast } from '../context/ToastContext';
 import { logger } from '../utils/logger.js';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import AdminModal from '../components/AdminModal';
-import AdminCollapsibleFilters from '../components/AdminCollapsibleFilters';
+import AdvancedFilters from '../components/AdvancedFilters';
+import DataTable from '../components/DataTable';
 
 const STATUS_OPTIONS = [
   { value: 'Pending', label: 'En attente' },
@@ -172,13 +171,6 @@ const AdminBookingsPage = () => {
     fetchBookings();
   }, [fetchBookings]);
 
-  const toggleStatus = (value) => {
-    setPage(1);
-    setStatuses((prev) =>
-      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
-    );
-  };
-
   const resetFilters = () => {
     setSearch('');
     setSearchInput('');
@@ -239,12 +231,6 @@ const AdminBookingsPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  const pageNumbers = useMemo(() => {
-    const max = Math.min(totalPages, 7);
-    const start = Math.max(1, Math.min(page - 3, totalPages - max + 1));
-    return Array.from({ length: Math.max(0, max) }, (_, i) => start + i).filter((n) => n >= 1 && n <= totalPages);
-  }, [page, totalPages]);
-
   return (
     <div className="container mx-auto px-4 py-8 bg-slate-50 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -284,268 +270,173 @@ const AdminBookingsPage = () => {
       </div>
 
       {/* Filters */}
-      <AdminCollapsibleFilters>
-        <div className="space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setPage(1);
-                  setSearch(searchInput.trim());
-                }
-              }}
-              placeholder="Rechercher client (nom ou email)"
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setPage(1); setDateFrom(e.target.value); }}
-            className="px-3 py-2 border border-gray-300 rounded-lg"
-            aria-label="Date de début"
-          />
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setPage(1); setDateTo(e.target.value); }}
-            className="px-3 py-2 border border-gray-300 rounded-lg"
-            aria-label="Date de fin"
-          />
-          <button
-            type="button"
-            onClick={() => { setPage(1); setSearch(searchInput.trim()); }}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700"
-          >
-            Filtrer
-          </button>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50"
-          >
-            <RotateCcw size={16} />
-            Réinitialiser
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {STATUS_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => toggleStatus(opt.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
-                statuses.includes(opt.value)
-                  ? 'bg-primary-600 text-white border-primary-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-primary-500'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        </div>
-      </AdminCollapsibleFilters>
+      <AdvancedFilters
+        persistUrl={false}
+        values={{
+          search: searchInput,
+          dateFrom,
+          dateTo,
+          status: statuses,
+        }}
+        onChange={(_merged, patch) => {
+          if (
+            Object.keys(patch).length >= 4 &&
+            patch.search === '' &&
+            patch.dateFrom === '' &&
+            patch.dateTo === '' &&
+            Array.isArray(patch.status) &&
+            patch.status.length === 0
+          ) {
+            resetFilters();
+            return;
+          }
+          setPage(1);
+          if ('search' in patch) {
+            setSearchInput(patch.search || '');
+            setSearch((patch.search || '').trim());
+          }
+          if ('dateFrom' in patch) setDateFrom(patch.dateFrom || '');
+          if ('dateTo' in patch) setDateTo(patch.dateTo || '');
+          if ('status' in patch) setStatuses(Array.isArray(patch.status) ? patch.status : []);
+        }}
+        filters={[
+          { key: 'search', type: 'search', label: 'Recherche', placeholder: 'Client (nom ou email)' },
+          { key: 'date', type: 'date-range', label: 'Période' },
+          { key: 'status', type: 'multi-select', label: 'Statut', options: STATUS_OPTIONS },
+        ]}
+      />
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="p-6 space-y-3 animate-pulse">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded-lg" />
-            ))}
-          </div>
-        ) : bookings.length === 0 ? (
+      <DataTable
+        loading={loading}
+        data={bookings}
+        emptyState={(
           <div className="py-16 text-center">
             <CalendarDays size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-lg font-semibold text-gray-800">Aucune réservation trouvée</p>
             <p className="text-gray-500 mt-1">Modifiez les filtres ou réessayez plus tard.</p>
           </div>
-        ) : (
-          <>
-          <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 sticky top-0 z-10">
-                <tr className="text-left text-gray-600 border-b border-gray-200">
-                  <th className="px-4 py-3 font-semibold">ID</th>
-                  <th className="px-4 py-3 font-semibold">Utilisateur</th>
-                  <th className="px-4 py-3 font-semibold">Produit</th>
-                  <th className="px-4 py-3 font-semibold">Opérateur</th>
-                  <th className="px-4 py-3 font-semibold">Montant</th>
-                  <th className="px-4 py-3 font-semibold">Statut</th>
-                  <th className="px-4 py-3 font-semibold">Date</th>
-                  <th className="px-4 py-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((b, idx) => (
-                  <tr
-                    key={b._id}
-                    className={`border-b border-gray-100 hover:bg-primary-50/40 ${idx % 2 === 1 ? 'bg-slate-50/50' : ''}`}
-                  >
-                    <td className="px-4 py-3 font-mono text-xs">{String(b._id).slice(-8).toUpperCase()}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{b.user?.name || '—'}</div>
-                      <div className="text-gray-500 text-xs">{b.user?.email || ''}</div>
-                    </td>
-                    <td className="px-4 py-3 max-w-[180px] truncate">{b.schedule?.product?.title || '—'}</td>
-                    <td className="px-4 py-3">{b.operator?.companyName || b.operator?.publicName || '—'}</td>
-                    <td className="px-4 py-3 font-semibold whitespace-nowrap">{formatMAD(b.totalAmount)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClass(b.status)}`}>
-                        {statusLabel(b.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-600">{formatDate(b.createdAt)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setSelected(b)}
-                          className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-                          title="Détails"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        {b.status === 'PENDING_PAYMENT' && (
-                          <button
-                            type="button"
-                            disabled={actionLoading === b._id}
-                            onClick={() => confirmPayment(b._id)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
-                            title="Valider paiement"
-                          >
-                            <CheckCircle size={14} />
-                            Valider
-                          </button>
-                        )}
-                        {b.status === 'Confirmed' && (
-                          <button
-                            type="button"
-                            disabled={actionLoading === b._id}
-                            onClick={() => cancelBooking(b._id)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                            title="Annuler"
-                          >
-                            <XCircle size={14} />
-                            Annuler
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="md:hidden divide-y divide-gray-200">
-            {bookings.map((b) => (
-              <article key={b._id} className="p-4 space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-xs text-gray-500">
-                      #{String(b._id).slice(-8).toUpperCase()}
-                    </p>
-                    <p className="font-semibold text-gray-900">{b.user?.name || '—'}</p>
-                    <p className="text-xs text-gray-500 break-all">{b.user?.email || ''}</p>
-                  </div>
-                  <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClass(b.status)}`}>
-                    {statusLabel(b.status)}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="col-span-2">
-                    <p className="text-xs text-gray-500">Produit</p>
-                    <p className="font-medium text-gray-800">{b.schedule?.product?.title || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Montant</p>
-                    <p className="font-semibold break-words">{formatMAD(b.totalAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Date</p>
-                    <p className="text-gray-700">{formatDate(b.createdAt)}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelected(b)}
-                    className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg border border-gray-300 text-gray-700 font-semibold"
-                  >
-                    <Eye size={16} /> Détails
-                  </button>
-                  {b.status === 'PENDING_PAYMENT' && (
-                    <button
-                      type="button"
-                      disabled={actionLoading === b._id}
-                      onClick={() => confirmPayment(b._id)}
-                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50"
-                    >
-                      <CheckCircle size={16} /> Valider
-                    </button>
-                  )}
-                  {b.status === 'Confirmed' && (
-                    <button
-                      type="button"
-                      disabled={actionLoading === b._id}
-                      onClick={() => cancelBooking(b._id)}
-                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50"
-                    >
-                      <XCircle size={16} /> Annuler
-                    </button>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-          </>
         )}
-
-        {/* Pagination */}
-        {!loading && total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-slate-50">
-            <p className="text-sm text-gray-600">
-              {(page - 1) * 20 + 1}–{Math.min(page * 20, total)} sur {total} résultats
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium disabled:opacity-40 hover:bg-white"
-              >
-                Précédent
-              </button>
-              {pageNumbers.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setPage(n)}
-                  className={`${n === page ? 'inline-flex' : 'hidden sm:inline-flex'} items-center justify-center min-w-[2rem] px-2 py-1.5 rounded-lg text-sm font-semibold ${
-                    n === page ? 'bg-primary-600 text-white' : 'border border-gray-300 hover:bg-white'
-                  }`}
-                >
-                  {n}
+        columns={[
+          {
+            key: 'id',
+            label: 'ID',
+            render: (b) => (
+              <span className="font-mono text-xs">{String(b._id).slice(-8).toUpperCase()}</span>
+            ),
+          },
+          {
+            key: 'user',
+            label: 'Utilisateur',
+            render: (b) => (
+              <>
+                <div className="font-medium text-gray-900">{b.user?.name || '—'}</div>
+                <div className="text-gray-500 text-xs">{b.user?.email || ''}</div>
+              </>
+            ),
+          },
+          {
+            key: 'product',
+            label: 'Produit',
+            render: (b) => (
+              <span className="max-w-[180px] truncate block">{b.schedule?.product?.title || '—'}</span>
+            ),
+          },
+          {
+            key: 'operator',
+            label: 'Opérateur',
+            render: (b) => b.operator?.companyName || b.operator?.publicName || '—',
+          },
+          {
+            key: 'amount',
+            label: 'Montant',
+            render: (b) => (
+              <span className="font-semibold whitespace-nowrap">{formatMAD(b.totalAmount)}</span>
+            ),
+          },
+          {
+            key: 'status',
+            label: 'Statut',
+            render: (b) => (
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClass(b.status)}`}>
+                {statusLabel(b.status)}
+              </span>
+            ),
+          },
+          {
+            key: 'date',
+            label: 'Date',
+            render: (b) => (
+              <span className="whitespace-nowrap text-gray-600">{formatDate(b.createdAt)}</span>
+            ),
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (b) => (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <button type="button" onClick={() => setSelected(b)} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100" title="Détails">
+                  <Eye size={16} />
                 </button>
-              ))}
-              <button
-                type="button"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium disabled:opacity-40 hover:bg-white"
-              >
-                Suivant
-              </button>
+                {b.status === 'PENDING_PAYMENT' && (
+                  <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
+                    <CheckCircle size={14} /> Valider
+                  </button>
+                )}
+                {b.status === 'Confirmed' && (
+                  <button type="button" disabled={actionLoading === b._id} onClick={() => cancelBooking(b._id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">
+                    <XCircle size={14} /> Annuler
+                  </button>
+                )}
+              </div>
+            ),
+          },
+        ]}
+        renderMobileCard={(b) => (
+          <article className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-mono text-xs text-gray-500">#{String(b._id).slice(-8).toUpperCase()}</p>
+                <p className="font-semibold text-gray-900">{b.user?.name || '—'}</p>
+                <p className="text-xs text-gray-500 break-all">{b.user?.email || ''}</p>
+              </div>
+              <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClass(b.status)}`}>
+                {statusLabel(b.status)}
+              </span>
             </div>
-          </div>
+            <p className="text-sm font-medium text-gray-800">{b.schedule?.product?.title || '—'}</p>
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold">{formatMAD(b.totalAmount)}</span>
+              <span className="text-gray-600">{formatDate(b.createdAt)}</span>
+            </div>
+            <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={() => setSelected(b)} className="min-h-11 inline-flex items-center gap-2 px-3 rounded-lg border border-gray-300 font-semibold">
+                <Eye size={16} /> Détails
+              </button>
+              {b.status === 'PENDING_PAYMENT' && (
+                <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="min-h-11 inline-flex items-center gap-2 px-3 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50">
+                  <CheckCircle size={16} /> Valider
+                </button>
+              )}
+              {b.status === 'Confirmed' && (
+                <button type="button" disabled={actionLoading === b._id} onClick={() => cancelBooking(b._id)} className="min-h-11 inline-flex items-center gap-2 px-3 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50">
+                  <XCircle size={16} /> Annuler
+                </button>
+              )}
+            </div>
+          </article>
         )}
-      </div>
+        pagination={
+          totalPages > 1
+            ? {
+                page,
+                totalPages,
+                total,
+                onChange: setPage,
+                label: `${(page - 1) * 20 + 1}–${Math.min(page * 20, total)} sur ${total}`,
+              }
+            : null
+        }
+      />
 
       {selected && <DetailModal booking={selected} onClose={() => setSelected(null)} />}
       <ScrollToTopButton />

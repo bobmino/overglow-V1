@@ -22,6 +22,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 11 — Reviews & Modération
 - [x] PROMPT 12 — Recherche Globale Admin
 - [x] PROMPT 13 — Pages Placeholder → Réelles
+- [x] PROMPT 16 — Filtres Avancés + DataTable
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
@@ -715,7 +716,7 @@ Pages to check: AdminBookingsPage, AdminUsersPage, AdminProductsPage, AdminOpera
 
 
 
-PROMPT 16 — 🟢 Système de Filtres Avancés (Réutilisable)
+[x] PROMPT 16 — 🟢 Système de Filtres Avancés (Réutilisable)
 
 
 You are a component library engineer.

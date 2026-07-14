@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Package, MapPin, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import AdvancedFilters from '../components/AdvancedFilters';
 import { formatImageUrl } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
 
@@ -110,40 +111,29 @@ const AdminProductsPage = () => {
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.products.title')}</h1>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.products.filter_all')}
-        </button>
-        <button
-          onClick={() => setFilter('Pending Review')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Pending Review' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.products.filter_pending')}
-        </button>
-        <button
-          onClick={() => setFilter('Published')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Published' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.products.filter_published')}
-        </button>
-        <button
-          onClick={() => setFilter('Draft')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Draft' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {t('admin.products.filter_draft')}
-        </button>
-      </div>
+      <AdvancedFilters
+        persistUrl={false}
+        values={{ status: filter === 'all' ? '' : filter }}
+        onChange={(_m, patch) => {
+          if ('status' in patch) {
+            setLoading(true);
+            setFilter(patch.status || 'all');
+          }
+        }}
+        filters={[
+          {
+            key: 'status',
+            type: 'select',
+            label: 'Statut',
+            placeholder: t('admin.products.filter_all'),
+            options: [
+              { value: 'Pending Review', label: t('admin.products.filter_pending') },
+              { value: 'Published', label: t('admin.products.filter_published') },
+              { value: 'Draft', label: t('admin.products.filter_draft') },
+            ],
+          },
+        ]}
+      />
 
       {products.length === 0 ? (
         <div className="bg-gray-50 rounded-xl p-12 text-center">
