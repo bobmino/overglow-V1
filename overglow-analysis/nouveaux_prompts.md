@@ -6,6 +6,9 @@ Chaque prompt est indépendant et ne modifie que ses fichiers cibles
 Ordre = dépendances respectées
 
 ## Tracker
+- [x] HOTFIX S0 — Shell backoffice hors Layout public
+- [ ] HOTFIX S1 — Catalogue productType + galerie + villes
+- [ ] HOTFIX S2 — Loyalty + perf
 - [x] PROMPT 1 — Sidebar Admin Persistante
 - [x] PROMPT 2 — Page Réservations Admin
 - [x] PROMPT 3 — Cloche de Notifications Header

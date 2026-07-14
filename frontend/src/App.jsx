@@ -218,158 +218,6 @@ function App() {
             </Suspense>
           } />
 
-          {/* [PROMPT-1] Operator area with persistent sidebar */}
-          <Route
-            path="operator"
-            element={
-              <OperatorRoute>
-                <DashboardShell variant="operator" />
-              </OperatorRoute>
-            }
-          >
-            <Route path="dashboard" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorDashboardPage />
-              </Suspense>
-            } />
-            <Route path="products" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorProductsPage />
-              </Suspense>
-            } />
-            <Route path="products/new" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorProductFormPage />
-              </Suspense>
-            } />
-            <Route path="products/:id/edit" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorProductFormPage />
-              </Suspense>
-            } />
-            <Route path="bookings" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorBookingsPage />
-              </Suspense>
-            } />
-            <Route path="analytics" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AnalyticsPage />
-              </Suspense>
-            } />
-            <Route path="inquiries" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <InquiriesPage />
-              </Suspense>
-            } />
-            <Route path="withdrawals" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <WithdrawalsPage />
-              </Suspense>
-            } />
-          </Route>
-
-          {/* [PROMPT-1] Admin area with persistent sidebar */}
-          <Route
-            path="admin"
-            element={
-              <AdminRoute>
-                <DashboardShell variant="admin" />
-              </AdminRoute>
-            }
-          >
-            <Route path="dashboard" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminDashboardPage />
-              </Suspense>
-            } />
-            <Route path="analytics" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminAnalyticsPage />
-              </Suspense>
-            } />
-            <Route path="operators" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminOperatorsPage />
-              </Suspense>
-            } />
-            <Route path="products" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminProductsPage />
-              </Suspense>
-            } />
-            <Route path="users" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminUsersPage />
-              </Suspense>
-            } />
-            <Route path="bookings" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBookingsPage />
-              </Suspense>
-            } />
-            <Route path="settings" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminSettingsPage />
-              </Suspense>
-            } />
-            <Route path="badges" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBadgeManagementPage />
-              </Suspense>
-            } />
-            <Route path="blog" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBlogPage />
-              </Suspense>
-            } />
-            <Route path="blog/new" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBlogFormPage />
-              </Suspense>
-            } />
-            <Route path="blog/:id/edit" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBlogFormPage />
-              </Suspense>
-            } />
-            <Route path="pending-payments" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminPendingPaymentsPage />
-              </Suspense>
-            } />
-            <Route path="withdrawals" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminWithdrawalsPage />
-              </Suspense>
-            } />
-            <Route path="finance" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminFinancePage />
-              </Suspense>
-            } />
-            <Route path="approval-requests" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <ApprovalRequestsPage />
-              </Suspense>
-            } />
-            <Route path="badge-requests" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminBadgeRequestsPage />
-              </Suspense>
-            } />
-            <Route path="chat" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminChatInbox />
-              </Suspense>
-            } />
-            <Route path="reviews" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <AdminReviewsPage />
-              </Suspense>
-            } />
-          </Route>
-
           <Route path="notifications" element={
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
@@ -483,6 +331,157 @@ function App() {
             </Suspense>
           </PrivateRoute>
         } />
+
+        {/* Backoffice shells — hors Layout public (pas de Header/Footer site) */}
+        <Route
+          path="/operator"
+          element={
+            <OperatorRoute>
+              <DashboardShell variant="operator" />
+            </OperatorRoute>
+          }
+        >
+          <Route path="dashboard" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorDashboardPage />
+            </Suspense>
+          } />
+          <Route path="products" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorProductsPage />
+            </Suspense>
+          } />
+          <Route path="products/new" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorProductFormPage />
+            </Suspense>
+          } />
+          <Route path="products/:id/edit" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorProductFormPage />
+            </Suspense>
+          } />
+          <Route path="bookings" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorBookingsPage />
+            </Suspense>
+          } />
+          <Route path="analytics" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AnalyticsPage />
+            </Suspense>
+          } />
+          <Route path="inquiries" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <InquiriesPage />
+            </Suspense>
+          } />
+          <Route path="withdrawals" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <WithdrawalsPage />
+            </Suspense>
+          } />
+        </Route>
+
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <DashboardShell variant="admin" />
+            </AdminRoute>
+          }
+        >
+          <Route path="dashboard" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminDashboardPage />
+            </Suspense>
+          } />
+          <Route path="analytics" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminAnalyticsPage />
+            </Suspense>
+          } />
+          <Route path="operators" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminOperatorsPage />
+            </Suspense>
+          } />
+          <Route path="products" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminProductsPage />
+            </Suspense>
+          } />
+          <Route path="users" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminUsersPage />
+            </Suspense>
+          } />
+          <Route path="bookings" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBookingsPage />
+            </Suspense>
+          } />
+          <Route path="settings" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminSettingsPage />
+            </Suspense>
+          } />
+          <Route path="badges" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBadgeManagementPage />
+            </Suspense>
+          } />
+          <Route path="blog" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBlogPage />
+            </Suspense>
+          } />
+          <Route path="blog/new" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBlogFormPage />
+            </Suspense>
+          } />
+          <Route path="blog/:id/edit" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBlogFormPage />
+            </Suspense>
+          } />
+          <Route path="pending-payments" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminPendingPaymentsPage />
+            </Suspense>
+          } />
+          <Route path="withdrawals" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminWithdrawalsPage />
+            </Suspense>
+          } />
+          <Route path="finance" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminFinancePage />
+            </Suspense>
+          } />
+          <Route path="approval-requests" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ApprovalRequestsPage />
+            </Suspense>
+          } />
+          <Route path="badge-requests" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminBadgeRequestsPage />
+            </Suspense>
+          } />
+          <Route path="chat" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminChatInbox />
+            </Suspense>
+          } />
+          <Route path="reviews" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminReviewsPage />
+            </Suspense>
+          } />
+        </Route>
         
         {/* Auth routes without layout */}
           <Route path="login" element={<LoginPage />} />

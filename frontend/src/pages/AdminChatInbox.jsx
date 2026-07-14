@@ -111,7 +111,7 @@ const AdminChatInbox = () => {
   };
 
   return (
-    <main className="flex h-[calc(100dvh-8rem)] min-h-[480px] md:h-[calc(100vh-4rem)] md:min-h-[600px] overflow-hidden bg-gray-100">
+    <main className="flex h-[calc(100dvh-7rem)] min-h-[480px] md:h-[calc(100vh-3.5rem)] md:min-h-[600px] overflow-hidden bg-gray-100">
       <aside
         className={`flex w-full shrink-0 flex-col border-r border-gray-200 bg-white md:w-[300px] ${
           showChatPane ? 'hidden md:flex' : 'flex'

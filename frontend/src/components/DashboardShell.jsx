@@ -175,12 +175,12 @@ const DashboardShell = ({ variant = 'admin' }) => {
         bookingsBadge={bookingsBadge}
       />
 
-      <div className="md:hidden sticky top-0 z-30 flex flex-col gap-2 px-3 py-2 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center gap-3 h-10">
+      <div className="md:hidden sticky top-0 z-40 flex flex-col gap-2 px-3 py-2 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center gap-3 h-11">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-lg text-slate-700 hover:bg-slate-100"
+            className="p-2.5 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
             aria-label="Ouvrir le menu"
           >
             <Menu size={22} />
@@ -198,7 +198,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
 
       {/* Desktop top bar with breadcrumbs */}
       <div
-        className="hidden md:flex sticky top-0 z-20 items-center gap-4 h-14 px-6 bg-white/95 backdrop-blur border-b border-gray-200"
+        className="hidden md:flex sticky top-0 z-30 items-center gap-4 h-14 px-6 bg-white/95 backdrop-blur border-b border-gray-200"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
         {variant === 'admin' && (
