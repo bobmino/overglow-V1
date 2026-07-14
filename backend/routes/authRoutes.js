@@ -1,6 +1,17 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup, upgradeToOperator } from '../controllers/authController.js';
+import {
+  registerUser,
+  loginUser,
+  getMe,
+  updateProfile,
+  refreshTokenHandler,
+  logout,
+  partnerSignup,
+  upgradeToOperator,
+  forgotPassword,
+  resetPassword,
+} from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 import { userSelfUpdateAllowlist } from '../middleware/userUpdateAllowlist.js';
@@ -40,6 +51,28 @@ router.post(
       .notEmpty(),
   ],
   loginUser
+);
+
+router.post(
+  '/forgot-password',
+  authLimiter,
+  [
+    check('email', 'Please include a valid email')
+      .trim()
+      .isEmail()
+      .normalizeEmail(),
+  ],
+  forgotPassword
+);
+
+router.post(
+  '/reset-password/:token',
+  authLimiter,
+  [
+    check('password', 'Please enter a password with 6 or more characters')
+      .isLength({ min: 6, max: 128 }),
+  ],
+  resetPassword
 );
 
 router.get('/me', protect, getMe);

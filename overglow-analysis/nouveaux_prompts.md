@@ -23,6 +23,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 12 — Recherche Globale Admin
 - [x] PROMPT 13 — Pages Placeholder → Réelles
 - [x] PROMPT 16 — Filtres Avancés + DataTable
+- [x] PROMPT 17 — Onboarding Utilisateur Amélioré
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
@@ -761,7 +762,7 @@ REQUIREMENTS:
 
 This reduces code duplication significantly across all admin pages.
 
-PROMPT 17 — 🟢 Onboarding Utilisateur Amélioré
+[x] PROMPT 17 — 🟢 Onboarding Utilisateur Amélioré
 
 You are a UX onboarding engineer.
 

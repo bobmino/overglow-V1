@@ -15,6 +15,7 @@ import AdminRoute from './components/AdminRoute';
 // Critical auth pages (loaded immediately)
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Lazy loaded catalogue pages (perf)
 const SearchPage = lazy(() => import('./pages/SearchPage'));
@@ -498,6 +499,7 @@ function App() {
         {/* Auth routes without layout */}
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="operator/register" element={<RegisterPage />} />
       </Routes>
     </Router>

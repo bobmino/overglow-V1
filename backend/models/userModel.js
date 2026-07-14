@@ -87,6 +87,8 @@ const userSchema = mongoose.Schema({
   lastLoginIp: { type: String },
   failedLoginAttempts: { type: Number, default: 0 },
   lockedUntil: { type: Date },
+  resetPasswordToken: { type: String },
+  resetPasswordExpire: { type: Date },
 }, {
   timestamps: true,
 });

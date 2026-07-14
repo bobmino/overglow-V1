@@ -6,8 +6,8 @@ import { validationResult } from 'express-validator';
 import { notifyOperatorRegistered } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
-import { randomBytes } from 'crypto';
-import { sendWelcomeEmail } from '../utils/emailService.js';
+import { randomBytes, createHash } from 'crypto';
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../utils/emailService.js';
 import connectDB from '../../config/db.js';
 import { setCORSHeaders } from '../config/cors.js';
 import { sanitizeText, sanitizeName } from '../utils/sanitizer.js';
@@ -68,7 +68,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role, companyName, description } = req.body;
+    const { name, email, password, role, companyName, description, city, activityType } = req.body;
     const trimmedEmail = String(email || '').trim();
 
     const userExists = await User.findOne({ email: { $regex: new RegExp(`^${trimmedEmail}$`, 'i') } });
@@ -95,7 +95,8 @@ const registerUser = async (req, res) => {
         const operator = await Operator.create({
           user: user._id,
           companyName: companyName || `${name}'s Company`,
-          description: description || '',
+          description: description || activityType || '',
+          city: city || undefined,
           status: 'Pending', // Operators start as Pending
         });
         
@@ -746,4 +747,93 @@ const logout = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe, updateProfile, refreshTokenHandler, logout, partnerSignup, upgradeToOperator };
+// @desc    Request password reset email
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  setCORSHeaders(req, res);
+
+  try {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+    // Always return a generic success message to avoid email enumeration
+    const genericMessage =
+      'Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.';
+
+    if (!user) {
+      return res.json({ message: genericMessage });
+    }
+
+    const resetToken = randomBytes(32).toString('hex');
+    user.resetPasswordToken = createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpire = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://overglow-v1-3jqp.vercel.app').replace(/\/$/, '');
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+    await sendPasswordResetEmail(user, resetUrl);
+
+    return res.json({ message: genericMessage });
+  } catch (error) {
+    logger.error('Forgot password error:', error);
+    return res.status(500).json({ message: 'Server error during password reset request' });
+  }
+};
+
+// @desc    Reset password with token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = async (req, res) => {
+  setCORSHeaders(req, res);
+
+  try {
+    const { token } = req.params;
+    const password = String(req.body?.password || '');
+
+    if (!token) {
+      return res.status(400).json({ message: 'Reset token is required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Token invalide ou expiré' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    user.refreshTokens = [];
+    await user.save();
+
+    return res.json({ message: 'Mot de passe mis à jour. Vous pouvez vous connecter.' });
+  } catch (error) {
+    logger.error('Reset password error:', error);
+    return res.status(500).json({ message: 'Server error during password reset' });
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  getMe,
+  updateProfile,
+  refreshTokenHandler,
+  logout,
+  partnerSignup,
+  upgradeToOperator,
+  forgotPassword,
+  resetPassword,
+};

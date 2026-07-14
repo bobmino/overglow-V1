@@ -9,6 +9,7 @@ import {
   getWelcomeEmailTemplate,
   getOperatorOnboardingPendingTemplate,
   getOperatorApprovedTemplate,
+  getPasswordResetTemplate,
 } from './emailTemplates.js';
 import { getBookingConfirmationPremiumTemplate } from '../services/emailService.js';
 
@@ -225,6 +226,28 @@ export const sendWelcomeEmail = async (user) => {
     await sendMailWithRetry(mailOptions);
   } catch (error) {
     logger.error('❌ Error sending welcome email:', error.message);
+  }
+};
+
+// Send password reset email
+export const sendPasswordResetEmail = async (user, resetUrl) => {
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: '🔐 Réinitialisation de votre mot de passe',
+    html: getPasswordResetTemplate(user, resetUrl),
+  };
+
+  if (!transporter || !isEmailEnabled()) {
+    logger.warn('Password reset email skipped (email not configured)', { email: user.email });
+    return;
+  }
+
+  try {
+    await sendMailWithRetry(mailOptions);
+  } catch (error) {
+    logger.error('❌ Error sending password reset email:', error.message);
+    throw error;
   }
 };
 

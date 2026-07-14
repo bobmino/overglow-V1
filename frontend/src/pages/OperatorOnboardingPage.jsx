@@ -502,13 +502,15 @@ const OperatorOnboardingPage = () => {
     return null;
   }
 
-  // If pending approval, show message
+  // If pending approval, show success screen with dashboard CTA
   if (onboarding?.onboardingStatus === 'pending_approval') {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-gray-50 py-12 flex items-center">
+        <div className="container mx-auto px-4 max-w-lg">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <CheckCircle className="mx-auto h-16 w-16 text-green-600 mb-4" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 animate-pulse">
+              <CheckCircle className="h-12 w-12 text-green-600" aria-hidden="true" />
+            </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               {t('operator.onboarding.pending_title')}
             </h1>
@@ -516,16 +518,24 @@ const OperatorOnboardingPage = () => {
               {t('operator.onboarding.pending_desc')}
             </p>
             {onboarding.rejectionReason && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
                 <p className="text-red-800 font-semibold mb-2">{t('operator.onboarding.rejection_reason')}</p>
                 <p className="text-red-700">{onboarding.rejectionReason}</p>
               </div>
             )}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
               <p className="text-blue-800">
-                <strong>{t('operator.onboarding.progress_label')}</strong> {onboarding.progress || 0}%
+                <strong>{t('operator.onboarding.progress_label')}</strong> {onboarding.progress || 100}%
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => navigate('/operator/dashboard')}
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-semibold"
+            >
+              {t('operator.onboarding.go_dashboard')}
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>
@@ -534,12 +544,30 @@ const OperatorOnboardingPage = () => {
 
   const progress = onboarding?.progress || 0;
 
+  const stepProgress = Math.round((currentStep / steps.length) * 100);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Mobile / top step banner */}
+        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="text-sm font-semibold text-primary-700">
+              {t('operator.onboarding.step_of', { current: currentStep, total: steps.length })}
+            </p>
+            <p className="text-xs text-gray-500">{steps[currentStep - 1]?.label}</p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5" role="progressbar" aria-valuenow={stepProgress} aria-valuemin={0} aria-valuemax={100}>
+            <div
+              className="bg-primary-600 h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${stepProgress}%` }}
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
-          <div className="lg:w-64 flex-shrink-0">
+          <div className="lg:w-64 flex-shrink-0 hidden lg:block">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
               <div className="mb-6">
                 <h2 className="text-sm font-bold text-gray-500 uppercase mb-2">{t('operator.common.progress')}</h2>

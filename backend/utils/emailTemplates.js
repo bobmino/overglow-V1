@@ -385,6 +385,31 @@ export const getOperatorOnboardingPendingTemplate = (user) => {
 };
 
 /**
+ * Password reset template
+ */
+export const getPasswordResetTemplate = (user, resetUrl) => {
+  const content = `
+    <h2 style="color: #0f766e; margin-top: 0;">🔐 Réinitialisation du mot de passe</h2>
+    
+    <p>Bonjour ${user.name || 'Cher utilisateur'},</p>
+    
+    <p>Vous avez demandé la réinitialisation de votre mot de passe Overglow Trip.</p>
+    
+    <p>Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe. Ce lien expire dans <strong>1 heure</strong>.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetUrl}" style="${BASE_STYLES.button}">Réinitialiser mon mot de passe</a>
+    </div>
+    
+    <p style="color: #6b7280; font-size: 14px;">Si vous n'êtes pas à l'origine de cette demande, ignorez cet email. Votre mot de passe actuel reste inchangé.</p>
+    
+    <p style="color: #9ca3af; font-size: 12px; word-break: break-all;">Lien alternatif : ${resetUrl}</p>
+  `;
+
+  return getEmailWrapper(content, 'Réinitialisation du mot de passe');
+};
+
+/**
  * Operator Approved template
  */
 export const getOperatorApprovedTemplate = (user) => {
