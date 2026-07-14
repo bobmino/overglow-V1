@@ -174,15 +174,28 @@ export const advancedSearch = async (req, res) => {
     const sort = buildSortOption(filters.sortBy);
 
     let products = [];
+    let totalCount = 0;
+    const needsInMemoryFilter = filters.durations.length > 0 || Boolean(filters.selectedDate);
     try {
-      // $near cannot mix with some sorts — drop geo sort conflicts by fetching then sorting in memory if needed
       const hasGeo = Boolean(mongoQuery.$and?.some((c) => c.location));
-      products = await Product.find(mongoQuery)
-        .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy')
-        .populate('operator', 'companyName status isClaimed')
-        .populate('badges.badgeId', 'name icon color')
-        .sort(hasGeo ? undefined : sort)
-        .lean();
+      if (!needsInMemoryFilter) {
+        totalCount = await Product.countDocuments(mongoQuery);
+        products = await Product.find(mongoQuery)
+          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup')
+          .populate('operator', 'companyName status isClaimed')
+          .populate('badges.badgeId', 'name icon color')
+          .sort(hasGeo ? undefined : sort)
+          .skip((filters.page - 1) * filters.limit)
+          .limit(filters.limit)
+          .lean();
+      } else {
+        products = await Product.find(mongoQuery)
+          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup')
+          .populate('operator', 'companyName status isClaimed')
+          .populate('badges.badgeId', 'name icon color')
+          .sort(hasGeo ? undefined : sort)
+          .lean();
+      }
     } catch (mongoError) {
       logger.error('Advanced search mongo error:', mongoError);
       return res.json({
@@ -221,46 +234,64 @@ export const advancedSearch = async (req, res) => {
       filteredProducts = filteredProducts.filter((p) => availableIds.has(p._id.toString()));
     }
 
-    // Enrich ratings from metrics (fallback to reviews if needed)
-    const enriched = await Promise.all(
-      filteredProducts.map(async (product) => {
-        let averageRating = product.metrics?.averageRating ?? 0;
-        let reviewCount = product.metrics?.reviewCount ?? 0;
-        if (!averageRating && !reviewCount) {
-          averageRating = await getProductRating(product._id);
-          reviewCount = await Review.countDocuments({ product: product._id, status: 'Approved' });
-        }
-        return {
-          ...product,
-          averageRating,
-          reviewCount,
-          rating: averageRating,
-        };
-      })
-    );
+    // Enrich ratings from metrics (fallback to reviews only on in-memory path)
+    const enriched = needsInMemoryFilter
+      ? await Promise.all(
+          filteredProducts.map(async (product) => {
+            let averageRating = product.metrics?.averageRating ?? 0;
+            let reviewCount = product.metrics?.reviewCount ?? 0;
+            if (!averageRating && !reviewCount) {
+              averageRating = await getProductRating(product._id);
+              reviewCount = await Review.countDocuments({
+                product: product._id,
+                status: 'Approved',
+              });
+            }
+            return {
+              ...product,
+              averageRating,
+              reviewCount,
+              rating: averageRating,
+            };
+          })
+        )
+      : filteredProducts.map((product) => {
+          const averageRating = product.metrics?.averageRating ?? 0;
+          const reviewCount = product.metrics?.reviewCount ?? 0;
+          return {
+            ...product,
+            averageRating,
+            reviewCount,
+            rating: averageRating,
+          };
+        });
 
-    // In-memory sort when geo query prevented Mongo sort
+    // In-memory sort when geo query prevented Mongo sort or duration/date filtered
     const sorted = [...enriched];
-    switch (filters.sortBy) {
-      case 'price-low':
-        sorted.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
-        break;
-      case 'price-high':
-        sorted.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
-        break;
-      case 'rating':
-        sorted.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
-        break;
-      case 'popularity':
-        sorted.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
-        break;
-      default:
-        break;
+    if (needsInMemoryFilter) {
+      switch (filters.sortBy) {
+        case 'price-low':
+          sorted.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+          break;
+        case 'price-high':
+          sorted.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+          break;
+        case 'rating':
+          sorted.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+          break;
+        case 'popularity':
+          sorted.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+          break;
+        default:
+          break;
+      }
     }
 
-    const total = sorted.length;
+    const total = needsInMemoryFilter ? sorted.length : totalCount;
     const startIndex = (filters.page - 1) * filters.limit;
-    const paginatedProducts = sorted.slice(startIndex, startIndex + filters.limit);
+    const paginatedProducts = needsInMemoryFilter
+      ? sorted.slice(startIndex, startIndex + filters.limit)
+      : sorted;
     const lang = resolveRequestLang(req);
 
     // Facets from current result set (pre-pagination) for UI chips

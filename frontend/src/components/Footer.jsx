@@ -29,6 +29,7 @@ const Footer = () => {
               <li><Link to="/help" className="hover:text-white transition">{t('footer.help_center')}</Link></li>
               <li><Link to="/contact" className="hover:text-white transition">{t('footer.contact_us')}</Link></li>
               <li><Link to="/faq" className="hover:text-white transition">{t('footer.faq')}</Link></li>
+              <li><Link to="/loyalty" className="hover:text-white transition">{t('footer.loyalty', 'Programme de fidélité')}</Link></li>
               <li><Link to="/safety" className="hover:text-white transition">{t('footer.safety')}</Link></li>
             </ul>
           </div>

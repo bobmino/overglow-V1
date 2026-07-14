@@ -481,6 +481,13 @@ const Header = () => {
           >
             {t('header.extras')}
           </Link>
+          <Link
+            to="/loyalty"
+            className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {t('header.loyalty', 'Programme de fidélité')}
+          </Link>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
             <span className="text-slate-600 font-medium">{t('header.language', 'Langue')}</span>
@@ -503,6 +510,14 @@ const Header = () => {
               >
                 <Calendar size={18} className="me-3" />
                 {t('header.dashboard')}
+              </Link>
+              <Link
+                to="/loyalty"
+                className="flex items-center p-3 rounded-lg hover:bg-slate-50 text-slate-700"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Award size={18} className="me-3" />
+                {t('header.loyalty', 'Programme de fidélité')}
               </Link>
               {user?.role === 'Opérateur' && (
                 <Link 

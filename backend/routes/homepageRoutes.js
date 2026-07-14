@@ -1,9 +1,9 @@
 import express from 'express';
-import { getHomepageLayout } from '../controllers/homepageController.js'; // Importez le contrôleur
+import { getHomepageLayout } from '../controllers/homepageController.js';
+import { cache } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
-// Liez la route à la fonction du contrôleur
-router.get('/layout', getHomepageLayout);
+router.get('/layout', cache(900), getHomepageLayout);
 
 export default router;

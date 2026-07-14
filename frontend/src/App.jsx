@@ -12,11 +12,13 @@ import PrivateRoute from './components/PrivateRoute';
 import OperatorRoute from './components/OperatorRoute';
 import AdminRoute from './components/AdminRoute';
 
-// Critical pages (loaded immediately)
-import SearchPage from './pages/SearchPage';
-import ProductDetailPage from './pages/ProductDetailPage';
+// Critical auth pages (loaded immediately)
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+
+// Lazy loaded catalogue pages (perf)
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 
 // Lazy loaded pages (loaded on demand)
 const DestinationPage = lazy(() => import('./pages/DestinationPage'));
@@ -114,7 +116,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="search" element={<SearchPage />} />
+          <Route path="search" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SearchPage />
+            </Suspense>
+          } />
           <Route path="destinations/:city" element={
             <Suspense fallback={<LoadingFallback />}>
               <DestinationPage />
@@ -125,8 +131,16 @@ function App() {
               <CategoryPage />
             </Suspense>
           } />
-          <Route path="products/:id" element={<ProductDetailPage />} />
-          <Route path="experiences/:id" element={<ProductDetailPage />} />
+          <Route path="products/:id" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ProductDetailPage />
+            </Suspense>
+          } />
+          <Route path="experiences/:id" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ProductDetailPage />
+            </Suspense>
+          } />
           <Route path="blog" element={
             <Suspense fallback={<LoadingFallback />}>
               <BlogPage />
@@ -167,11 +181,9 @@ function App() {
               </Suspense>
           } />
           <Route path="loyalty" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <LoyaltyPage />
-              </Suspense>
-            </PrivateRoute>
+            <Suspense fallback={<LoadingFallback />}>
+              <LoyaltyPage />
+            </Suspense>
           } />
           <Route path="view-history" element={
             <PrivateRoute>

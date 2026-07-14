@@ -58,23 +58,6 @@ const Home = () => {
     };
   }, [i18n.language]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white pb-20">
-        <div className="h-[80vh] min-h-[600px] bg-slate-100 animate-pulse mb-16 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4 max-w-lg w-full px-6">
-            <div className="h-12 bg-slate-200 rounded-xl w-3/4" />
-            <div className="h-6 bg-slate-200 rounded-lg w-1/2 mb-8" />
-            <div className="h-16 bg-slate-200 rounded-full w-full" />
-          </div>
-        </div>
-        <CarouselSkeleton />
-        <CarouselSkeleton />
-        <CarouselSkeleton />
-      </div>
-    );
-  }
-
   const nationalGroups = layout.offers?.national || [];
   const internationalGroups = layout.offers?.international || [];
   const insoliteGroups = layout.offers?.insolite || [];
@@ -84,59 +67,68 @@ const Home = () => {
       <HeroSection />
       <Features />
 
-      {layout.topDestinations && layout.topDestinations.length > 0 && (
-        <div className="w-full">
-          <DynamicCarousel
-            title={t('home.carousel_destinations')}
-            items={layout.topDestinations}
-            renderCard={(dest) => (
-              <DestinationCard
-                name={dest.city}
-                image={dest.image}
-                toursCount={dest.bookingCount}
+      {loading ? (
+        <>
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+        </>
+      ) : (
+        <>
+          {layout.topDestinations && layout.topDestinations.length > 0 && (
+            <div className="w-full">
+              <DynamicCarousel
+                title={t('home.carousel_destinations')}
+                items={layout.topDestinations}
+                renderCard={(dest) => (
+                  <DestinationCard
+                    name={dest.city}
+                    image={dest.image}
+                    toursCount={dest.bookingCount}
+                  />
+                )}
               />
-            )}
-          />
-        </div>
-      )}
-
-      {nationalGroups.map(
-        (group) =>
-          group.products?.length > 0 && (
-            <div className="w-full" key={group._id}>
-              <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
             </div>
-          )
-      )}
+          )}
 
-      <FlexibilityBanner />
+          {nationalGroups.map(
+            (group) =>
+              group.products?.length > 0 && (
+                <div className="w-full" key={group._id}>
+                  <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
+                </div>
+              )
+          )}
 
-      {internationalGroups.map(
-        (group) =>
-          group.products?.length > 0 && (
-            <div className="w-full" key={group._id}>
-              <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
+          <FlexibilityBanner />
+
+          {internationalGroups.map(
+            (group) =>
+              group.products?.length > 0 && (
+                <div className="w-full" key={group._id}>
+                  <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
+                </div>
+              )
+          )}
+
+          {insoliteGroups.map(
+            (group) =>
+              group.products?.length > 0 && (
+                <div className="w-full" key={group._id}>
+                  <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
+                </div>
+              )
+          )}
+
+          {layout.topCircuits && layout.topCircuits.length > 0 && (
+            <div className="w-full">
+              <DynamicCarousel
+                title={t('home.carousel_circuits')}
+                items={layout.topCircuits}
+                searchTag="Top Circuit"
+              />
             </div>
-          )
-      )}
-
-      {insoliteGroups.map(
-        (group) =>
-          group.products?.length > 0 && (
-            <div className="w-full" key={group._id}>
-              <DynamicCarousel title={group.name} items={group.products} categoryId={group._id} />
-            </div>
-          )
-      )}
-
-      {layout.topCircuits && layout.topCircuits.length > 0 && (
-        <div className="w-full">
-          <DynamicCarousel
-            title={t('home.carousel_circuits')}
-            items={layout.topCircuits}
-            searchTag="Top Circuit"
-          />
-        </div>
+          )}
+        </>
       )}
 
       <AuthCTA />
