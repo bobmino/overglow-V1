@@ -80,7 +80,15 @@
       "title": "Extras & services",
       "subtitle": "Transfers, concierge, pro photo and premium services to complete your trip.",
       "curated_title": "Trending services",
-      "also_coming": "Also coming soon on Overglow"
+      "also_coming": "Also coming soon on Overglow",
+      "service_type": "Service type",
+      "type_mobilite": "Mobility",
+      "type_conciergerie": "Concierge",
+      "type_photo": "Photography",
+      "type_guides": "Guides",
+      "type_wellness": "Wellness",
+      "type_premium": "Premium",
+      "type_loisirs": "Leisure"
     }
   },
   "catalog": {

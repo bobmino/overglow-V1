@@ -142,6 +142,45 @@ const FilterSidebar = ({
           </div>
         )}
 
+        {(storeMode !== 'stays' && Array.isArray(categories) && categories.length > 0) && (
+        <div className="pt-6">
+          <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
+            {storeMode === 'extras'
+              ? t('stores.extras.service_type')
+              : t('catalog.category')}
+          </h3>
+          <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+            {categories.map((cat) => {
+                const categoryName = typeof cat === 'object' ? cat.name || cat.slug : cat;
+                const isActive =
+                  Array.isArray(selectedCategories) && selectedCategories.includes(categoryName);
+                return (
+                  <label key={categoryName} className="flex items-center space-x-3 cursor-pointer group">
+                    <div
+                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                        isActive
+                          ? 'bg-primary-600 border-primary-600'
+                          : 'border-slate-300 bg-white group-hover:border-primary-500'
+                      } transition-colors`}
+                    >
+                      {isActive && <Check size={14} className="text-white" />}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() => handleCategoryToggle(categoryName)}
+                      className="hidden"
+                    />
+                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors">
+                      {categoryName}
+                    </span>
+                  </label>
+                );
+              })}
+          </div>
+        </div>
+        )}
+
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
             {t('catalog.popular')}
@@ -172,42 +211,6 @@ const FilterSidebar = ({
                 </label>
               );
             })}
-          </div>
-        </div>
-
-        <div className="pt-6">
-          <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
-            {t('catalog.category')}
-          </h3>
-          <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
-            {Array.isArray(categories) &&
-              categories.map((cat) => {
-                const categoryName = typeof cat === 'object' ? cat.name || cat.slug : cat;
-                const isActive =
-                  Array.isArray(selectedCategories) && selectedCategories.includes(categoryName);
-                return (
-                  <label key={categoryName} className="flex items-center space-x-3 cursor-pointer group">
-                    <div
-                      className={`flex items-center justify-center w-5 h-5 rounded border ${
-                        isActive
-                          ? 'bg-primary-600 border-primary-600'
-                          : 'border-slate-300 bg-white group-hover:border-primary-500'
-                      } transition-colors`}
-                    >
-                      {isActive && <Check size={14} className="text-white" />}
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={() => handleCategoryToggle(categoryName)}
-                      className="hidden"
-                    />
-                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors">
-                      {categoryName}
-                    </span>
-                  </label>
-                );
-              })}
           </div>
         </div>
 

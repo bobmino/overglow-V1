@@ -130,3 +130,28 @@ export const CITY_ALIASES = {
   'Aéroport Agadir': 'Agadir',
   Imouzzer: 'Agadir',
 };
+
+/** Categories shown on /explore (tour catalogue) */
+export const EXPLORE_CATEGORY_WHITELIST = [
+  'Tours',
+  'Attractions',
+  'Activities',
+  'Outdoor Activities',
+  'Food & Drink',
+  'Shows & Performances',
+  'Day Trips',
+  'Classes & Workshops',
+];
+
+/** Service category labels for /extras filters */
+export const EXTRAS_SERVICE_TYPES = [
+  { id: 'mobilite', labelKey: 'stores.extras.type_mobilite', value: 'Mobilité' },
+  { id: 'conciergerie', labelKey: 'stores.extras.type_conciergerie', value: 'Conciergerie' },
+  { id: 'photographie', labelKey: 'stores.extras.type_photo', value: 'Photographie' },
+  { id: 'guides', labelKey: 'stores.extras.type_guides', value: 'Guides' },
+  { id: 'bien-etre', labelKey: 'stores.extras.type_wellness', value: 'Bien-être' },
+  { id: 'premium', labelKey: 'stores.extras.type_premium', value: 'Premium' },
+  { id: 'loisirs', labelKey: 'stores.extras.type_loisirs', value: 'Loisirs' },
+];
+
+export const EXTRAS_CATEGORY_VALUES = EXTRAS_SERVICE_TYPES.map((t) => t.value);

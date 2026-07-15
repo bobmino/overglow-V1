@@ -13,7 +13,10 @@ import {
   CURATED_EXTRAS,
   CURATED_STAYS_TEASERS,
   STORE_CONFIG,
+  EXPLORE_CATEGORY_WHITELIST,
+  EXTRAS_CATEGORY_VALUES,
 } from '../data/storeCatalog';
+import { normalizeCategory } from '../utils/categoryMapping';
 
 const pathToStore = (pathname) => {
   if (pathname.startsWith('/explore')) return 'explore';
@@ -100,16 +103,65 @@ const SearchPage = () => {
   );
 
   const { data: facetsData } = useQuery({
-    queryKey: ['searchFacets'],
+    queryKey: ['searchFacets', lockedProductType || 'all'],
     queryFn: async () => {
-      const { data } = await api.get('/api/search/facets');
+      const params = lockedProductType ? `?productType=${lockedProductType}` : '';
+      const { data } = await api.get(`/api/search/facets${params}`);
       return data;
     },
     staleTime: 10 * 60 * 1000,
   });
 
   const cities = (facetsData?.cities || []).map((c) => c.name).filter(Boolean);
-  const categories = (facetsData?.categories || []).map((c) => c.name).filter(Boolean);
+
+  const categories = useMemo(() => {
+    const fromFacets = (facetsData?.categories || []).map((c) => c.name).filter(Boolean);
+
+    if (storeKey === 'stays') return [];
+
+    if (storeKey === 'extras') {
+      if (fromFacets.length === 0) return EXTRAS_CATEGORY_VALUES;
+      const merged = [
+        ...EXTRAS_CATEGORY_VALUES.filter((name) => fromFacets.includes(name)),
+        ...fromFacets.filter((n) => !EXTRAS_CATEGORY_VALUES.includes(n)),
+      ];
+      return merged.length > 0 ? merged : EXTRAS_CATEGORY_VALUES;
+    }
+
+    if (storeKey === 'explore') {
+      const filtered = fromFacets.filter((name) => {
+        const n = normalizeCategory(name) || name;
+        return EXPLORE_CATEGORY_WHITELIST.some(
+          (w) => w.toLowerCase() === String(n).toLowerCase()
+        );
+      });
+      return filtered.length > 0 ? filtered : EXPLORE_CATEGORY_WHITELIST;
+    }
+
+    // Global /search — hide lodging/service-only labels when possible
+    return fromFacets.filter((name) => {
+      const lower = String(name).toLowerCase();
+      return !['luxurystay', 'luxury stay', 'services'].includes(lower);
+    });
+  }, [facetsData, storeKey]);
+
+  // Drop out-of-mode filter params when entering a store
+  useEffect(() => {
+    if (!storeKey) return;
+    const patch = {};
+    if (storeKey === 'stays') {
+      if (searchParams.get('category')) patch.category = null;
+      // keep property/amenities
+    } else {
+      if (searchParams.get('propertyType')) patch.propertyType = null;
+      if (searchParams.get('pool')) patch.pool = null;
+      if (searchParams.get('garden')) patch.garden = null;
+      if (searchParams.get('wifi')) patch.wifi = null;
+      if (searchParams.get('jacuzzi')) patch.jacuzzi = null;
+    }
+    if (Object.keys(patch).length) updateParams(patch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when store changes
+  }, [storeKey]);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();

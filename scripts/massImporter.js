@@ -160,6 +160,13 @@ const main = async () => {
       existing.description = description;
       existing.images = [imageUrl];
       existing.seo = seo;
+      if (entry.productType) existing.productType = entry.productType;
+      if (entry.category) existing.category = entry.category;
+      if (entry.luxuryStay) existing.luxuryStay = entry.luxuryStay;
+      if (entry.serviceDetails) existing.serviceDetails = entry.serviceDetails;
+      if (Array.isArray(entry.tags)) existing.tags = entry.tags;
+      if (Array.isArray(entry.highlights)) existing.highlights = entry.highlights;
+      existing.status = normalizedStatus;
       await existing.save();
       updated += 1;
       console.log(`Updated: ${existing.title} (slug: ${existing.slug})`);
@@ -172,6 +179,9 @@ const main = async () => {
       slug,
       description,
       category: entry.category || 'Experiences',
+      productType: ['tour', 'luxury_stay', 'service'].includes(entry.productType)
+        ? entry.productType
+        : 'tour',
       city,
       address: entry.address || city,
       duration: entry.duration || '3 hours',
@@ -183,6 +193,10 @@ const main = async () => {
       images: [imageUrl],
       status: normalizedStatus,
       seo,
+      tags: Array.isArray(entry.tags) ? entry.tags : [],
+      highlights: Array.isArray(entry.highlights) ? entry.highlights : [],
+      ...(entry.luxuryStay ? { luxuryStay: entry.luxuryStay } : {}),
+      ...(entry.serviceDetails ? { serviceDetails: entry.serviceDetails } : {}),
     });
 
     const schedules = buildDefaultSchedules({ productId: product._id, price });

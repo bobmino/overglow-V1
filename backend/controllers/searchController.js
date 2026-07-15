@@ -354,6 +354,11 @@ export const advancedSearch = async (req, res) => {
 export const getSearchFacets = async (req, res) => {
   try {
     const match = { status: { $regex: /^published$/i } };
+    const rawType =
+      typeof req.query.productType === 'string' ? req.query.productType.trim().toLowerCase() : '';
+    if (['tour', 'luxury_stay', 'service'].includes(rawType)) {
+      match.productType = rawType;
+    }
 
     const [cities, categories, tags, priceStats] = await Promise.all([
       Product.aggregate([
@@ -396,6 +401,7 @@ export const getSearchFacets = async (req, res) => {
         min: priceStats[0]?.min ?? 0,
         max: priceStats[0]?.max ?? 0,
       },
+      productType: rawType || null,
     });
   } catch (error) {
     logger.error('Get search facets error:', error);
@@ -404,6 +410,7 @@ export const getSearchFacets = async (req, res) => {
       categories: [],
       tags: [],
       priceRange: { min: 0, max: 0 },
+      productType: null,
     });
   }
 };
