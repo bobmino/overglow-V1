@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { Search, CalendarCheck, CreditCard, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -47,18 +47,18 @@ const HowItWorksPage = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
+          <LocalizedLink
             to="/search"
             className="inline-flex justify-center px-8 py-3 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700"
           >
             {t('how_it_works.cta_explore')}
-          </Link>
-          <Link
+          </LocalizedLink>
+          <LocalizedLink
             to="/partners/signup"
             className="inline-flex justify-center px-8 py-3 rounded-lg border border-primary-600 text-primary-700 font-semibold hover:bg-primary-50"
           >
             {t('how_it_works.cta_partner')}
-          </Link>
+          </LocalizedLink>
         </div>
       </div>
     </div>

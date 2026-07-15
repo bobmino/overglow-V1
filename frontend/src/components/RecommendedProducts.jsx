@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../config/axios';
 import ProductCard from './ProductCard';
+import LocalizedLink from './LocalizedLink';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger.js';
@@ -72,13 +72,13 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
             <Sparkles size={24} className="text-primary-600" />
             <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
           </div>
-          <Link
+          <LocalizedLink
             to="/search"
             className="text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
           >
             Voir tout
             <TrendingUp size={16} />
-          </Link>
+          </LocalizedLink>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (

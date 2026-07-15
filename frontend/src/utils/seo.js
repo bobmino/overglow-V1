@@ -1,7 +1,8 @@
 /**
- * [INT-02] SEO helpers — meta, canonical, hreflang (aligné sitemap ?lang=).
+ * [INT-02 + INT-01] SEO helpers — meta, canonical, hreflang with /{lang}/ paths.
  */
 import { absoluteUrl, canonicalUrl, LOCALES, DEFAULT_OG_IMAGE } from './siteUrl';
+import { withLang, stripLangPrefix, normalizeLang } from './i18nRouting';
 
 const OG_LOCALE = {
   fr: 'fr_FR',
@@ -10,38 +11,31 @@ const OG_LOCALE = {
   ar: 'ar_MA',
 };
 
-export const normalizeLang = (lng) => {
-  const base = String(lng || 'fr').split('-')[0].toLowerCase();
-  return LOCALES.includes(base) ? base : 'fr';
-};
+export { normalizeLang };
 
-/** Absolute URL with ?lang= for alternate/hreflang (matches backend sitemap). */
+/** Absolute localized URL: /fr/explore */
 export const localizedUrl = (pathname, lang) => {
-  const base = canonicalUrl(pathname);
   const lng = normalizeLang(lang);
-  const sep = base.includes('?') ? '&' : '?';
-  return `${base}${sep}lang=${lng}`;
+  const stripped = stripLangPrefix(pathname || '/');
+  return absoluteUrl(withLang(stripped, lng));
 };
 
 export const buildHreflangLinks = (pathname) => {
-  const path = pathname || '/';
+  const stripped = stripLangPrefix(pathname || '/');
   return [
     ...LOCALES.map((lang) => ({
       rel: 'alternate',
       hreflang: lang,
-      href: localizedUrl(path, lang),
+      href: localizedUrl(stripped, lang),
     })),
     {
       rel: 'alternate',
       hreflang: 'x-default',
-      href: canonicalUrl(path),
+      href: absoluteUrl(withLang(stripped, 'fr')),
     },
   ];
 };
 
-/**
- * Props bag for <SEOHead />.
- */
 export const buildSeoProps = ({
   title,
   description,
@@ -52,8 +46,8 @@ export const buildSeoProps = ({
   noIndex = false,
 } = {}) => {
   const lng = normalizeLang(lang);
-  const path = pathname || '/';
-  const url = canonicalUrl(path);
+  const stripped = stripLangPrefix(pathname || '/');
+  const url = localizedUrl(stripped, lng);
   const fullTitle = title
     ? (title.includes('Overglow') ? title : `${title} | Overglow Trip`)
     : 'Overglow Trip';
@@ -66,7 +60,7 @@ export const buildSeoProps = ({
     ogLocale: OG_LOCALE[lng] || 'fr_FR',
     ogType: type,
     ogImage: image || DEFAULT_OG_IMAGE,
-    hreflang: buildHreflangLinks(path),
+    hreflang: buildHreflangLinks(stripped),
     noIndex,
   };
 };

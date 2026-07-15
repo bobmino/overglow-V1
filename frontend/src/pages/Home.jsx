@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
@@ -9,6 +8,7 @@ import Features from '../components/Features';
 import FlexibilityBanner from '../components/FlexibilityBanner';
 import AuthCTA from '../components/AuthCTA';
 import SEOHead from '../components/SEOHead';
+import LocalizedLink from '../components/LocalizedLink';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
 import { CURATED_EXTRAS } from '../data/storeCatalog';
@@ -40,13 +40,13 @@ const EMPTY_LAYOUT = {
 
 const StoreCta = ({ to, label }) => (
   <div className="px-4 md:px-8 -mt-4 mb-8">
-    <Link
+    <LocalizedLink
       to={to}
       className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800"
     >
       {label}
       <ArrowRight size={16} />
-    </Link>
+    </LocalizedLink>
   </div>
 );
 
@@ -171,13 +171,13 @@ const Home = () => {
                   {t('home.section_stays')}
                 </h2>
                 <p className="text-slate-600 mb-6 max-w-2xl">{t('stores.stays.subtitle')}</p>
-                <Link
+                <LocalizedLink
                   to="/stays"
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800"
                 >
                   {t('home.cta_stays')}
                   <ArrowRight size={16} />
-                </Link>
+                </LocalizedLink>
               </section>
             )}
           </div>
@@ -230,13 +230,13 @@ const Home = () => {
                     </div>
                   ))}
                 </div>
-                <Link
+                <LocalizedLink
                   to="/extras"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700"
                 >
                   {t('home.cta_extras')}
                   <ArrowRight size={16} />
-                </Link>
+                </LocalizedLink>
               </section>
             )}
           </div>
@@ -257,7 +257,7 @@ const Home = () => {
 
           {/* Cross-sell CTAs */}
           <section className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
+            <LocalizedLink
               to="/explore"
               className="rounded-2xl bg-gradient-to-br from-emerald-800 to-teal-700 text-white p-6 hover:shadow-lg transition"
             >
@@ -266,8 +266,8 @@ const Home = () => {
                 {t('home.cta_explore')}
                 <ArrowRight size={16} />
               </span>
-            </Link>
-            <Link
+            </LocalizedLink>
+            <LocalizedLink
               to="/extras"
               className="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 text-white p-6 hover:shadow-lg transition"
             >
@@ -276,7 +276,7 @@ const Home = () => {
                 {t('home.cta_extras')}
                 <ArrowRight size={16} />
               </span>
-            </Link>
+            </LocalizedLink>
           </section>
         </>
       )}

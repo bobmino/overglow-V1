@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import { X, SlidersHorizontal, Sparkles } from 'lucide-react';
 import api from '../config/axios';
@@ -19,10 +20,13 @@ import {
 } from '../data/storeCatalog';
 import { normalizeCategory } from '../utils/categoryMapping';
 
+import { stripLangPrefix } from '../utils/i18nRouting';
+
 const pathToStore = (pathname) => {
-  if (pathname.startsWith('/explore')) return 'explore';
-  if (pathname.startsWith('/stays')) return 'stays';
-  if (pathname.startsWith('/extras')) return 'extras';
+  const path = stripLangPrefix(pathname);
+  if (path.startsWith('/explore')) return 'explore';
+  if (path.startsWith('/stays')) return 'stays';
+  if (path.startsWith('/extras')) return 'extras';
   return null;
 };
 
@@ -548,9 +552,9 @@ const SearchPage = () => {
                     </div>
                     <p className="mt-4 text-sm text-slate-600">
                       {t('stores.stays.meanwhile')}{' '}
-                      <Link to="/explore" className="text-primary-600 font-semibold hover:underline">
+                      <LocalizedLink to="/explore" className="text-primary-600 font-semibold hover:underline">
                         {t('stores.explore.title')}
-                      </Link>
+                      </LocalizedLink>
                     </p>
                   </div>
                 )}

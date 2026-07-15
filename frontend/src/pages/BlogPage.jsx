@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
 import SEOHead from '../components/SEOHead';
@@ -60,12 +60,12 @@ const BlogPage = () => {
             <div className="py-20 text-center bg-white rounded-2xl border border-slate-100">
               <p className="text-lg font-semibold text-slate-900 mb-2">{t('blog.empty')}</p>
               <p className="text-slate-600 mb-6">{t('blog.empty_hint')}</p>
-              <Link
+              <LocalizedLink
                 to="/search"
                 className="inline-flex px-5 py-2.5 rounded-xl bg-primary-600 text-white font-semibold"
               >
                 {t('blog.cta_explore')}
-              </Link>
+              </LocalizedLink>
             </div>
           ) : (
             <>

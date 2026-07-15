@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, Home, Search, Package, Calendar, TrendingUp, BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LocalizedLink from './LocalizedLink';
 
 /**
  * Nav secondaire pour l’espace voyageur (/dashboard).
@@ -93,13 +94,13 @@ const DashboardNavBar = ({ className = '' }) => {
           {t('nav.dashboard', 'Tableau de bord')}
         </Link>
       )}
-      <Link
+      <LocalizedLink
         to="/search"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:border-primary-600 hover:text-primary-700 transition"
       >
         <Search size={16} />
         {t('nav.search', 'Recherche')}
-      </Link>
+      </LocalizedLink>
     </div>
   );
 };

@@ -28,7 +28,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 19 — Audit Qualité
 - [x] FOLLOW-UP — Empty states unifiés (voyageur / opérateur / admin)
 - [x] INT-02 — SEOHead + hreflang + meta multi-langue (fondations)
-- [ ] INT-01 — i18n Routing préfixe langue `/fr|/en|/es|/ar`
+- [x] INT-01 — i18n Routing préfixe langue `/fr|/en|/es|/ar`
 - [ ] INT-03 — Contenu éditorial SEO par marché (Wave 1-4)
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
@@ -908,15 +908,18 @@ Prompt                  Priorité     Dépend de
 
 Ordre : INT-02 (livré partiel) → INT-01 → INT-03…
 
+[x] INT-01 — 🔴 i18n Routing préfixe langue `/fr|/en|/es|/ar`
+- Routes publiques sous `/:lang` (LanguageRoot + Layout)
+- Admin / operator / auth / checkout / dashboard sans préfixe
+- Redirect legacy `/explore` → `/{lang}/explore`
+- LanguageSelector swap URL ; LocalizedLink ; sitemap `/fr/...`
+
 [x] INT-02 — 🟢 SEOHead + hreflang + meta multi-langue
-- `frontend/src/utils/seo.js` — canonical, hreflang (?lang=), OG
+- `frontend/src/utils/seo.js` — canonical, hreflang (?lang= → /{lang}/), OG
 - `frontend/src/components/SEOHead.jsx`
 - Branché : Home, Search/stores, Product, Blog, Destination, Category
-- i18n : détection `?lang=` (aligné sitemap)
-- Sitemap : + /explore, /stays, /extras
-
-[ ] INT-01 — 🔴 i18n Routing préfixe langue `/fr|/en|/es|/ar`
-Voir STRATEGIC-PLAN.md § PROMPT INT-01. Ne pas casser /admin, /operator, /dashboard.
+- i18n : détection path index 0
+- Sitemap : + /explore, /stays, /extras + préfixe langue
 
 [ ] INT-03 — 🟡 Contenu éditorial SEO par marché (Wave 1–4)
 Voir STRATEGIC-PLAN.md § PROMPT INT-03.

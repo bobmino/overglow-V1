@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SearchAutocomplete from './SearchAutocomplete';
 import DatePicker from './DatePicker';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState(null);

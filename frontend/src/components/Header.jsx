@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
 import NotificationBell from './NotificationBell';
+import LocalizedLink from './LocalizedLink';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import { logger } from '../utils/logger.js';
 
 const Header = () => {
@@ -27,8 +29,9 @@ const Header = () => {
   const mobileMenuRef = React.useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const localizedNavigate = useLocalizedNavigate();
   const location = useLocation();
-  const isDashboardRoute = location.pathname.startsWith('/operator');
+  const isDashboardRoute = location.pathname.startsWith('/operator') || location.pathname.startsWith('/admin');
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -83,7 +86,7 @@ const Header = () => {
     logout();
     setShowUserMenu(false);
     setIsMobileMenuOpen(false);
-    navigate('/');
+    localizedNavigate('/');
   };
 
   const handleUpgradeToOperator = async () => {
@@ -120,10 +123,10 @@ const Header = () => {
             Overglow-Trip
           </span>
         ) : (
-          <Link to="/" className="text-2xl font-heading font-bold text-primary-700 tracking-tight flex items-center gap-2">
+          <LocalizedLink to="/" className="text-2xl font-heading font-bold text-primary-700 tracking-tight flex items-center gap-2">
             <Globe className="text-secondary-500" size={28} />
             Overglow-Trip
-          </Link>
+          </LocalizedLink>
         )}
 
         {/* Desktop Navigation — pont hover via pb sur triggers + menu sans gap */}
@@ -455,27 +458,27 @@ const Header = () => {
             ref={mobileMenuRef}
             className="md:hidden fixed top-20 start-0 w-full bg-white border-b border-slate-100 shadow-xl p-4 flex flex-col space-y-4 z-40"
           >
-          <Link 
+          <LocalizedLink 
             to="/explore" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.discover')}
-          </Link>
-          <Link 
+          </LocalizedLink>
+          <LocalizedLink 
             to="/stays" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.luxury')} <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
-          </Link>
-          <Link 
+          </LocalizedLink>
+          <LocalizedLink 
             to="/extras" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.extras')}
-          </Link>
+          </LocalizedLink>
           <Link
             to="/loyalty"
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"

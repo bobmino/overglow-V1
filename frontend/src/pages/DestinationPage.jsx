@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
@@ -477,9 +478,9 @@ const DestinationPage = () => {
         ) : (
           <div className="text-center py-12 bg-white rounded-xl">
             <p className="text-slate-600 text-lg">{t('destination.empty')}</p>
-            <Link to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
+            <LocalizedLink to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
               {t('destination.see_all')}
-            </Link>
+            </LocalizedLink>
           </div>
         )}
       </div>

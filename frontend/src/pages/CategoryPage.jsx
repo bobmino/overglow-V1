@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
@@ -102,7 +103,7 @@ const CategoryPage = () => {
                 {t('category.all')}
               </button>
               {cities.map((city) => (
-                <Link
+                <LocalizedLink
                   key={city}
                   to={`/destinations/${city}`}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
@@ -112,7 +113,7 @@ const CategoryPage = () => {
                   }`}
                 >
                   {getCityName(city)}
-                </Link>
+                </LocalizedLink>
               ))}
             </div>
           </div>
@@ -140,9 +141,9 @@ const CategoryPage = () => {
         ) : (
           <div className="text-center py-12 bg-white rounded-xl">
             <p className="text-slate-600 text-lg">{t('category.empty')}</p>
-            <Link to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
+            <LocalizedLink to="/search" className="text-primary-600 hover:underline mt-4 inline-block">
               {t('category.see_all')}
-            </Link>
+            </LocalizedLink>
           </div>
         )}
       </div>

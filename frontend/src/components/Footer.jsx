@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Music } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LocalizedLink from './LocalizedLink';
 
 /**
  * [TASK-11] Footer i18n — faux badge Trustpilot retiré
+ * [INT-01] Liens publics préfixés /{lang}
  */
 const Footer = () => {
   const { t } = useTranslation();
@@ -26,42 +27,42 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-sm mb-4">{t('footer.col_support', 'Support')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/help" className="hover:text-white transition">{t('footer.help_center')}</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition">{t('footer.contact_us')}</Link></li>
-              <li><Link to="/faq" className="hover:text-white transition">{t('footer.faq')}</Link></li>
-              <li><Link to="/loyalty" className="hover:text-white transition">{t('footer.loyalty', 'Programme de fidélité')}</Link></li>
-              <li><Link to="/safety" className="hover:text-white transition">{t('footer.safety')}</Link></li>
+              <li><LocalizedLink to="/help" className="hover:text-white transition">{t('footer.help_center')}</LocalizedLink></li>
+              <li><LocalizedLink to="/contact" className="hover:text-white transition">{t('footer.contact_us')}</LocalizedLink></li>
+              <li><LocalizedLink to="/faq" className="hover:text-white transition">{t('footer.faq')}</LocalizedLink></li>
+              <li><LocalizedLink to="/loyalty" className="hover:text-white transition">{t('footer.loyalty', 'Programme de fidélité')}</LocalizedLink></li>
+              <li><LocalizedLink to="/safety" className="hover:text-white transition">{t('footer.safety')}</LocalizedLink></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-sm mb-4">{t('footer.col_about', 'À propos')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/about" className="hover:text-white transition">{t('footer.about')}</Link></li>
-              <li><Link to="/culture" className="hover:text-white transition">{t('footer.discover_morocco')}</Link></li>
-              <li><Link to="/blog" className="hover:text-white transition">{t('footer.blog')}</Link></li>
-              <li><Link to="/careers" className="hover:text-white transition">{t('footer.careers')}</Link></li>
-              <li><Link to="/press" className="hover:text-white transition">{t('footer.press')}</Link></li>
+              <li><LocalizedLink to="/about" className="hover:text-white transition">{t('footer.about')}</LocalizedLink></li>
+              <li><LocalizedLink to="/culture" className="hover:text-white transition">{t('footer.discover_morocco')}</LocalizedLink></li>
+              <li><LocalizedLink to="/blog" className="hover:text-white transition">{t('footer.blog')}</LocalizedLink></li>
+              <li><LocalizedLink to="/careers" className="hover:text-white transition">{t('footer.careers')}</LocalizedLink></li>
+              <li><LocalizedLink to="/press" className="hover:text-white transition">{t('footer.press')}</LocalizedLink></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-sm mb-4">{t('footer.col_operators', 'Pour les opérateurs')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/affiliate" className="hover:text-white transition">{t('footer.become_partner')}</Link></li>
-              <li><Link to="/operator/help" className="hover:text-white transition">{t('footer.operator_help')}</Link></li>
-              <li><Link to="/operator/resources" className="hover:text-white transition">{t('footer.operator_resources')}</Link></li>
-              <li><Link to="/operator/community" className="hover:text-white transition">{t('footer.operator_community')}</Link></li>
+              <li><LocalizedLink to="/affiliate" className="hover:text-white transition">{t('footer.become_partner')}</LocalizedLink></li>
+              <li><LocalizedLink to="/operator/help" className="hover:text-white transition">{t('footer.operator_help')}</LocalizedLink></li>
+              <li><LocalizedLink to="/operator/resources" className="hover:text-white transition">{t('footer.operator_resources')}</LocalizedLink></li>
+              <li><LocalizedLink to="/operator/community" className="hover:text-white transition">{t('footer.operator_community')}</LocalizedLink></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-sm mb-4">{t('footer.col_legal', 'Légal')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li><Link to="/terms" className="hover:text-white transition">{t('footer.terms')}</Link></li>
-              <li><Link to="/privacy" className="hover:text-white transition">{t('footer.privacy')}</Link></li>
-              <li><Link to="/cookies" className="hover:text-white transition">{t('footer.cookies')}</Link></li>
-              <li><Link to="/accessibility" className="hover:text-white transition">{t('footer.accessibility')}</Link></li>
+              <li><LocalizedLink to="/terms" className="hover:text-white transition">{t('footer.terms')}</LocalizedLink></li>
+              <li><LocalizedLink to="/privacy" className="hover:text-white transition">{t('footer.privacy')}</LocalizedLink></li>
+              <li><LocalizedLink to="/cookies" className="hover:text-white transition">{t('footer.cookies')}</LocalizedLink></li>
+              <li><LocalizedLink to="/accessibility" className="hover:text-white transition">{t('footer.accessibility')}</LocalizedLink></li>
             </ul>
           </div>
         </div>
@@ -87,9 +88,9 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between pt-6 border-t border-slate-700 text-xs text-slate-400">
           <p>{t('footer.copyright', { year })}</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link to="/terms" className="hover:text-white transition">{t('footer.terms')}</Link>
-            <Link to="/how-it-works" className="hover:text-white transition">{t('footer.how_it_works')}</Link>
-            <Link to="/cookie-consent" className="hover:text-white transition">{t('footer.cookie_consent')}</Link>
+            <LocalizedLink to="/terms" className="hover:text-white transition">{t('footer.terms')}</LocalizedLink>
+            <LocalizedLink to="/how-it-works" className="hover:text-white transition">{t('footer.how_it_works')}</LocalizedLink>
+            <LocalizedLink to="/cookie-consent" className="hover:text-white transition">{t('footer.cookie_consent')}</LocalizedLink>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from './LocalizedLink';
 import { Calendar, Clock, Eye, Tag } from 'lucide-react';
 import { formatImageUrlWithFallback, getPlaceholderImage } from '../utils/formatImage';
 
@@ -16,7 +16,7 @@ const BlogCard = ({ post }) => {
   };
 
   return (
-    <Link 
+    <LocalizedLink 
       to={`/blog/${post.slug}`}
       className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-1"
     >
@@ -91,7 +91,7 @@ const BlogCard = ({ post }) => {
           Lire la suite →
         </div>
       </div>
-    </Link>
+    </LocalizedLink>
   );
 };
 

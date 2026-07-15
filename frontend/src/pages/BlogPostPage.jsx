@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
@@ -14,7 +16,7 @@ import { sanitizeHtml } from '../utils/sanitizer.js';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { t, i18n } = useTranslation();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
@@ -99,13 +101,13 @@ const BlogPostPage = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl font-bold text-slate-900 mb-4">{t('blog.not_found_title')}</h1>
             <p className="text-slate-600 mb-6">{error || t('blog.not_found_body')}</p>
-            <Link
+            <LocalizedLink
               to="/blog"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
             >
               <ArrowLeft size={18} />
               {t('blog.back')}
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </div>
@@ -212,13 +214,13 @@ const BlogPostPage = () => {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag, index) => (
-                  <Link
+                  <LocalizedLink
                     key={index}
                     to={`/tags/${encodeURIComponent(String(tag).toLowerCase().replace(/\s+/g, '-'))}`}
                     className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm hover:bg-primary-100 hover:text-primary-700 transition"
                   >
                     #{tag}
-                  </Link>
+                  </LocalizedLink>
                 ))}
               </div>
             </div>
@@ -229,7 +231,7 @@ const BlogPostPage = () => {
               <h3 className="text-2xl font-bold text-slate-900 mb-6">{t('blog.related_experiences')}</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {post.relatedProducts.map((product) => (
-                  <Link
+                  <LocalizedLink
                     key={product._id}
                     to={`/products/${product._id}`}
                     className="flex gap-4 p-4 border border-slate-200 rounded-lg hover:border-primary-500 transition"
@@ -246,7 +248,7 @@ const BlogPostPage = () => {
                         {t('blog.from_price', { price: product.price })}
                       </p>
                     </div>
-                  </Link>
+                  </LocalizedLink>
                 ))}
               </div>
             </div>

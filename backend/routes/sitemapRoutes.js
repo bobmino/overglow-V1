@@ -14,21 +14,28 @@ const getBaseUrl = () =>
 const hreflangBlock = (baseUrl, pathname) => {
   const path = pathname.startsWith('/') ? pathname : `/${pathname}`;
   const lines = LOCALES.map(
-    (lang) =>
-      `    <xhtml:link rel="alternate" hreflang="${lang}" href="${baseUrl}${path}${path.includes('?') ? '&' : '?'}lang=${lang}"/>`
+    (lang) => {
+      const locPath = path === '/' ? `/${lang}` : `/${lang}${path}`;
+      return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${baseUrl}${locPath}"/>`;
+    }
   );
-  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${path}"/>`);
+  const defaultPath = path === '/' ? '/fr' : `/fr${path}`;
+  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${defaultPath}"/>`);
   return lines.join('\n');
 };
 
 const urlEntry = (baseUrl, loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) => {
   const lastmodLine = lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : '';
-  return `  <url>
-    <loc>${baseUrl}${loc}</loc>${lastmodLine}
+  // Emit one URL set per locale with /{lang} prefix (INT-01)
+  return LOCALES.map((lang) => {
+    const locPath = loc === '/' ? `/${lang}` : `/${lang}${loc}`;
+    return `  <url>
+    <loc>${baseUrl}${locPath}</loc>${lastmodLine}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
 ${hreflangBlock(baseUrl, loc)}
   </url>`;
+  }).join('\n');
 };
 
 // @desc    Generate sitemap XML (production domain + hreflang)

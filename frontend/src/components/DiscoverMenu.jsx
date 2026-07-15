@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   ChevronRight, MapPin, Compass, Palmtree, Tent, Camera, Utensils, 
   Map as MapIcon, Star, Sparkles, Home, Car, Navigation, Ship
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getCityImage } from '../config/cityMedia.js';
+import LocalizedLink from './LocalizedLink';
 
 const cityImg = (name) => getCityImage(name, 'card');
 
@@ -221,7 +221,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
           </h3>
           <div className="space-y-3">
             {currentMapping.incontournables.map((activity, index) => (
-              <Link
+              <LocalizedLink
                 key={index}
                 to={storePath}
                 onClick={onClose}
@@ -231,7 +231,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-emerald-400 transition-colors duration-300"></span>
                   {activity}
                 </div>
-              </Link>
+              </LocalizedLink>
             ))}
           </div>
         </div>
@@ -244,7 +244,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {currentMapping.destinationsPhares.map((dest, idx) => (
-              <Link
+              <LocalizedLink
                 key={idx}
                 to={resolveCityHref(dest.name)}
                 onClick={onClose}
@@ -261,7 +261,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                     {t('menu.exploreRegion')} <ChevronRight size={12} strokeWidth={2} />
                   </div>
                 </div>
-              </Link>
+              </LocalizedLink>
             ))}
           </div>
         </div>
@@ -269,14 +269,14 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
       {/* View All Link */}
       <div className="mt-10 pt-6 border-t border-slate-100 flex justify-end">
-        <Link
+        <LocalizedLink
           to={viewAllHref}
           onClick={onClose}
           className="inline-flex items-center gap-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40"
         >
           {t('menu.viewCategory')} {data.title}
           <ChevronRight size={16} strokeWidth={2} />
-        </Link>
+        </LocalizedLink>
       </div>
       </div>
     </div>

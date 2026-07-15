@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 
 const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, renderCard }) => {
   const scrollContainerRef = useRef(null);
-  const navigate = useNavigate();
+  const localizedNavigate = useLocalizedNavigate();
 
   if (!items || items.length === 0) return null;
 
@@ -21,13 +21,13 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
 
   const handleSeeMore = () => {
     if (seeMoreTo) {
-      navigate(seeMoreTo);
+      localizedNavigate(seeMoreTo);
     } else if (searchTag) {
-      navigate(`/search?q=${encodeURIComponent(searchTag)}`);
+      localizedNavigate(`/search?q=${encodeURIComponent(searchTag)}`);
     } else if (categoryId) {
-      navigate(`/search?categoryGroup=${categoryId}`);
+      localizedNavigate(`/search?categoryGroup=${categoryId}`);
     } else {
-      navigate('/explore');
+      localizedNavigate('/explore');
     }
   };
 

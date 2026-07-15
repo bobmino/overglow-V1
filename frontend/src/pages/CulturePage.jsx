@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { BookOpen, Calendar, Palette, Utensils, Music, MapPin, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
@@ -145,12 +146,12 @@ const CulturePage = () => {
             <div className="mt-12 bg-primary-50 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('culture.cta_title')}</h2>
               <p className="text-gray-700 mb-6 max-w-2xl mx-auto">{t('culture.cta_text')}</p>
-              <Link
+              <LocalizedLink
                 to="/search"
                 className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-primary-700 transition"
               >
                 {t('culture.cta_button')}
-              </Link>
+              </LocalizedLink>
             </div>
           </>
         )}

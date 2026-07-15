@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import api from '../config/axios';
@@ -55,17 +56,17 @@ const TagHubPage = () => {
 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between gap-4 mb-6">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 transition">
+          <LocalizedLink to="/blog" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 transition">
             <ArrowLeft size={18} />
             {t('tags.back_blog')}
-          </Link>
-          <Link
+          </LocalizedLink>
+          <LocalizedLink
             to={`/search?q=${encodeURIComponent(tag)}`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition"
           >
             <Search size={16} />
             {t('tags.search_tag', { tag })}
-          </Link>
+          </LocalizedLink>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8">
@@ -115,12 +116,12 @@ const TagHubPage = () => {
             <p className="text-slate-600 mb-6">
               Aucun article publié ou expérience ne correspond encore à <span className="font-semibold">#{tag}</span>.
             </p>
-            <Link
+            <LocalizedLink
               to="/blog"
               className="px-6 py-3 rounded-xl bg-primary-600 text-white font-bold hover:bg-primary-700 transition inline-flex"
             >
               Explorer le blog
-            </Link>
+            </LocalizedLink>
           </div>
         ) : (
           <div className="space-y-10">

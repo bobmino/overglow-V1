@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import {
@@ -366,13 +367,13 @@ const AffiliatePage = () => {
               <div className="mt-6 text-center">
                 <p className="text-gray-600 text-sm">
                   {t('affiliate.accept')}{' '}
-                  <Link to="/terms" className="text-primary-600 font-semibold hover:underline">
+                  <LocalizedLink to="/terms" className="text-primary-600 font-semibold hover:underline">
                     {t('affiliate.terms')}
-                  </Link>
+                  </LocalizedLink>
                   {' '}{t('affiliate.and')}{' '}
-                  <Link to="/privacy" className="text-primary-600 font-semibold hover:underline">
+                  <LocalizedLink to="/privacy" className="text-primary-600 font-semibold hover:underline">
                     {t('affiliate.privacy')}
-                  </Link>
+                  </LocalizedLink>
                 </p>
                 <p className="text-gray-600 mt-4">
                   {t('affiliate.has_account')}{' '}
@@ -399,16 +400,16 @@ const AffiliatePage = () => {
             <div>
               <h3 className="text-white font-bold mb-4">{t('affiliate.footer_about')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/about" className="hover:text-white transition">{t('affiliate.footer_who')}</Link></li>
-                <li><Link to="/careers" className="hover:text-white transition">{t('affiliate.footer_careers')}</Link></li>
-                <li><Link to="/press" className="hover:text-white transition">{t('affiliate.footer_press')}</Link></li>
-                <li><Link to="/blog" className="hover:text-white transition">{t('affiliate.footer_blog')}</Link></li>
+                <li><LocalizedLink to="/about" className="hover:text-white transition">{t('affiliate.footer_who')}</LocalizedLink></li>
+                <li><LocalizedLink to="/careers" className="hover:text-white transition">{t('affiliate.footer_careers')}</LocalizedLink></li>
+                <li><LocalizedLink to="/press" className="hover:text-white transition">{t('affiliate.footer_press')}</LocalizedLink></li>
+                <li><LocalizedLink to="/blog" className="hover:text-white transition">{t('affiliate.footer_blog')}</LocalizedLink></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-bold mb-4">{t('affiliate.footer_operators')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/affiliate" className="hover:text-white transition">{t('affiliate.footer_partner')}</Link></li>
+                <li><LocalizedLink to="/affiliate" className="hover:text-white transition">{t('affiliate.footer_partner')}</LocalizedLink></li>
                 <li><Link to="/operator/help" className="hover:text-white transition">{t('affiliate.footer_help')}</Link></li>
                 <li><Link to="/operator/resources" className="hover:text-white transition">{t('affiliate.footer_resources')}</Link></li>
                 <li><Link to="/operator/community" className="hover:text-white transition">{t('affiliate.footer_community')}</Link></li>
@@ -417,10 +418,10 @@ const AffiliatePage = () => {
             <div>
               <h3 className="text-white font-bold mb-4">{t('affiliate.footer_support')}</h3>
               <ul className="space-y-2">
-                <li><Link to="/help" className="hover:text-white transition">{t('affiliate.footer_help')}</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition">{t('affiliate.footer_contact')}</Link></li>
-                <li><Link to="/faq" className="hover:text-white transition">{t('affiliate.footer_faq')}</Link></li>
-                <li><Link to="/safety" className="hover:text-white transition">{t('affiliate.footer_safety')}</Link></li>
+                <li><LocalizedLink to="/help" className="hover:text-white transition">{t('affiliate.footer_help')}</LocalizedLink></li>
+                <li><LocalizedLink to="/contact" className="hover:text-white transition">{t('affiliate.footer_contact')}</LocalizedLink></li>
+                <li><LocalizedLink to="/faq" className="hover:text-white transition">{t('affiliate.footer_faq')}</LocalizedLink></li>
+                <li><LocalizedLink to="/safety" className="hover:text-white transition">{t('affiliate.footer_safety')}</LocalizedLink></li>
               </ul>
             </div>
             <div>

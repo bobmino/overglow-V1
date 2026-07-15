@@ -1,11 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Star, MapPin } from 'lucide-react';
 import BadgeDisplay from './BadgeDisplay';
 import { useCurrency } from '../context/CurrencyContext';
 import FavoriteButton from './FavoriteButton';
 import { trackProductClick } from '../utils/analytics';
 import { formatImageUrl, getPlaceholderImage } from '../utils/formatImage';
+import LocalizedLink from './LocalizedLink';
 
 const ProductCard = ({ product }) => {
   const { formatPrice } = useCurrency();
@@ -40,7 +40,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <Link 
+    <LocalizedLink 
       to={`/products/${product._id}`} 
       onClick={handleClick}
       data-testid="product-card"
@@ -115,7 +115,7 @@ const ProductCard = ({ product }) => {
           </button>
         </div>
       </div>
-    </Link>
+    </LocalizedLink>
   );
 };
 

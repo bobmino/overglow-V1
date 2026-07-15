@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/LocalizedLink';
 import { Shield, Phone, HeartPulse, LifeBuoy } from 'lucide-react';
 import StaticContentPage from '../components/StaticContentPage';
 
@@ -63,12 +64,12 @@ const SafetyPage = () => (
           Notre équipe vous accompagne avant, pendant et après votre expérience.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link to="/help" className="btn-primary">
+          <LocalizedLink to="/help" className="btn-primary">
             Centre d’aide
-          </Link>
-          <Link to="/faq" className="btn-secondary">
+          </LocalizedLink>
+          <LocalizedLink to="/faq" className="btn-secondary">
             FAQ
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
     </div>

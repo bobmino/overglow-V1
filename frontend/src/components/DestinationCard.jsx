@@ -1,20 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { getCityAlt } from '../config/cityMedia.js';
+import LocalizedLink from './LocalizedLink';
 
 const DestinationCard = ({ name, image, toursCount }) => {
   const { i18n } = useTranslation();
   const imageSrc = formatImageUrlWithFallback(image);
 
   return (
-    <Link 
+    <LocalizedLink
       to={`/search?city=${encodeURIComponent(name)}`}
       className="group relative h-48 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
     >
-      <img 
-        src={imageSrc} 
+      <img
+        src={imageSrc}
         alt={getCityAlt(name, i18n.language)}
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         loading="lazy"
@@ -26,7 +26,7 @@ const DestinationCard = ({ name, image, toursCount }) => {
           <p className="text-white/90 text-sm">{toursCount.toLocaleString()} expériences</p>
         )}
       </div>
-    </Link>
+    </LocalizedLink>
   );
 };
 

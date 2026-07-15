@@ -2,20 +2,24 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Heart, User, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LocalizedLink from './LocalizedLink';
+import { stripLangPrefix } from '../utils/i18nRouting';
 
 const MobileBottomNav = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const isActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const barePath = stripLangPrefix(location.pathname);
+  const isActive = (path) => barePath === path || barePath.startsWith(`${path}/`);
 
   if (
-    location.pathname.startsWith('/operator') ||
-    location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/dashboard') ||
-    location.pathname.startsWith('/profile') ||
-    location.pathname.startsWith('/booking') ||
-    location.pathname.startsWith('/checkout') ||
-    location.pathname.startsWith('/products/')
+    barePath.startsWith('/operator') ||
+    barePath.startsWith('/admin') ||
+    barePath.startsWith('/dashboard') ||
+    barePath.startsWith('/profile') ||
+    barePath.startsWith('/booking') ||
+    barePath.startsWith('/checkout') ||
+    barePath.startsWith('/products/') ||
+    barePath.startsWith('/experiences/')
   ) {
     return null;
   }
@@ -26,19 +30,19 @@ const MobileBottomNav = () => {
       aria-label={t('nav.mobile_aria', 'Navigation mobile')}
     >
       <div className="flex items-center justify-around h-16 px-2">
-        <Link
+        <LocalizedLink
           to="/"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
-            isActive('/') && location.pathname === '/'
+            barePath === '/'
               ? 'text-primary-600'
               : 'text-slate-500 hover:text-primary-600'
           }`}
         >
-          <Home size={24} className={isActive('/') && location.pathname === '/' ? 'fill-current' : ''} />
+          <Home size={24} className={barePath === '/' ? 'fill-current' : ''} />
           <span className="text-xs mt-1 font-medium">{t('common.home')}</span>
-        </Link>
+        </LocalizedLink>
 
-        <Link
+        <LocalizedLink
           to="/search"
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
             isActive('/search') ? 'text-primary-600' : 'text-slate-500 hover:text-primary-600'
@@ -46,7 +50,7 @@ const MobileBottomNav = () => {
         >
           <Search size={24} className={isActive('/search') ? 'fill-current' : ''} />
           <span className="text-xs mt-1 font-medium">{t('common.search')}</span>
-        </Link>
+        </LocalizedLink>
 
         <Link
           to="/favorites"

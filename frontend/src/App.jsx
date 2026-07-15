@@ -5,6 +5,8 @@ import { ToastProvider } from './context/ToastContext';
 import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
 import RtlDocumentSync from './components/RtlDocumentSync';
+import LanguageRoot from './components/LanguageRoot';
+import { RootLangRedirect, LegacyPublicRedirect } from './components/LangRedirects';
 
 // Critical components (loaded immediately)
 import Home from './pages/Home';
@@ -97,7 +99,7 @@ function App() {
   useEffect(() => {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => {
-        const criticalRoutes = ['/search', '/products'];
+        const criticalRoutes = ['/fr/explore', '/fr/search'];
         criticalRoutes.forEach(route => {
           const link = document.createElement('link');
           link.rel = 'prefetch';
@@ -115,244 +117,21 @@ function App() {
         <RtlDocumentSync />
         <CartDrawer />
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="search" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <SearchPage />
-            </Suspense>
-          } />
-          <Route path="explore" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <SearchPage />
-            </Suspense>
-          } />
-          <Route path="stays" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <SearchPage />
-            </Suspense>
-          } />
-          <Route path="extras" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <SearchPage />
-            </Suspense>
-          } />
-          <Route path="destinations/:city" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <DestinationPage />
-            </Suspense>
-          } />
-          <Route path="categories/:category" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CategoryPage />
-            </Suspense>
-          } />
-          <Route path="products/:id" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <ProductDetailPage />
-            </Suspense>
-          } />
-          <Route path="experiences/:id" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <ProductDetailPage />
-            </Suspense>
-          } />
-          <Route path="blog" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <BlogPage />
-            </Suspense>
-          } />
-          <Route path="blog/:slug" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <BlogPostPage />
-            </Suspense>
-          } />
-          <Route path="tags/:tag" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <TagHubPage />
-            </Suspense>
-          } />
-          <Route path="booking" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <BookingPage />
-            </Suspense>
-          } />
-          <Route path="dashboard" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <DashboardPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="profile" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <ProfilePage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="favorites" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <FavoritesPage />
-              </Suspense>
-          } />
-          <Route path="loyalty" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <LoyaltyPage />
-            </Suspense>
-          } />
-          <Route path="view-history" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <ViewHistoryPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="dashboard/inquiries" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <MyInquiriesPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="operator/wizard" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorWizardPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="operator/onboarding" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorOnboardingPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          {/* Public operator footer pages — declared before the /operator shell */}
-          <Route path="operator/help" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OperatorHelpPage />
-            </Suspense>
-          } />
-          <Route path="operator/resources" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OperatorResourcesPage />
-            </Suspense>
-          } />
-          <Route path="operator/community" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OperatorCommunityPage />
-            </Suspense>
-          } />
+        {/* Auth routes without layout, without lang prefix */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/operator/register" element={<RegisterPage />} />
 
-          <Route path="notifications" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <NotificationsPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-
-          {/* [TASK-10] Pages publiques dans le Layout (header + footer) */}
-          <Route path="about" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AboutPage />
-            </Suspense>
-          } />
-          <Route path="terms" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <TermsPage />
-            </Suspense>
-          } />
-          <Route path="privacy" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PrivacyPage />
-            </Suspense>
-          } />
-          <Route path="help" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HelpPage />
-            </Suspense>
-          } />
-          <Route path="contact" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HelpPage />
-            </Suspense>
-          } />
-          <Route path="faq" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <FAQPage />
-            </Suspense>
-          } />
-          <Route path="culture" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CulturePage />
-            </Suspense>
-          } />
-          <Route path="how-it-works" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <HowItWorksPage />
-            </Suspense>
-          } />
-          <Route path="affiliate" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AffiliatePage />
-            </Suspense>
-          } />
-          <Route path="partners/signup" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PartnerSignupPage />
-            </Suspense>
-          } />
-          <Route path="safety" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <SafetyPage />
-            </Suspense>
-          } />
-          <Route path="careers" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CareersPage />
-            </Suspense>
-          } />
-          <Route path="press" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PressPage />
-            </Suspense>
-          } />
-          <Route path="cookies" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CookiesPage />
-            </Suspense>
-          } />
-          <Route path="accessibility" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AccessibilityPage />
-            </Suspense>
-          } />
-          <Route path="cookie-consent" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CookieConsentPage />
-            </Suspense>
-          } />
-
-          {/* [TASK-10] 404 catch-all (dans le Layout) */}
-          <Route path="*" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <NotFoundPage />
-            </Suspense>
-          } />
-        </Route>
-        
-        {/* Checkout routes without layout */}
-        <Route path="checkout" element={
+        {/* Checkout routes without layout, without lang prefix */}
+        <Route path="/checkout" element={
           <PrivateRoute>
             <Suspense fallback={<LoadingFallback />}>
               <CheckoutPage />
             </Suspense>
           </PrivateRoute>
         } />
-        <Route path="booking-success" element={
+        <Route path="/booking-success" element={
           <PrivateRoute>
             <Suspense fallback={<LoadingFallback />}>
               <BookingSuccessPage />
@@ -510,12 +289,273 @@ function App() {
             </Suspense>
           } />
         </Route>
-        
-        {/* Auth routes without layout */}
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
-          <Route path="reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="operator/register" element={<RegisterPage />} />
+
+        {/* Account shell — Layout (header + footer), pas de préfixe de langue */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <DashboardPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <ProfilePage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/favorites" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <FavoritesPage />
+              </Suspense>
+          } />
+          <Route path="/loyalty" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LoyaltyPage />
+            </Suspense>
+          } />
+          <Route path="/view-history" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <ViewHistoryPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/notifications" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <NotificationsPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/dashboard/inquiries" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <MyInquiriesPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/operator/wizard" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorWizardPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          <Route path="/operator/onboarding" element={
+            <PrivateRoute>
+              <Suspense fallback={<LoadingFallback />}>
+                <OperatorOnboardingPage />
+              </Suspense>
+            </PrivateRoute>
+          } />
+          {/* Public operator footer pages — déclarées avant le shell /operator */}
+          <Route path="/operator/help" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorHelpPage />
+            </Suspense>
+          } />
+          <Route path="/operator/resources" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorResourcesPage />
+            </Suspense>
+          } />
+          <Route path="/operator/community" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorCommunityPage />
+            </Suspense>
+          } />
+        </Route>
+
+        {/* [INT-01] Redirections legacy (URL sans préfixe → URL avec préfixe de langue) */}
+        {/* Doivent être déclarées AVANT /:lang pour intercepter ces chemins publics */}
+        <Route path="/" element={<RootLangRedirect />} />
+        <Route path="/search" element={<LegacyPublicRedirect />} />
+        <Route path="/explore" element={<LegacyPublicRedirect />} />
+        <Route path="/stays" element={<LegacyPublicRedirect />} />
+        <Route path="/extras" element={<LegacyPublicRedirect />} />
+        <Route path="/products/:id" element={<LegacyPublicRedirect />} />
+        <Route path="/experiences/:id" element={<LegacyPublicRedirect />} />
+        <Route path="/destinations/:city" element={<LegacyPublicRedirect />} />
+        <Route path="/categories/:category" element={<LegacyPublicRedirect />} />
+        <Route path="/blog" element={<LegacyPublicRedirect />} />
+        <Route path="/blog/:slug" element={<LegacyPublicRedirect />} />
+        <Route path="/tags/:tag" element={<LegacyPublicRedirect />} />
+        <Route path="/about" element={<LegacyPublicRedirect />} />
+        <Route path="/help" element={<LegacyPublicRedirect />} />
+        <Route path="/contact" element={<LegacyPublicRedirect />} />
+        <Route path="/faq" element={<LegacyPublicRedirect />} />
+        <Route path="/culture" element={<LegacyPublicRedirect />} />
+        <Route path="/how-it-works" element={<LegacyPublicRedirect />} />
+        <Route path="/affiliate" element={<LegacyPublicRedirect />} />
+        <Route path="/partners/signup" element={<LegacyPublicRedirect />} />
+        <Route path="/terms" element={<LegacyPublicRedirect />} />
+        <Route path="/privacy" element={<LegacyPublicRedirect />} />
+        <Route path="/safety" element={<LegacyPublicRedirect />} />
+        <Route path="/careers" element={<LegacyPublicRedirect />} />
+        <Route path="/press" element={<LegacyPublicRedirect />} />
+        <Route path="/cookies" element={<LegacyPublicRedirect />} />
+        <Route path="/accessibility" element={<LegacyPublicRedirect />} />
+        <Route path="/cookie-consent" element={<LegacyPublicRedirect />} />
+        <Route path="/booking" element={<LegacyPublicRedirect />} />
+
+        {/* [INT-01] Pages publiques préfixées par la langue (/:lang/...) */}
+        <Route path="/:lang" element={<LanguageRoot />}>
+          <Route element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="search" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <SearchPage />
+              </Suspense>
+            } />
+            <Route path="explore" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <SearchPage />
+              </Suspense>
+            } />
+            <Route path="stays" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <SearchPage />
+              </Suspense>
+            } />
+            <Route path="extras" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <SearchPage />
+              </Suspense>
+            } />
+            <Route path="destinations/:city" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <DestinationPage />
+              </Suspense>
+            } />
+            <Route path="categories/:category" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <CategoryPage />
+              </Suspense>
+            } />
+            <Route path="products/:id" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ProductDetailPage />
+              </Suspense>
+            } />
+            <Route path="experiences/:id" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ProductDetailPage />
+              </Suspense>
+            } />
+            <Route path="blog" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <BlogPage />
+              </Suspense>
+            } />
+            <Route path="blog/:slug" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <BlogPostPage />
+              </Suspense>
+            } />
+            <Route path="tags/:tag" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <TagHubPage />
+              </Suspense>
+            } />
+            <Route path="booking" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <BookingPage />
+              </Suspense>
+            } />
+
+            {/* [TASK-10] Pages publiques dans le Layout (header + footer) */}
+            <Route path="about" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AboutPage />
+              </Suspense>
+            } />
+            <Route path="terms" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <TermsPage />
+              </Suspense>
+            } />
+            <Route path="privacy" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <PrivacyPage />
+              </Suspense>
+            } />
+            <Route path="help" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <HelpPage />
+              </Suspense>
+            } />
+            <Route path="contact" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <HelpPage />
+              </Suspense>
+            } />
+            <Route path="faq" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <FAQPage />
+              </Suspense>
+            } />
+            <Route path="culture" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <CulturePage />
+              </Suspense>
+            } />
+            <Route path="how-it-works" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <HowItWorksPage />
+              </Suspense>
+            } />
+            <Route path="affiliate" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliatePage />
+              </Suspense>
+            } />
+            <Route path="partners/signup" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <PartnerSignupPage />
+              </Suspense>
+            } />
+            <Route path="safety" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <SafetyPage />
+              </Suspense>
+            } />
+            <Route path="careers" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <CareersPage />
+              </Suspense>
+            } />
+            <Route path="press" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <PressPage />
+              </Suspense>
+            } />
+            <Route path="cookies" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <CookiesPage />
+              </Suspense>
+            } />
+            <Route path="accessibility" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AccessibilityPage />
+              </Suspense>
+            } />
+            <Route path="cookie-consent" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <CookieConsentPage />
+              </Suspense>
+            } />
+
+            {/* [TASK-10] 404 catch-all (dans le Layout) */}
+            <Route path="*" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <NotFoundPage />
+              </Suspense>
+            } />
+          </Route>
+        </Route>
       </Routes>
     </Router>
       </ToastProvider>
