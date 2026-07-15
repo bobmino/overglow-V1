@@ -5,7 +5,11 @@ import {
   Banknote,
   CreditCard,
   Bell,
+  Mail,
   Loader2,
+  Eye,
+  Send,
+  X,
 } from 'lucide-react';
 import api from '../config/axios';
 import { useToast } from '../context/ToastContext';
@@ -17,6 +21,7 @@ const TABS = [
   { id: 'finance', label: 'Finances', icon: Banknote },
   { id: 'payments', label: 'Paiements', icon: CreditCard },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'emails', label: 'Emails', icon: Mail },
 ];
 
 const DEFAULTS = {
@@ -94,10 +99,79 @@ const AdminSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
 
+  // [PROMPT-18] Email templates
+  const [emailTemplates, setEmailTemplates] = useState([]);
+  const [emailsLoading, setEmailsLoading] = useState(false);
+  const [preview, setPreview] = useState(null); // { id, subject, html, locale }
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [testSendingId, setTestSendingId] = useState(null);
+  const [previewLocale, setPreviewLocale] = useState('fr');
+
   useEffect(() => {
     const q = searchParams.get('tab');
     if (q && TABS.some((t) => t.id === q)) setTab(q);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (tab !== 'emails') return undefined;
+    let cancelled = false;
+    const loadTemplates = async () => {
+      setEmailsLoading(true);
+      try {
+        const { data } = await api.get('/api/admin/emails/templates');
+        if (!cancelled) setEmailTemplates(data.templates || []);
+      } catch (err) {
+        logger.error('Failed to load email templates', err);
+        if (!cancelled) toast('Impossible de charger les templates email', { type: 'error' });
+      } finally {
+        if (!cancelled) setEmailsLoading(false);
+      }
+    };
+    loadTemplates();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, toast]);
+
+  const openEmailPreview = async (templateId, locale = previewLocale) => {
+    setPreviewLoading(true);
+    try {
+      const { data } = await api.get(`/api/admin/emails/templates/${templateId}/preview`, {
+        params: { locale },
+      });
+      setPreview({
+        id: templateId,
+        subject: data.subject,
+        html: data.html,
+        locale: data.locale || locale,
+      });
+      setPreviewLocale(data.locale || locale);
+    } catch (err) {
+      logger.error('Email preview failed', err);
+      toast(err.response?.data?.message || 'Échec de la prévisualisation', { type: 'error' });
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const sendTestEmail = async (templateId) => {
+    setTestSendingId(templateId);
+    try {
+      const { data } = await api.post(`/api/admin/emails/templates/${templateId}/test`, {
+        locale: previewLocale,
+        email: settings.supportEmail || undefined,
+      });
+      toast(data.message || 'Email de test envoyé', { type: 'success' });
+    } catch (err) {
+      logger.error('Test email failed', err);
+      toast(
+        err.response?.data?.message || 'Échec de l’envoi (vérifiez SMTP)',
+        { type: 'error' }
+      );
+    } finally {
+      setTestSendingId(null);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -521,6 +595,156 @@ const AdminSettingsPage = () => {
                   <option value="none">Aucun</option>
                 </select>
               </FieldRow>
+            </>
+          )}
+
+          {tab === 'emails' && (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+                <div>
+                  <h2 className="text-lg font-heading font-bold text-gray-900">Templates email</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Prévisualisez et envoyez un test (destinataire = email support ou compte admin).
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-gray-600" htmlFor="email-locale">
+                    Langue
+                  </label>
+                  <select
+                    id="email-locale"
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                    value={previewLocale}
+                    onChange={(e) => setPreviewLocale(e.target.value)}
+                  >
+                    <option value="fr">FR</option>
+                    <option value="en">EN</option>
+                  </select>
+                </div>
+              </div>
+
+              {emailsLoading ? (
+                <div className="flex items-center gap-2 text-gray-500 py-8 justify-center">
+                  <Loader2 className="animate-spin" size={18} />
+                  Chargement…
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+                  {emailTemplates.map((tpl) => (
+                    <li
+                      key={tpl.id}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50/80 hover:bg-gray-50"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900">{tpl.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{tpl.description}</p>
+                        <p className="text-[11px] text-gray-400 mt-1 font-mono">{tpl.id}.hbs</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 shrink-0">
+                        <button
+                          type="button"
+                          disabled={previewLoading}
+                          onClick={() => openEmailPreview(tpl.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-white border border-gray-200 text-gray-800 hover:border-primary-400 disabled:opacity-50"
+                        >
+                          <Eye size={14} />
+                          Prévisualiser
+                        </button>
+                        <button
+                          type="button"
+                          disabled={testSendingId === tpl.id}
+                          onClick={() => sendTestEmail(tpl.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
+                        >
+                          {testSendingId === tpl.id ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Send size={14} />
+                          )}
+                          Envoyer un test
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {preview && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="email-preview-title"
+                >
+                  <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="flex items-start justify-between gap-3 p-4 border-b border-gray-200">
+                      <div className="min-w-0">
+                        <h3 id="email-preview-title" className="font-heading font-bold text-gray-900 truncate">
+                          {preview.subject}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {preview.id} · {String(preview.locale).toUpperCase()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <select
+                          className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs bg-white"
+                          value={preview.locale}
+                          onChange={(e) => openEmailPreview(preview.id, e.target.value)}
+                        >
+                          <option value="fr">FR</option>
+                          <option value="en">EN</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setPreview(null)}
+                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                          aria-label="Fermer"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-h-0 bg-gray-100 p-3">
+                      {previewLoading ? (
+                        <div className="flex items-center justify-center h-64 text-gray-500 gap-2">
+                          <Loader2 className="animate-spin" size={20} />
+                          Rendu…
+                        </div>
+                      ) : (
+                        <iframe
+                          title={`Preview ${preview.id}`}
+                          srcDoc={preview.html}
+                          className="w-full h-[60vh] bg-white rounded-lg border border-gray-200"
+                          sandbox=""
+                        />
+                      )}
+                    </div>
+                    <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        disabled={testSendingId === preview.id}
+                        onClick={() => sendTestEmail(preview.id)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
+                      >
+                        {testSendingId === preview.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Send size={14} />
+                        )}
+                        Envoyer un test
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreview(null)}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      >
+                        Fermer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

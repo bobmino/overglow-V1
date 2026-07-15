@@ -6,6 +6,7 @@ import Operator from '../models/operatorModel.js';
 import Settings from '../models/settingsModel.js';
 import { validationResult } from 'express-validator';
 import { notifyReviewPending, notifyReviewApproved, notifyNewReview, notifyLowRating } from '../utils/notificationService.js';
+import { sendReviewNotificationEmail } from '../utils/emailService.js';
 import { logger } from '../utils/logger.js';
 import { sanitizeText } from '../utils/sanitizer.js';
 
@@ -93,6 +94,14 @@ const createReview = async (req, res) => {
         await notifyNewReview(review, product, operatorDoc.user);
         if (Number(rating) <= 2) {
           await notifyLowRating(review, product, operatorDoc.user);
+        }
+        const operatorUser = await User.findById(operatorDoc.user).select('name email preferredLanguage locale');
+        if (operatorUser) {
+          sendReviewNotificationEmail({
+            operatorUser,
+            product,
+            review: { ...review.toObject?.() || review, user: req.user },
+          }).catch((err) => logger.error('Review email failed:', err));
         }
       }
     } catch (err) {

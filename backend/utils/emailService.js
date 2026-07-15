@@ -2,16 +2,33 @@ import pkg from 'nodemailer';
 const { createTransport } = pkg;
 import { logger } from './logger.js';
 import {
-  getBookingConfirmationTemplate,
   getCancellationTemplate,
-  getOperatorBookingNotificationTemplate,
-  getRefundProcessedTemplate,
-  getWelcomeEmailTemplate,
   getOperatorOnboardingPendingTemplate,
-  getOperatorApprovedTemplate,
-  getPasswordResetTemplate,
 } from './emailTemplates.js';
-import { getBookingConfirmationPremiumTemplate } from '../services/emailService.js';
+import { renderEmailTemplate } from './emailTemplateRenderer.js';
+
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.overglowtrip.com').replace(/\/$/, '');
+
+const formatBookingDate = (rawDate, locale = 'fr') => {
+  if (!rawDate) return locale === 'en' ? 'To confirm' : 'À confirmer';
+  const d = new Date(rawDate);
+  if (Number.isNaN(d.getTime())) return locale === 'en' ? 'To confirm' : 'À confirmer';
+  return d.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const formatMoney = (amount, currency = 'MAD') => {
+  const n = Number(amount);
+  if (Number.isNaN(n)) return `0 ${currency}`;
+  return `${n.toFixed(2)} ${currency}`;
+};
+
+const resolveLocale = (user) =>
+  user?.preferredLanguage === 'en' || user?.locale === 'en' ? 'en' : 'fr';
 
 /**
  * Single entry point for outbound email delivery (Sprint [8] consolidation).
@@ -86,14 +103,53 @@ if (isEmailEnabled()) {
   logger.info('📧 Email service disabled (set EMAIL_ENABLED=false or configure EMAIL_USER/EMAIL_PASS)');
 }
 
+/** Low-level HTML send used by admin email preview tests. */
+export const sendRawHtmlEmail = async ({ to, subject, html }) => {
+  if (!transporter || !isEmailEnabled()) {
+    throw new Error('Service email non configuré (EMAIL_USER / EMAIL_PASS / EMAIL_ENABLED)');
+  }
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  };
+  return sendMailWithRetry(mailOptions);
+};
+
 // Send booking confirmation email
-export const sendBookingConfirmation = async (booking, user, customHtml, whatsappLink) => {
-  const premium = getBookingConfirmationPremiumTemplate({ booking, user, whatsappLink });
+export const sendBookingConfirmation = async (booking, user, customHtml) => {
+  const locale = resolveLocale(user);
+  let subject = '✅ Réservation confirmée - Overglow Trip';
+  let html = customHtml;
+
+  if (!html) {
+    const rendered = renderEmailTemplate(
+      'confirmation',
+      {
+        userName: user?.name || 'Voyageur',
+        productTitle: booking.schedule?.product?.title || 'Expérience Overglow',
+        bookingDate: formatBookingDate(booking.schedule?.date, locale),
+        bookingTime: booking.schedule?.time || (locale === 'en' ? 'To confirm' : 'À confirmer'),
+        tickets: String(booking.numberOfTickets || 1),
+        bookingRef: booking._id?.toString?.().slice(-8).toUpperCase() || '—',
+        totalPrice: formatMoney(
+          booking.totalAmount ?? booking.totalPrice,
+          booking.currency || 'MAD'
+        ),
+        ctaUrl: `${FRONTEND_URL}/dashboard`,
+      },
+      locale
+    );
+    subject = rendered.subject;
+    html = rendered.html;
+  }
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: premium.subject || '✅ Réservation confirmée - Overglow Trip',
-    html: customHtml || premium.html || getBookingConfirmationTemplate(booking, user),
+    subject,
+    html,
   };
 
   // Skip if email is disabled or transporter not available
@@ -160,11 +216,31 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
     return;
   }
 
+  const locale = resolveLocale(operatorUser);
+  const rendered = renderEmailTemplate(
+    'operator-booking',
+    {
+      operatorName: operatorUser.name || operator?.companyName || 'Partenaire',
+      clientName: user?.name || 'Client',
+      clientEmail: user?.email || '',
+      productTitle: booking.schedule?.product?.title || 'Expérience Overglow',
+      bookingDate: formatBookingDate(booking.schedule?.date, locale),
+      tickets: String(booking.numberOfTickets || 1),
+      totalPrice: formatMoney(
+        booking.totalAmount ?? booking.totalPrice,
+        booking.currency || 'MAD'
+      ),
+      bookingRef: booking._id?.toString?.().slice(-8).toUpperCase() || '—',
+      ctaUrl: `${FRONTEND_URL}/operator/bookings`,
+    },
+    locale
+  );
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: operatorUser.email,
-    subject: '🎉 Nouvelle réservation reçue - Overglow Trip',
-    html: getOperatorBookingNotificationTemplate(booking, operator, user),
+    subject: rendered.subject,
+    html: rendered.html,
   };
 
   // Skip if email is disabled or transporter not available
@@ -185,13 +261,34 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
   }
 };
 
-// Send refund processed email
+// Send refund / withdrawal processed email
 export const sendRefundProcessedEmail = async (withdrawal, user) => {
+  const locale = resolveLocale(user);
+  const rendered = renderEmailTemplate(
+    'withdrawal-processed',
+    {
+      userName: user?.name || 'Partenaire',
+      amount: formatMoney(withdrawal?.amount, withdrawal?.currency || 'MAD'),
+      statusLabel:
+        withdrawal?.status === 'paid' || withdrawal?.status === 'approved'
+          ? locale === 'en'
+            ? 'Paid'
+            : 'Payé'
+          : String(withdrawal?.status || 'Traité'),
+      withdrawalRef:
+        withdrawal?.reference ||
+        withdrawal?._id?.toString?.().slice(-8).toUpperCase() ||
+        '—',
+      ctaUrl: `${FRONTEND_URL}/operator/withdrawals`,
+    },
+    locale
+  );
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: '✅ Remboursement effectué - Overglow Trip',
-    html: getRefundProcessedTemplate(withdrawal, user),
+    subject: rendered.subject,
+    html: rendered.html,
   };
 
   // Skip if email is disabled or transporter not available
@@ -213,11 +310,21 @@ export const sendRefundProcessedEmail = async (withdrawal, user) => {
 
 // Send welcome email
 export const sendWelcomeEmail = async (user) => {
+  const locale = resolveLocale(user);
+  const rendered = renderEmailTemplate(
+    'welcome',
+    {
+      userName: user?.name || 'Voyageur',
+      ctaUrl: `${FRONTEND_URL}/explore`,
+    },
+    locale
+  );
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: '👋 Bienvenue sur Overglow Trip !',
-    html: getWelcomeEmailTemplate(user),
+    subject: rendered.subject,
+    html: rendered.html,
   };
 
   if (!transporter || !isEmailEnabled()) return;
@@ -231,11 +338,22 @@ export const sendWelcomeEmail = async (user) => {
 
 // Send password reset email
 export const sendPasswordResetEmail = async (user, resetUrl) => {
+  const locale = resolveLocale(user);
+  const rendered = renderEmailTemplate(
+    'password-reset',
+    {
+      userName: user?.name || 'Voyageur',
+      resetUrl,
+      ctaUrl: resetUrl,
+    },
+    locale
+  );
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: '🔐 Réinitialisation de votre mot de passe',
-    html: getPasswordResetTemplate(user, resetUrl),
+    subject: rendered.subject,
+    html: rendered.html,
   };
 
   if (!transporter || !isEmailEnabled()) {
@@ -271,11 +389,21 @@ export const sendOperatorOnboardingPendingEmail = async (user) => {
 
 // Send operator approved email
 export const sendOperatorApprovedEmail = async (user) => {
+  const locale = resolveLocale(user);
+  const rendered = renderEmailTemplate(
+    'operator-approved',
+    {
+      userName: user?.name || 'Partenaire',
+      ctaUrl: `${FRONTEND_URL}/operator/dashboard`,
+    },
+    locale
+  );
+
   const mailOptions = {
     from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
     to: user.email,
-    subject: '🎉 Félicitations, votre compte est approuvé !',
-    html: getOperatorApprovedTemplate(user),
+    subject: rendered.subject,
+    html: rendered.html,
   };
 
   if (!transporter || !isEmailEnabled()) return;
@@ -284,6 +412,73 @@ export const sendOperatorApprovedEmail = async (user) => {
     await sendMailWithRetry(mailOptions);
   } catch (error) {
     logger.error('❌ Error sending operator approved email:', error.message);
+  }
+};
+
+/** Operator rejection email (reason required). */
+export const sendOperatorRejectedEmail = async (user, reason = '') => {
+  const locale = resolveLocale(user);
+  const rendered = renderEmailTemplate(
+    'operator-rejected',
+    {
+      userName: user?.name || 'Partenaire',
+      reason: reason || (locale === 'en' ? 'Not specified' : 'Non précisé'),
+      ctaUrl: `${FRONTEND_URL}/operator/onboarding`,
+    },
+    locale
+  );
+
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: rendered.subject,
+    html: rendered.html,
+  };
+
+  if (!transporter || !isEmailEnabled()) return;
+
+  try {
+    await sendMailWithRetry(mailOptions);
+  } catch (error) {
+    logger.error('❌ Error sending operator rejected email:', error.message);
+  }
+};
+
+/** New review notification for operator. */
+export const sendReviewNotificationEmail = async ({
+  operatorUser,
+  product,
+  review,
+}) => {
+  if (!operatorUser?.email) return;
+
+  const locale = resolveLocale(operatorUser);
+  const rendered = renderEmailTemplate(
+    'review-notification',
+    {
+      operatorName: operatorUser.name || 'Partenaire',
+      productTitle: product?.title || 'Produit',
+      rating: String(review?.rating ?? '—'),
+      authorName: review?.user?.name || review?.authorName || 'Voyageur',
+      comment: review?.comment || review?.text || '',
+      ctaUrl: `${FRONTEND_URL}/operator/dashboard`,
+    },
+    locale
+  );
+
+  const mailOptions = {
+    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    to: operatorUser.email,
+    subject: rendered.subject,
+    html: rendered.html,
+  };
+
+  if (!transporter || !isEmailEnabled()) return;
+
+  try {
+    await sendMailWithRetry(mailOptions);
+  } catch (error) {
+    logger.error('❌ Error sending review notification email:', error.message);
   }
 };
 

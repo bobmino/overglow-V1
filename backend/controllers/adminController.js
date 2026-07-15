@@ -17,7 +17,7 @@ import {
   updateOperatorMetrics
 } from '../utils/badgeService.js';
 import Badge from '../models/badgeModel.js';
-import { sendOperatorApprovedEmail, sendBookingConfirmation, sendCancellationEmail } from '../utils/emailService.js';
+import { sendOperatorApprovedEmail, sendOperatorRejectedEmail, sendBookingConfirmation, sendCancellationEmail } from '../utils/emailService.js';
 
 // Normalize operator status to valid enum values
 const normalizeOperatorStatus = (operator) => {
@@ -487,6 +487,12 @@ const updateOperatorStatus = async (req, res) => {
         
         // Notify operator of onboarding rejection
         await notifyOnboardingRejected(onboarding, operator.user, rejectionReason);
+        const rejectedUser = await User.findById(operator.user);
+        if (rejectedUser?.email) {
+          sendOperatorRejectedEmail(rejectedUser, rejectionReason).catch((err) =>
+            logger.error('Failed to send rejected email:', err)
+          );
+        }
       }
     }
     

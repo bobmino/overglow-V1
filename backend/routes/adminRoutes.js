@@ -33,8 +33,28 @@ import {
   updateAdminReviewStatus,
 } from '../controllers/reviewController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
+import { body } from 'express-validator';
+import {
+  listEmailTemplates,
+  previewEmailTemplate,
+  sendTestEmailTemplate,
+} from '../controllers/emailTemplateController.js';
 
 const router = express.Router();
+
+// [PROMPT-18] Email templates preview + test send
+router.get('/emails/templates', protect, authorize('Admin'), listEmailTemplates);
+router.get('/emails/templates/:id/preview', protect, authorize('Admin'), previewEmailTemplate);
+router.post(
+  '/emails/templates/:id/test',
+  protect,
+  authorize('Admin'),
+  [
+    body('email').optional({ nullable: true }).isEmail().withMessage('Email invalide'),
+    body('locale').optional().isIn(['fr', 'en']),
+  ],
+  sendTestEmailTemplate
+);
 
 router.get('/stats', protect, authorize('Admin'), getAdminStats);
 router.get('/search', protect, authorize('Admin'), getAdminSearch);

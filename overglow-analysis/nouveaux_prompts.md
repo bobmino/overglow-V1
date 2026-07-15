@@ -24,6 +24,7 @@ Ordre = dépendances respectées
 - [x] PROMPT 13 — Pages Placeholder → Réelles
 - [x] PROMPT 16 — Filtres Avancés + DataTable
 - [x] PROMPT 17 — Onboarding Utilisateur Amélioré
+- [x] PROMPT 18 — Templates Email
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
@@ -794,7 +795,7 @@ REQUIREMENTS:
 
 4. All text in French. All 4 languages for i18n.
 
-PROMPT 18 — 🟢 Modèles d'Email & Templates
+[x] PROMPT 18 — 🟢 Modèles d'Email & Templates
 
 You are a communications engineer (Mailchimp level).
 

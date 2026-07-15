@@ -6,13 +6,6 @@ import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
 import { sendBookingConfirmation, sendCancellationEmail, sendOperatorBookingNotification, sendCircuitBookingConfirmation } from '../utils/emailService.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import Handlebars from 'handlebars';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 import { notifyNewBooking } from '../utils/notificationService.js';
 import { updateProductMetrics, updateOperatorMetrics } from '../utils/badgeService.js';
 import { updateUserStatsAfterBooking } from '../utils/loyaltyService.js';
@@ -823,45 +816,10 @@ const updateBookingStatus = async (req, res) => {
       await booking.save();
     }
 
-    // Optionally send email
+    // Optionally send email (Handlebars confirmation via emailService)
     if (booking.status === 'Confirmed' && booking.user && booking.user.email) {
       try {
-        let compiledHtml = null;
-        try {
-          const templatePath = path.join(__dirname, '..', 'templates', 'emails', 'confirmation.hbs');
-          if (fs.existsSync(templatePath)) {
-            const templateSource = fs.readFileSync(templatePath, 'utf8');
-            const template = Handlebars.compile(templateSource);
-            
-            const rawDate = booking.schedule?.date;
-            let formattedDate = 'À confirmer';
-            if (rawDate) {
-              const d = new Date(rawDate);
-              if (!Number.isNaN(d.getTime())) {
-                formattedDate = d.toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                });
-              }
-            }
-
-            compiledHtml = template({
-              customerName: booking.user.name || 'Voyageur',
-              bookingId: booking._id.toString().slice(-8).toUpperCase(),
-              title: booking.schedule?.product?.title || 'Expérience Overglow',
-              date: formattedDate,
-              time: booking.schedule?.time || 'À confirmer',
-              tickets: booking.numberOfTickets || 1,
-              price: booking.totalAmount ? `€${Number(booking.totalAmount).toFixed(2)}` : '€0.00'
-            });
-          }
-        } catch (templateErr) {
-          logger.error('Failed to compile email template, falling back to built-in template:', templateErr.message);
-        }
-
-        await sendBookingConfirmation(booking, booking.user, compiledHtml);
+        await sendBookingConfirmation(booking, booking.user);
       } catch (err) {
         logger.error('Failed to send confirmation email:', err.message);
       }
