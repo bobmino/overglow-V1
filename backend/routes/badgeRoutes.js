@@ -31,8 +31,8 @@ router.get('/requestable', async (req, res) => {
 });
 router.get('/operator/:operatorId', getOperatorBadges);
 router.get('/product/:productId', getProductBadges);
-router.post('/update-operator/:operatorId', protect, updateOperatorBadges);
-router.post('/update-product/:productId', protect, updateProductBadges);
+router.post('/update-operator/:operatorId', protect, authorize('Admin'), updateOperatorBadges);
+router.post('/update-product/:productId', protect, authorize('Admin'), updateProductBadges);
 router.post('/initialize', protect, authorize('Admin'), initializeBadges);
 
 export default router;

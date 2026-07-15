@@ -1,6 +1,18 @@
 import Settings from '../models/settingsModel.js';
 import { logger } from '../utils/logger.js';
 
+/** Keys safe to expose without auth (checkout / public UX). */
+const PUBLIC_SETTING_KEYS = new Set([
+  'maintenanceMode',
+  'defaultLanguage',
+  'defaultCurrency',
+  'bankTransferEnabled',
+  'stripeEnabled',
+  'paypalEnabled',
+  'cmiEnabled',
+  'showIban',
+]);
+
 // @desc    Get all settings
 // @route   GET /api/settings
 // @access  Private/Admin
@@ -45,10 +57,16 @@ const updateSetting = async (req, res) => {
 
 // @desc    Get a specific setting value
 // @route   GET /api/settings/:key
-// @access  Public (for checking auto-approval settings)
+// @access  Public allowlist OR Admin
 const getSetting = async (req, res) => {
   try {
     const { key } = req.params;
+    const isAdmin = req.user?.role === 'Admin';
+
+    if (!isAdmin && !PUBLIC_SETTING_KEYS.has(key)) {
+      return res.status(403).json({ message: 'Setting non public' });
+    }
+
     const setting = await Settings.findOne({ key });
     const defaultSettings = Settings.getDefaultSettings();
     
@@ -62,5 +80,4 @@ const getSetting = async (req, res) => {
   }
 };
 
-export { getSettings, updateSetting, getSetting };
-
+export { getSettings, updateSetting, getSetting, PUBLIC_SETTING_KEYS };

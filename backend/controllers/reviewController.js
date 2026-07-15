@@ -14,6 +14,7 @@ import { sanitizeText } from '../utils/sanitizer.js';
 // @route   POST /api/products/:productId/reviews
 // @access  Private
 const createReview = async (req, res) => {
+  try {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -24,8 +25,7 @@ const createReview = async (req, res) => {
 
   const product = await Product.findById(productId);
   if (!product) {
-    res.status(404);
-    throw new Error('Product not found');
+    return res.status(404).json({ message: 'Product not found' });
   }
 
   // Check if user has booked this product and status is confirmed
@@ -39,8 +39,7 @@ const createReview = async (req, res) => {
   const hasBooked = bookings.some(booking => booking.schedule !== null);
 
   if (!hasBooked) {
-    res.status(400);
-    throw new Error('You can only review products you have booked');
+    return res.status(400).json({ message: 'You can only review products you have booked' });
   }
 
   const alreadyReviewed = await Review.findOne({
@@ -49,8 +48,7 @@ const createReview = async (req, res) => {
   });
 
   if (alreadyReviewed) {
-    res.status(400);
-    throw new Error('Product already reviewed');
+    return res.status(400).json({ message: 'Product already reviewed' });
   }
 
   // Check auto-approval settings
@@ -117,6 +115,10 @@ const createReview = async (req, res) => {
   }
   
   res.status(201).json({ message: 'Review added', review });
+  } catch (error) {
+    logger.error('Create review error:', error);
+    res.status(500).json({ message: error.message || 'Failed to create review' });
+  }
 };
 
 // @desc    Approve a review
