@@ -1,6 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { SearchX, Heart, Inbox, CalendarX2, PackageOpen, WifiOff } from 'lucide-react';
+import {
+  SearchX,
+  Heart,
+  Inbox,
+  CalendarX2,
+  PackageOpen,
+  WifiOff,
+  BellOff,
+  Wallet,
+  History,
+  MessageCircle,
+} from 'lucide-react';
 
 const ICONS = {
   search: SearchX,
@@ -9,7 +20,16 @@ const ICONS = {
   bookings: CalendarX2,
   products: PackageOpen,
   offline: WifiOff,
+  notifications: BellOff,
+  withdrawals: Wallet,
+  history: History,
+  messages: MessageCircle,
 };
+
+const ctaClass = (variant) =>
+  variant === 'primary'
+    ? 'inline-flex items-center justify-center px-6 py-3 rounded-lg bg-primary-600 text-white font-bold hover:bg-primary-700 transition'
+    : 'inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-primary-600 text-primary-700 font-semibold hover:bg-primary-50 transition';
 
 /**
  * Empty state réutilisable (plan stratégique — empty states unifiés).
@@ -21,6 +41,7 @@ const EmptyState = ({
   ctaLabel,
   ctaTo,
   onCta,
+  ctaVariant = 'outline',
   className = '',
 }) => {
   const Icon = ICONS[variant] || SearchX;
@@ -37,22 +58,15 @@ const EmptyState = ({
         <h2 className="text-xl font-heading font-bold text-gray-900 mb-2">{title}</h2>
       )}
       {subtitle && (
-        <p className="text-sm text-gray-500 max-w-md mb-6">{subtitle}</p>
+        <p className={`text-sm text-gray-500 max-w-md ${ctaLabel ? 'mb-6' : ''}`}>{subtitle}</p>
       )}
       {ctaLabel && ctaTo && (
-        <Link
-          to={ctaTo}
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-primary-600 text-primary-700 font-semibold hover:bg-primary-50 transition"
-        >
+        <Link to={ctaTo} className={ctaClass(ctaVariant)}>
           {ctaLabel}
         </Link>
       )}
       {ctaLabel && onCta && !ctaTo && (
-        <button
-          type="button"
-          onClick={onCta}
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-primary-600 text-primary-700 font-semibold hover:bg-primary-50 transition"
-        >
+        <button type="button" onClick={onCta} className={ctaClass(ctaVariant)}>
           {ctaLabel}
         </button>
       )}

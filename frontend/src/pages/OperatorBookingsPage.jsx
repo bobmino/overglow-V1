@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCircle, CheckCircle, CreditCard } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import InternalNoteModal from '../components/InternalNoteModal';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -141,11 +142,12 @@ const OperatorBookingsPage = () => {
       </div>
 
       {!Array.isArray(bookings) || bookings.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('operator.bookings.empty_title')}</h2>
-          <p className="text-gray-600">{t('operator.bookings.empty_desc')}</p>
-        </div>
+        <EmptyState
+          variant="bookings"
+          className="bg-gray-50 rounded-xl"
+          title={t('operator.bookings.empty_title')}
+          subtitle={t('operator.bookings.empty_desc')}
+        />
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (

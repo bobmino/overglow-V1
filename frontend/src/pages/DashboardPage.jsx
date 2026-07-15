@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ReviewModal from '../components/ReviewModal';
 import RecommendationsSection from '../components/RecommendationsSection';
+import EmptyState from '../components/EmptyState';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger.js';
 
@@ -375,17 +376,15 @@ const DashboardPage = () => {
       )}
 
       {bookings.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.no_bookings')}</h2>
-          <p className="text-gray-600 mb-6">{t('dashboard.no_bookings_hint')}</p>
-          <Link 
-            to="/search" 
-            className="inline-block bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
-          >
-            {t('dashboard.explore')}
-          </Link>
-        </div>
+        <EmptyState
+          variant="bookings"
+          className="bg-gray-50 rounded-xl"
+          title={t('dashboard.no_bookings')}
+          subtitle={t('dashboard.no_bookings_hint')}
+          ctaLabel={t('dashboard.explore')}
+          ctaTo="/explore"
+          ctaVariant="primary"
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">

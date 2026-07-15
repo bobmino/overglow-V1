@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Plus, Edit, Trash2, Eye, Package, Rocket, PauseCircle, AlertCircle, Award } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Rocket, PauseCircle, AlertCircle, Award } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import BadgeRequestModal from '../components/BadgeRequestModal';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
@@ -121,17 +122,15 @@ const OperatorProductsPage = () => {
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('operator.products.empty_title')}</h2>
-          <p className="text-gray-600 mb-6">{t('operator.products.empty_desc')}</p>
-          <Link
-            to="/operator/products/new"
-            className="inline-block bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
-          >
-            {t('operator.common.create_product')}
-          </Link>
-        </div>
+        <EmptyState
+          variant="products"
+          className="bg-gray-50 rounded-xl"
+          title={t('operator.products.empty_title')}
+          subtitle={t('operator.products.empty_desc')}
+          ctaLabel={t('operator.common.create_product')}
+          ctaTo="/operator/products/new"
+          ctaVariant="primary"
+        />
       ) : (
         <div className="space-y-4">
           {products.map((product) => (

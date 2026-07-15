@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
-import { Clock, Trash2 } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
+import { Trash2 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { logger } from '../utils/logger.js';
@@ -82,13 +83,15 @@ const ViewHistoryPage = () => {
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Clock size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('history.empty_title')}</h2>
-          <p className="text-gray-600">
-            {t('history.empty_body')}
-          </p>
-        </div>
+        <EmptyState
+          variant="history"
+          className="bg-gray-50 rounded-xl"
+          title={t('history.empty_title')}
+          subtitle={t('history.empty_body')}
+          ctaLabel={t('favorites.explore', 'Explorer')}
+          ctaTo="/explore"
+          ctaVariant="primary"
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (

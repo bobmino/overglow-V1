@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { DollarSign, Plus, Clock, CheckCircle, XCircle, CheckCheck } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import DashboardNavBar from '../components/DashboardNavBar';
 import { logger } from '../utils/logger.js';
 
@@ -313,11 +314,12 @@ const WithdrawalsPage = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('withdrawals.history_title')}</h2>
 
         {withdrawals.length === 0 ? (
-          <div className="bg-gray-50 rounded-xl p-12 text-center">
-            <DollarSign size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('withdrawals.empty_title')}</h3>
-            <p className="text-gray-600">{t('withdrawals.empty_desc')}</p>
-          </div>
+          <EmptyState
+            variant="withdrawals"
+            className="bg-gray-50 rounded-xl"
+            title={t('withdrawals.empty_title')}
+            subtitle={t('withdrawals.empty_desc')}
+          />
         ) : (
           <div className="space-y-4">
             {withdrawals.map((withdrawal) => (
