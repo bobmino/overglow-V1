@@ -83,18 +83,21 @@ const TrendBadge = ({ value }) => {
   );
 };
 
-const KpiCard = ({ icon: _Icon, label, value, trend, color }) => (
+const KpiCard = ({ icon, label, value, trend, color }) => {
+  const Icon = icon;
+  return (
   <div className="bg-white rounded-xl border border-gray-200 p-5">
     <div className="flex items-start justify-between mb-3">
       <div className={`p-2.5 rounded-lg ${color}`}>
-        <_Icon size={20} className="text-white" />
+        <Icon size={20} className="text-white" />
       </div>
       <TrendBadge value={trend} />
     </div>
     <p className="text-sm text-gray-500 mb-1">{label}</p>
     <p className="text-2xl font-bold text-gray-900 font-heading">{value}</p>
   </div>
-);
+  );
+};
 
 const activityIcon = (type) => {
   switch (type) {

@@ -76,15 +76,18 @@ const AboutPage = () => {
                   { icon: Heart, title: c?.valueAuthTitle, desc: c?.valueAuthDesc, tk: 'about.value_auth', dk: 'about.value_auth_desc' },
                   { icon: Users, title: c?.valueCommunityTitle, desc: c?.valueCommunityDesc, tk: 'about.value_community', dk: 'about.value_community_desc' },
                   { icon: Award, title: c?.valueExcellenceTitle, desc: c?.valueExcellenceDesc, tk: 'about.value_excellence', dk: 'about.value_excellence_desc' },
-                ].map(({ icon: _Icon, title, desc, tk, dk }) => (
+                ].map(({ icon, title, desc, tk, dk }) => {
+                  const Icon = icon;
+                  return (
                   <div key={tk} className="text-center">
                     <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <_Icon className="text-primary-600" size={40} />
+                      <Icon className="text-primary-600" size={40} />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-4">{title || t(tk)}</h3>
                     <p className="text-gray-600">{desc || t(dk)}</p>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>

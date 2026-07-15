@@ -24,7 +24,9 @@ const HowItWorksPage = () => {
         </div>
 
         <div className="space-y-8 mb-14">
-          {steps.map(({ icon: _Icon, titleKey, textKey }, index) => (
+          {steps.map(({ icon, titleKey, textKey }, index) => {
+            const Icon = icon;
+            return (
             <div
               key={titleKey}
               className="flex gap-6 items-start bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm"
@@ -34,13 +36,14 @@ const HowItWorksPage = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <_Icon className="text-primary-600" size={22} />
+                  <Icon className="text-primary-600" size={22} />
                   <h2 className="text-xl font-bold text-gray-900">{t(titleKey)}</h2>
                 </div>
                 <p className="text-gray-600 leading-relaxed">{t(textKey)}</p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -15,18 +15,21 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-const StatCard = ({ icon: _Icon, label, value, color, subtitle }) => (
+const StatCard = ({ icon, label, value, color, subtitle }) => {
+  const Icon = icon;
+  return (
   <div className="bg-white rounded-xl border border-gray-200 p-6">
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
-        <_Icon size={24} className="text-white" />
+        <Icon size={24} className="text-white" />
       </div>
     </div>
     <p className="text-gray-600 text-sm mb-1">{label}</p>
     <p className="text-3xl font-bold text-gray-900">{value}</p>
     {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
   </div>
-);
+  );
+};
 
 const AnalyticsPage = () => {
   const { t } = useTranslation();

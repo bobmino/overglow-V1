@@ -85,7 +85,7 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between pt-6 border-t border-slate-700 text-xs text-slate-400">
-          <p>{t('footer.copyright', '© {{year}} Overglow', { year })}</p>
+          <p>{t('footer.copyright', { year })}</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link to="/terms" className="hover:text-white transition">{t('footer.terms')}</Link>
             <Link to="/how-it-works" className="hover:text-white transition">{t('footer.how_it_works')}</Link>

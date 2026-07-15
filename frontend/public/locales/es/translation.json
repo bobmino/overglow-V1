@@ -164,7 +164,15 @@
     "select_date_btn": "Seleccionar una fecha"
   },
   "cart": {
-    "total": "Total"
+    "title": "Mi carrito",
+    "total": "Total",
+    "empty": "Tu carrito está vacío",
+    "empty_subtitle": "Descubre nuestras experiencias y añádelas aquí.",
+    "explore": "Explorar",
+    "remove": "Quitar",
+    "tickets": "entrada(s)",
+    "checkout": "Pagar",
+    "taxes_included": "Impuestos incluidos"
   },
   "legal": {
     "terms_title": "Condiciones generales de uso",

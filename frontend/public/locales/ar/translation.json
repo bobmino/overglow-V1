@@ -164,7 +164,15 @@
     "select_date_btn": "اختر تاريخاً"
   },
   "cart": {
-    "total": "المجموع"
+    "title": "سلتي",
+    "total": "المجموع",
+    "empty": "سلتك فارغة",
+    "empty_subtitle": "اكتشف تجاربنا وأضفها هنا.",
+    "explore": "استكشف",
+    "remove": "إزالة",
+    "tickets": "تذكرة/تذاكر",
+    "checkout": "الدفع",
+    "taxes_included": "شامل الضرائب"
   },
   "legal": {
     "terms_title": "شروط الاستخدام العامة",

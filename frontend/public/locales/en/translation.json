@@ -172,7 +172,15 @@
     "select_date_btn": "Select a date"
   },
   "cart": {
-    "total": "Total"
+    "title": "My cart",
+    "total": "Total",
+    "empty": "Your cart is empty",
+    "empty_subtitle": "Discover our experiences and add them here.",
+    "explore": "Explore",
+    "remove": "Remove",
+    "tickets": "ticket(s)",
+    "checkout": "Checkout",
+    "taxes_included": "Taxes included"
   },
   "legal": {
     "terms_title": "Terms of use",

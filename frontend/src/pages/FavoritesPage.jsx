@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import ProductCard from '../components/ProductCard';
+import EmptyState from '../components/EmptyState';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import DashboardNavBar from '../components/DashboardNavBar';
 import api from '../config/axios';
@@ -75,19 +76,14 @@ const FavoritesPage = () => {
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Heart size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('favorites.empty_title')}</h2>
-          <p className="text-gray-600 mb-6">
-            {t('favorites.empty_body')}
-          </p>
-          <a
-            href="/search"
-            className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-700 transition"
-          >
-            {t('favorites.explore')}
-          </a>
-        </div>
+        <EmptyState
+          variant="favorites"
+          className="bg-gray-50 rounded-xl"
+          title={t('favorites.empty_title')}
+          subtitle={t('favorites.empty_body')}
+          ctaLabel={t('favorites.explore')}
+          ctaTo="/explore"
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (

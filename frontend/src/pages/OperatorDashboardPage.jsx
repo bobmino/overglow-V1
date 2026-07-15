@@ -16,7 +16,9 @@ const getDateLocale = (language) => {
   return 'fr-FR';
 };
 
-const StatCard = ({ icon: _Icon, label, value, color }) => (
+const StatCard = ({ icon, label, value, color }) => {
+  const Icon = icon;
+  return (
   <Motion.div
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -25,13 +27,14 @@ const StatCard = ({ icon: _Icon, label, value, color }) => (
   >
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
-        <_Icon size={24} className="text-white" />
+        <Icon size={24} className="text-white" />
       </div>
     </div>
     <p className="text-gray-600 text-sm mb-1">{label}</p>
     <p className="text-3xl font-bold text-gray-900">{value}</p>
   </Motion.div>
-);
+  );
+};
 
 /**
  * [PROMPT-9] Operator dashboard — stats + activity (nav via sidebar).
@@ -118,9 +121,11 @@ const OperatorDashboardPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 font-heading">
             {t('operator.dashboard.title')}
           </h1>
-          {pendingCount > 0 && (
+              {pendingCount > 0 && (
             <p className="text-amber-700 text-sm font-semibold mt-1">
-              {t('operator.dashboard.pending_bookings', { count: pendingCount })}
+              {pendingCount === 1
+                ? t('operator.dashboard.pending_bookings', { count: pendingCount })
+                : t('operator.dashboard.pending_bookings_plural', { count: pendingCount })}
             </p>
           )}
         </div>

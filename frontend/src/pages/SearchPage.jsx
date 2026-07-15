@@ -8,6 +8,7 @@ import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import FilterDrawer from '../components/FilterDrawer';
+import EmptyState from '../components/EmptyState';
 import { trackSearch } from '../utils/analytics';
 import {
   CURATED_EXTRAS,
@@ -469,17 +470,14 @@ const SearchPage = () => {
               </div>
             ) : products.length === 0 ? (
               <div className="space-y-8">
-                <div className="py-12 text-center bg-white rounded-2xl border border-slate-100">
-                  <p className="text-lg font-semibold text-slate-900 mb-2">{t('catalog.no_results')}</p>
-                  <p className="text-slate-600 mb-6">{t('catalog.no_results_hint')}</p>
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="px-5 py-2.5 rounded-xl bg-primary-600 text-white font-semibold"
-                  >
-                    {t('filters.clear_all')}
-                  </button>
-                </div>
+                <EmptyState
+                  variant="search"
+                  className="bg-white rounded-2xl border border-slate-100"
+                  title={t('catalog.no_results')}
+                  subtitle={t('catalog.no_results_hint')}
+                  ctaLabel={t('filters.clear_all')}
+                  onCta={handleResetFilters}
+                />
 
                 {showCuratedExtras && (
                   <div>

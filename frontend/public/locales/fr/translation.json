@@ -172,7 +172,15 @@
     "select_date_btn": "Sélectionner une date"
   },
   "cart": {
-    "total": "Total"
+    "title": "Mon panier",
+    "total": "Total",
+    "empty": "Votre panier est vide",
+    "empty_subtitle": "Découvrez nos expériences et ajoutez-les ici.",
+    "explore": "Explorer",
+    "remove": "Retirer",
+    "tickets": "billet(s)",
+    "checkout": "Passer au paiement",
+    "taxes_included": "Taxes incluses"
   },
   "legal": {
     "terms_title": "Conditions générales d'utilisation",
