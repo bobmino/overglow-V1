@@ -150,7 +150,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
     fetchBadges();
     const id = setInterval(fetchBadges, 60000);
     return () => clearInterval(id);
-  }, [variant, authLoading, isAuthenticated, location.pathname]);
+  }, [variant, authLoading, isAuthenticated]);
 
   const contentOffset = useMemo(
     () => (collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH),
@@ -191,7 +191,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
               {pageTitle}
             </h1>
           </div>
-          <NotificationBell />
+          {!isDesktop && <NotificationBell />}
         </div>
         {variant === 'admin' && <AdminGlobalSearch compact />}
       </div>
@@ -212,7 +212,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
         <h1 className="text-sm font-heading font-bold text-slate-800 truncate max-w-xs">
           {pageTitle}
         </h1>
-        <NotificationBell />
+        {isDesktop && <NotificationBell />}
       </div>
 
       <div

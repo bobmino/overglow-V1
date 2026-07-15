@@ -43,16 +43,14 @@ const protect = async (req, res, next) => {
     return next(new Error('Server configuration error. JWT_SECRET missing'));
   }
 
+  // Bearer-first (SPA cross-origin on Vercel): cookies are unreliable across *.vercel.app
   let token;
-  const cookies = parseCookies(req);
-  const cookieToken = cookies.accessToken;
-
-  if (cookieToken) {
-    token = cookieToken;
-  }
-
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) {
+    const cookies = parseCookies(req);
+    token = cookies.accessToken || undefined;
   }
 
   if (!token) {
@@ -119,15 +117,12 @@ const optionalAuth = async (req, res, next) => {
   setCORSHeaders(req, res);
 
   let token;
-  const cookies = parseCookies(req);
-  const cookieToken = cookies.accessToken;
-
-  if (cookieToken) {
-    token = cookieToken;
-  }
-
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) {
+    const cookies = parseCookies(req);
+    token = cookies.accessToken || undefined;
   }
 
   if (!token) {

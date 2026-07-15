@@ -289,9 +289,10 @@ const AdminDashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="text-lg font-heading font-bold text-gray-900 mb-4">Revenus</h2>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data?.revenueChart || []}>
+          <div className="h-72 min-h-[18rem] w-full min-w-0">
+            {Array.isArray(data?.revenueChart) && data.revenueChart.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
+              <LineChart data={data.revenueChart}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
@@ -319,6 +320,11 @@ const AdminDashboardPage = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-sm text-gray-500">
+                Aucune donnée de revenus pour cette période.
+              </div>
+            )}
           </div>
         </div>
 

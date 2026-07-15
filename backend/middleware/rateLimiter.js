@@ -1,7 +1,7 @@
 /**
  * [TASK-6] Rate limiting compatible Vercel (Upstash Redis) + fallback mémoire local.
  * - Auth: 5 req/min
- * - API: 60 req/min
+ * - API: 180 req/min (polls unread exclus)
  * - Upload: 10 req/min
  * - Webhooks: exclus (vérifiés par signature)
  */
@@ -58,7 +58,7 @@ const createUpstashLimiter = ({ prefix, requests, window }) => {
 };
 
 const upstashAuth = createUpstashLimiter({ prefix: 'auth', requests: 5, window: '1 m' });
-const upstashApi = createUpstashLimiter({ prefix: 'api', requests: 60, window: '1 m' });
+const upstashApi = createUpstashLimiter({ prefix: 'api', requests: 180, window: '1 m' });
 const upstashUpload = createUpstashLimiter({ prefix: 'upload', requests: 10, window: '1 m' });
 const upstashFaqAdmin = createUpstashLimiter({ prefix: 'faq-admin', requests: 20, window: '1 m' });
 
@@ -100,16 +100,18 @@ const memoryAuthLimiter = rateLimit({
 
 const memoryApiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
+  max: 180,
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
     const path = req.path || '';
-    // Auth a son propre limiter ; health + webhooks PSP exclus
+    // Auth a son propre limiter ; health + webhooks + polls légers exclus
     return (
       path.startsWith('/auth') ||
       path.startsWith('/health') ||
-      path.includes('/webhook/')
+      path.includes('/webhook/') ||
+      path.includes('/notifications/unread-count') ||
+      path.includes('/chat/unread-count')
     );
   },
   handler: (req, res) => sendRateLimitResponse(req, res, 60),
@@ -134,7 +136,7 @@ const memoryFaqAdminLimiter = rateLimit({
 /** Auth endpoints: 5 req/min */
 export const authLimiter = createUpstashMiddleware(upstashAuth, memoryAuthLimiter, 'auth');
 
-/** API globale: 60 req/min — saute auth/health/webhooks */
+/** API globale: 180 req/min — saute auth/health/webhooks/polls unread */
 export const apiLimiter = (() => {
   const upstashMw = createUpstashMiddleware(upstashApi, memoryApiLimiter, 'api');
   return (req, res, next) => {
@@ -142,7 +144,9 @@ export const apiLimiter = (() => {
     if (
       path.startsWith('/auth') ||
       path.startsWith('/health') ||
-      path.includes('/webhook/')
+      path.includes('/webhook/') ||
+      path.includes('/notifications/unread-count') ||
+      path.includes('/chat/unread-count')
     ) {
       return next();
     }

@@ -43,10 +43,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    localStorage.setItem('userInfo', JSON.stringify(userData));
-    setUser(userData);
-    // Set Sentry user context
-    setSentryUser(userData);
+    const normalized = {
+      ...userData,
+      token: userData?.token || userData?.accessToken || null,
+      refreshToken: userData?.refreshToken || null,
+    };
+    localStorage.setItem('userInfo', JSON.stringify(normalized));
+    setUser(normalized);
+    setSentryUser(normalized);
   };
 
   const logout = async () => {

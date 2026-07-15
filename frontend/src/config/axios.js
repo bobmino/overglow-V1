@@ -72,6 +72,7 @@ instance.interceptors.request.use(
 // ─── Intercepteur réponse : refresh automatique sur 401 ─────────────────────
 let isRefreshing = false;
 let failedQueue = [];
+let last429At = 0;
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -89,14 +90,31 @@ const isAuthEndpoint = (url = '') =>
   url.includes('/api/auth/register') ||
   url.includes('/api/auth/refresh');
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
+
+    // Soft backoff on rate limit — avoid amplifying storms
+    if (status === 429 && originalRequest && !originalRequest._retry429) {
+      originalRequest._retry429 = true;
+      const now = Date.now();
+      const waitMs = Math.max(
+        1500,
+        Number(error.response?.headers?.['retry-after'] || 2) * 1000,
+        2000 - (now - last429At)
+      );
+      last429At = now;
+      await sleep(Math.min(waitMs, 8000));
+      return instance(originalRequest);
+    }
 
     if (
       !originalRequest ||
-      error.response?.status !== 401 ||
+      status !== 401 ||
       originalRequest._retry ||
       isAuthEndpoint(originalRequest.url)
     ) {
@@ -136,7 +154,11 @@ instance.interceptors.response.use(
         throw new Error('Réponse refresh invalide — token absent');
       }
 
-      const updatedUser = { ...user, token: newToken };
+      const updatedUser = {
+        ...user,
+        token: newToken,
+        refreshToken: data.refreshToken || user.refreshToken,
+      };
       saveStoredUser(updatedUser);
       window.dispatchEvent(new CustomEvent('tokenRefreshed', { detail: updatedUser }));
 
