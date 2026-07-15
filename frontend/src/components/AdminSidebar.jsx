@@ -28,42 +28,42 @@ const STORAGE_KEY = 'overglow_admin_sidebar_collapsed';
 
 const ADMIN_SECTIONS = [
   {
-    label: 'Vue d’ensemble',
+    label: 'Ops',
     items: [
       { to: '/admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+      { to: '/admin/bookings', label: 'Réservations', icon: CalendarDays, badge: 0 },
+      { to: '/admin/chat', label: 'Messages', icon: MessageSquare, badge: 0 },
       { to: '/admin/analytics', label: 'Statistiques', icon: TrendingUp },
     ],
   },
   {
     label: 'Catalogue',
     items: [
-      { to: '/admin/users', label: 'Utilisateurs', icon: Users },
-      { to: '/admin/operators', label: 'Opérateurs', icon: Building2 },
       { to: '/admin/products', label: 'Produits', icon: Package },
-      { to: '/admin/bookings', label: 'Réservations', icon: CalendarDays, badge: 0 },
+      { to: '/admin/reviews', label: 'Avis', icon: Star, badge: 0 },
+      { to: '/admin/blog', label: 'Blog', icon: FileText },
+      { to: '/admin/badges', label: 'Badges', icon: Award },
     ],
   },
   {
-    label: 'Finances',
+    label: 'Argent',
     items: [
+      { to: '/admin/finance', label: 'Finances', icon: Landmark },
       { to: '/admin/pending-payments', label: 'Paiements en attente', icon: CreditCard },
       { to: '/admin/withdrawals', label: 'Retraits', icon: Banknote },
-      { to: '/admin/finance', label: 'Finances', icon: Landmark },
     ],
   },
   {
-    label: 'Contenu & demandes',
+    label: 'Équipe',
     items: [
-      { to: '/admin/blog', label: 'Blog', icon: FileText },
-      { to: '/admin/chat', label: 'Messages', icon: MessageSquare, badge: 0 },
-      { to: '/admin/reviews', label: 'Avis', icon: Star, badge: 0 },
-      { to: '/admin/badges', label: 'Badges', icon: Award },
+      { to: '/admin/users', label: 'Utilisateurs', icon: Users },
+      { to: '/admin/operators', label: 'Opérateurs', icon: Building2 },
       { to: '/admin/approval-requests', label: 'Demandes opérateurs', icon: Handshake },
       { to: '/admin/badge-requests', label: 'Demandes badges', icon: Award },
     ],
   },
   {
-    label: 'Système',
+    label: 'Config',
     items: [
       { to: '/admin/settings', label: 'Paramètres', icon: Settings },
     ],

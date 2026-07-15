@@ -30,6 +30,9 @@ const EMPTY_LAYOUT = {
   topCircuits: [],
   topServices: [],
   topProducts: [],
+  exploreTours: [],
+  luxuryStays: [],
+  premiumServices: [],
 };
 
 // Lightweight projection — only the fields the frontend actually needs
@@ -76,6 +79,7 @@ export const getHomepageLayout = async (req, res) => {
       activeCategoryGroups,
       taggedProducts,
       allBadges,
+      storeShelfProducts,
     ] = await Promise.all([
       // ── 1. Top Destinations (from confirmed bookings) ──
       Booking.aggregate([
@@ -171,6 +175,16 @@ export const getHomepageLayout = async (req, res) => {
 
       // ── 5. All badges in one shot (tiny collection) ──
       Badge.find({}).lean(),
+
+      // ── 6. Store shelves by productType (explore / stays / extras) ──
+      Product.find({
+        status: { $regex: /^published$/i },
+        productType: { $in: ['tour', 'luxury_stay', 'service'] },
+      })
+        .select(CARD_PROJECTION)
+        .sort({ 'metrics.averageRating': -1, 'metrics.bookingCount': -1 })
+        .limit(36)
+        .lean(),
     ]);
 
     // ═══════════════════════════════════════════════════════════════════
@@ -245,6 +259,23 @@ export const getHomepageLayout = async (req, res) => {
       }
     }
 
+    // Store shelves by productType
+    const exploreTours = [];
+    const luxuryStays = [];
+    const premiumServices = [];
+    for (const p of storeShelfProducts || []) {
+      if (p.productType === 'tour' && exploreTours.length < 8) exploreTours.push(p);
+      else if (p.productType === 'luxury_stay' && luxuryStays.length < 8) luxuryStays.push(p);
+      else if (p.productType === 'service' && premiumServices.length < 8) premiumServices.push(p);
+    }
+    // Fallback: if no typed tours, use top circuits / untyped popular from tagged
+    if (exploreTours.length === 0) {
+      for (const p of taggedProducts) {
+        if (exploreTours.length >= 8) break;
+        if (!p.productType || p.productType === 'tour') exploreTours.push(p);
+      }
+    }
+
     const responseTime = Date.now() - startTime;
     const lang = resolveRequestLang(req);
 
@@ -270,8 +301,14 @@ export const getHomepageLayout = async (req, res) => {
           insolite: insoliteGroups.map(localizeGroup),
         },
         topCircuits: localizeProducts(topCircuits.slice(0, 6), lang),
-        topServices: localizeProducts(topServices.slice(0, 6), lang),
+        topServices: localizeProducts(
+          (premiumServices.length ? premiumServices : topServices).slice(0, 6),
+          lang
+        ),
         topProducts: localizeProducts(topProducts.slice(0, 8), lang),
+        exploreTours: localizeProducts(exploreTours.slice(0, 8), lang),
+        luxuryStays: localizeProducts(luxuryStays.slice(0, 8), lang),
+        premiumServices: localizeProducts(premiumServices.slice(0, 8), lang),
       },
     });
   } catch (error) {

@@ -140,6 +140,12 @@ const productSchema = mongoose.Schema({
       pool: { type: Boolean, default: false },
       wifi: { type: Boolean, default: false },
       jacuzzi: { type: Boolean, default: false },
+      garden: { type: Boolean, default: false },
+    },
+    propertyType: {
+      type: String,
+      enum: ['villa', 'riad', 'apartment', 'suite', 'other', ''],
+      default: '',
     },
     standing: {
       type: Number,

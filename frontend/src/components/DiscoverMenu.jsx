@@ -138,11 +138,22 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
 
   const currentMapping = data.mapping[activeCategory] || data.mapping[data.categories[0].name];
   const CategoryIcon = data.icon;
-  const productTypeForMenu =
-    menuType === 'luxury' ? 'luxury_stay' : menuType === 'services' ? 'service' : '';
-  const viewAllHref = productTypeForMenu
-    ? `/search?productType=${productTypeForMenu}`
-    : `/search?q=${encodeURIComponent(activeCategory)}`;
+  const storePath =
+    menuType === 'luxury' ? '/stays' : menuType === 'services' ? '/extras' : '/explore';
+  const viewAllHref = storePath;
+
+  const resolveCityHref = (name) => {
+    const aliases = {
+      'Taghazout Bay': 'Taghazout',
+      'Agadir Marina': 'Agadir',
+      'Marina Agadir': 'Agadir',
+      'Paradise Valley': 'Agadir',
+      'Aéroport Agadir': 'Agadir',
+      Imouzzer: 'Agadir',
+    };
+    const city = aliases[name] || name;
+    return `${storePath}?city=${encodeURIComponent(city)}`;
+  };
 
   return (
     <div 
@@ -212,7 +223,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
             {currentMapping.incontournables.map((activity, index) => (
               <Link
                 key={index}
-                to={`/search?q=${encodeURIComponent(activity)}`}
+                to={storePath}
                 onClick={onClose}
                 className="block px-4 py-2 rounded-xl hover:bg-emerald-50/45 transition-all duration-300 text-sm text-slate-600 hover:text-emerald-700 font-medium group"
               >
@@ -235,7 +246,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
             {currentMapping.destinationsPhares.map((dest, idx) => (
               <Link
                 key={idx}
-                to={`/search?city=${encodeURIComponent(dest.name)}`}
+                to={resolveCityHref(dest.name)}
                 onClick={onClose}
                 className={`group relative block rounded-2xl overflow-hidden shadow-sm col-span-1 h-36`}
               >

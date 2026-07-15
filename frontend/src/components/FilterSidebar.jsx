@@ -20,6 +20,7 @@ const FilterSidebar = ({
   selectedCity = '',
   setSelectedCity,
   onReset,
+  storeMode = null,
 }) => {
   const { t } = useTranslation();
   const [localQuery, setLocalQuery] = useState(searchQuery || '');
@@ -276,6 +277,84 @@ const FilterSidebar = ({
             })}
           </div>
         </div>
+
+        {storeMode === 'stays' && (
+          <div className="pt-6">
+            <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
+              {t('stores.stays.property_type')}
+            </h3>
+            <div className="space-y-2 mb-4">
+              {[
+                { id: 'villa', labelKey: 'stores.stays.type_villa' },
+                { id: 'riad', labelKey: 'stores.stays.type_riad' },
+                { id: 'apartment', labelKey: 'stores.stays.type_apartment' },
+                { id: 'suite', labelKey: 'stores.stays.type_suite' },
+              ].map((pt) => {
+                const isActive = filters.propertyType === pt.id;
+                return (
+                  <label key={pt.id} className="flex items-center space-x-3 cursor-pointer group">
+                    <div
+                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                        isActive
+                          ? 'bg-primary-600 border-primary-600'
+                          : 'border-slate-300 bg-white group-hover:border-primary-500'
+                      }`}
+                    >
+                      {isActive && <Check size={14} className="text-white" />}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          propertyType: isActive ? null : pt.id,
+                        }))
+                      }
+                      className="hidden"
+                    />
+                    <span className="text-sm text-slate-700">{t(pt.labelKey)}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
+              {t('stores.stays.amenities')}
+            </h3>
+            <div className="space-y-2">
+              {[
+                { id: 'pool', labelKey: 'stores.stays.amenity_pool' },
+                { id: 'garden', labelKey: 'stores.stays.amenity_garden' },
+                { id: 'wifi', labelKey: 'stores.stays.amenity_wifi' },
+                { id: 'jacuzzi', labelKey: 'stores.stays.amenity_jacuzzi' },
+              ].map((am) => {
+                const isActive = !!filters[am.id];
+                return (
+                  <label key={am.id} className="flex items-center space-x-3 cursor-pointer group">
+                    <div
+                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                        isActive
+                          ? 'bg-primary-600 border-primary-600'
+                          : 'border-slate-300 bg-white group-hover:border-primary-500'
+                      }`}
+                    >
+                      {isActive && <Check size={14} className="text-white" />}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() =>
+                        setFilters((prev) => ({ ...prev, [am.id]: !prev[am.id] }))
+                      }
+                      className="hidden"
+                    />
+                    <span className="text-sm text-slate-700">{t(am.labelKey)}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

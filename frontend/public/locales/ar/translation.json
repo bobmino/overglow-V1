@@ -53,6 +53,36 @@
     "from": "ابتداءً من",
     "per_person": "للشخص"
   },
+  "stores": {
+    "badge_soon": "قريباً",
+    "badge_available": "متاح",
+    "explore": {
+      "title": "استكشف",
+      "subtitle": "جولات وأنشطة وترفيه أصيل لعيش المغرب بشكل مختلف."
+    },
+    "stays": {
+      "title": "إقامات فاخرة",
+      "subtitle": "فيلات ورياض وأجنحة راقية — مستوى Overglow.",
+      "property_type": "نوع العقار",
+      "type_villa": "فيلا",
+      "type_riad": "رياض",
+      "type_apartment": "شقة",
+      "type_suite": "جناح",
+      "amenities": "المرافق",
+      "amenity_pool": "مسبح",
+      "amenity_garden": "حديقة",
+      "amenity_wifi": "واي فاي",
+      "amenity_jacuzzi": "جاكوزي",
+      "curated_title": "قريباً في المجموعة",
+      "meanwhile": "في الأثناء، اكتشفوا تجاربنا:"
+    },
+    "extras": {
+      "title": "خدمات إضافية",
+      "subtitle": "نقل، كونسيرج، تصوير احترافي وخدمات مميزة لإكمال إقامتكم.",
+      "curated_title": "خدمات رائجة",
+      "also_coming": "قريباً أيضاً على Overglow"
+    }
+  },
   "catalog": {
     "title": "التجارب",
     "filters": "عوامل التصفية",
@@ -251,7 +281,15 @@
     "auth_signup": "إنشاء حساب",
     "auth_login": "تسجيل الدخول",
     "carousel_destinations": "وجهات مميزة",
-    "carousel_circuits": "تجارب وجولات"
+    "carousel_circuits": "تجارب وجولات",
+    "section_explore": "ما يمكن عيشه في المغرب",
+    "section_stays": "إقامة فاخرة",
+    "section_extras": "خدمات مميزة",
+    "cta_explore": "عرض كل التجارب",
+    "cta_stays": "عرض الإقامات",
+    "cta_extras": "عرض الخدمات",
+    "cross_after_stay": "لديكم إقامة؟ أضيفوا أنشطة.",
+    "cross_after_tour": "بعد نشاطكم، أضيفوا نقلاً أو كونسيرج."
   },
   "about": {
     "hero_title": "عن Overglow Trip",

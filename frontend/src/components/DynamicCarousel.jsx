@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
 
-const DynamicCarousel = ({ title, items = [], categoryId, searchTag, renderCard }) => {
+const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, renderCard }) => {
   const scrollContainerRef = useRef(null);
   const navigate = useNavigate();
 
@@ -20,12 +20,14 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, renderCard 
   };
 
   const handleSeeMore = () => {
-    if (searchTag) {
+    if (seeMoreTo) {
+      navigate(seeMoreTo);
+    } else if (searchTag) {
       navigate(`/search?q=${encodeURIComponent(searchTag)}`);
     } else if (categoryId) {
       navigate(`/search?categoryGroup=${categoryId}`);
     } else {
-      navigate('/search');
+      navigate('/explore');
     }
   };
 

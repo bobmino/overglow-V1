@@ -53,6 +53,36 @@
     "from": "À partir de",
     "per_person": "par personne"
   },
+  "stores": {
+    "badge_soon": "Bientôt disponible",
+    "badge_available": "Disponible",
+    "explore": {
+      "title": "Explorer",
+      "subtitle": "Tours, activités et loisirs authentiques pour vivre le Maroc autrement."
+    },
+    "stays": {
+      "title": "Logements de luxe",
+      "subtitle": "Villas, riads et suites haut de gamme — le standing Overglow.",
+      "property_type": "Type de bien",
+      "type_villa": "Villa",
+      "type_riad": "Riad",
+      "type_apartment": "Appartement",
+      "type_suite": "Suite",
+      "amenities": "Équipements",
+      "amenity_pool": "Piscine",
+      "amenity_garden": "Jardin",
+      "amenity_wifi": "Wi-Fi",
+      "amenity_jacuzzi": "Jacuzzi",
+      "curated_title": "Sélection à venir",
+      "meanwhile": "En attendant, découvrez nos expériences :"
+    },
+    "extras": {
+      "title": "Extras & services",
+      "subtitle": "Transferts, conciergerie, photo pro et services premium pour compléter votre séjour.",
+      "curated_title": "Services tendance",
+      "also_coming": "Aussi bientôt sur Overglow"
+    }
+  },
   "catalog": {
     "title": "Expériences",
     "filters": "Filtres",
@@ -251,7 +281,15 @@
     "auth_signup": "S'inscrire",
     "auth_login": "Se connecter",
     "carousel_destinations": "Destinations phares",
-    "carousel_circuits": "Expériences & circuits"
+    "carousel_circuits": "Expériences & circuits",
+    "section_explore": "À vivre au Maroc",
+    "section_stays": "Séjourner en luxe",
+    "section_extras": "Services premium",
+    "cta_explore": "Voir toutes les expériences",
+    "cta_stays": "Voir les logements",
+    "cta_extras": "Voir les extras",
+    "cross_after_stay": "Vous avez un hébergement ? Complétez avec des activités.",
+    "cross_after_tour": "Après votre activité, ajoutez un transfert ou une conciergerie."
   },
   "about": {
     "hero_title": "À propos d'Overglow Trip",

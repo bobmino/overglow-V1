@@ -53,6 +53,36 @@
     "from": "From",
     "per_person": "per person"
   },
+  "stores": {
+    "badge_soon": "Coming soon",
+    "badge_available": "Available",
+    "explore": {
+      "title": "Explore",
+      "subtitle": "Tours, activities and authentic leisure to experience Morocco differently."
+    },
+    "stays": {
+      "title": "Luxury stays",
+      "subtitle": "Villas, riads and high-end suites — Overglow standing.",
+      "property_type": "Property type",
+      "type_villa": "Villa",
+      "type_riad": "Riad",
+      "type_apartment": "Apartment",
+      "type_suite": "Suite",
+      "amenities": "Amenities",
+      "amenity_pool": "Pool",
+      "amenity_garden": "Garden",
+      "amenity_wifi": "Wi-Fi",
+      "amenity_jacuzzi": "Jacuzzi",
+      "curated_title": "Coming selection",
+      "meanwhile": "Meanwhile, discover our experiences:"
+    },
+    "extras": {
+      "title": "Extras & services",
+      "subtitle": "Transfers, concierge, pro photo and premium services to complete your trip.",
+      "curated_title": "Trending services",
+      "also_coming": "Also coming soon on Overglow"
+    }
+  },
   "catalog": {
     "title": "Experiences",
     "filters": "Filters",
@@ -251,7 +281,15 @@
     "auth_signup": "Sign up",
     "auth_login": "Log in",
     "carousel_destinations": "Top destinations",
-    "carousel_circuits": "Experiences & circuits"
+    "carousel_circuits": "Experiences & circuits",
+    "section_explore": "Things to do in Morocco",
+    "section_stays": "Stay in luxury",
+    "section_extras": "Premium services",
+    "cta_explore": "See all experiences",
+    "cta_stays": "See stays",
+    "cta_extras": "See extras",
+    "cross_after_stay": "Already booked a stay? Add activities.",
+    "cross_after_tour": "After your activity, add a transfer or concierge."
   },
   "about": {
     "hero_title": "About Overglow Trip",

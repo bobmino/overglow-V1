@@ -1,29 +1,57 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { X, SlidersHorizontal } from 'lucide-react';
+import { X, SlidersHorizontal, Sparkles } from 'lucide-react';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import FilterDrawer from '../components/FilterDrawer';
 import { trackSearch } from '../utils/analytics';
+import {
+  CURATED_EXTRAS,
+  CURATED_STAYS_TEASERS,
+  STORE_CONFIG,
+} from '../data/storeCatalog';
+
+const pathToStore = (pathname) => {
+  if (pathname.startsWith('/explore')) return 'explore';
+  if (pathname.startsWith('/stays')) return 'stays';
+  if (pathname.startsWith('/extras')) return 'extras';
+  return null;
+};
 
 /**
  * URL is the source of truth for catalogue filters.
- * All filtering happens server-side via /api/search/advanced.
+ * Store routes (/explore, /stays, /extras) force productType.
  */
 const SearchPage = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
+
+  const storeKey = pathToStore(location.pathname);
+  const store = storeKey ? STORE_CONFIG[storeKey] : null;
+  const lockedProductType = store?.productType || '';
+
+  // Lock productType on store landings
+  useEffect(() => {
+    if (!lockedProductType) return;
+    const current = searchParams.get('productType');
+    if (current !== lockedProductType) {
+      const next = new URLSearchParams(searchParams);
+      next.set('productType', lockedProductType);
+      setSearchParams(next, { replace: true });
+    }
+  }, [lockedProductType, searchParams, setSearchParams]);
 
   const filtersFromUrl = useMemo(() => {
     const tagsParam = searchParams.get('tags');
     const categoryParam = searchParams.get('category') || '';
     const categoryGroupParam = searchParams.get('categoryGroup') || '';
-    const productTypeParam = searchParams.get('productType') || '';
+    const productTypeParam = lockedProductType || searchParams.get('productType') || '';
     return {
       q: searchParams.get('q') || '',
       city: searchParams.get('city') || '',
@@ -31,6 +59,11 @@ const SearchPage = () => {
       categories: categoryParam ? categoryParam.split(',').filter(Boolean) : [],
       productType: productTypeParam,
       categoryGroup: categoryGroupParam,
+      propertyType: searchParams.get('propertyType') || '',
+      pool: searchParams.get('pool') === 'true',
+      garden: searchParams.get('garden') === 'true',
+      wifi: searchParams.get('wifi') === 'true',
+      jacuzzi: searchParams.get('jacuzzi') === 'true',
       minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : null,
       maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : null,
       minRating: searchParams.get('minRating') ? Number(searchParams.get('minRating')) : null,
@@ -39,7 +72,7 @@ const SearchPage = () => {
       sortBy: searchParams.get('sortBy') || 'recommended',
       page: Math.max(1, parseInt(searchParams.get('page') || '1', 10)),
     };
-  }, [searchParams]);
+  }, [searchParams, lockedProductType]);
 
   const updateParams = useCallback(
     (patch, { resetPage = true } = {}) => {
@@ -59,10 +92,11 @@ const SearchPage = () => {
           next.set(key, String(value));
         }
       });
+      if (lockedProductType) next.set('productType', lockedProductType);
       if (resetPage) next.delete('page');
       setSearchParams(next, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams, lockedProductType]
   );
 
   const { data: facetsData } = useQuery({
@@ -87,6 +121,11 @@ const SearchPage = () => {
     }
     if (filtersFromUrl.productType) params.set('productType', filtersFromUrl.productType);
     if (filtersFromUrl.categoryGroup) params.set('categoryGroup', filtersFromUrl.categoryGroup);
+    if (filtersFromUrl.propertyType) params.set('propertyType', filtersFromUrl.propertyType);
+    if (filtersFromUrl.pool) params.set('pool', 'true');
+    if (filtersFromUrl.garden) params.set('garden', 'true');
+    if (filtersFromUrl.wifi) params.set('wifi', 'true');
+    if (filtersFromUrl.jacuzzi) params.set('jacuzzi', 'true');
     if (filtersFromUrl.minPrice != null) params.set('minPrice', String(filtersFromUrl.minPrice));
     if (filtersFromUrl.maxPrice != null) params.set('maxPrice', String(filtersFromUrl.maxPrice));
     if (filtersFromUrl.minRating != null) params.set('minRating', String(filtersFromUrl.minRating));
@@ -127,6 +166,7 @@ const SearchPage = () => {
           minPrice: filtersFromUrl.minPrice,
           maxPrice: filtersFromUrl.maxPrice,
           tags: filtersFromUrl.tags.join(','),
+          productType: filtersFromUrl.productType,
         },
         total
       );
@@ -139,6 +179,11 @@ const SearchPage = () => {
     minRating: filtersFromUrl.minRating,
     skipTheLine: filtersFromUrl.skipTheLine,
     tags: filtersFromUrl.tags,
+    propertyType: filtersFromUrl.propertyType || null,
+    pool: filtersFromUrl.pool,
+    garden: filtersFromUrl.garden,
+    wifi: filtersFromUrl.wifi,
+    jacuzzi: filtersFromUrl.jacuzzi,
     durations: [],
     selectedDate: null,
     location: null,
@@ -147,7 +192,11 @@ const SearchPage = () => {
   };
 
   const handleResetFilters = () => {
-    setSearchParams({}, { replace: true });
+    if (lockedProductType) {
+      setSearchParams({ productType: lockedProductType }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
   };
 
   const setSearchQuery = (q) => updateParams({ q });
@@ -164,21 +213,39 @@ const SearchPage = () => {
       minRating: next.minRating,
       skipTheLine: next.skipTheLine || null,
       tags: next.tags || [],
+      propertyType: next.propertyType || null,
+      pool: next.pool || null,
+      garden: next.garden || null,
+      wifi: next.wifi || null,
+      jacuzzi: next.jacuzzi || null,
     });
   };
+
+  const pageTitle = store
+    ? t(store.titleKey)
+    : t('catalog.title');
+  const pageSubtitle = store ? t(store.subtitleKey) : null;
 
   const activeChips = [];
   if (filtersFromUrl.q) activeChips.push({ key: 'q', label: filtersFromUrl.q });
   if (filtersFromUrl.city) activeChips.push({ key: 'city', label: filtersFromUrl.city });
-  if (filtersFromUrl.productType === 'luxury_stay') {
-    activeChips.push({ key: 'productType', label: 'Logements de luxe', productType: 'luxury_stay' });
+  if (filtersFromUrl.productType === 'luxury_stay' && !lockedProductType) {
+    activeChips.push({ key: 'productType', label: t('header.luxury'), productType: 'luxury_stay' });
   }
-  if (filtersFromUrl.productType === 'service') {
-    activeChips.push({ key: 'productType', label: 'Extras & services', productType: 'service' });
+  if (filtersFromUrl.productType === 'service' && !lockedProductType) {
+    activeChips.push({ key: 'productType', label: t('header.extras'), productType: 'service' });
   }
-  if (filtersFromUrl.categoryGroup) {
-    activeChips.push({ key: 'categoryGroup', label: 'Catégorie', categoryGroup: filtersFromUrl.categoryGroup });
+  if (filtersFromUrl.propertyType) {
+    activeChips.push({
+      key: 'propertyType',
+      label: t(`stores.stays.type_${filtersFromUrl.propertyType}`, filtersFromUrl.propertyType),
+    });
   }
+  ['pool', 'garden', 'wifi', 'jacuzzi'].forEach((am) => {
+    if (filtersFromUrl[am]) {
+      activeChips.push({ key: am, label: t(`stores.stays.amenity_${am}`) });
+    }
+  });
   filtersFromUrl.categories.forEach((c) =>
     activeChips.push({ key: `cat-${c}`, label: c, category: c })
   );
@@ -207,9 +274,11 @@ const SearchPage = () => {
   const removeChip = (chip) => {
     if (chip.key === 'q') updateParams({ q: '' });
     else if (chip.key === 'city') updateParams({ city: '' });
-    else if (chip.key === 'productType') updateParams({ productType: null });
-    else if (chip.key === 'categoryGroup') updateParams({ categoryGroup: null });
-    else if (chip.category) {
+    else if (chip.key === 'productType' && !lockedProductType) updateParams({ productType: null });
+    else if (chip.key === 'propertyType') updateParams({ propertyType: null });
+    else if (['pool', 'garden', 'wifi', 'jacuzzi'].includes(chip.key)) {
+      updateParams({ [chip.key]: null });
+    } else if (chip.category) {
       setSelectedCategories((prev) => prev.filter((c) => c !== chip.category));
     } else if (chip.tag) {
       setAdvancedFilters((prev) => ({
@@ -223,36 +292,56 @@ const SearchPage = () => {
     }
   };
 
+  const showCuratedExtras = storeKey === 'extras' && !isLoading && !isError && products.length === 0;
+  const showCuratedStays = storeKey === 'stays' && !isLoading && !isError && products.length === 0;
+
+  const filterSidebarProps = {
+    searchQuery: filtersFromUrl.q,
+    setSearchQuery,
+    filters: advancedFilters,
+    setFilters: setAdvancedFilters,
+    categories,
+    selectedCategories: filtersFromUrl.categories,
+    setSelectedCategories,
+    cities,
+    selectedCity: filtersFromUrl.city,
+    setSelectedCity: (city) => updateParams({ city }),
+    onReset: handleResetFilters,
+    storeMode: storeKey,
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Helmet>
-        <title>{t('catalog.title')} | Overglow</title>
+        <title>{pageTitle} | Overglow</title>
       </Helmet>
 
       <div className="container mx-auto px-4 pt-24 pb-8">
+        {store && (
+          <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-700 text-white p-6 md:p-10">
+            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200 mb-2">
+              Overglow Trip
+            </p>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{pageTitle}</h1>
+            {pageSubtitle && (
+              <p className="text-emerald-50/90 max-w-2xl text-base md:text-lg">{pageSubtitle}</p>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto">
-            <FilterSidebar
-              searchQuery={filtersFromUrl.q}
-              setSearchQuery={setSearchQuery}
-              filters={advancedFilters}
-              setFilters={setAdvancedFilters}
-              categories={categories}
-              selectedCategories={filtersFromUrl.categories}
-              setSelectedCategories={setSelectedCategories}
-              cities={cities}
-              selectedCity={filtersFromUrl.city}
-              setSelectedCity={(city) => updateParams({ city })}
-              onReset={handleResetFilters}
-            />
+            <FilterSidebar {...filterSidebarProps} />
           </aside>
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900">
-                  {t('catalog.title')}
-                </h1>
+                {!store && (
+                  <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900">
+                    {pageTitle}
+                  </h1>
+                )}
                 <p className="text-slate-600 mt-1">
                   {total === 1
                     ? `1 ${t('catalog.result_found')}`
@@ -327,16 +416,92 @@ const SearchPage = () => {
                 </button>
               </div>
             ) : products.length === 0 ? (
-              <div className="py-20 text-center bg-white rounded-2xl border border-slate-100">
-                <p className="text-lg font-semibold text-slate-900 mb-2">{t('catalog.no_results')}</p>
-                <p className="text-slate-600 mb-6">{t('catalog.no_results_hint')}</p>
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="px-5 py-2.5 rounded-xl bg-primary-600 text-white font-semibold"
-                >
-                  {t('filters.clear_all')}
-                </button>
+              <div className="space-y-8">
+                <div className="py-12 text-center bg-white rounded-2xl border border-slate-100">
+                  <p className="text-lg font-semibold text-slate-900 mb-2">{t('catalog.no_results')}</p>
+                  <p className="text-slate-600 mb-6">{t('catalog.no_results_hint')}</p>
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="px-5 py-2.5 rounded-xl bg-primary-600 text-white font-semibold"
+                  >
+                    {t('filters.clear_all')}
+                  </button>
+                </div>
+
+                {showCuratedExtras && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="text-amber-500" size={20} />
+                      <h2 className="text-xl font-heading font-bold text-slate-900">
+                        {t('stores.extras.curated_title')}
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {CURATED_EXTRAS.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-2"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                              {item.category}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                                item.badge === 'soon'
+                                  ? 'bg-amber-50 text-amber-700'
+                                  : 'bg-emerald-50 text-emerald-700'
+                              }`}
+                            >
+                              {item.badge === 'soon'
+                                ? t('stores.badge_soon')
+                                : t('stores.badge_available')}
+                            </span>
+                          </div>
+                          <h3 className="font-semibold text-slate-900">{item.title}</h3>
+                          <p className="text-xs text-slate-500">{item.city}</p>
+                          <p className="text-sm text-slate-600 flex-1">{item.description}</p>
+                          <p className="text-sm font-bold text-slate-900 pt-2 border-t border-slate-100">
+                            {t('common.from')} {item.priceFrom} MAD
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {showCuratedStays && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="text-amber-500" size={20} />
+                      <h2 className="text-xl font-heading font-bold text-slate-900">
+                        {t('stores.stays.curated_title')}
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {CURATED_STAYS_TEASERS.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-white rounded-2xl border border-slate-200 p-5"
+                        >
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                            {t('stores.badge_soon')}
+                          </span>
+                          <h3 className="font-semibold text-slate-900 mt-3">{item.title}</h3>
+                          <p className="text-xs text-slate-500 mt-1">{item.city}</p>
+                          <p className="text-sm text-slate-600 mt-2">{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-4 text-sm text-slate-600">
+                      {t('stores.stays.meanwhile')}{' '}
+                      <Link to="/explore" className="text-primary-600 font-semibold hover:underline">
+                        {t('stores.explore.title')}
+                      </Link>
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -345,6 +510,29 @@ const SearchPage = () => {
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
+
+                {storeKey === 'extras' && (
+                  <div className="mt-12">
+                    <h2 className="text-lg font-heading font-bold text-slate-900 mb-4">
+                      {t('stores.extras.also_coming')}
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                      {CURATED_EXTRAS.filter((i) => i.badge === 'soon')
+                        .slice(0, 4)
+                        .map((item) => (
+                          <div
+                            key={item.id}
+                            className="bg-white/80 rounded-xl border border-dashed border-slate-200 p-4"
+                          >
+                            <span className="text-[10px] font-bold uppercase text-amber-700">
+                              {t('stores.badge_soon')}
+                            </span>
+                            <p className="font-medium text-slate-800 mt-1">{item.title}</p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 {totalPages > 1 && (
                   <div className="flex justify-center gap-2 mt-10">
@@ -378,17 +566,7 @@ const SearchPage = () => {
       <FilterDrawer
         isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
-        filters={advancedFilters}
-        setFilters={setAdvancedFilters}
-        categories={categories}
-        selectedCategories={filtersFromUrl.categories}
-        setSelectedCategories={setSelectedCategories}
-        cities={cities}
-        selectedCity={filtersFromUrl.city}
-        setSelectedCity={(city) => updateParams({ city })}
-        searchQuery={filtersFromUrl.q}
-        setSearchQuery={setSearchQuery}
-        onReset={handleResetFilters}
+        {...filterSidebarProps}
       />
     </div>
   );

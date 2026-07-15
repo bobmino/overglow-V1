@@ -18,6 +18,7 @@ const FilterDrawer = ({
   selectedCity,
   setSelectedCity,
   onReset,
+  storeMode = null,
 }) => {
   const { t } = useTranslation();
 
@@ -76,6 +77,7 @@ const FilterDrawer = ({
                 selectedCity={selectedCity}
                 setSelectedCity={setSelectedCity}
                 onReset={onReset}
+                storeMode={storeMode}
               />
             </div>
 

@@ -120,11 +120,26 @@ export const parseFilterParams = (query = {}) => {
     ? rawProductType
     : '';
 
+  const rawPropertyType =
+    typeof query.propertyType === 'string' ? query.propertyType.trim().toLowerCase() : '';
+  const propertyType = ['villa', 'riad', 'apartment', 'suite', 'other'].includes(rawPropertyType)
+    ? rawPropertyType
+    : '';
+
+  const amenityFlags = {
+    pool: query.pool === 'true' || query.pool === true,
+    garden: query.garden === 'true' || query.garden === true,
+    wifi: query.wifi === 'true' || query.wifi === true,
+    jacuzzi: query.jacuzzi === 'true' || query.jacuzzi === true,
+  };
+
   return {
     q: typeof query.q === 'string' ? query.q.trim() : (typeof query.search === 'string' ? query.search.trim() : ''),
     city: typeof query.city === 'string' ? query.city.trim() : '',
     categories,
     productType,
+    propertyType,
+    amenities: amenityFlags,
     categoryGroup,
     minPrice: query.minPrice != null && query.minPrice !== '' ? Number(query.minPrice) : null,
     maxPrice: query.maxPrice != null && query.maxPrice !== '' ? Number(query.maxPrice) : null,
@@ -180,6 +195,23 @@ export const buildPublishedProductQuery = (filters) => {
 
   if (filters.productType) {
     and.push({ productType: filters.productType });
+  }
+
+  if (filters.propertyType) {
+    and.push({ 'luxuryStay.propertyType': filters.propertyType });
+  }
+
+  if (filters.amenities?.pool) {
+    and.push({ 'luxuryStay.amenities.pool': true });
+  }
+  if (filters.amenities?.garden) {
+    and.push({ 'luxuryStay.amenities.garden': true });
+  }
+  if (filters.amenities?.wifi) {
+    and.push({ 'luxuryStay.amenities.wifi': true });
+  }
+  if (filters.amenities?.jacuzzi) {
+    and.push({ 'luxuryStay.amenities.jacuzzi': true });
   }
 
   if (filters.categoryGroup) {

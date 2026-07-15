@@ -122,6 +122,21 @@ function App() {
               <SearchPage />
             </Suspense>
           } />
+          <Route path="explore" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SearchPage />
+            </Suspense>
+          } />
+          <Route path="stays" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SearchPage />
+            </Suspense>
+          } />
+          <Route path="extras" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SearchPage />
+            </Suspense>
+          } />
           <Route path="destinations/:city" element={
             <Suspense fallback={<LoadingFallback />}>
               <DestinationPage />

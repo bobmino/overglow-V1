@@ -461,21 +461,21 @@ const Header = () => {
             className="md:hidden fixed top-20 start-0 w-full bg-white border-b border-slate-100 shadow-xl p-4 flex flex-col space-y-4 z-40"
           >
           <Link 
-            to="/search" 
+            to="/explore" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.discover')}
           </Link>
           <Link 
-            to="/search?productType=luxury_stay" 
+            to="/stays" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700 flex items-center gap-2"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t('header.luxury')} <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{t('header.badge_luxury')}</span>
           </Link>
           <Link 
-            to="/search?productType=service" 
+            to="/extras" 
             className="p-3 rounded-lg hover:bg-slate-50 font-medium text-slate-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
