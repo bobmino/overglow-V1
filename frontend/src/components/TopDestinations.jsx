@@ -13,8 +13,6 @@ const TopDestinations = () => {
         const { data } = await api.get('/api/products?limit=100');
         const products = Array.isArray(data) ? data : (data.products || []);
         
-        const activeCities = new Set(products.map(p => p.city?.toLowerCase().trim()));
-        
         return destinationsData.map(dest => {
           const count = products.filter(p => p.city?.toLowerCase().trim() === dest.name.toLowerCase().trim()).length;
           return {

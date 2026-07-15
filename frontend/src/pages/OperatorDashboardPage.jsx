@@ -5,7 +5,7 @@ import api from '../config/axios';
 import { Package, Calendar, Users, Plus } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useToast } from '../context/ToastContext';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
@@ -16,8 +16,8 @@ const getDateLocale = (language) => {
   return 'fr-FR';
 };
 
-const StatCard = ({ icon: Icon, label, value, color }) => (
-  <motion.div
+const StatCard = ({ icon: _Icon, label, value, color }) => (
+  <Motion.div
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.5 }}
@@ -25,12 +25,12 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
   >
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
-        <Icon size={24} className="text-white" />
+        <_Icon size={24} className="text-white" />
       </div>
     </div>
     <p className="text-gray-600 text-sm mb-1">{label}</p>
     <p className="text-3xl font-bold text-gray-900">{value}</p>
-  </motion.div>
+  </Motion.div>
 );
 
 /**

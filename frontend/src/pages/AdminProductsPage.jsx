@@ -9,7 +9,7 @@ import { formatImageUrl } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
 
 const AdminProductsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -71,7 +71,7 @@ const AdminProductsPage = () => {
     try {
       await api.put(`/api/admin/products/${productId}/status`, { status: newStatus });
       fetchProducts();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.products.status_update_error'));
     }
   };

@@ -71,7 +71,6 @@ const AdminBadgeManagementPage = () => {
   const [activeTab, setActiveTab] = useState('badges'); // 'badges', 'assign-products', 'assign-operators'
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [selectedBadges, setSelectedBadges] = useState([]); // Multiple badges selection
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -143,7 +142,7 @@ const AdminBadgeManagementPage = () => {
         try {
           const { data: badgesData } = await api.get(`/api/badges/product/${product._id}`);
           badgesMap[product._id] = badgesData || [];
-        } catch (error) {
+        } catch (_error) {
           badgesMap[product._id] = [];
         }
       }
@@ -166,7 +165,7 @@ const AdminBadgeManagementPage = () => {
         try {
           const { data: badgesData } = await api.get(`/api/badges/operator/${operator._id}`);
           badgesMap[operator._id] = badgesData || [];
-        } catch (error) {
+        } catch (_error) {
           badgesMap[operator._id] = [];
         }
       }
@@ -222,17 +221,6 @@ const AdminBadgeManagementPage = () => {
         [key]: value === '' || value === null ? undefined : value
       }
     }));
-  };
-
-  const removeCriteria = (key) => {
-    setNewBadge(prev => {
-      const newCriteria = { ...prev.criteria };
-      delete newCriteria[key];
-      return {
-        ...prev,
-        criteria: newCriteria
-      };
-    });
   };
 
   const handleAssignToProducts = async () => {

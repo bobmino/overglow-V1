@@ -4,7 +4,7 @@ import { trackFavorite } from '../utils/analytics';
 import { useWishlist } from '../context/WishlistContext';
 import { logger } from '../utils/logger.js';
 
-const FavoriteButton = ({ productId, product, listName = 'default', size = 24, showText = false }) => {
+const FavoriteButton = ({ productId, product, listName: _listName = 'default', size = 24, showText = false }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);

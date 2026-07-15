@@ -232,7 +232,7 @@ const AdminSettingsPage = () => {
       <div className="flex flex-col md:flex-row gap-6">
         <nav className="md:w-52 shrink-0">
           <div className="flex md:flex-col gap-1 overflow-x-auto pb-1 md:pb-0">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {TABS.map(({ id, label, icon: _Icon }) => (
               <button
                 key={id}
                 type="button"
@@ -243,7 +243,7 @@ const AdminSettingsPage = () => {
                     : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-400'
                 }`}
               >
-                <Icon size={16} />
+                <_Icon size={16} />
                 {label}
               </button>
             ))}

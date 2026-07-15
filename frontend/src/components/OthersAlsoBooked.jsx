@@ -8,12 +8,6 @@ const OthersAlsoBooked = ({ productId }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (productId) {
-      fetchAlsoBooked();
-    }
-  }, [productId]);
-
   const fetchAlsoBooked = async () => {
     try {
       // Get products that were booked together with this one
@@ -27,6 +21,12 @@ const OthersAlsoBooked = ({ productId }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (productId) {
+      fetchAlsoBooked();
+    }
+  }, [productId]);
 
   if (loading || !Array.isArray(products) || products.length === 0) {
     return null;

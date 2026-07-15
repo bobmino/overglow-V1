@@ -15,10 +15,6 @@ const OperatorProductsPage = () => {
   const [requestingApproval, setRequestingApproval] = useState({});
   const [badgeRequestModal, setBadgeRequestModal] = useState({ isOpen: false, productId: null, productTitle: '' });
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
   const fetchProducts = async () => {
     try {
       const { data } = await api.get('/api/products/my-products');
@@ -30,10 +26,35 @@ const OperatorProductsPage = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
   const getProductStatusLabel = (status) => {
     if (status === 'Published') return t('operator.products.status_published');
     if (status === 'Pending Review') return t('operator.products.status_pending_review');
     return t('operator.products.status_draft');
+  };
+
+  const handleRequestApproval = async (productId) => {
+    setRequestingApproval((prev) => ({ ...prev, [productId]: true }));
+    try {
+      await api.post('/api/approval-requests', {
+        entityType: 'Product',
+        entityId: productId,
+        message: t('operator.products.request_approval_message', 'Demande de validation produit'),
+      });
+      alert(t('operator.products.request_approval_success', 'Demande envoyée'));
+      await fetchProducts();
+    } catch (error) {
+      logger.error('Failed to request product approval:', error);
+      alert(
+        error.response?.data?.message ||
+          t('operator.products.request_approval_error', 'Impossible d’envoyer la demande')
+      );
+    } finally {
+      setRequestingApproval((prev) => ({ ...prev, [productId]: false }));
+    }
   };
 
   const handleDelete = async (id) => {
@@ -42,7 +63,7 @@ const OperatorProductsPage = () => {
     try {
       await api.delete(`/api/products/${id}`);
       fetchProducts();
-    } catch (error) {
+    } catch (_error) {
       alert(t('operator.products.delete_error'));
     }
   };
@@ -66,7 +87,7 @@ const OperatorProductsPage = () => {
       };
       await api.put(`/api/products/${product._id}`, payload);
       fetchProducts();
-    } catch (error) {
+    } catch (_error) {
       alert(t('operator.products.status_update_error'));
     }
   };

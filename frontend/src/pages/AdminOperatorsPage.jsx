@@ -6,7 +6,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
 
 const AdminOperatorsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [operators, setOperators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');

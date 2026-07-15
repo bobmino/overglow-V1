@@ -25,7 +25,7 @@ const Header = () => {
   const luxuryMenuRef = React.useRef(null);
   const servicesMenuRef = React.useRef(null);
   const mobileMenuRef = React.useRef(null);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith('/operator');
@@ -78,11 +78,6 @@ const Header = () => {
       };
     }
   }, [showUserMenu, showDiscoverMenu, showLuxuryMenu, showServicesMenu, isMobileMenuOpen]);
-
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-    setIsMobileMenuOpen(false);
-  };
 
   const handleLogout = () => {
     logout();

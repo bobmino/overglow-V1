@@ -29,7 +29,7 @@ const NotificationBadge = () => {
       try {
         const { data } = await api.get('/api/notifications/unread-count');
         setUnreadCount(data.unreadCount || 0);
-      } catch (error) {
+      } catch (_error) {
         // Silently fail
       }
     };

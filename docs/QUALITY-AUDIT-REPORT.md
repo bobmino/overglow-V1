@@ -11,16 +11,16 @@
 
 | Domaine | Verdict | Commentaire |
 |---------|---------|-------------|
-| Build frontend | OK | `vite build` réussi (~20s) |
-| `console.log` prod | OK | Pas de `console.log` résiduel dans `src/` / `backend/` (logger centralisé) |
-| ESLint frontend | À traiter | **~512 erreurs / 22 warnings** — dette structurelle (hooks/immutability, unused vars), pas de régression bloquante build |
-| ESLint backend | Absent | Aucune config ESLint côté Node |
-| Auth routes | Correcté partiellement | Allowlist settings + Admin sur badges update |
-| Pagination | Dette | Plusieurs listes admin/opérateur sans `limit` |
-| Bundle | Acceptable | Code-split OK ; `vendor` ~952 KB (React/Recharts/etc.) |
-| Accessibilité | Partiel | Patterns bons sur admin settings ; lacunes modales / labels à généraliser |
+| Build frontend | OK | `vite build` réussi |
+| ESLint frontend | **0 erreur** | Passé de ~534 → 0 erreurs (Cypress globals + nettoyage src). Warnings hooks compiler conservés (set-state-in-effect, exhaustive-deps). |
+| `console.log` prod | OK | Logger centralisé |
+| ESLint backend | Absent | Toujours à ajouter |
+| Auth routes | OK | Allowlist settings + badges Admin |
+| Pagination | Partiel | `getUsers` / `getOperators` bornés (limit≤200) + N+1 onboarding corrigé |
+| Bundle | Acceptable | Code-split OK |
+| Accessibilité | Partiel | Idem rapport initial |
 
-**Verdict global :** plateforme **livrable** pour usage métier, avec une **dette qualité** claire (lint hooks, pagination, N+1). Les correctifs **critiques de sécurité** identifiés lors de l’audit (settings publics, badges) ont été appliqués dans le même jalon.
+**Verdict global :** lint frontend **propre en erreurs** ; dette restante = warnings React Compiler + pagination UI complète + ESLint backend.
 
 ---
 
@@ -131,11 +131,17 @@
 
 ---
 
-## 5. Correctifs appliqués dans ce jalon (PROMPT 19)
+## 5. Correctifs appliqués
 
+### PROMPT 19 (initial)
 1. Allowlist `GET /api/settings/:key` + lecture Admin via `optionalAuth`.
 2. `authorize('Admin')` sur `POST /api/badges/update-operator|product/:id`.
 3. Publication de ce rapport.
+
+### Suivi lint + perf (post–PROMPT 19)
+1. Config ESLint : globals Cypress / service worker / Node (`vite.config`), `argsIgnorePattern` / caught `_`.
+2. **0 erreur ESLint** : unused vars, hooks avant early-return, immutability (fetch avant `useEffect`), `CustomTooltip` hors render, `handleRequestApproval` opérateur restauré.
+3. Admin `getUsers` / `getOperators` : `limit`/`page` + batch onboarding (plus de N+1 `findOne`).
 
 ---
 

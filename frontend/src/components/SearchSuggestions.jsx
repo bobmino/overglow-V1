@@ -9,7 +9,7 @@ import { logger } from '../utils/logger.js';
 const SearchSuggestions = ({ 
   searchQuery, 
   onSelect, 
-  onClear,
+  onClear: _onClear,
   showSuggestions = true 
 }) => {
   const safeCall = (fn, payload) => {
@@ -18,7 +18,7 @@ const SearchSuggestions = ({
   const [suggestions, setSuggestions] = useState([]);
   const [history, setHistory] = useState([]);
   const [trending, setTrending] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const containerRef = useRef(null);
 
   // Load search history from localStorage
@@ -58,7 +58,7 @@ const SearchSuggestions = ({
         // Mock API call - replace with actual endpoint
         const { data } = await api.get(`/api/search/suggestions?q=${encodeURIComponent(searchQuery)}`);
         setSuggestions(data.suggestions || []);
-      } catch (error) {
+      } catch (_error) {
         // Fallback: generate simple suggestions
         const mockSuggestions = [
           `${searchQuery} à Marrakech`,

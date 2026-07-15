@@ -364,6 +364,9 @@ const getOperators = async (req, res) => {
   try {
     const { status, onboardingStatus } = req.query;
     const query = {};
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || 100));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const skip = (page - 1) * limit;
     
     if (status) {
       query.status = status;
@@ -372,45 +375,28 @@ const getOperators = async (req, res) => {
     const operators = await Operator.find(query)
       .populate('user', 'name email')
       .populate('badges.badgeId')
-      .sort({ createdAt: -1 });
-    
-    // If filtering by onboarding status, we need to check OperatorOnboarding
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const OperatorOnboarding = (await import('../models/operatorOnboardingModel.js')).default;
+    const onboardings = await OperatorOnboarding.find({
+      operator: { $in: operators.map((op) => op._id) },
+    });
+    const onboardingByOperator = new Map(
+      onboardings.map((rec) => [rec.operator.toString(), rec])
+    );
+
+    let result = operators.map((operator) => ({
+      ...operator.toObject(),
+      onboarding: onboardingByOperator.get(operator._id.toString()) || null,
+    }));
+
     if (onboardingStatus) {
-      const OperatorOnboarding = (await import('../models/operatorOnboardingModel.js')).default;
-      const onboardingRecords = await OperatorOnboarding.find({ 
-        onboardingStatus,
-        operator: { $in: operators.map(op => op._id) }
-      });
-      const operatorIds = onboardingRecords.map(rec => rec.operator.toString());
-      const filteredOperators = operators.filter(op => operatorIds.includes(op._id.toString()));
-      
-      // Populate onboarding data
-      const operatorsWithOnboarding = await Promise.all(
-        filteredOperators.map(async (operator) => {
-          const onboarding = await OperatorOnboarding.findOne({ operator: operator._id });
-          return {
-            ...operator.toObject(),
-            onboarding,
-          };
-        })
-      );
-      
-      return res.json(operatorsWithOnboarding);
+      result = result.filter((op) => op.onboarding?.onboardingStatus === onboardingStatus);
     }
     
-    // Populate onboarding data for all operators
-    const OperatorOnboarding = (await import('../models/operatorOnboardingModel.js')).default;
-    const operatorsWithOnboarding = await Promise.all(
-      operators.map(async (operator) => {
-        const onboarding = await OperatorOnboarding.findOne({ operator: operator._id });
-        return {
-          ...operator.toObject(),
-          onboarding,
-        };
-      })
-    );
-    
-    res.json(operatorsWithOnboarding);
+    res.json(result);
   } catch (error) {
     logger.error('Get operators error:', error);
     res.status(500).json({ message: 'Failed to fetch operators' });
@@ -691,7 +677,14 @@ const assignProductToOperator = async (req, res) => {
 // @access  Private/Admin
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || 100));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const skip = (page - 1) * limit;
+    const users = await User.find({})
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
     res.json(users);
   } catch (error) {
     logger.error('Get users error:', error);

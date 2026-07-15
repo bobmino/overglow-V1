@@ -4,7 +4,6 @@ import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
-import api from '../config/axios';
 import { trackBookingPageView } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
@@ -23,7 +22,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
-  const { product, date, timeSlot, tickets, skipTheLine } = location.state || {};
+  const { product, date, timeSlot, tickets } = location.state || {};
 
   const dateLocale = getDateLocale(i18n.language);
   

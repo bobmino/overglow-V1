@@ -9,7 +9,7 @@ const ReviewItem = ({ review, onVote }) => {
   const [hasVotedHelpful, setHasVotedHelpful] = useState(
     user && review.helpfulVoters?.some(v => v.toString() === user._id)
   );
-  const [hasVotedNotHelpful, setHasVotedNotHelpful] = useState(
+  const [_hasVotedNotHelpful, setHasVotedNotHelpful] = useState(
     user && review.notHelpfulVoters?.some(v => v.toString() === user._id)
   );
   const [helpfulVotes, setHelpfulVotes] = useState(review.helpfulVotes || 0);

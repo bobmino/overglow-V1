@@ -9,6 +9,20 @@ import api from '../config/axios';
 
 const COLORS = ['#059669', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981', '#6366F1'];
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-slate-200 shadow-lg rounded-lg">
+        <p className="font-bold text-slate-800">{label || payload[0].name}</p>
+        <p className="text-primary-600 font-semibold">
+          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(payload[0].value)}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const AdminAnalytics = () => {
   const [data, setData] = useState({
     revenueByMonth: [],
@@ -57,20 +71,6 @@ const AdminAnalytics = () => {
   }
 
   const { kpis, revenueByMonth, salesByCity } = data;
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-slate-200 shadow-lg rounded-lg">
-          <p className="font-bold text-slate-800">{label || payload[0].name}</p>
-          <p className="text-primary-600 font-semibold">
-            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(payload[0].value)}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="space-y-8">

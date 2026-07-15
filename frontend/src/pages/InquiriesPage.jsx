@@ -33,7 +33,7 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
     try {
       await api.put(`/api/inquiries/${inquiry._id}/answer`, { answer });
       onUpdate();
-    } catch (error) {
+    } catch (_error) {
       alert(t('inquiries.errors.send_answer'));
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
     try {
       await api.put(`/api/inquiries/${inquiry._id}/approve`);
       onUpdate();
-    } catch (error) {
+    } catch (_error) {
       alert(t('inquiries.errors.approve'));
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
     try {
       await api.put(`/api/inquiries/${inquiry._id}/reject`, { reason });
       onUpdate();
-    } catch (error) {
+    } catch (_error) {
       alert(t('inquiries.errors.reject'));
     } finally {
       setLoading(false);

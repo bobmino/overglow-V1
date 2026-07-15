@@ -53,7 +53,7 @@ const PartnerSignupPage = () => {
       } else {
         toast(data?.message || t('partner.toast_info'), { type: 'info' });
       }
-    } catch (error) {
+    } catch (_error) {
       toast(t('partner.toast_error'), { type: 'error' });
     } finally {
       setLoading(false);

@@ -11,10 +11,6 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchRecommendations();
-  }, [isAuthenticated, type]);
-
   const fetchRecommendations = async () => {
     try {
       setLoading(true);
@@ -41,6 +37,10 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRecommendations();
+  }, [isAuthenticated, type]);
 
   if (loading) {
     return (

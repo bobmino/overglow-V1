@@ -4,7 +4,7 @@ import { X, Trash2, Calendar, Clock, MapPin, CheckCircle, ShoppingBag } from 'lu
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatImageUrl } from '../utils/formatImage';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 const CartDrawer = () => {
@@ -26,7 +26,7 @@ const CartDrawer = () => {
       {isCartOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -36,7 +36,7 @@ const CartDrawer = () => {
           />
 
           {/* Drawer Container */}
-          <motion.div
+          <Motion.div
             initial={{ x: isRTL ? '-100%' : '100%' }}
             animate={{ x: 0 }}
             exit={{ x: isRTL ? '-100%' : '100%' }}
@@ -88,7 +88,7 @@ const CartDrawer = () => {
                   const image = item.product?.images?.[0] ? formatImageUrl(item.product.images[0]) : fallbackImage;
 
                   return (
-                    <motion.div
+                    <Motion.div
                       layout
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -149,7 +149,7 @@ const CartDrawer = () => {
                           </span>
                         </div>
                       </div>
-                    </motion.div>
+                    </Motion.div>
                   );
                 })
               )}
@@ -177,7 +177,7 @@ const CartDrawer = () => {
                 </button>
               </div>
             )}
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatePresence>

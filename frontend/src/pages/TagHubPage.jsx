@@ -32,7 +32,7 @@ const TagHubPage = () => {
 
         setBlogPosts(Array.isArray(blogRes.data?.posts) ? blogRes.data.posts : []);
         setProducts(Array.isArray(searchRes.data?.products) ? searchRes.data.products : []);
-      } catch (e) {
+      } catch (_e) {
         setBlogPosts([]);
         setProducts([]);
       } finally {

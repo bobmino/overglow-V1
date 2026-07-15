@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, DollarSign, Globe, Shield, Utensils, MapPin, Clock, Sun } from 'lucide-react';
 
-const DestinationGuide = ({ city, guide }) => {
+const DestinationGuide = ({ city: _city, guide }) => {
   const { t } = useTranslation();
 
   if (!guide) return null;

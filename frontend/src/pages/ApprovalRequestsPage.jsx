@@ -21,10 +21,6 @@ const ApprovalRequestsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    fetchRequests();
-  }, [filter]);
-
   const fetchRequests = async () => {
     try {
       const url = filter === 'all'
@@ -41,11 +37,15 @@ const ApprovalRequestsPage = () => {
     }
   };
 
+  useEffect(() => {
+    fetchRequests();
+  }, [filter]);
+
   const handleApprove = async (requestId) => {
     try {
       await api.put(`/api/approval-requests/${requestId}/approve`);
       fetchRequests();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.approvals.approve_error'));
     }
   };
@@ -55,7 +55,7 @@ const ApprovalRequestsPage = () => {
     try {
       await api.put(`/api/approval-requests/${requestId}/reject`, { reason });
       fetchRequests();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.approvals.reject_error'));
     }
   };

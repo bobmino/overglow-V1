@@ -28,7 +28,7 @@ const getDateLocale = (language) => {
 };
 
 const RejectModal = ({ isOpen, onClose, onConfirm, bookingId, clientName }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

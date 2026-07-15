@@ -83,39 +83,38 @@ const OperatorWizardPage = () => {
 
     try {
       const stepId = STEPS[currentStep].id;
-      let response;
 
       switch (stepId) {
         case 'providerType':
-          response = await api.put('/api/operator/wizard/provider-type', {
+          await api.put('/api/operator/wizard/provider-type', {
             providerType: formData.providerType,
           });
           break;
         case 'publicInfo':
-          response = await api.put('/api/operator/wizard/public-info', {
+          await api.put('/api/operator/wizard/public-info', {
             publicName: formData.publicName,
             description: formData.description,
             location: formData.location,
           });
           break;
         case 'photos':
-          response = await api.put('/api/operator/wizard/photos', {
+          await api.put('/api/operator/wizard/photos', {
             logo: formData.logo,
             gallery: formData.gallery,
           });
           break;
         case 'address':
-          response = await api.put('/api/operator/wizard/address', {
+          await api.put('/api/operator/wizard/address', {
             companyAddress: formData.companyAddress,
           });
           break;
         case 'experiences':
-          response = await api.put('/api/operator/wizard/experiences', {
+          await api.put('/api/operator/wizard/experiences', {
             experiences: formData.experiences,
           });
           break;
         case 'privateInfo':
-          response = await api.put('/api/operator/wizard/private-info', {
+          await api.put('/api/operator/wizard/private-info', {
             companyInfo: formData.companyInfo,
             individualWithStatusInfo: formData.individualWithStatusInfo,
             individualWithoutStatusInfo: formData.individualWithoutStatusInfo,

@@ -8,8 +8,8 @@ import { trackProductClick } from '../utils/analytics';
 import { formatImageUrl, getPlaceholderImage } from '../utils/formatImage';
 
 const ProductCard = ({ product }) => {
-  if (!product) return null;
   const { formatPrice } = useCurrency();
+  if (!product) return null;
   
   // [WebP migration] Local placeholder
   const fallbackImage = getPlaceholderImage();

@@ -25,7 +25,7 @@ const ShareButtons = ({ product, url, title, description, contentType = 'product
   const handleShare = async (platform) => {
     const encodedUrl = encodeURIComponent(shareUrl);
     const encodedTitle = encodeURIComponent(shareTitle);
-    const encodedDescription = encodeURIComponent(shareDescription);
+    const _encodedDescription = encodeURIComponent(shareDescription);
 
     let shareLink = '';
 

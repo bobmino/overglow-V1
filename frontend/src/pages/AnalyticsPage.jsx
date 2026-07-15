@@ -15,11 +15,11 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-const StatCard = ({ icon: Icon, label, value, color, subtitle }) => (
+const StatCard = ({ icon: _Icon, label, value, color, subtitle }) => (
   <div className="bg-white rounded-xl border border-gray-200 p-6">
     <div className="flex items-center justify-between mb-4">
       <div className={`p-3 rounded-lg ${color}`}>
-        <Icon size={24} className="text-white" />
+        <_Icon size={24} className="text-white" />
       </div>
     </div>
     <p className="text-gray-600 text-sm mb-1">{label}</p>
@@ -44,10 +44,6 @@ const AnalyticsPage = () => {
     { id: 'recommendations', label: t('analytics.tabs.recommendations') },
   ];
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [dateRange]);
-
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
@@ -63,11 +59,15 @@ const AnalyticsPage = () => {
       setBasicData(basicRes.data);
       setAdvancedData(advancedRes.data);
       setLoading(false);
-    } catch (err) {
+    } catch (_err) {
       setError(t('analytics.load_error'));
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [dateRange]);
 
   const handleExportCSV = async () => {
     try {

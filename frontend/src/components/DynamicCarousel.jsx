@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
@@ -79,19 +79,19 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
           className="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 md:px-8 pb-6 pt-2"
         >
           {displayedItems.map((item, index) => (
-            <motion.div
+            <Motion.div
               key={item._id || index}
               className="min-w-[280px] md:min-w-[320px] max-w-[320px] flex-none snap-start"
               whileHover={{ y: -6 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
               {renderCard ? renderCard(item) : <ProductCard product={item} />}
-            </motion.div>
+            </Motion.div>
           ))}
 
           {/* "+X" Plus Card */}
           {hasMore && (
-            <motion.div
+            <Motion.div
               className="min-w-[280px] md:min-w-[320px] flex-none snap-start cursor-pointer h-full self-stretch"
               whileHover={{ y: -6 }}
               onClick={handleSeeMore}
@@ -107,7 +107,7 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
                   Explorer la collection
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </div>
       </div>

@@ -8,10 +8,10 @@ const urlsToCache = [
 ];
 
 // Install prompt handling
-let deferredPrompt;
+let _deferredPrompt;
 self.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
-  deferredPrompt = e;
+  _deferredPrompt = e;
   // Dispatch event to window
   self.clients.matchAll().then(clients => {
     clients.forEach(client => {

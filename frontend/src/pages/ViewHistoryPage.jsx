@@ -12,10 +12,6 @@ const ViewHistoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchViewHistory();
-  }, []);
-
   const fetchViewHistory = async () => {
     try {
       const { data } = await api.get('/api/view-history');
@@ -27,6 +23,10 @@ const ViewHistoryPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchViewHistory();
+  }, []);
 
   const handleClearHistory = async () => {
     if (!window.confirm(t('history.confirm_clear'))) {

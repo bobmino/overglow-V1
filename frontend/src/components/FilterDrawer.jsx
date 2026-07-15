@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FilterSidebar from './FilterSidebar';
@@ -37,7 +37,7 @@ const FilterDrawer = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -45,7 +45,7 @@ const FilterDrawer = ({
             className="fixed inset-0 bg-black/60 z-50 md:hidden backdrop-blur-sm"
           />
 
-          <motion.div
+          <Motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -90,7 +90,7 @@ const FilterDrawer = ({
                 {t('common.apply')}
               </button>
             </div>
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatePresence>

@@ -7,8 +7,8 @@ import { formatImageUrl } from '../utils/formatImage';
 
 /** [TASK-24] No fake Math.random ratings — use real product review data only. */
 const TourCard = ({ product, isLikelyToSellOut = false }) => {
-  if (!product) return null;
   const { formatPrice } = useCurrency();
+  if (!product) return null;
 
   const fallbackImage = '/images/placeholder.webp';
   const image = Array.isArray(product.images) && product.images.length > 0

@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
             logger.error('Logout API error:', err);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         // Ignore errors
       }
     }

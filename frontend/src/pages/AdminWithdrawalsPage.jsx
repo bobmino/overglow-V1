@@ -21,10 +21,6 @@ const AdminWithdrawalsPage = () => {
   const [filter, setFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  useEffect(() => {
-    fetchWithdrawals();
-  }, [filter, typeFilter]);
-
   const fetchWithdrawals = async () => {
     try {
       const params = new URLSearchParams();
@@ -40,11 +36,15 @@ const AdminWithdrawalsPage = () => {
     }
   };
 
+  useEffect(() => {
+    fetchWithdrawals();
+  }, [filter, typeFilter]);
+
   const handleApprove = async (withdrawalId) => {
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/approve`);
       fetchWithdrawals();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.withdrawals.approve_error'));
     }
   };
@@ -57,7 +57,7 @@ const AdminWithdrawalsPage = () => {
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/reject`, { reason });
       fetchWithdrawals();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.withdrawals.reject_error'));
     }
   };
@@ -66,7 +66,7 @@ const AdminWithdrawalsPage = () => {
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/process`);
       fetchWithdrawals();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.withdrawals.process_error'));
     }
   };

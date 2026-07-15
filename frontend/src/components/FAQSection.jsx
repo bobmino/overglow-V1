@@ -69,20 +69,6 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
     setExpandedId(expandedId === faqId ? null : faqId);
   };
 
-  const categoryLabels = {
-    all: 'Toutes les catégories',
-    general: 'Général',
-    booking: 'Réservation',
-    payment: 'Paiement',
-    cancellation: 'Annulation',
-    account: 'Compte',
-    operator: 'Opérateur',
-    products: 'Produits',
-    reviews: 'Avis',
-    technical: 'Technique',
-    safety: 'Sécurité',
-  };
-
   return (
     <div className="space-y-6">
       {/* Search and Filter */}

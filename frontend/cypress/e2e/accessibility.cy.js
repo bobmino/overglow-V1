@@ -118,7 +118,7 @@ describe('Accessibility Tests (WCAG 2.1 AA)', () => {
     cy.visit('/');
     
     // Check text elements have sufficient contrast
-    cy.get('body').then(($body) => {
+    cy.get('body').then((_$body) => {
       // This is checked by axe-core color-contrast rule
       cy.checkA11y(null, {
         rules: {

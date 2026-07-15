@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
 import { trackProductView, trackEvent } from '../utils/analytics';
@@ -25,7 +25,6 @@ import TrustBar from '../components/TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
 import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
 import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
 import { useTranslation } from 'react-i18next';
 
 const ProductDetailPage = () => {
@@ -53,7 +52,23 @@ const ProductDetailPage = () => {
   const [operatorBadges, setOperatorBadges] = useState([]);
   const { formatPrice } = useCurrency();
   const { addToCart, setIsCartOpen } = useCart();
-  const { toast } = useToast();
+
+  const parsePrice = (value) => {
+    const numericPrice = Number(value);
+    return Number.isFinite(numericPrice) && numericPrice >= 0 ? numericPrice : null;
+  };
+
+  const getMinPrice = () => {
+    if (!product) return null;
+    if (availableSchedules.length === 0) return parsePrice(product.price);
+    const prices = availableSchedules
+      .map(schedule => parsePrice(schedule.price))
+      .filter(price => price !== null);
+    if (prices.length > 0) {
+      return Math.min(...prices);
+    }
+    return parsePrice(product.price);
+  };
 
   useEffect(() => {
     const isValidProductId = /^[a-f\d]{24}$/i.test(id);
@@ -233,23 +248,6 @@ const ProductDetailPage = () => {
       });
     }
   }, [product]);
-
-  const parsePrice = (value) => {
-    const numericPrice = Number(value);
-    return Number.isFinite(numericPrice) && numericPrice >= 0 ? numericPrice : null;
-  };
-
-  const getMinPrice = () => {
-    if (!product) return null;
-    if (availableSchedules.length === 0) return parsePrice(product.price);
-    const prices = availableSchedules
-      .map(schedule => parsePrice(schedule.price))
-      .filter(price => price !== null);
-    if (prices.length > 0) {
-      return Math.min(...prices);
-    }
-    return parsePrice(product.price);
-  };
 
   const handleBookNow = () => {
     if (!selectedDate) {
@@ -857,7 +855,7 @@ const ProductDetailPage = () => {
         {isMobileDrawerOpen && (
           <>
             {/* Backdrop */}
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
@@ -865,7 +863,7 @@ const ProductDetailPage = () => {
               className="lg:hidden fixed inset-0 bg-black z-50"
             />
             {/* Drawer Content */}
-            <motion.div
+            <Motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -998,7 +996,7 @@ const ProductDetailPage = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </>
         )}
       </AnimatePresence>

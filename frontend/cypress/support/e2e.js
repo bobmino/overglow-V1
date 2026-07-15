@@ -21,14 +21,14 @@ import './accessibility';
 // require('./commands')
 
 // Hide fetch/XHR requests from command log
-Cypress.on('fail', (error, runnable) => {
+Cypress.on('fail', (error, _runnable) => {
   // we now have access to the err instance
   // and the mocha runnable this failed on
   throw error; // throw error to have test still fail
 });
 
 // Handle uncaught exceptions
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', (err, _runnable) => {
   // returning false here prevents Cypress from failing the test
   // Ignore React errors that are handled by ErrorBoundary
   if (err.message.includes('ResizeObserver loop limit exceeded')) {

@@ -45,7 +45,7 @@ const AdminUsersPage = () => {
     try {
       await api.delete(`/api/admin/users/${userId}`);
       fetchUsers();
-    } catch (error) {
+    } catch (_error) {
       alert(t('admin.users.delete_error'));
     }
   };

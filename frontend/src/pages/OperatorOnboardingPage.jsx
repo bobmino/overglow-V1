@@ -103,10 +103,6 @@ const OperatorOnboardingPage = () => {
     { id: 6, key: 'privateInfo', label: t('operator.onboarding.steps.private_info'), icon: Lock },
   ];
 
-  useEffect(() => {
-    fetchOnboarding();
-  }, []);
-
   const fetchOnboarding = async () => {
     try {
       const { data } = await api.get('/api/operator/onboarding');
@@ -153,6 +149,10 @@ const OperatorOnboardingPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchOnboarding();
+  }, []);
 
   const handleInputChange = (field, value) => {
     if (field.includes('.')) {
@@ -292,13 +292,14 @@ const OperatorOnboardingPage = () => {
           return false;
         }
         return true;
-      case 5:
+      case 5: {
         const validTypes = formData.experienceTypes.filter(type => type.trim() !== '');
         if (validTypes.length === 0) {
           setError(t('operator.onboarding.validation_experience_type'));
           return false;
         }
         return true;
+      }
       case 6:
         if (formData.providerType === 'company') {
           if (!formData.companyInfo?.registrationNumber) {

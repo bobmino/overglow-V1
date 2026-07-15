@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
-const DateRangePicker = ({ onDateSelect, selectedDates = [], product = null }) => {
+const DateRangePicker = ({ onDateSelect, selectedDates: _selectedDates = [], product = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [startDate, setStartDate] = useState(null);

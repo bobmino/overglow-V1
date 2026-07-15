@@ -17,7 +17,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { formatPrice } = useCurrency();
   const { cartItems, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
@@ -75,8 +75,6 @@ const CheckoutPage = () => {
       })),
     });
   }, [isAuthenticated, checkoutItems, navigate, location, totalPrice]);
-
-  const [bookingId, setBookingId] = useState(null);
 
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);
@@ -246,7 +244,6 @@ const CheckoutPage = () => {
                 <PaymentSelector
                   amount={totalPrice}
                   onPaymentComplete={handlePaymentComplete}
-                  bookingId={bookingId}
                   disabled={loading}
                 />
               </section>
