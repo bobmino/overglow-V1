@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
 import DestinationGuide from '../components/DestinationGuide';
+import SEOHead from '../components/SEOHead';
 import { MapPin, Star, Filter, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
-import { canonicalUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
 import { getCityImage, getCityAlt } from '../config/cityMedia.js';
 
@@ -358,16 +357,12 @@ const DestinationPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      <Helmet>
-        <title>{t('destination.meta_title', { city: displayName })}</title>
-        <meta name="description" content={displayDescription} />
-        <meta property="og:title" content={t('destination.meta_title', { city: displayName })} />
-        <meta property="og:description" content={displayDescription} />
-        <meta property="og:image" content={info.image} />
-        <meta property="og:url" content={canonicalUrl(`/destinations/${encodeURIComponent(cityKey)}`)} />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={canonicalUrl(`/destinations/${encodeURIComponent(cityKey)}`)} />
-      </Helmet>
+      <SEOHead
+        title={t('destination.meta_title', { city: displayName })}
+        description={displayDescription}
+        pathname={`/destinations/${encodeURIComponent(cityKey)}`}
+        image={info.image}
+      />
       {/* Hero Section */}
       <div className="relative h-64 md:h-96 overflow-hidden">
         <img 

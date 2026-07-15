@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
@@ -23,7 +22,8 @@ import OthersAlsoBooked from '../components/OthersAlsoBooked';
 import ShareButtons from '../components/ShareButtons';
 import TrustBar from '../components/TrustBar';
 import { formatImageUrl } from '../utils/formatImage';
-import { absoluteUrl, canonicalUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
+import SEOHead from '../components/SEOHead';
+import { absoluteUrl, DEFAULT_OG_IMAGE } from '../utils/siteUrl';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
 
@@ -409,36 +409,24 @@ const ProductDetailPage = () => {
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
   const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
-  const currentUrl = canonicalUrl(`/products/${product?._id || ''}`);
   const normalizedImages = Array.isArray(product?.images) ? product.images.map(formatImageUrl).filter(Boolean) : [];
   const ogImage = normalizedImages[0]
     ? absoluteUrl(normalizedImages[0])
     : DEFAULT_OG_IMAGE;
-  const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'} | Overglow`;
+  const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'}`;
   const shortDescription = (product?.description || 'Experience locale verifiee, paiement securise et support 24/7 sur Overglow.')
     .trim()
     .slice(0, 155);
 
   return (
     <div className="bg-slate-50">
-      <Helmet>
-        <title>{metaTitle}</title>
-        <meta name="description" content={shortDescription} />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={shortDescription} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:image:secure_url" content={ogImage} />
-        <meta property="og:image:alt" content={product?.title || 'Experience Overglow'} />
-        <meta property="og:url" content={currentUrl} />
-        <meta property="og:site_name" content="Overglow" />
-        <meta property="og:locale" content="fr_FR" />
-        <meta property="og:type" content="product" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={shortDescription} />
-        <meta name="twitter:image" content={ogImage} />
-        <link rel="canonical" href={currentUrl} />
-      </Helmet>
+      <SEOHead
+        title={metaTitle}
+        description={shortDescription}
+        pathname={`/products/${product?._id || ''}`}
+        image={ogImage}
+        type="product"
+      />
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="mb-5">
           <TrustBar compact />

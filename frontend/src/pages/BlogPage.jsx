@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import api from '../config/axios';
 import BlogCard from '../components/BlogCard';
+import SEOHead from '../components/SEOHead';
 import { logger } from '../utils/logger.js';
 
 const BlogPage = () => {
@@ -41,10 +41,11 @@ const BlogPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{t('blog.meta_title')} | Overglow Trip</title>
-        <meta name="description" content={t('blog.meta_description')} />
-      </Helmet>
+      <SEOHead
+        title={t('blog.meta_title')}
+        description={t('blog.meta_description')}
+        pathname="/blog"
+      />
 
       <div className="min-h-screen bg-slate-50 py-12">
         <div className="container mx-auto px-4 max-w-6xl">

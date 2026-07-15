@@ -52,6 +52,9 @@ router.get('/sitemap.xml', async (req, res) => {
 
     const staticEntries = [
       urlEntry(baseUrl, '/', { changefreq: 'daily', priority: '1.0' }),
+      urlEntry(baseUrl, '/explore', { changefreq: 'daily', priority: '0.95' }),
+      urlEntry(baseUrl, '/stays', { changefreq: 'daily', priority: '0.9' }),
+      urlEntry(baseUrl, '/extras', { changefreq: 'weekly', priority: '0.85' }),
       urlEntry(baseUrl, '/search', { changefreq: 'daily', priority: '0.9' }),
       urlEntry(baseUrl, '/blog', { changefreq: 'weekly', priority: '0.8' }),
       urlEntry(baseUrl, '/about', { changefreq: 'monthly', priority: '0.6' }),

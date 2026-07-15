@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -255,12 +256,12 @@ const AdminPendingPaymentsPage = () => {
         )}
 
         {!loading && bookings.length === 0 && (
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 p-16 text-center shadow-sm">
-            <div className="inline-flex p-4 rounded-full bg-emerald-100 mb-4">
-              <CheckCircle size={40} className="text-emerald-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('admin.pending_payments.empty_title')}</h3>
-            <p className="text-gray-500">{t('admin.pending_payments.empty_desc')}</p>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 shadow-sm">
+            <EmptyState
+              variant="bookings"
+              title={t('admin.pending_payments.empty_title')}
+              subtitle={t('admin.pending_payments.empty_desc')}
+            />
           </div>
         )}
 

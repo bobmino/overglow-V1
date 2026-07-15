@@ -4,6 +4,7 @@ import api from '../config/axios';
 import { AlertCircle, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
@@ -171,11 +172,11 @@ const ApprovalRequestsPage = () => {
       </div>
 
       {!Array.isArray(requests) || requests.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <AlertCircle size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.approvals.empty_title')}</h2>
-          <p className="text-gray-600">{t('admin.approvals.empty_desc')}</p>
-        </div>
+        <EmptyState
+          variant="inbox"
+          title={t('admin.approvals.empty_title')}
+          subtitle={t('admin.approvals.empty_desc')}
+        />
       ) : (
         <div className="space-y-4">
           {requests.map((request) => {

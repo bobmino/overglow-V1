@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Check, X, MessageSquare, Star, Search } from 'lucide-react';
 import api from '../config/axios';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
 
 const statusBadge = (status) => {
@@ -188,8 +189,12 @@ const AdminReviewsPage = () => {
                 </tr>
               ) : reviews.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-gray-500">
-                    Aucun avis
+                  <td colSpan={7}>
+                    <EmptyState
+                      variant="inbox"
+                      title="Aucun avis"
+                      subtitle="Les avis modérés apparaîtront ici."
+                    />
                   </td>
                 </tr>
               ) : (
@@ -308,7 +313,11 @@ const AdminReviewsPage = () => {
           {loading ? (
             <div className="py-10 text-center text-gray-500">Chargement…</div>
           ) : reviews.length === 0 ? (
-            <div className="py-10 text-center text-gray-500">Aucun avis</div>
+            <EmptyState
+              variant="inbox"
+              title="Aucun avis"
+              subtitle="Les avis modérés apparaîtront ici."
+            />
           ) : (
             reviews.map((r) => (
               <article key={r._id} className="p-4 space-y-3">

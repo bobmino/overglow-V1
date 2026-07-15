@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { X, SlidersHorizontal, Sparkles } from 'lucide-react';
 import api from '../config/axios';
@@ -9,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 import FilterSidebar from '../components/FilterSidebar';
 import FilterDrawer from '../components/FilterDrawer';
 import EmptyState from '../components/EmptyState';
+import SEOHead from '../components/SEOHead';
 import { trackSearch } from '../utils/analytics';
 import {
   CURATED_EXTRAS,
@@ -365,9 +365,11 @@ const SearchPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Helmet>
-        <title>{pageTitle} | Overglow</title>
-      </Helmet>
+      <SEOHead
+        title={pageTitle}
+        description={pageSubtitle || t('catalog.meta_description', 'Explorez des expériences authentiques au Maroc.')}
+        pathname={location.pathname}
+      />
 
       <div className="container mx-auto px-4 pt-24 pb-8">
         {store && (

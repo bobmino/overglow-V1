@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Building2, Mail, CheckCircle, XCircle, Clock, AlertCircle, Eye, FileText, User as UserIcon } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
 
 const AdminOperatorsPage = () => {
@@ -192,11 +193,11 @@ const AdminOperatorsPage = () => {
       </div>
 
       {operators.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.operators.empty_title')}</h2>
-          <p className="text-gray-600">{t('admin.operators.empty_desc')}</p>
-        </div>
+        <EmptyState
+          variant="search"
+          title={t('admin.operators.empty_title')}
+          subtitle={t('admin.operators.empty_desc')}
+        />
       ) : (
         <div className="space-y-4">
           {operators.map((operator) => (

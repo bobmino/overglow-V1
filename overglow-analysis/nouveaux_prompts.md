@@ -26,6 +26,10 @@ Ordre = dépendances respectées
 - [x] PROMPT 17 — Onboarding Utilisateur Amélioré
 - [x] PROMPT 18 — Templates Email
 - [x] PROMPT 19 — Audit Qualité
+- [x] FOLLOW-UP — Empty states unifiés (voyageur / opérateur / admin)
+- [x] INT-02 — SEOHead + hreflang + meta multi-langue (fondations)
+- [ ] INT-01 — i18n Routing préfixe langue `/fr|/en|/es|/ar`
+- [ ] INT-03 — Contenu éditorial SEO par marché (Wave 1-4)
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 
@@ -897,3 +901,22 @@ Prompt                  Priorité     Dépend de
 17	Onboarding Amélioré	    🟢	    Rien
 18	Templates Email	        🟢	    5 (settings)
 19	Audit Qualité	        🟢	    Tout
+
+---
+
+## Série Internationale (STRATEGIC-PLAN §7)
+
+Ordre : INT-02 (livré partiel) → INT-01 → INT-03…
+
+[x] INT-02 — 🟢 SEOHead + hreflang + meta multi-langue
+- `frontend/src/utils/seo.js` — canonical, hreflang (?lang=), OG
+- `frontend/src/components/SEOHead.jsx`
+- Branché : Home, Search/stores, Product, Blog, Destination, Category
+- i18n : détection `?lang=` (aligné sitemap)
+- Sitemap : + /explore, /stays, /extras
+
+[ ] INT-01 — 🔴 i18n Routing préfixe langue `/fr|/en|/es|/ar`
+Voir STRATEGIC-PLAN.md § PROMPT INT-01. Ne pas casser /admin, /operator, /dashboard.
+
+[ ] INT-03 — 🟡 Contenu éditorial SEO par marché (Wave 1–4)
+Voir STRATEGIC-PLAN.md § PROMPT INT-03.

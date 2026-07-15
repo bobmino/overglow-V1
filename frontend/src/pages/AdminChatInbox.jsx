@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, MessageSquare, Search } from 'lucide-react';
 import ChatWidget from '../components/ChatWidget';
+import EmptyState from '../components/EmptyState';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger.js';
@@ -154,11 +155,15 @@ const AdminChatInbox = () => {
           ) : error ? (
             <div className="p-6 text-center text-sm text-red-600">{error}</div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-500">
-              {search
-                ? 'Aucune conversation ne correspond à votre recherche.'
-                : 'Aucune conversation pour le moment.'}
-            </div>
+            <EmptyState
+              variant="messages"
+              title={
+                search
+                  ? 'Aucune conversation ne correspond à votre recherche.'
+                  : 'Aucune conversation pour le moment.'
+              }
+              className="py-6"
+            />
           ) : (
             filteredConversations.map((conversation) => {
               const participant = getOtherParticipant(conversation);

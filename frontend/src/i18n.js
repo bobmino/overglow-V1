@@ -34,8 +34,9 @@ i18n
       loadPath: '/locales/{{lng}}/translation.json',
     },
     detection: {
-      order: ['localStorage', 'navigator', 'geolocation'],
+      order: ['querystring', 'localStorage', 'navigator', 'geolocation'],
       caches: ['localStorage'],
+      lookupQuerystring: 'lang',
       lookupLocalStorage: 'i18nextLng',
       // Normalize language codes (e.g., 'fr-FR' -> 'fr', 'en-US' -> 'en')
       convertDetectedLanguage: (lng) => {

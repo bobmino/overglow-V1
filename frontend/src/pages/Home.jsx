@@ -8,6 +8,7 @@ import DestinationCard from '../components/DestinationCard';
 import Features from '../components/Features';
 import FlexibilityBanner from '../components/FlexibilityBanner';
 import AuthCTA from '../components/AuthCTA';
+import SEOHead from '../components/SEOHead';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
 import { CURATED_EXTRAS } from '../data/storeCatalog';
@@ -89,6 +90,14 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white pb-24 flex flex-col gap-y-16 overflow-x-hidden">
+      <SEOHead
+        title={t('home.meta_title', 'Expériences authentiques au Maroc')}
+        description={t(
+          'home.meta_description',
+          'Réservez des tours, séjours et extras locaux au Maroc — paiement sécurisé, hôtes vérifiés.'
+        )}
+        pathname="/"
+      />
       <HeroSection />
       <Features />
 

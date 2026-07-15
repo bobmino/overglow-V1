@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
+import SEOHead from '../components/SEOHead';
 import { MapPin } from 'lucide-react';
-import { canonicalUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
 
 const categoryIcons = {
@@ -67,15 +66,11 @@ const CategoryPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      <Helmet>
-        <title>{t('category.meta_title', { name: categoryName })}</title>
-        <meta name="description" content={categoryDescription} />
-        <meta property="og:title" content={t('category.meta_title', { name: categoryName })} />
-        <meta property="og:description" content={categoryDescription} />
-        <meta property="og:url" content={canonicalUrl(`/categories/${encodeURIComponent(category || '')}`)} />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={canonicalUrl(`/categories/${encodeURIComponent(category || '')}`)} />
-      </Helmet>
+      <SEOHead
+        title={t('category.meta_title', { name: categoryName })}
+        description={categoryDescription}
+        pathname={`/categories/${encodeURIComponent(category || '')}`}
+      />
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">
         <div className="container mx-auto px-4">

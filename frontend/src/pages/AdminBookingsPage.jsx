@@ -16,6 +16,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import AdminModal from '../components/AdminModal';
 import AdvancedFilters from '../components/AdvancedFilters';
 import DataTable from '../components/DataTable';
+import EmptyState from '../components/EmptyState';
 
 const STATUS_OPTIONS = [
   { value: 'Pending', label: 'En attente' },
@@ -310,11 +311,11 @@ const AdminBookingsPage = () => {
         loading={loading}
         data={bookings}
         emptyState={(
-          <div className="py-16 text-center">
-            <CalendarDays size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-lg font-semibold text-gray-800">Aucune réservation trouvée</p>
-            <p className="text-gray-500 mt-1">Modifiez les filtres ou réessayez plus tard.</p>
-          </div>
+          <EmptyState
+            variant="bookings"
+            title="Aucune réservation trouvée"
+            subtitle="Modifiez les filtres ou réessayez plus tard."
+          />
         )}
         columns={[
           {

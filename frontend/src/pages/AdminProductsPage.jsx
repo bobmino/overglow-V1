@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { Package, MapPin, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import AdvancedFilters from '../components/AdvancedFilters';
+import EmptyState from '../components/EmptyState';
 import { formatImageUrl } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
 
@@ -136,11 +137,11 @@ const AdminProductsPage = () => {
       />
 
       {products.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
-          <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.products.empty_title')}</h2>
-          <p className="text-gray-600">{t('admin.products.empty_desc')}</p>
-        </div>
+        <EmptyState
+          variant="products"
+          title={t('admin.products.empty_title')}
+          subtitle={t('admin.products.empty_desc')}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
