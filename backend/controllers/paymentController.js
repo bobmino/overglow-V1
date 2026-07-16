@@ -57,32 +57,39 @@ const getPaypalClient = () => {
 };
 
 /**
- * Charge le booking et valide le montant client vs totalAmount (tolérance 0.01).
+ * Charge un ou plusieurs bookings et valide le montant client vs somme totalAmount.
  * [TASK-2] Empêche le underpayment via montant manipulé côté client.
  */
-const loadBookingAndAssertAmount = async (bookingId, clientAmount, { requireReceived = false } = {}) => {
-  if (!bookingId) {
+const loadBookingsAndAssertAmount = async (bookingId, bookingIds, clientAmount, { requireReceived = false } = {}) => {
+  const ids = Array.isArray(bookingIds) && bookingIds.length
+    ? bookingIds.map(String)
+    : bookingId
+      ? [String(bookingId)]
+      : [];
+
+  if (!ids.length) {
     const err = new Error('Booking ID is required');
     err.statusCode = 400;
     throw err;
   }
 
-  const booking = await Booking.findById(bookingId);
-  if (!booking) {
+  const bookings = await Booking.find({ _id: { $in: ids } });
+  if (bookings.length !== ids.length) {
     const err = new Error('Booking not found');
     err.statusCode = 404;
     throw err;
   }
 
+  const expected = bookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
   const check = validatePaymentAmount({
-    expected: booking.totalAmount,
+    expected,
     received: clientAmount,
     requireReceived,
   });
 
   if (!check.ok) {
     logger.error('Payment amount validation failed', {
-      bookingId: String(bookingId),
+      bookingIds: ids,
       reason: check.reason,
       expected: check.expected,
       received: check.received,
@@ -93,35 +100,57 @@ const loadBookingAndAssertAmount = async (bookingId, clientAmount, { requireRece
     throw err;
   }
 
-  return { booking, amount: check.expected };
+  return { bookings, primary: bookings[0], amount: check.expected, ids };
+};
+
+/** @deprecated use loadBookingsAndAssertAmount — kept for offline helpers */
+const loadBookingAndAssertAmount = async (bookingId, clientAmount, opts = {}) => {
+  const { bookings, amount } = await loadBookingsAndAssertAmount(bookingId, null, clientAmount, opts);
+  return { booking: bookings[0], amount };
 };
 
 /**
- * Resolve booking from PaymentIntent metadata or by paymentIntentId field.
+ * Resolve booking(s) from PaymentIntent metadata or by paymentIntentId field.
  */
-const findBookingForStripeIntent = async (paymentIntent) => {
+const findBookingsForStripeIntent = async (paymentIntent) => {
+  const metaIds = paymentIntent?.metadata?.bookingIds;
+  if (metaIds) {
+    try {
+      const parsed = JSON.parse(metaIds);
+      if (Array.isArray(parsed) && parsed.length) {
+        const list = await Booking.find({ _id: { $in: parsed } });
+        if (list.length) return list;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
   const bookingId = paymentIntent?.metadata?.bookingId;
   if (bookingId) {
     const byMeta = await Booking.findById(bookingId);
-    if (byMeta) return byMeta;
+    if (byMeta) return [byMeta];
   }
   if (paymentIntent?.id) {
-    return Booking.findOne({ paymentIntentId: paymentIntent.id });
+    const byIntent = await Booking.find({ paymentIntentId: paymentIntent.id });
+    if (byIntent.length) return byIntent;
   }
-  return null;
+  return [];
 };
 
 // @desc    Create Stripe Payment Intent
 // @route   POST /api/payments/create-stripe-intent
 // @access  Private
 const createStripeIntent = async (req, res) => {
-  const { amount, currency, bookingId } = req.body;
+  const { amount, currency, bookingId, bookingIds } = req.body;
 
   try {
-    // [TASK-2] Montant serveur = booking.totalAmount (pas le montant client)
-    const { booking, amount: chargeAmount } = await loadBookingAndAssertAmount(bookingId, amount, {
-      requireReceived: Boolean(amount != null && amount !== ''),
-    });
+    // [TASK-2] Montant serveur = somme booking.totalAmount (pas le montant client)
+    const { bookings, primary, amount: chargeAmount, ids } = await loadBookingsAndAssertAmount(
+      bookingId,
+      bookingIds,
+      amount,
+      { requireReceived: Boolean(amount != null && amount !== '') }
+    );
 
     if (!isStripeConfigured()) {
       if (!isPaymentSimAllowed()) {
@@ -153,7 +182,8 @@ const createStripeIntent = async (req, res) => {
 
     const metadata = {
       userId: req.user?._id?.toString() || '',
-      bookingId: String(bookingId),
+      bookingId: String(ids[0]),
+      bookingIds: JSON.stringify(ids),
     };
 
     const paymentIntent = await stripeInstance.paymentIntents.create({
@@ -165,19 +195,24 @@ const createStripeIntent = async (req, res) => {
       metadata,
     });
 
-    booking.paymentIntentId = paymentIntent.id;
-    booking.paymentMethod = 'stripe';
-    if (booking.status !== 'Confirmed') {
-      booking.status = 'Pending';
-      booking.paymentStatus = 'pending';
-    }
-    await booking.save();
+    await Promise.all(
+      bookings.map(async (booking) => {
+        booking.paymentIntentId = paymentIntent.id;
+        booking.paymentMethod = 'stripe';
+        if (booking.status !== 'Confirmed') {
+          booking.status = 'Pending';
+          booking.paymentStatus = 'pending';
+        }
+        await booking.save();
+      })
+    );
 
     res.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: chargeAmount,
       simulated: false,
+      bookingId: primary._id,
     });
   } catch (error) {
     if (error.statusCode) {
@@ -346,9 +381,9 @@ const handleStripeWebhook = async (req, res) => {
     switch (event.type) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
-        const booking = await findBookingForStripeIntent(paymentIntent);
+        const bookings = await findBookingsForStripeIntent(paymentIntent);
 
-        if (!booking) {
+        if (!bookings.length) {
           logger.warn('Stripe webhook: no booking for PaymentIntent', {
             paymentIntentId: paymentIntent.id,
             metadata: paymentIntent.metadata,
@@ -356,16 +391,17 @@ const handleStripeWebhook = async (req, res) => {
           break;
         }
 
-        // [TASK-2] Montant Stripe (cents) vs booking.totalAmount
+        // [TASK-2] Montant Stripe (cents) vs somme booking.totalAmount
         const paidMajor = Number(paymentIntent.amount_received ?? paymentIntent.amount) / 100;
+        const expectedSum = bookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
         const amountCheck = validatePaymentAmount({
-          expected: booking.totalAmount,
+          expected: expectedSum,
           received: paidMajor,
           requireReceived: true,
         });
         if (!amountCheck.ok) {
           logger.error('Stripe webhook amount mismatch — refusing confirmation', {
-            bookingId: booking._id.toString(),
+            bookingIds: bookings.map((b) => b._id.toString()),
             reason: amountCheck.reason,
             expected: amountCheck.expected,
             received: amountCheck.received,
@@ -374,21 +410,25 @@ const handleStripeWebhook = async (req, res) => {
           break;
         }
 
-        await validateAndConfirmBookingPayment({
-          bookingId: booking._id,
-          paymentIntentId: paymentIntent.id,
-          webhookEventId: event.id,
-          source: 'stripe_webhook',
-        });
+        for (const booking of bookings) {
+          await validateAndConfirmBookingPayment({
+            bookingId: booking._id,
+            paymentIntentId: paymentIntent.id,
+            webhookEventId: event.id,
+            source: 'stripe_webhook',
+          });
+        }
         break;
       }
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object;
-        const booking = await findBookingForStripeIntent(paymentIntent);
-        if (booking && booking.status !== 'Confirmed' && booking.status !== 'Cancelled') {
-          booking.paymentStatus = 'failed';
-          booking.lastWebhookEventId = event.id;
-          await booking.save();
+        const bookings = await findBookingsForStripeIntent(paymentIntent);
+        for (const booking of bookings) {
+          if (booking.status !== 'Confirmed' && booking.status !== 'Cancelled') {
+            booking.paymentStatus = 'failed';
+            booking.lastWebhookEventId = event.id;
+            await booking.save();
+          }
         }
         break;
       }

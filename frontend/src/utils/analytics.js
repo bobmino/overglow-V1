@@ -1,4 +1,5 @@
 import { logger } from './logger.js';
+import { canUseAnalytics } from './cookieConsent.js';
 /**
  * Google Analytics 4 (GA4) Event Tracking
  * Comprehensive event tracking for conversions, funnel, and user behavior
@@ -7,21 +8,28 @@ import { logger } from './logger.js';
 // GA4 Measurement ID from environment variable
 const GA4_MEASUREMENT_ID = import.meta.env.VITE_GA4_MEASUREMENT_ID || '';
 
-// Check if GA4 is enabled
+// Check if GA4 is enabled (requires GDPR analytics consent)
 const isGA4Enabled = () => {
-  return typeof window !== 'undefined' && GA4_MEASUREMENT_ID && window.gtag;
+  return (
+    typeof window !== 'undefined' &&
+    GA4_MEASUREMENT_ID &&
+    window.gtag &&
+    canUseAnalytics()
+  );
 };
 
 /**
- * Initialize GA4
- * Should be called once when the app loads
+ * Initialize GA4 — only after analytics cookie consent.
  */
 export const initGA4 = () => {
   if (typeof window === 'undefined' || !GA4_MEASUREMENT_ID) {
-    // Optional analytics — avoid noisy console warnings in production builds
     if (import.meta.env.DEV) {
       logger.debug('GA4 Measurement ID not configured. Set VITE_GA4_MEASUREMENT_ID in .env');
     }
+    return;
+  }
+
+  if (!canUseAnalytics()) {
     return;
   }
 
@@ -32,6 +40,7 @@ export const initGA4 = () => {
   // Load gtag script if not already loaded
   if (!window.gtag) {
     const load = () => {
+      if (!canUseAnalytics()) return;
       const script1 = document.createElement('script');
       script1.async = true;
       script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;

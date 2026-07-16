@@ -2121,5 +2121,23 @@
       "approved": "Approuvé",
       "rejected": "Rejeté"
     }
+  },
+  "cookies": {
+    "banner_aria": "Consentement aux cookies",
+    "banner_text": "Nous utilisons des cookies essentiels au fonctionnement du site. Les cookies analytiques et marketing ne sont activés qu’avec votre accord.",
+    "policy_link": "Politique cookies",
+    "essential_only": "Essentiels uniquement",
+    "customize": "Personnaliser",
+    "accept_all": "Tout accepter",
+    "prefs_title": "Préférences de cookies",
+    "prefs_subtitle": "Choisissez les catégories autorisées sur cet appareil.",
+    "cat_essential": "Essentiels",
+    "cat_essential_desc": "Toujours actifs — session, sécurité, panier.",
+    "cat_analytics": "Analytique",
+    "cat_analytics_desc": "Mesure d’audience (GA4).",
+    "cat_marketing": "Marketing",
+    "cat_marketing_desc": "Campagnes et remarketing.",
+    "save": "Enregistrer",
+    "saved": "Enregistré"
   }
 }

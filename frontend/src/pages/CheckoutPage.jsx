@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Calendar, Clock, Users, MapPin, CreditCard, Lock, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
@@ -13,6 +13,34 @@ import { logger } from '../utils/logger.js';
 
 const dateLocaleMap = { fr: 'fr-FR', en: 'en-GB', es: 'es-ES', ar: 'ar-MA' };
 
+const buildBookingPayload = (item, paymentMethod = 'stripe') => {
+  const payload = {
+    scheduleId: item.schedule._id,
+    numberOfTickets: item.numberOfTickets,
+    paymentMethod,
+    skipTheLineEnabled: item.product?.skipTheLine?.enabled || false,
+    skipTheLinePrice:
+      item.skipTheLine && item.product?.skipTheLine?.enabled
+        ? Number(item.product.skipTheLine.additionalPrice) * item.numberOfTickets
+        : 0,
+    deferPayment: true,
+  };
+
+  if (String(item.schedule._id).startsWith('virtual_')) {
+    payload.virtualScheduleData = {
+      productId: item.product._id,
+      date: item.schedule.date,
+      time: item.schedule.time,
+      endTime: item.schedule.endTime || '',
+      price: item.product.price || 0,
+      capacity: 100,
+      currency: 'EUR',
+    };
+  }
+
+  return payload;
+};
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,7 +49,10 @@ const CheckoutPage = () => {
   const { formatPrice } = useCurrency();
   const { cartItems, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [preparing, setPreparing] = useState(true);
   const [error, setError] = useState('');
+  const [pendingBookings, setPendingBookings] = useState([]);
+  const preparedRef = useRef(false);
 
   const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
   const lang = (i18n.language || 'fr').slice(0, 2);
@@ -53,6 +84,12 @@ const CheckoutPage = () => {
     [checkoutItems]
   );
 
+  const bookingIds = useMemo(
+    () => pendingBookings.map((b) => b._id).filter(Boolean),
+    [pendingBookings]
+  );
+  const primaryBookingId = bookingIds[0] || null;
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: location } });
@@ -76,238 +113,265 @@ const CheckoutPage = () => {
     });
   }, [isAuthenticated, checkoutItems, navigate, location, totalPrice]);
 
+  // Create PENDING_PAYMENT bookings before PSP (Stripe requires bookingId)
+  useEffect(() => {
+    if (!isAuthenticated || checkoutItems.length === 0 || preparedRef.current) return;
+
+    let cancelled = false;
+    const prepare = async () => {
+      setPreparing(true);
+      setError('');
+      try {
+        for (const item of checkoutItems) {
+          if (!item.schedule?._id) {
+            throw new Error(t('checkout.err_invalid_slot'));
+          }
+        }
+
+        const created = [];
+        for (const item of checkoutItems) {
+          const { data } = await api.post('/api/bookings', buildBookingPayload(item, 'stripe'));
+          created.push(data);
+        }
+        if (!cancelled) {
+          preparedRef.current = true;
+          setPendingBookings(created);
+        }
+      } catch (err) {
+        logger.error('Checkout prepare bookings failed', err);
+        if (!cancelled) {
+          setError(
+            err.response?.data?.message || err.message || t('checkout.err_booking_failed')
+          );
+        }
+      } finally {
+        if (!cancelled) setPreparing(false);
+      }
+    };
+
+    prepare();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, checkoutItems, t]);
+
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);
     setError('');
 
     try {
-      const createdBookings = [];
+      // Bookings already exist (deferred). Offline methods may have updated them via API.
+      if (pendingBookings.length > 0) {
+        if (!product || !schedule) {
+          clearCart();
+        }
+        if (pendingBookings.length > 1) {
+          navigate('/booking-success', {
+            state: { bookings: pendingBookings, isCircuit: true, paymentDetails },
+          });
+        } else {
+          navigate('/booking-success', {
+            state: { booking: pendingBookings[0], paymentDetails },
+          });
+        }
+        return;
+      }
 
+      // Legacy fallback: create bookings after payment
+      const createdBookings = [];
       for (const item of checkoutItems) {
         if (!item.schedule._id) {
           throw new Error(t('checkout.err_invalid_slot'));
         }
 
         const payload = {
-          scheduleId: item.schedule._id,
-          numberOfTickets: item.numberOfTickets,
-          paymentMethod: paymentDetails.type,
+          ...buildBookingPayload(item, paymentDetails.type),
+          deferPayment: false,
           paymentId: paymentDetails.id,
-          skipTheLineEnabled: item.product?.skipTheLine?.enabled || false,
-          skipTheLinePrice:
-            item.skipTheLine && item.product?.skipTheLine?.enabled
-              ? Number(item.product.skipTheLine.additionalPrice) * item.numberOfTickets
-              : 0,
           ...(paymentDetails.deliveryAddress && { deliveryAddress: paymentDetails.deliveryAddress }),
         };
+        delete payload.deferPayment;
 
-        if (String(item.schedule._id).startsWith('virtual_')) {
-          payload.virtualScheduleData = {
-            productId: item.product._id,
-            date: item.schedule.date,
-            time: item.schedule.time,
-            endTime: item.schedule.endTime || '',
-            price: item.product.price || 0,
-            capacity: 100,
-            currency: 'EUR',
-          };
-        }
-
-        const { data } = await api.post('/api/bookings', payload);
+        const { data } = await api.post('/api/bookings', {
+          ...payload,
+          paymentMethod: paymentDetails.type,
+          paymentId: paymentDetails.id,
+        });
         createdBookings.push(data);
       }
 
       if (!product || !schedule) {
         clearCart();
-      }
-
-      if (createdBookings.length > 1) {
         navigate('/booking-success', { state: { bookings: createdBookings, isCircuit: true } });
       } else {
         navigate('/booking-success', { state: { booking: createdBookings[0] } });
       }
     } catch (err) {
-      logger.error('❌ Booking creation failed:', err.response?.data || err.message);
-      if (err.response?.data?.errors) {
-        setError(JSON.stringify(err.response.data.errors));
-      } else {
-        setError(
-          err.response?.data?.message || err.message || t('checkout.err_booking_failed')
-        );
-      }
+      logger.error('Checkout payment complete failed', err);
+      setError(
+        err.response?.data?.message || err.message || t('checkout.err_booking_failed')
+      );
+    } finally {
       setLoading(false);
     }
   };
 
-  if (checkoutItems.length === 0) {
-    return null;
-  }
-
   const multi = checkoutItems.length > 1;
 
+  if (!isAuthenticated) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 id="checkout-title" className="text-3xl font-bold text-gray-900 mb-8">
-            {multi ? t('checkout.title_order') : t('checkout.title')}
-          </h1>
+    <div className="min-h-screen bg-slate-50 py-10">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <h1 className="text-3xl font-heading font-bold text-slate-900 mb-8">
+          {t('checkout.title')}
+        </h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <section
-                className="bg-white rounded-xl border border-gray-200 p-6"
-                aria-labelledby="booking-details-heading"
-              >
-                <h2 id="booking-details-heading" className="text-xl font-bold mb-4">
-                  {multi ? t('checkout.details_order') : t('checkout.details')}
-                </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <section
+              className="bg-white rounded-xl border border-gray-200 p-6"
+              aria-labelledby="booking-details-heading"
+            >
+              <h2 id="booking-details-heading" className="text-xl font-bold mb-4">
+                {t('checkout.booking_details')}
+              </h2>
 
-                <div className="space-y-6">
+              <div className="space-y-4">
+                {checkoutItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  >
+                    <img
+                      src={formatImageUrlWithFallback(item.product?.images?.[0])}
+                      alt={item.product?.title || ''}
+                      className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-slate-900 truncate">
+                        {item.product?.title}
+                      </h3>
+                      <div className="mt-2 space-y-1 text-sm text-slate-600">
+                        {item.product?.city && (
+                          <p className="flex items-center gap-2">
+                            <MapPin size={14} /> {item.product.city}
+                          </p>
+                        )}
+                        {item.schedule?.date && (
+                          <p className="flex items-center gap-2">
+                            <Calendar size={14} />
+                            {new Date(item.schedule.date).toLocaleDateString(dateLocale)}
+                          </p>
+                        )}
+                        {item.schedule?.time && (
+                          <p className="flex items-center gap-2">
+                            <Clock size={14} /> {item.schedule.time}
+                          </p>
+                        )}
+                        <p className="flex items-center gap-2">
+                          <Users size={14} />
+                          {t('checkout.tickets', { count: item.numberOfTickets })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <CreditCard size={24} className="me-2" aria-hidden="true" />
+                {t('checkout.payment_info')}
+              </h2>
+
+              {error && (
+                <div
+                  className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+                  role="alert"
+                  aria-live="assertive"
+                >
+                  {error}
+                </div>
+              )}
+
+              {preparing ? (
+                <div className="py-10 text-center text-slate-500" aria-busy="true">
+                  {t('common.loading')}
+                </div>
+              ) : primaryBookingId ? (
+                <PaymentSelector
+                  amount={totalPrice}
+                  bookingId={primaryBookingId}
+                  bookingIds={bookingIds}
+                  onPaymentComplete={handlePaymentComplete}
+                  disabled={loading}
+                />
+              ) : (
+                <p className="text-slate-600">{t('checkout.err_booking_failed')}</p>
+              )}
+            </section>
+          </div>
+
+          <aside className="lg:col-span-1" aria-labelledby="price-summary-heading">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
+              <h2 id="price-summary-heading" className="text-xl font-bold mb-4">
+                {t('checkout.price_summary')}
+              </h2>
+
+              {multi ? (
+                <div className="space-y-3 mb-6">
                   {checkoutItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className={`flex gap-4 ${idx !== 0 ? 'pt-6 border-t border-gray-100' : ''}`}
+                      className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0"
                     >
-                      <img
-                        src={formatImageUrlWithFallback(item.product?.images?.[0])}
-                        alt={item.product?.title}
-                        className="w-24 h-24 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 mb-2">{item.product?.title}</h3>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <MapPin size={14} className="me-2 text-emerald-600" />
-                            {item.product?.city}
-                          </div>
-                          {item.schedule?.date && (
-                            <div className="flex items-center">
-                              <Calendar size={14} className="me-2 text-emerald-600" />
-                              <span className="capitalize">
-                                {new Date(item.schedule.date).toLocaleDateString(dateLocale, {
-                                  weekday: 'long',
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                                })}
-                              </span>
-                            </div>
-                          )}
-                          {item.schedule?.time && (
-                            <div className="flex items-center">
-                              <Clock size={14} className="me-2 text-emerald-600" />
-                              {item.schedule.time}
-                            </div>
-                          )}
-                          <div className="flex items-center mt-2">
-                            <span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-800">
-                              {t('checkout.tickets', { count: item.numberOfTickets })}
-                            </span>
-                            {item.skipTheLine && (
-                              <span className="ms-2 flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-md">
-                                <CheckCircle size={12} /> {t('checkout.skip_line')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-end">
-                        <span className="font-bold text-gray-900">
+                      <span className="text-gray-800 font-medium mb-1 truncate">
+                        {item.product?.title}
+                      </span>
+                      <div className="flex justify-between text-gray-600">
+                        <span>
+                          {t('checkout.tickets_line', { count: item.numberOfTickets })}
+                        </span>
+                        <span className="font-medium text-gray-900">
                           {formatPrice(item.priceBreakdown?.subtotal || 0)}
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </section>
-
-              <section
-                className="bg-white rounded-xl border border-gray-200 p-6"
-                aria-labelledby="payment-heading"
-              >
-                <h2 id="payment-heading" className="text-xl font-bold mb-4 flex items-center">
-                  <CreditCard size={24} className="me-2" aria-hidden="true" />
-                  {t('checkout.payment_info')}
-                </h2>
-
-                {error && (
-                  <div
-                    className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
-                    role="alert"
-                    aria-live="assertive"
-                  >
-                    {error}
-                  </div>
-                )}
-
-                <PaymentSelector
-                  amount={totalPrice}
-                  onPaymentComplete={handlePaymentComplete}
-                  disabled={loading}
-                />
-              </section>
-            </div>
-
-            <aside className="lg:col-span-1" aria-labelledby="price-summary-heading">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
-                <h2 id="price-summary-heading" className="text-xl font-bold mb-4">
-                  {t('checkout.price_summary')}
-                </h2>
-
-                {multi ? (
-                  <div className="space-y-3 mb-6">
-                    {checkoutItems.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col text-sm border-b border-gray-50 pb-3 last:border-0 last:pb-0"
-                      >
-                        <span className="text-gray-800 font-medium mb-1 truncate">
-                          {item.product?.title}
-                        </span>
-                        <div className="flex justify-between text-gray-600">
-                          <span>
-                            {t('checkout.tickets_line', { count: item.numberOfTickets })}
-                          </span>
-                          <span className="font-medium text-gray-900">
-                            {formatPrice(item.priceBreakdown?.subtotal || 0)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span>
-                        {t('checkout.tickets', { count: checkoutItems[0]?.numberOfTickets || 0 })}
-                      </span>
-                      <span>
-                        {formatPrice(checkoutItems[0]?.priceBreakdown?.subtotal || 0)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="border-t pt-4">
+              ) : (
+                <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold">{t('checkout.total')}</span>
-                    <span className="text-2xl font-bold text-green-700">
-                      {formatPrice(totalPrice)}
+                    <span>
+                      {t('checkout.tickets', { count: checkoutItems[0]?.numberOfTickets || 0 })}
+                    </span>
+                    <span>
+                      {formatPrice(checkoutItems[0]?.priceBreakdown?.subtotal || 0)}
                     </span>
                   </div>
                 </div>
+              )}
 
-                <p
-                  className="text-xs text-gray-500 mt-4 flex items-center gap-1"
-                  aria-live="polite"
-                >
-                  <Lock size={12} className="text-emerald-600" />
-                  {t('checkout.secure_payment')}
-                </p>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold">{t('checkout.total')}</span>
+                  <span className="text-2xl font-bold text-green-700">
+                    {formatPrice(totalPrice)}
+                  </span>
+                </div>
               </div>
-            </aside>
-          </div>
+
+              <p
+                className="text-xs text-gray-500 mt-4 flex items-center gap-1"
+                aria-live="polite"
+              >
+                <Lock size={12} className="text-emerald-600" />
+                {t('checkout.secure_payment')}
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
     </div>

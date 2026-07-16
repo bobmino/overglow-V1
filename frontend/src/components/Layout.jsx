@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import MobileBottomNav from './MobileBottomNav';
 import DynamicManifest from './DynamicManifest';
+import CookieBanner from './CookieBanner';
 import { usePageTracking } from '../hooks/useAnalytics';
 import ToastContainer from './ToastContainer';
 
@@ -24,6 +25,7 @@ const Layout = () => {
       </main>
       <Footer />
       <MobileBottomNav />
+      <CookieBanner />
     </div>
   );
 };

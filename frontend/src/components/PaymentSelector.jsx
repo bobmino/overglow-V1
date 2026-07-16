@@ -32,7 +32,7 @@ const getStripePromise = () => {
   return _stripePromise;
 };
 
-const StripeForm = ({ amount, onSuccess, onError }) => {
+const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -42,14 +42,20 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
     event.preventDefault();
     if (!elements && !isPaymentSimEnabled) return;
     if (!stripe && !isPaymentSimEnabled) return;
+    if (!bookingId && !(bookingIds && bookingIds.length)) {
+      onError(t('payment.err_payment_failed'));
+      return;
+    }
 
     setProcessing(true);
 
     try {
-      // Create PaymentIntent
+      // Create PaymentIntent — bookingId requis (montant serveur)
       const { data: { clientSecret } } = await api.post('/api/payments/create-stripe-intent', {
         amount,
-        currency: 'eur'
+        currency: 'eur',
+        bookingId,
+        bookingIds: bookingIds?.length ? bookingIds : undefined,
       });
 
       // Handle Mock Payment (dev + VITE_ENABLE_PAYMENT_SIM only)
@@ -127,7 +133,7 @@ const StripeForm = ({ amount, onSuccess, onError }) => {
   );
 };
 
-const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
+const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, disabled }) => {
   const { t } = useTranslation();
   const [method, setMethod] = useState('stripe');
   const [error, setError] = useState('');
@@ -397,7 +403,13 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId }) => {
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200">
             {/* FIX: on passe la Promise lazy pour éviter le crash TDZ au build */}
             <Elements stripe={getStripePromise()}>
-              <StripeForm amount={amount} onSuccess={handleSuccess} onError={handleError} />
+              <StripeForm
+                amount={amount}
+                bookingId={bookingId}
+                bookingIds={bookingIds}
+                onSuccess={handleSuccess}
+                onError={handleError}
+              />
             </Elements>
           </div>
         )}

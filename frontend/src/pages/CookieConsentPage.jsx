@@ -1,34 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Cookie, Save } from 'lucide-react';
-
-const DEFAULTS = {
-  essential: true,
-  analytics: true,
-  marketing: false,
-};
+import LocalizedLink from '../components/LocalizedLink';
+import {
+  DEFAULT_COOKIE_PREFS,
+  applyCookiePrefs,
+  getCookiePrefs,
+  saveCookiePrefs,
+} from '../utils/cookieConsent';
 
 /**
  * Préférences cookies (stockage local — pas de CMP externe requis).
  */
 const CookieConsentPage = () => {
-  const [prefs, setPrefs] = useState(DEFAULTS);
+  const { t } = useTranslation();
+  const [prefs, setPrefs] = useState(DEFAULT_COOKIE_PREFS);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('overglow_cookie_prefs');
-      if (raw) setPrefs({ ...DEFAULTS, ...JSON.parse(raw), essential: true });
-    } catch {
-      /* ignore */
-    }
+    setPrefs(getCookiePrefs());
   }, []);
 
   const save = () => {
-    const next = { ...prefs, essential: true };
-    localStorage.setItem('overglow_cookie_prefs', JSON.stringify(next));
+    const next = saveCookiePrefs(prefs);
     setPrefs(next);
+    applyCookiePrefs(next);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -36,29 +33,29 @@ const CookieConsentPage = () => {
   return (
     <div className="page-shell">
       <Helmet>
-        <title>Préférences de cookies | Overglow Trip</title>
+        <title>{t('cookies.prefs_title')} | Overglow Trip</title>
       </Helmet>
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white pt-28 pb-14">
         <div className="container mx-auto px-4 max-w-2xl">
           <Cookie className="mb-4" size={40} />
-          <h1 className="text-4xl font-heading font-bold mb-2">Préférences de cookies</h1>
-          <p className="text-primary-100">Choisissez les catégories autorisées sur cet appareil.</p>
+          <h1 className="text-4xl font-heading font-bold mb-2">{t('cookies.prefs_title')}</h1>
+          <p className="text-primary-100">{t('cookies.prefs_subtitle')}</p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-12 max-w-2xl space-y-4">
         {[
-          { key: 'essential', label: 'Essentiels', locked: true, desc: 'Toujours actifs' },
-          { key: 'analytics', label: 'Analytique', locked: false, desc: 'Mesure d’audience' },
-          { key: 'marketing', label: 'Marketing', locked: false, desc: 'Campagnes & remarketing' },
+          { key: 'essential', labelKey: 'cookies.cat_essential', descKey: 'cookies.cat_essential_desc', locked: true },
+          { key: 'analytics', labelKey: 'cookies.cat_analytics', descKey: 'cookies.cat_analytics_desc', locked: false },
+          { key: 'marketing', labelKey: 'cookies.cat_marketing', descKey: 'cookies.cat_marketing_desc', locked: false },
         ].map((row) => (
           <label
             key={row.key}
             className="surface-card p-5 flex items-start justify-between gap-4 cursor-pointer"
           >
             <div>
-              <p className="font-bold text-slate-900">{row.label}</p>
-              <p className="text-sm text-slate-600">{row.desc}</p>
+              <p className="font-bold text-slate-900">{t(row.labelKey)}</p>
+              <p className="text-sm text-slate-600">{t(row.descKey)}</p>
             </div>
             <input
               type="checkbox"
@@ -72,12 +69,16 @@ const CookieConsentPage = () => {
 
         <div className="flex flex-wrap gap-3 pt-4">
           <button type="button" onClick={save} className="btn-primary">
-            <Save size={16} /> Enregistrer
+            <Save size={16} /> {t('cookies.save')}
           </button>
-          <Link to="/cookies" className="btn-secondary">
-            Politique cookies
-          </Link>
-          {saved && <span className="text-sm text-green-700 font-semibold self-center">Enregistré</span>}
+          <LocalizedLink to="/cookies" className="btn-secondary">
+            {t('cookies.policy_link')}
+          </LocalizedLink>
+          {saved && (
+            <span className="text-sm text-green-700 font-semibold self-center">
+              {t('cookies.saved')}
+            </span>
+          )}
         </div>
       </div>
     </div>

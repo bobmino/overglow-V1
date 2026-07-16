@@ -295,6 +295,39 @@ const createBooking = async (req, res, next) => {
       // ----------------------------------------------------
       // Payment orchestration, notification and response
       // ----------------------------------------------------
+
+      // [Sprint1] Create booking shell before PSP (Checkout → PaymentIntent needs bookingId)
+      if (req.body.deferPayment === true || req.body.deferPayment === 'true') {
+        createdBooking.status = 'PENDING_PAYMENT';
+        createdBooking.paymentStatus = 'pending';
+        createdBooking.payoutStatus = 'pending';
+        if (!createdBooking.paymentMethod) {
+          createdBooking.paymentMethod = paymentMethod || 'stripe';
+        }
+        await createdBooking.save();
+
+        const populatedDeferred = await Booking.findById(createdBooking._id).populate({
+          path: 'schedule',
+          populate: { path: 'product' },
+        });
+        const deferredObject = populatedDeferred.toObject();
+        deferredObject.totalPrice =
+          typeof deferredObject.totalPrice === 'number'
+            ? deferredObject.totalPrice
+            : deferredObject.totalAmount;
+        deferredObject.totalAmount =
+          typeof deferredObject.totalAmount === 'number'
+            ? deferredObject.totalAmount
+            : deferredObject.totalPrice;
+        deferredObject.deferred = true;
+
+        clearCache('cache:*').catch((err) =>
+          logger.error('Error clearing Redis cache after deferred booking', { message: err?.message })
+        );
+
+        return res.status(201).json(deferredObject);
+      }
+
       let paymentResult;
       const actualPaymentIntentId = paymentIntentId || paymentId;
       try {
