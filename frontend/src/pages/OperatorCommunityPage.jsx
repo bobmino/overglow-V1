@@ -1,8 +1,13 @@
 import React from 'react';
-import { Users, Instagram, Facebook } from 'lucide-react';
+import { Users, Mail, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LocalizedLink from '../components/LocalizedLink';
 import StaticContentPage from '../components/StaticContentPage';
 
+/**
+ * Communauté opérateurs — pas de faux liens sociaux.
+ * Forum à venir ; contact et messagerie plateforme uniquement.
+ */
 const OperatorCommunityPage = () => {
   const { t } = useTranslation();
 
@@ -28,28 +33,33 @@ const OperatorCommunityPage = () => {
           </span>
         </section>
 
-        <section>
-          <h2 className="text-xl font-heading font-bold mb-4">
-            {t('operator.community.social_title')}
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="https://www.instagram.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="btn-secondary"
-            >
-              <Instagram size={18} /> Instagram
-            </a>
-            <a
-              href="https://www.facebook.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="btn-secondary"
-            >
-              <Facebook size={18} /> Facebook
-            </a>
-          </div>
+        <section className="grid sm:grid-cols-2 gap-4">
+          <a
+            href="mailto:partners@overglowtrip.com?subject=Communaut%C3%A9%20op%C3%A9rateurs"
+            className="surface-card p-5 hover:border-primary-400 transition flex gap-3"
+          >
+            <Mail className="text-primary-600 shrink-0" size={22} />
+            <div>
+              <p className="font-bold text-slate-900">
+                {t('operator.community.email_title', 'Écrire à partenariats')}
+              </p>
+              <p className="text-sm text-slate-600">partners@overglowtrip.com</p>
+            </div>
+          </a>
+          <LocalizedLink
+            to="/operator/inquiries"
+            className="surface-card p-5 hover:border-primary-400 transition flex gap-3"
+          >
+            <MessageSquare className="text-primary-600 shrink-0" size={22} />
+            <div>
+              <p className="font-bold text-slate-900">
+                {t('operator.community.inbox_title', 'Messagerie plateforme')}
+              </p>
+              <p className="text-sm text-slate-600">
+                {t('operator.community.inbox_body', 'Échanges documentés avec clients et support.')}
+              </p>
+            </div>
+          </LocalizedLink>
         </section>
       </div>
     </StaticContentPage>

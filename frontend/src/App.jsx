@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { MobileMenuProvider } from './context/MobileMenuContext';
@@ -87,6 +87,7 @@ const AdminBookingsPage = lazy(() => import('./pages/AdminBookingsPage'));
 const AdminFinancePage = lazy(() => import('./pages/AdminFinancePage'));
 const AdminChatInbox = lazy(() => import('./pages/AdminChatInbox'));
 const AdminReviewsPage = lazy(() => import('./pages/AdminReviewsPage'));
+const AdminFaqPage = lazy(() => import('./pages/AdminFaqPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -150,6 +151,7 @@ function App() {
             </OperatorRoute>
           }
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={
             <Suspense fallback={<LoadingFallback />}>
               <OperatorDashboardPage />
@@ -200,6 +202,7 @@ function App() {
             </AdminRoute>
           }
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={
             <Suspense fallback={<LoadingFallback />}>
               <AdminDashboardPage />
@@ -253,6 +256,11 @@ function App() {
           <Route path="blog/:id/edit" element={
             <Suspense fallback={<LoadingFallback />}>
               <AdminBlogFormPage />
+            </Suspense>
+          } />
+          <Route path="faq" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdminFaqPage />
             </Suspense>
           } />
           <Route path="pending-payments" element={

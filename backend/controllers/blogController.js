@@ -577,6 +577,12 @@ export const getAllBlogPosts = async (req, res) => {
 export const initializeBlogPosts = async (req, res) => {
   try {
     const { SEO_BLOG_SEED } = await import('../data/seoBlogSeed.js');
+    const { ensureSafeTextIndexes } = await import('../utils/fixTextLanguageIndex.js');
+    await ensureSafeTextIndexes(Blog, 'blog_text_search', {
+      title: 'text',
+      content: 'text',
+      tags: 'text',
+    });
 
     let created = 0;
     let skipped = 0;

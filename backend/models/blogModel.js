@@ -111,7 +111,11 @@ blogSchema.index({ isPublished: 1, publishedAt: -1 });
 blogSchema.index({ category: 1, isPublished: 1 });
 blogSchema.index({ tags: 1 });
 blogSchema.index({ featured: 1, isPublished: 1 });
-blogSchema.index({ title: 'text', content: 'text', tags: 'text' }); // Text search
+// default language_override is "language" — conflicts with our locale field (fr/en/es/ar)
+blogSchema.index(
+  { title: 'text', content: 'text', tags: 'text' },
+  { name: 'blog_text_search', default_language: 'none', language_override: '_searchLang' }
+);
 
 // Pre-save middleware to generate slug and calculate reading time
 blogSchema.pre('save', function(next) {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkIcon } from 'lucide-react';
+import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
@@ -180,6 +180,35 @@ const AdminBlogPage = () => {
           <Plus size={18} />
           {t('admin.blog.new_article')}
         </Link>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              setActionLoading((prev) => ({ ...prev, seed: true }));
+              const { data } = await api.post('/api/blog/admin/initialize');
+              toast(
+                t('admin.blog.seed_success', {
+                  created: data.created ?? 0,
+                  skipped: data.skipped ?? 0,
+                }),
+                { type: 'success' }
+              );
+              fetchPosts();
+            } catch (error) {
+              logger.error('Blog seed failed:', error);
+              toast(error.response?.data?.message || t('admin.blog.seed_error'), {
+                type: 'error',
+              });
+            } finally {
+              setActionLoading((prev) => ({ ...prev, seed: false }));
+            }
+          }}
+          disabled={!!actionLoading.seed}
+          className="px-4 py-2 bg-white border border-slate-300 text-slate-800 rounded-lg font-semibold hover:bg-slate-50 transition flex items-center gap-2 disabled:opacity-60"
+        >
+          <RefreshCw size={18} className={actionLoading.seed ? 'animate-spin' : ''} />
+          {t('admin.blog.seed_button')}
+        </button>
       </div>
 
       <div className="flex gap-3 mb-6">

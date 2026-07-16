@@ -80,7 +80,11 @@ const faqSchema = mongoose.Schema(
 
 // Indexes for search and filtering
 faqSchema.index({ category: 1, isActive: 1, language: 1 });
-faqSchema.index({ question: 'text', answer: 'text' });
+// Avoid MongoDB text index treating locale "ar" as unsupported language override
+faqSchema.index(
+  { question: 'text', answer: 'text' },
+  { name: 'faq_text_search', default_language: 'none', language_override: '_searchLang' }
+);
 faqSchema.index({ tags: 1 });
 
 const FAQ = mongoose.model('FAQ', faqSchema);

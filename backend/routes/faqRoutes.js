@@ -8,6 +8,8 @@ import {
   updateFAQ,
   deleteFAQ,
   submitFAQFeedback,
+  initializeFAQs,
+  getAdminFAQs,
 } from '../controllers/faqController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { faqAdminLimiter } from '../middleware/rateLimiter.js';
@@ -52,10 +54,14 @@ const faqValidation = [
 // Public routes
 router.get('/', getFAQs);
 router.get('/categories', getFAQCategories);
+
+// Admin routes (before /:id)
+router.get('/admin/all', protect, authorize('Admin'), getAdminFAQs);
+router.post('/admin/initialize', faqAdminLimiter, protect, authorize('Admin'), initializeFAQs);
+
 router.get('/:id', getFAQById);
 router.post('/:id/feedback', submitFAQFeedback);
 
-// Admin routes — [TASK-23] auth + Admin + dedicated rate limit
 router.post('/', faqAdminLimiter, protect, authorize('Admin'), faqValidation, createFAQ);
 router.put('/:id', faqAdminLimiter, protect, authorize('Admin'), faqValidation, updateFAQ);
 router.delete('/:id', faqAdminLimiter, protect, authorize('Admin'), deleteFAQ);

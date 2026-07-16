@@ -1,11 +1,12 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Youtube, Music } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LocalizedLink from './LocalizedLink';
 
 /**
  * [TASK-11] Footer i18n — faux badge Trustpilot retiré
  * [INT-01] Liens publics préfixés /{lang}
+ * Sociaux génériques retirés (pas de faux profils) — contact email réel uniquement.
  */
 const Footer = () => {
   const { t } = useTranslation();
@@ -13,7 +14,6 @@ const Footer = () => {
 
   return (
     <footer className="bg-slate-900 text-white">
-      {/* Social proof honnête — pas de chiffres inventés */}
       <div className="bg-slate-800 py-4">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-slate-200">
@@ -68,20 +68,13 @@ const Footer = () => {
         </div>
 
         <div className="flex items-center justify-center gap-6 py-6 border-t border-slate-700">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition" aria-label="Facebook">
-            <Facebook size={20} />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition" aria-label="Twitter">
-            <Twitter size={20} />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition" aria-label="Instagram">
-            <Instagram size={20} />
-          </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition" aria-label="YouTube">
-            <Youtube size={20} />
-          </a>
-          <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition" aria-label="TikTok">
-            <Music size={20} />
+          <a
+            href="mailto:hello@overglowtrip.com"
+            className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-primary-400 transition"
+            aria-label={t('footer.contact_email', 'Nous écrire')}
+          >
+            <Mail size={20} />
+            <span>hello@overglowtrip.com</span>
           </a>
         </div>
 

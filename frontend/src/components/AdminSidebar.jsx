@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -20,74 +21,89 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  HelpCircle,
+  ShieldCheck,
+  BookOpen,
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
 const SIDEBAR_COLLAPSED = 64;
 const STORAGE_KEY = 'overglow_admin_sidebar_collapsed';
 
-const ADMIN_SECTIONS = [
+/** Booking.com / Airbnb Host style IA: Ops → Content → Trust → Money → People → Config */
+const getAdminSections = (t) => [
   {
-    label: 'Ops',
+    label: t('admin.nav.section_ops'),
     items: [
-      { to: '/admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-      { to: '/admin/bookings', label: 'Réservations', icon: CalendarDays, badge: 0 },
-      { to: '/admin/chat', label: 'Messages', icon: MessageSquare, badge: 0 },
-      { to: '/admin/analytics', label: 'Statistiques', icon: TrendingUp },
+      { to: '/admin/dashboard', label: t('admin.nav.dashboard'), icon: LayoutDashboard },
+      { to: '/admin/bookings', label: t('admin.nav.bookings'), icon: CalendarDays, badge: 0 },
+      { to: '/admin/chat', label: t('admin.nav.messages'), icon: MessageSquare, badge: 0 },
+      { to: '/admin/analytics', label: t('admin.nav.analytics'), icon: TrendingUp },
     ],
   },
   {
-    label: 'Catalogue',
+    label: t('admin.nav.section_catalogue'),
     items: [
-      { to: '/admin/products', label: 'Produits', icon: Package },
-      { to: '/admin/reviews', label: 'Avis', icon: Star, badge: 0 },
-      { to: '/admin/blog', label: 'Blog', icon: FileText },
-      { to: '/admin/badges', label: 'Badges', icon: Award },
+      { to: '/admin/products', label: t('admin.nav.products'), icon: Package },
+      { to: '/admin/blog', label: t('admin.nav.blog'), icon: FileText },
+      { to: '/admin/faq', label: t('admin.nav.faq'), icon: HelpCircle },
+      { to: '/admin/badges', label: t('admin.nav.badges'), icon: Award },
     ],
   },
   {
-    label: 'Argent',
+    label: t('admin.nav.section_moderation'),
     items: [
-      { to: '/admin/finance', label: 'Finances', icon: Landmark },
-      { to: '/admin/pending-payments', label: 'Paiements en attente', icon: CreditCard },
-      { to: '/admin/withdrawals', label: 'Retraits', icon: Banknote },
+      { to: '/admin/reviews', label: t('admin.nav.reviews'), icon: Star, badge: 0 },
+      { to: '/admin/approval-requests', label: t('admin.nav.operator_requests'), icon: Handshake },
+      { to: '/admin/badge-requests', label: t('admin.nav.badge_requests'), icon: ShieldCheck },
     ],
   },
   {
-    label: 'Équipe',
+    label: t('admin.nav.section_finance'),
     items: [
-      { to: '/admin/users', label: 'Utilisateurs', icon: Users },
-      { to: '/admin/operators', label: 'Opérateurs', icon: Building2 },
-      { to: '/admin/approval-requests', label: 'Demandes opérateurs', icon: Handshake },
-      { to: '/admin/badge-requests', label: 'Demandes badges', icon: Award },
+      { to: '/admin/finance', label: t('admin.nav.finance'), icon: Landmark },
+      { to: '/admin/pending-payments', label: t('admin.nav.pending_payments'), icon: CreditCard },
+      { to: '/admin/withdrawals', label: t('admin.nav.withdrawals'), icon: Banknote },
     ],
   },
   {
-    label: 'Config',
+    label: t('admin.nav.section_people'),
     items: [
-      { to: '/admin/settings', label: 'Paramètres', icon: Settings },
+      { to: '/admin/users', label: t('admin.nav.users'), icon: Users },
+      { to: '/admin/operators', label: t('admin.nav.operators'), icon: Building2 },
     ],
+  },
+  {
+    label: t('admin.nav.section_config'),
+    items: [{ to: '/admin/settings', label: t('admin.nav.settings'), icon: Settings }],
   },
 ];
 
-const OPERATOR_SECTIONS = [
+const getOperatorSections = (t) => [
   {
-    label: 'Espace opérateur',
+    label: t('admin.nav.operator_section_main'),
     items: [
-      { to: '/operator/dashboard', label: 'Mon tableau de bord', icon: LayoutDashboard },
-      { to: '/operator/products', label: 'Mes produits', icon: Package },
-      { to: '/operator/bookings', label: 'Mes réservations', icon: CalendarDays, badge: 0 },
-      { to: '/operator/inquiries', label: 'Messages', icon: MessageSquare, badge: 0 },
-      { to: '/operator/withdrawals', label: 'Mes revenus', icon: Banknote },
-      { to: '/operator/dashboard#avis', label: 'Mes avis', icon: Star },
-      { to: '/profile', label: 'Mon profil', icon: UserRound },
+      { to: '/operator/dashboard', label: t('admin.nav.operator_dashboard'), icon: LayoutDashboard },
+      { to: '/operator/products', label: t('admin.nav.operator_products'), icon: Package },
+      { to: '/operator/bookings', label: t('admin.nav.operator_bookings'), icon: CalendarDays, badge: 0 },
+      { to: '/operator/inquiries', label: t('admin.nav.operator_messages'), icon: MessageSquare, badge: 0 },
+      { to: '/operator/analytics', label: t('admin.nav.operator_analytics'), icon: TrendingUp },
+      { to: '/operator/withdrawals', label: t('admin.nav.operator_revenue'), icon: Banknote },
+    ],
+  },
+  {
+    label: t('admin.nav.operator_section_account'),
+    items: [
+      { to: '/profile', label: t('admin.nav.operator_profile'), icon: UserRound },
+      { to: '/operator/help', label: t('admin.nav.operator_help'), icon: BookOpen },
+      { to: '/operator/resources', label: t('admin.nav.operator_resources'), icon: FileText },
     ],
   },
 ];
 
 /**
  * Persistent collapsible sidebar for /admin/* and /operator/* areas.
- * Desktop: fixed left rail. Mobile: overlay drawer controlled by parent.
+ * Structure inspired by Booking Extranet / Airbnb Host / Stripe Dashboard.
  */
 const AdminSidebar = ({
   collapsed,
@@ -98,24 +114,24 @@ const AdminSidebar = ({
   messagesBadge = 0,
   bookingsBadge = 0,
 }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const sections = useMemo(() => {
-    const applyBadges = (secs) =>
-      secs.map((section) => ({
-        ...section,
-        items: section.items.map((item) => {
-          if (item.to === '/operator/inquiries' || item.to === '/admin/chat') {
-            return { ...item, badge: messagesBadge };
-          }
-          if (item.to === '/operator/bookings' || item.to === '/admin/bookings') {
-            return { ...item, badge: bookingsBadge };
-          }
-          return item;
-        }),
-      }));
+    const base = variant === 'operator' ? getOperatorSections(t) : getAdminSections(t);
+    return base.map((section) => ({
+      ...section,
+      items: section.items.map((item) => {
+        if (item.to === '/operator/inquiries' || item.to === '/admin/chat') {
+          return { ...item, badge: messagesBadge };
+        }
+        if (item.to === '/operator/bookings' || item.to === '/admin/bookings') {
+          return { ...item, badge: bookingsBadge };
+        }
+        return item;
+      }),
+    }));
+  }, [variant, messagesBadge, bookingsBadge, t]);
 
-    return applyBadges(variant === 'operator' ? OPERATOR_SECTIONS : ADMIN_SECTIONS);
-  }, [variant, messagesBadge, bookingsBadge]);
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
   const drawerWidth = mobileOpen ? SIDEBAR_WIDTH : width;
 
@@ -129,7 +145,6 @@ const AdminSidebar = ({
 
   return (
     <>
-      {/* Mobile backdrop */}
       <div
         className={`fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -148,20 +163,22 @@ const AdminSidebar = ({
           md:translate-x-0
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
-        aria-label={variant === 'operator' ? 'Navigation opérateur' : 'Navigation admin'}
+        aria-label={
+          variant === 'operator' ? t('admin.nav.aria_operator') : t('admin.nav.aria_admin')
+        }
       >
         <div className="flex items-center justify-between h-14 px-3 border-b border-slate-800 shrink-0">
           {!collapsed && (
             <span className="font-heading font-bold text-sm tracking-wide text-white truncate">
-              {variant === 'operator' ? 'Overglow Opérateur' : 'Overglow Admin'}
+              {variant === 'operator' ? t('admin.nav.brand_operator') : t('admin.nav.brand_admin')}
             </span>
           )}
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-1 ms-auto">
             <button
               type="button"
               onClick={onCloseMobile}
               className="md:hidden p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white"
-              aria-label="Fermer le menu"
+              aria-label={t('admin.nav.close_menu')}
             >
               <X size={18} />
             </button>
@@ -169,7 +186,7 @@ const AdminSidebar = ({
               type="button"
               onClick={onToggleCollapse}
               className="hidden md:inline-flex p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white"
-              aria-label={collapsed ? 'Développer le menu' : 'Réduire le menu'}
+              aria-label={collapsed ? t('admin.nav.expand') : t('admin.nav.collapse')}
             >
               {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
@@ -197,9 +214,11 @@ const AdminSidebar = ({
                         className={`
                           group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
                           transition-colors relative
-                          ${active
-                            ? 'bg-primary-600/20 text-primary-300 border-l-2 border-primary-500'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-2 border-transparent'}
+                          ${
+                            active
+                              ? 'bg-primary-600/20 text-primary-300 border-s-2 border-primary-500'
+                              : 'text-slate-300 hover:bg-slate-800 hover:text-white border-s-2 border-transparent'
+                          }
                           ${collapsed ? 'justify-center px-2' : ''}
                         `}
                       >
@@ -215,7 +234,7 @@ const AdminSidebar = ({
                           </>
                         )}
                         {collapsed && typeof item.badge === 'number' && item.badge > 0 && (
-                          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-500" />
+                          <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-primary-500" />
                         )}
                       </NavLink>
                     </li>

@@ -275,6 +275,86 @@ const submitFAQFeedback = async (req, res) => {
   }
 };
 
+// @desc    Initialize default FAQs (idempotent)
+// @route   POST /api/faq/admin/initialize
+// @access  Private/Admin
+const initializeFAQs = async (req, res) => {
+  try {
+    const { FAQ_SEED } = await import('../data/faqSeed.js');
+    const { ensureSafeTextIndexes } = await import('../utils/fixTextLanguageIndex.js');
+    await ensureSafeTextIndexes(FAQ, 'faq_text_search', {
+      question: 'text',
+      answer: 'text',
+    });
+    let created = 0;
+    let skipped = 0;
+
+    for (const item of FAQ_SEED) {
+      const existing = await FAQ.findOne({
+        question: item.question,
+        language: item.language,
+      });
+      if (existing) {
+        skipped += 1;
+        continue;
+      }
+      await FAQ.create({
+        ...item,
+        isActive: true,
+        createdBy: req.user._id,
+        updatedBy: req.user._id,
+      });
+      created += 1;
+    }
+
+    const total = await FAQ.countDocuments({});
+    res.json({
+      message: 'FAQ initialisées',
+      created,
+      skipped,
+      total,
+    });
+  } catch (error) {
+    logger.error('Initialize FAQs error:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'initialisation des FAQ' });
+  }
+};
+
+// @desc    Admin list all FAQs (including inactive)
+// @route   GET /api/faq/admin/all
+// @access  Private/Admin
+const getAdminFAQs = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const language = typeof req.query.language === 'string' ? req.query.language.slice(0, 2) : '';
+    const filter = {};
+    if (language && ['fr', 'en', 'es', 'ar'].includes(language)) {
+      filter.language = language;
+    }
+    const [faqs, total] = await Promise.all([
+      FAQ.find(filter)
+        .sort({ language: 1, order: 1, createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      FAQ.countDocuments(filter),
+    ]);
+    res.json({
+      faqs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
+  } catch (error) {
+    logger.error('Get admin FAQs error:', error);
+    res.status(500).json({ message: 'Failed to fetch FAQs' });
+  }
+};
+
 export {
   getFAQs,
   getFAQById,
@@ -283,5 +363,7 @@ export {
   updateFAQ,
   deleteFAQ,
   submitFAQFeedback,
+  initializeFAQs,
+  getAdminFAQs,
 };
 
