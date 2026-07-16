@@ -406,6 +406,66 @@ const getOperators = async (req, res) => {
 // @desc    Update operator status
 // @route   PUT /api/admin/operators/:id/status
 // @access  Private/Admin
+// @desc    Update operator profile fields (admin direction)
+// @route   PUT /api/admin/operators/:id
+// @access  Private/Admin
+const updateOperator = async (req, res) => {
+  try {
+    const operator = await Operator.findById(req.params.id);
+    if (!operator) {
+      return res.status(404).json({ message: 'Operator not found' });
+    }
+
+    const {
+      companyName,
+      publicName,
+      description,
+      phone,
+      autoApproveProducts,
+      adminNotes,
+      location,
+    } = req.body;
+
+    if (companyName !== undefined) operator.companyName = String(companyName).trim();
+    if (publicName !== undefined) operator.publicName = String(publicName).trim();
+    if (description !== undefined) operator.description = String(description).trim();
+    if (phone !== undefined) operator.phone = String(phone).trim();
+    if (adminNotes !== undefined) operator.adminNotes = String(adminNotes).trim();
+    if (autoApproveProducts !== undefined) {
+      operator.autoApproveProducts = autoApproveProducts === true;
+    }
+    if (location && typeof location === 'object') {
+      operator.location = {
+        ...(operator.location?.toObject?.() || operator.location || {}),
+        city: location.city !== undefined ? String(location.city).trim() : operator.location?.city,
+        address:
+          location.address !== undefined
+            ? String(location.address).trim()
+            : operator.location?.address,
+        postalCode:
+          location.postalCode !== undefined
+            ? String(location.postalCode).trim()
+            : operator.location?.postalCode,
+        country:
+          location.country !== undefined
+            ? String(location.country).trim()
+            : operator.location?.country || 'Maroc',
+      };
+    }
+
+    await saveOperatorSafely(operator);
+
+    const populated = await Operator.findById(operator._id)
+      .populate('user', 'name email')
+      .populate('reviewedBy', 'name');
+
+    res.json(populated);
+  } catch (error) {
+    logger.error('Update operator error:', error);
+    res.status(500).json({ message: 'Failed to update operator' });
+  }
+};
+
 const updateOperatorStatus = async (req, res) => {
   try {
     const { status, rejectionReason, approvalNotes, autoApproveProducts } = req.body;
@@ -538,32 +598,40 @@ const updateOperatorStatus = async (req, res) => {
 // @access  Private/Admin
 const getProducts = async (req, res) => {
   try {
-    const { status } = req.query;
-    const query = status ? { status } : {};
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const { status, search, operator, q } = req.query;
+    const query = {};
+    if (status) query.status = status;
+    if (operator) query.operator = operator;
+
+    const term = (search || q || '').toString().trim();
+    if (term) {
+      const rx = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      query.$or = [{ title: rx }, { city: rx }, { category: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 24));
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
-      .select('title images city category price status operator badges createdAt')
+      .select('title description images city category price status operator badges createdAt')
       .populate('operator', 'companyName')
       .populate('badges.badgeId', 'name icon color')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
-    
+
     const total = await Product.countDocuments(query);
-    
+
     res.json({
       products: Array.isArray(products) ? products : [],
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit) || 1,
+      },
     });
   } catch (error) {
     logger.error('Get products error:', error);
@@ -1045,6 +1113,68 @@ const assignBadgeToOperators = async (req, res) => {
       message: 'Failed to assign badge to operators',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+};
+
+// @desc    Unassign badge from products
+// @route   POST /api/admin/badges/unassign-products
+// @access  Private/Admin
+const unassignBadgeFromProducts = async (req, res) => {
+  try {
+    const { badgeId, productIds } = req.body;
+    if (!badgeId || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: 'Badge ID and product IDs array are required' });
+    }
+
+    let removed = 0;
+    for (const productId of productIds) {
+      const product = await Product.findById(productId);
+      if (!product || !Array.isArray(product.badges)) continue;
+      const before = product.badges.length;
+      product.badges = product.badges.filter(
+        (b) => !(b.badgeId && b.badgeId.toString() === badgeId.toString())
+      );
+      if (product.badges.length < before) {
+        await product.save({ validateBeforeSave: false });
+        removed += 1;
+      }
+    }
+
+    res.json({ message: 'Badge unassignment completed', removed, total: productIds.length });
+  } catch (error) {
+    logger.error('Unassign badge from products error:', error);
+    res.status(500).json({ message: 'Failed to unassign badge from products' });
+  }
+};
+
+// @desc    Unassign badge from operators
+// @route   POST /api/admin/badges/unassign-operators
+// @access  Private/Admin
+const unassignBadgeFromOperators = async (req, res) => {
+  try {
+    const { badgeId, operatorIds } = req.body;
+    if (!badgeId || !Array.isArray(operatorIds) || operatorIds.length === 0) {
+      return res.status(400).json({ message: 'Badge ID and operator IDs array are required' });
+    }
+
+    let removed = 0;
+    for (const operatorId of operatorIds) {
+      const operator = await Operator.findById(operatorId);
+      if (!operator || !Array.isArray(operator.badges)) continue;
+      const before = operator.badges.length;
+      operator.badges = operator.badges.filter(
+        (b) => !(b.badgeId && b.badgeId.toString() === badgeId.toString())
+      );
+      if (operator.badges.length < before) {
+        await operator.save({ validateBeforeSave: false });
+        removed += 1;
+      }
+    }
+
+    res.json({ message: 'Badge unassignment completed', removed, total: operatorIds.length });
+  } catch (error) {
+    logger.error('Unassign badge from operators error:', error);
+    res.status(500).json({ message: 'Failed to unassign badge from operators' });
   }
 };
 
@@ -2068,7 +2198,8 @@ const getAdminSearch = async (req, res) => {
 
 export {
   getAdminStats,
-  getOperators, 
+  getOperators,
+  updateOperator,
   updateOperatorStatus, 
   getProducts,
   updateProductStatus, 
@@ -2081,6 +2212,8 @@ export {
   getRequestableBadges,
   assignBadgeToProducts,
   assignBadgeToOperators,
+  unassignBadgeFromProducts,
+  unassignBadgeFromOperators,
   updateBadge,
   deleteBadge,
   getProductsByBadge,

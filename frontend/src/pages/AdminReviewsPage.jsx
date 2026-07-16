@@ -4,6 +4,7 @@ import api from '../config/axios';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
+import { askConfirm, notifyError, notifySuccess } from '../utils/notify.js';
 
 const statusBadge = (status) => {
   const map = {
@@ -74,16 +75,17 @@ const AdminReviewsPage = () => {
       await load();
     } catch (err) {
       logger.error('Update review status failed', err);
-      alert(err.response?.data?.message || 'Échec de la mise à jour');
+      notifyError(err.response?.data?.message || 'Échec de la mise à jour');
     } finally {
       setBusyId(null);
     }
   };
 
   const approve = (id) => setStatus(id, 'Approved');
-  const reject = (id) => {
-    const reason = window.prompt('Motif du refus (optionnel) :') || '';
-    setStatus(id, 'Rejected', reason);
+  const reject = async (id) => {
+    const ok = await askConfirm('Refuser cet avis ? (vous pourrez laisser un motif vide)');
+    if (!ok) return;
+    setStatus(id, 'Rejected', '');
   };
 
   const sendReply = async (id) => {
@@ -93,10 +95,11 @@ const AdminReviewsPage = () => {
       await api.post(`/api/reviews/${id}/reply`, { message: replyText.trim() });
       setReplyFor(null);
       setReplyText('');
+      notifySuccess('Réponse publiée');
       await load();
     } catch (err) {
       logger.error('Reply failed', err);
-      alert(err.response?.data?.message || 'Échec de la réponse');
+      notifyError(err.response?.data?.message || 'Échec de la réponse');
     } finally {
       setBusyId(null);
     }

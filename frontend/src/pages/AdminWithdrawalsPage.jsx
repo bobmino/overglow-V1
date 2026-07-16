@@ -5,6 +5,8 @@ import { DollarSign, CheckCircle, XCircle, CheckCheck, Clock, Filter } from 'luc
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm } from '../utils/notify.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -16,11 +18,14 @@ const getDateLocale = (language) => {
 
 const AdminWithdrawalsPage = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const dateLocale = getDateLocale(i18n.language);
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [rejectId, setRejectId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const fetchWithdrawals = async () => {
     try {
@@ -44,31 +49,38 @@ const AdminWithdrawalsPage = () => {
   const handleApprove = async (withdrawalId) => {
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/approve`);
+      toast.success(t('admin.withdrawals.approve_success', 'Retrait approuvé'));
       fetchWithdrawals();
     } catch (_error) {
-      alert(t('admin.withdrawals.approve_error'));
+      toast.error(t('admin.withdrawals.approve_error'));
     }
   };
 
   const handleReject = async (withdrawalId, reason) => {
     if (!reason || reason.trim() === '') {
-      alert(t('admin.withdrawals.rejection_reason_alert'));
+      toast.error(t('admin.withdrawals.rejection_reason_alert'));
       return;
     }
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/reject`, { reason });
+      toast.success(t('admin.withdrawals.reject_success', 'Retrait refusé'));
+      setRejectId(null);
+      setRejectReason('');
       fetchWithdrawals();
     } catch (_error) {
-      alert(t('admin.withdrawals.reject_error'));
+      toast.error(t('admin.withdrawals.reject_error'));
     }
   };
 
   const handleProcess = async (withdrawalId) => {
+    const ok = await askConfirm(t('admin.withdrawals.process_confirm', 'Marquer ce retrait comme traité ?'));
+    if (!ok) return;
     try {
       await api.put(`/api/withdrawals/${withdrawalId}/process`);
+      toast.success(t('admin.withdrawals.process_success', 'Retrait traité'));
       fetchWithdrawals();
     } catch (_error) {
-      alert(t('admin.withdrawals.process_error'));
+      toast.error(t('admin.withdrawals.process_error'));
     }
   };
 
@@ -253,9 +265,10 @@ const AdminWithdrawalsPage = () => {
                       {t('admin.common.approve')}
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
-                        const reason = prompt(t('admin.withdrawals.rejection_prompt'));
-                        if (reason) handleReject(withdrawal._id, reason);
+                        setRejectId(withdrawal._id);
+                        setRejectReason('');
                       }}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center gap-2"
                     >
@@ -266,6 +279,7 @@ const AdminWithdrawalsPage = () => {
                 )}
                 {withdrawal.status === 'Approved' && (
                   <button
+                    type="button"
                     onClick={() => handleProcess(withdrawal._id)}
                     className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2"
                   >
@@ -276,6 +290,39 @@ const AdminWithdrawalsPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {rejectId && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full space-y-4">
+            <h3 className="text-lg font-bold">{t('admin.withdrawals.rejection_prompt')}</h3>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleReject(rejectId, rejectReason)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold"
+              >
+                {t('admin.common.reject')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectId(null);
+                  setRejectReason('');
+                }}
+                className="px-4 py-2 border rounded-lg font-semibold"
+              >
+                {t('admin.common.cancel')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

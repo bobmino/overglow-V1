@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getAdminStats,
   getOperators,
+  updateOperator,
   updateOperatorStatus,
   getProducts,
   updateProductStatus,
@@ -14,6 +15,8 @@ import {
   getRequestableBadges,
   assignBadgeToProducts,
   assignBadgeToOperators,
+  unassignBadgeFromProducts,
+  unassignBadgeFromOperators,
   updateBadge,
   deleteBadge,
   getProductsByBadge,
@@ -64,6 +67,7 @@ router.get('/reviews', protect, authorize('Admin'), getAdminReviews);
 router.put('/reviews/:id/status', protect, authorize('Admin'), updateAdminReviewStatus);
 router.get('/analytics', protect, authorize('Admin'), getAnalytics);
 router.get('/operators', protect, authorize('Admin'), getOperators);
+router.put('/operators/:id', protect, authorize('Admin'), updateOperator);
 router.put('/operators/:id/status', protect, authorize('Admin'), updateOperatorStatus);
 router.get('/products', protect, authorize('Admin'), getProducts);
 router.put('/products/:id/status', protect, authorize('Admin'), updateProductStatus);
@@ -78,6 +82,8 @@ router.get('/badges', protect, authorize('Admin'), getAllBadges);
 router.get('/badges/requestable', protect, authorize('Admin'), getRequestableBadges);
 router.post('/badges/assign-products', protect, authorize('Admin'), assignBadgeToProducts);
 router.post('/badges/assign-operators', protect, authorize('Admin'), assignBadgeToOperators);
+router.post('/badges/unassign-products', protect, authorize('Admin'), unassignBadgeFromProducts);
+router.post('/badges/unassign-operators', protect, authorize('Admin'), unassignBadgeFromOperators);
 router.put('/badges/:id', protect, authorize('Admin'), updateBadge);
 router.delete('/badges/:id', protect, authorize('Admin'), deleteBadge);
 router.get('/badges/:id/products', protect, authorize('Admin'), getProductsByBadge);

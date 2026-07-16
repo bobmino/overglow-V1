@@ -113,6 +113,8 @@ const AdminSidebar = ({
   variant = 'admin',
   messagesBadge = 0,
   bookingsBadge = 0,
+  badgeRequestsBadge = 0,
+  reviewsBadge = 0,
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -127,10 +129,16 @@ const AdminSidebar = ({
         if (item.to === '/operator/bookings' || item.to === '/admin/bookings') {
           return { ...item, badge: bookingsBadge };
         }
+        if (item.to === '/admin/badge-requests') {
+          return { ...item, badge: badgeRequestsBadge };
+        }
+        if (item.to === '/admin/reviews') {
+          return { ...item, badge: reviewsBadge };
+        }
         return item;
       }),
     }));
-  }, [variant, messagesBadge, bookingsBadge, t]);
+  }, [variant, messagesBadge, bookingsBadge, badgeRequestsBadge, reviewsBadge, t]);
 
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
   const drawerWidth = mobileOpen ? SIDEBAR_WIDTH : width;

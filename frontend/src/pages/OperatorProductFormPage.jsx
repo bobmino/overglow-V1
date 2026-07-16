@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { formatImageUrl } from '../utils/formatImage';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
+import { useAuth } from '../context/AuthContext';
 
 const OperatorProductFormPage = () => {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const isEditMode = !!id;
+  const isAdminContext =
+    location.pathname.startsWith('/admin/') ||
+    ['Admin', 'admin', 'administrator', 'superadmin'].includes(user?.role);
+  const listPath = isAdminContext ? '/admin/products' : '/operator/products';
 
   const getFieldLabel = (field) => {
     switch (field) {
@@ -256,7 +263,7 @@ const OperatorProductFormPage = () => {
       }
       
       setError('');
-      navigate('/operator/products');
+      navigate(listPath);
     } catch (err) {
       logger.error('Save product error:', err);
       logger.error('Error response:', err.response?.data);
@@ -999,7 +1006,7 @@ const OperatorProductFormPage = () => {
           <div className="flex justify-end pt-6 border-t">
             <button
               type="button"
-              onClick={() => navigate('/operator/products')}
+              onClick={() => navigate(listPath)}
               className="me-4 px-6 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition"
             >
               {t('operator.common.cancel')}

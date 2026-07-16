@@ -25,6 +25,11 @@ export const ToastProvider = ({ children }) => {
     [removeToast]
   );
 
+  // Allow toast.success / toast.error / toast.info
+  toast.success = (message, options = {}) => toast(message, { ...options, type: 'success' });
+  toast.error = (message, options = {}) => toast(message, { ...options, type: 'error' });
+  toast.info = (message, options = {}) => toast(message, { ...options, type: 'info' });
+
   const value = useMemo(() => ({ toast, toasts, removeToast }), [toast, toasts, removeToast]);
 
   useEffect(() => {

@@ -131,6 +131,46 @@ const getPendingBadgeRequests = async (req, res) => {
   }
 };
 
+// @desc    List badge requests with optional status filter (admin)
+// @route   GET /api/badge-requests/admin/all
+// @access  Private/Admin
+const getAdminBadgeRequests = async (req, res) => {
+  try {
+    const status = typeof req.query.status === 'string' ? req.query.status : 'all';
+    const filter = {};
+    if (['pending', 'approved', 'rejected'].includes(status)) {
+      filter.status = status;
+    }
+    const requests = await BadgeRequest.find(filter)
+      .populate('operator', 'companyName publicName')
+      .populate('product', 'title images category city')
+      .populate('badge', 'name icon color description type')
+      .populate('reviewedBy', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
+
+    const pendingCount = await BadgeRequest.countDocuments({ status: 'pending' });
+    res.json({ requests, pendingCount });
+  } catch (error) {
+    logger.error('Get admin badge requests error:', error);
+    res.status(500).json({ message: 'Failed to fetch badge requests' });
+  }
+};
+
+// @desc    Pending badge requests count (sidebar)
+// @route   GET /api/badge-requests/admin/pending-count
+// @access  Private/Admin
+const getPendingBadgeRequestCount = async (req, res) => {
+  try {
+    const count = await BadgeRequest.countDocuments({ status: 'pending' });
+    res.json({ count });
+  } catch (error) {
+    logger.error('Pending badge request count error:', error);
+    res.status(500).json({ message: 'Failed to count badge requests' });
+  }
+};
+
 // @desc    Approve a badge request
 // @route   PUT /api/badge-requests/:id/approve
 // @access  Private/Admin
@@ -153,17 +193,29 @@ const approveBadgeRequest = async (req, res) => {
       });
     }
 
-    // Update product authenticity flags
+    // Update product authenticity flags + assign the manual badge (DB source of truth)
     const product = await Product.findById(badgeRequest.product._id);
     if (product) {
-      // Merge requested flags with existing authenticity
       product.authenticity = {
         ...product.authenticity,
         ...badgeRequest.requestedFlags,
       };
-      await product.save({ validateBeforeSave: false });
 
-      // Update badges
+      const badgeId = badgeRequest.badge._id.toString();
+      if (!Array.isArray(product.badges)) product.badges = [];
+      const alreadyAssigned = product.badges.some(
+        (b) => b.badgeId && b.badgeId.toString() === badgeId
+      );
+      if (!alreadyAssigned) {
+        product.badges.push({
+          badgeId: badgeRequest.badge._id,
+          assignedAt: new Date(),
+          assignedBy: req.user._id,
+        });
+      }
+
+      await product.save({ validateBeforeSave: false });
+      // Recalc automatic badges only (does not remove manual assignments)
       await updateProductMetrics(product._id);
     }
 
@@ -246,6 +298,8 @@ export {
   createBadgeRequest,
   getMyBadgeRequests,
   getPendingBadgeRequests,
+  getAdminBadgeRequests,
+  getPendingBadgeRequestCount,
   approveBadgeRequest,
   rejectBadgeRequest,
 };

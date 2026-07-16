@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Building2, Mail, CheckCircle, XCircle, Clock, AlertCircle, Eye, FileText, User as UserIcon } from 'lucide-react';
+import { Building2, Mail, CheckCircle, XCircle, Clock, AlertCircle, Eye, FileText, User as UserIcon, Edit, Package } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm } from '../utils/notify.js';
 
 const AdminOperatorsPage = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [operators, setOperators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedOperator, setSelectedOperator] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [approvalNotes, setApprovalNotes] = useState('');
 
@@ -40,14 +47,16 @@ const AdminOperatorsPage = () => {
         approvalNotes: notes,
         autoApproveProducts: autoApproveProducts,
       });
+      toast.success(t('admin.operators.status_updated', 'Statut mis à jour'));
       fetchOperators();
       setShowDetailModal(false);
       setSelectedOperator(null);
+      setEditMode(false);
       setRejectionReason('');
       setApprovalNotes('');
     } catch (error) {
       logger.error('Failed to update operator status:', error);
-      alert(error.response?.data?.message || t('admin.operators.status_update_error'));
+      toast.error(error.response?.data?.message || t('admin.operators.status_update_error'));
     }
   };
 
@@ -68,16 +77,55 @@ const AdminOperatorsPage = () => {
         });
       }
 
+      toast.success(t('admin.operators.auto_approve_updated', 'Auto-approbation mise à jour'));
       await fetchOperators();
     } catch (error) {
       logger.error('Failed to toggle auto-approve:', error);
-      alert(error.response?.data?.message || t('admin.operators.auto_approve_error'));
+      toast.error(error.response?.data?.message || t('admin.operators.auto_approve_error'));
     }
   };
 
-  const openDetailModal = (operator) => {
+  const openDetailModal = (operator, startEdit = false) => {
     setSelectedOperator(operator);
+    setEditForm({
+      companyName: operator.companyName || '',
+      publicName: operator.publicName || '',
+      description: operator.description || '',
+      phone: operator.phone || '',
+      adminNotes: operator.adminNotes || '',
+      city: operator.location?.city || '',
+      address: operator.location?.address || '',
+      autoApproveProducts: !!operator.autoApproveProducts,
+    });
+    setEditMode(startEdit);
     setShowDetailModal(true);
+  };
+
+  const handleSaveOperator = async () => {
+    if (!selectedOperator) return;
+    setSaving(true);
+    try {
+      const { data } = await api.put(`/api/admin/operators/${selectedOperator._id}`, {
+        companyName: editForm.companyName,
+        publicName: editForm.publicName,
+        description: editForm.description,
+        phone: editForm.phone,
+        adminNotes: editForm.adminNotes,
+        autoApproveProducts: editForm.autoApproveProducts,
+        location: {
+          city: editForm.city,
+          address: editForm.address,
+        },
+      });
+      setSelectedOperator(data);
+      setEditMode(false);
+      toast.success(t('admin.operators.save_success', 'Opérateur enregistré'));
+      fetchOperators();
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('admin.operators.save_error', 'Échec de l’enregistrement'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -229,27 +277,46 @@ const AdminOperatorsPage = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
+                    type="button"
                     onClick={() => openDetailModal(operator)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
                   >
                     <Eye size={16} />
                     {t('admin.common.view_details')}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => openDetailModal(operator, true)}
+                    className="px-4 py-2 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-800 transition flex items-center gap-2"
+                  >
+                    <Edit size={16} />
+                    {t('admin.common.edit')}
+                  </button>
+                  <Link
+                    to={`/admin/products?operator=${operator._id}`}
+                    className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center gap-2"
+                  >
+                    <Package size={16} />
+                    {t('admin.operators.view_products', 'Produits')}
+                  </Link>
                   {operator.onboarding?.onboardingStatus === 'pending_approval' && (
                     <>
                       <button
-                        onClick={() => {
-                          setSelectedOperator(operator);
-                          setShowDetailModal(true);
-                        }}
+                        type="button"
+                        onClick={() => handleStatusChange(operator._id, 'Active')}
                         className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                       >
                         {t('admin.common.approve')}
                       </button>
                       <button
-                        onClick={() => {
-                          setSelectedOperator(operator);
-                          setShowDetailModal(true);
+                        type="button"
+                        onClick={async () => {
+                          const reason = window.prompt(t('admin.operators.rejection_reason_placeholder'));
+                          if (!reason?.trim()) {
+                            toast.error(t('admin.operators.rejection_reason_alert'));
+                            return;
+                          }
+                          await handleStatusChange(operator._id, 'Rejected', reason.trim());
                         }}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
                       >
@@ -257,9 +324,13 @@ const AdminOperatorsPage = () => {
                       </button>
                     </>
                   )}
-                  {operator.status === 'Active' && operator.onboarding?.onboardingStatus === 'approved' && (
+                  {operator.status === 'Active' && (
                     <button
-                      onClick={() => handleStatusChange(operator._id, 'Suspended')}
+                      type="button"
+                      onClick={async () => {
+                        const ok = await askConfirm(t('admin.operators.suspend_confirm', 'Suspendre cet opérateur ?'));
+                        if (ok) handleStatusChange(operator._id, 'Suspended');
+                      }}
                       className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition"
                     >
                       {t('admin.operators.suspend')}
@@ -267,6 +338,7 @@ const AdminOperatorsPage = () => {
                   )}
                   {operator.status === 'Suspended' && (
                     <button
+                      type="button"
                       onClick={() => handleStatusChange(operator._id, 'Active')}
                       className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                     >
@@ -309,6 +381,84 @@ const AdminOperatorsPage = () => {
             </div>
 
             <div className="p-6 space-y-6">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditMode((v) => !v)}
+                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-slate-100 hover:bg-slate-200"
+                >
+                  {editMode ? t('admin.common.cancel') : t('admin.common.edit')}
+                </button>
+                <Link
+                  to={`/admin/products?operator=${selectedOperator._id}`}
+                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-primary-50 text-primary-800 hover:bg-primary-100"
+                >
+                  {t('admin.operators.view_products', 'Voir ses produits')}
+                </Link>
+              </div>
+
+              {editMode ? (
+                <div className="space-y-3 border rounded-xl p-4 bg-slate-50">
+                  <h3 className="text-lg font-bold text-gray-900">{t('admin.operators.edit_title', 'Modifier la fiche')}</h3>
+                  {[
+                    ['companyName', t('admin.operators.company_name')],
+                    ['publicName', t('admin.operators.public_name')],
+                    ['phone', t('admin.operators.phone', 'Téléphone')],
+                    ['city', t('admin.common.location')],
+                    ['address', t('admin.operators.address', 'Adresse')],
+                  ].map(([key, label]) => (
+                    <div key={key}>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
+                      <input
+                        value={editForm[key] || ''}
+                        onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      {t('admin.common.description')}
+                    </label>
+                    <textarea
+                      value={editForm.description || ''}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      {t('admin.operators.admin_notes', 'Notes internes')}
+                    </label>
+                    <textarea
+                      value={editForm.adminNotes || ''}
+                      onChange={(e) => setEditForm({ ...editForm, adminNotes: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={!!editForm.autoApproveProducts}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, autoApproveProducts: e.target.checked })
+                      }
+                    />
+                    {t('admin.operators.auto_approve_label')}
+                  </label>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={handleSaveOperator}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold disabled:opacity-50"
+                  >
+                    {saving ? t('admin.common.saving', 'Enregistrement…') : t('admin.common.save', 'Enregistrer')}
+                  </button>
+                </div>
+              ) : null}
+
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-3">{t('admin.operators.user_info')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -319,6 +469,16 @@ const AdminOperatorsPage = () => {
                   <div>
                     <p className="text-sm text-gray-600">{t('admin.common.email')}</p>
                     <p className="font-semibold">{selectedOperator.user?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">{t('admin.operators.phone', 'Téléphone')}</p>
+                    <p className="font-semibold">{selectedOperator.phone || t('admin.common.na')}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">{t('admin.operators.admin_notes', 'Notes internes')}</p>
+                    <p className="font-semibold whitespace-pre-wrap">
+                      {selectedOperator.adminNotes || t('admin.common.na')}
+                    </p>
                   </div>
                 </div>
               </div>

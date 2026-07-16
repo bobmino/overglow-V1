@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Award, Plus, Edit, Trash2, Package, Building2, Save, X, Info } from 'lucide-react';
+import { Award, Plus, Edit, Trash2, Package, Building2, Save, X, Info, RotateCcw } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm } from '../utils/notify.js';
 
 const BOOLEAN_CRITERIA_FLAGS = [
   'isVerified',
@@ -64,6 +67,7 @@ const formatCriteria = (criteria, t) => {
 
 const AdminBadgeManagementPage = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [badges, setBadges] = useState([]);
   const [products, setProducts] = useState([]);
   const [operators, setOperators] = useState([]);
@@ -79,6 +83,9 @@ const AdminBadgeManagementPage = () => {
   const [productsWithBadges, setProductsWithBadges] = useState({});
   const [operatorsWithBadges, setOperatorsWithBadges] = useState({});
   const [badgeEntitiesModal, setBadgeEntitiesModal] = useState({ open: false, badge: null, type: 'products', items: [], loading: false });
+  const [filterType, setFilterType] = useState('all');
+  const [filterActive, setFilterActive] = useState('all');
+  const [filterAuto, setFilterAuto] = useState('all');
 
   const [newBadge, setNewBadge] = useState({
     name: '',
@@ -87,12 +94,43 @@ const AdminBadgeManagementPage = () => {
     color: '#059669',
     description: '',
     isAutomatic: false,
+    isActive: true,
     criteria: {},
   });
 
   const [showCriteriaForm, setShowCriteriaForm] = useState(false);
+  const [showEditCriteriaForm, setShowEditCriteriaForm] = useState(false);
+
+  const resetBadgeForm = () => {
+    setNewBadge({
+      name: '',
+      type: 'product',
+      icon: '🏆',
+      color: '#059669',
+      description: '',
+      isAutomatic: false,
+      isActive: true,
+      criteria: {},
+    });
+    setShowCriteriaForm(false);
+    setShowEditCriteriaForm(false);
+  };
+
+  const filteredBadges = useMemo(() => {
+    return badges.filter((b) => {
+      if (filterType !== 'all' && b.type !== filterType) return false;
+      if (filterActive === 'active' && !b.isActive) return false;
+      if (filterActive === 'inactive' && b.isActive) return false;
+      if (filterAuto === 'auto' && !b.isAutomatic) return false;
+      if (filterAuto === 'manual' && b.isAutomatic) return false;
+      return true;
+    });
+  }, [badges, filterType, filterActive, filterAuto]);
 
   useEffect(() => {
+    setSelectedBadges([]);
+    setSelectedProducts([]);
+    setSelectedOperators([]);
     fetchBadges();
     if (activeTab === 'assign-products') {
       fetchProducts();
@@ -102,18 +140,16 @@ const AdminBadgeManagementPage = () => {
   }, [activeTab]);
 
   const handleInitializeBadges = async () => {
-    if (!window.confirm(t('admin.badges.init_confirm'))) {
-      return;
-    }
+    const ok = await askConfirm(t('admin.badges.init_confirm'));
+    if (!ok) return;
 
     try {
       setLoading(true);
       await api.post('/api/admin/initialize-badges');
-      setMessage(t('admin.badges.init_success'));
+      toast.success(t('admin.badges.init_success'));
       fetchBadges();
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || t('admin.badges.init_error'));
+      toast.error(error.response?.data?.message || t('admin.badges.init_error'));
     } finally {
       setLoading(false);
     }
@@ -194,22 +230,12 @@ const AdminBadgeManagementPage = () => {
     e.preventDefault();
     try {
       await api.post('/api/admin/badges', newBadge);
-      setMessage(t('admin.badges.create_success'));
+      toast.success(t('admin.badges.create_success'));
       setShowCreateModal(false);
-      setNewBadge({
-        name: '',
-        type: 'product',
-        icon: '🏆',
-        color: '#059669',
-        description: '',
-        isAutomatic: false,
-        criteria: {},
-      });
-      setShowCriteriaForm(false);
+      resetBadgeForm();
       fetchBadges();
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || t('admin.badges.create_error'));
+      toast.error(error.response?.data?.message || t('admin.badges.create_error'));
     }
   };
 
@@ -280,9 +306,12 @@ const AdminBadgeManagementPage = () => {
       type: badge.type,
       icon: badge.icon,
       color: badge.color,
-      description: badge.description,
-      isAutomatic: badge.isAutomatic,
+      description: badge.description || '',
+      isAutomatic: !!badge.isAutomatic,
+      isActive: badge.isActive !== false,
+      criteria: { ...(badge.criteria || {}) },
     });
+    setShowEditCriteriaForm(!!badge.isAutomatic);
     setShowEditModal(true);
   };
 
@@ -297,42 +326,67 @@ const AdminBadgeManagementPage = () => {
         color: newBadge.color,
         description: newBadge.description,
         isAutomatic: newBadge.isAutomatic,
+        isActive: newBadge.isActive,
         criteria: newBadge.criteria || {},
       };
-      
+
       await api.put(`/api/admin/badges/${selectedBadge._id}`, payload);
-      setMessage(t('admin.badges.update_success'));
+      toast.success(t('admin.badges.update_success'));
       setShowEditModal(false);
       setSelectedBadge(null);
-      setNewBadge({
-        name: '',
-        type: 'product',
-        icon: '🏆',
-        color: '#059669',
-        description: '',
-        isAutomatic: false,
-        criteria: {},
-      });
-      setShowCriteriaForm(false);
+      resetBadgeForm();
       fetchBadges();
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || t('admin.badges.update_error'));
+      toast.error(error.response?.data?.message || t('admin.badges.update_error'));
     }
   };
 
   const handleDeleteBadge = async (badgeId) => {
-    if (!window.confirm(t('admin.badges.deactivate_confirm'))) {
-      return;
-    }
+    const ok = await askConfirm(t('admin.badges.deactivate_confirm'));
+    if (!ok) return;
 
     try {
       await api.delete(`/api/admin/badges/${badgeId}`);
-      setMessage(t('admin.badges.deactivate_success'));
+      toast.success(t('admin.badges.deactivate_success'));
       fetchBadges();
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || t('admin.badges.deactivate_error'));
+      toast.error(error.response?.data?.message || t('admin.badges.deactivate_error'));
+    }
+  };
+
+  const handleReactivateBadge = async (badgeId) => {
+    try {
+      await api.put(`/api/admin/badges/${badgeId}`, { isActive: true });
+      toast.success(t('admin.badges.reactivate_success', 'Badge réactivé'));
+      fetchBadges();
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('admin.badges.update_error'));
+    }
+  };
+
+  const handleUnassignEntity = async (entityId) => {
+    const badge = badgeEntitiesModal.badge;
+    if (!badge) return;
+    const ok = await askConfirm(
+      t('admin.badges.unassign_confirm', 'Retirer ce badge de cette entité ?')
+    );
+    if (!ok) return;
+    try {
+      if (badgeEntitiesModal.type === 'products') {
+        await api.post('/api/admin/badges/unassign-products', {
+          badgeId: badge._id,
+          productIds: [entityId],
+        });
+      } else {
+        await api.post('/api/admin/badges/unassign-operators', {
+          badgeId: badge._id,
+          operatorIds: [entityId],
+        });
+      }
+      toast.success(t('admin.badges.unassign_success', 'Badge retiré'));
+      openBadgeEntities(badge, badgeEntitiesModal.type);
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('admin.badges.unassign_error', 'Échec du retrait'));
     }
   };
 
@@ -352,6 +406,12 @@ const AdminBadgeManagementPage = () => {
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.badges.title')}</h1>
+        <Link
+          to="/admin/badge-requests"
+          className="text-sm font-semibold text-primary-700 hover:underline"
+        >
+          {t('admin.nav.badge_requests')} →
+        </Link>
       </div>
 
       {message && (
@@ -402,18 +462,23 @@ const AdminBadgeManagementPage = () => {
       {/* Badges List Tab */}
       {activeTab === 'badges' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">{t('admin.badges.all_badges')}</h2>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
+                type="button"
                 onClick={handleInitializeBadges}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition flex items-center gap-2"
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center gap-2"
               >
-                <Award size={20} />
+                <Award size={18} />
                 {t('admin.badges.init_badges')}
               </button>
               <button
-                onClick={() => setShowCreateModal(true)}
+                type="button"
+                onClick={() => {
+                  resetBadgeForm();
+                  setShowCreateModal(true);
+                }}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition flex items-center gap-2"
               >
                 <Plus size={20} />
@@ -422,12 +487,51 @@ const AdminBadgeManagementPage = () => {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2 mb-6">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">{t('admin.badges.filter_type_all', 'Tous types')}</option>
+              <option value="product">{t('admin.common.product')}</option>
+              <option value="operator">{t('admin.common.operator')}</option>
+            </select>
+            <select
+              value={filterActive}
+              onChange={(e) => setFilterActive(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">{t('admin.badges.filter_status_all', 'Actifs + inactifs')}</option>
+              <option value="active">{t('admin.common.active', 'Actifs')}</option>
+              <option value="inactive">{t('admin.common.disabled')}</option>
+            </select>
+            <select
+              value={filterAuto}
+              onChange={(e) => setFilterAuto(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">{t('admin.badges.filter_mode_all', 'Auto + manuel')}</option>
+              <option value="auto">{t('admin.common.automatic')}</option>
+              <option value="manual">{t('admin.common.manual')}</option>
+            </select>
+          </div>
+
+          {filteredBadges.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <Award size={40} className="mx-auto mb-3 text-gray-400" />
+              <p className="font-semibold">{t('admin.badges.empty_list', 'Aucun badge')}</p>
+              <p className="text-sm mt-1">
+                {t('admin.badges.empty_hint', 'Créez un badge ou initialisez les badges par défaut.')}
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {badges.map((badge) => (
+            {filteredBadges.map((badge) => (
               <div
                 key={badge._id}
                 className={`p-4 rounded-lg border-2 ${
-                  badge.isActive ? 'border-gray-200' : 'border-gray-300 opacity-50'
+                  badge.isActive ? 'border-gray-200' : 'border-gray-300 opacity-60'
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -454,7 +558,7 @@ const AdminBadgeManagementPage = () => {
                   ></span>
                   <span>{badge.isAutomatic ? t('admin.common.automatic') : t('admin.common.manual')}</span>
                 </div>
-                {badge.isAutomatic && badge.criteria && (
+                {badge.criteria && Object.keys(badge.criteria).length > 0 && (
                   <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start gap-2">
                       <Info size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
@@ -469,35 +573,55 @@ const AdminBadgeManagementPage = () => {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <button
+                    type="button"
                     onClick={() => handleEditBadge(badge)}
                     className="text-blue-600 hover:text-blue-700 text-sm font-bold"
                   >
                     <Edit size={16} className="inline me-1" />
                     {t('admin.common.edit')}
                   </button>
-                  <button
-                    onClick={() => handleDeleteBadge(badge._id)}
-                    className="text-red-600 hover:text-red-700 text-sm font-bold"
-                  >
-                    <Trash2 size={16} className="inline me-1" />
-                    {t('admin.common.deactivate')}
-                  </button>
-                  <button
-                    onClick={() => openBadgeEntities(badge, 'products')}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-bold"
-                  >
-                    {t('admin.common.products')}
-                  </button>
-                  <button
-                    onClick={() => openBadgeEntities(badge, 'operators')}
-                    className="text-purple-600 hover:text-purple-700 text-sm font-bold"
-                  >
-                    {t('admin.common.operators')}
-                  </button>
+                  {badge.isActive ? (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteBadge(badge._id)}
+                      className="text-red-600 hover:text-red-700 text-sm font-bold"
+                    >
+                      <Trash2 size={16} className="inline me-1" />
+                      {t('admin.common.deactivate')}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleReactivateBadge(badge._id)}
+                      className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                    >
+                      <RotateCcw size={16} className="inline me-1" />
+                      {t('admin.badges.reactivate', 'Réactiver')}
+                    </button>
+                  )}
+                  {badge.type === 'product' && (
+                    <button
+                      type="button"
+                      onClick={() => openBadgeEntities(badge, 'products')}
+                      className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                    >
+                      {t('admin.common.products')}
+                    </button>
+                  )}
+                  {badge.type === 'operator' && (
+                    <button
+                      type="button"
+                      onClick={() => openBadgeEntities(badge, 'operators')}
+                      className="text-purple-600 hover:text-purple-700 text-sm font-bold"
+                    >
+                      {t('admin.common.operators')}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
@@ -744,19 +868,11 @@ const AdminBadgeManagementPage = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">{t('admin.badges.edit_badge')}</h2>
               <button
+                type="button"
                 onClick={() => {
                   setShowEditModal(false);
                   setSelectedBadge(null);
-                  setNewBadge({
-                    name: '',
-                    type: 'product',
-                    icon: '🏆',
-                    color: '#059669',
-                    description: '',
-                    isAutomatic: false,
-                    criteria: {},
-                  });
-                  setShowCriteriaForm(false);
+                  resetBadgeForm();
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -793,6 +909,19 @@ const AdminBadgeManagementPage = () => {
                   <option value="operator">{t('admin.common.operator')}</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">{t('admin.badges.type_locked')}</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isActiveEdit"
+                  checked={newBadge.isActive !== false}
+                  onChange={(e) => setNewBadge({ ...newBadge, isActive: e.target.checked })}
+                  className="w-5 h-5 text-primary-600 rounded"
+                />
+                <label htmlFor="isActiveEdit" className="text-sm text-gray-700">
+                  {t('admin.badges.active_label', 'Badge actif')}
+                </label>
               </div>
 
               <div>
@@ -847,7 +976,7 @@ const AdminBadgeManagementPage = () => {
                 </label>
               </div>
 
-              {/* Criteria Form */}
+              {/* Criteria Form (edit) — separate toggle from create modal */}
               {newBadge.isAutomatic && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -856,14 +985,14 @@ const AdminBadgeManagementPage = () => {
                     </label>
                     <button
                       type="button"
-                      onClick={() => setShowCriteriaForm(!showCriteriaForm)}
+                      onClick={() => setShowEditCriteriaForm(!showEditCriteriaForm)}
                       className="text-sm text-primary-600 hover:text-primary-700 font-bold"
                     >
-                      {showCriteriaForm ? t('admin.common.hide') : t('admin.common.show_edit')}
+                      {showEditCriteriaForm ? t('admin.common.hide') : t('admin.common.show_edit')}
                     </button>
                   </div>
 
-                  {showCriteriaForm && (
+                  {showEditCriteriaForm && (
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                       <p className="text-xs text-gray-600 mb-3">
                         {t('admin.badges.criteria_help')}
@@ -1326,58 +1455,52 @@ const AdminBadgeManagementPage = () => {
                   )}
                   <div className="space-y-3">
                     {badgeEntitiesModal.type === 'products' && badgeEntitiesModal.items.map((p) => (
-                      <div key={p._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start">
+                      <div key={p._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start gap-3">
                         <div>
                           <p className="font-bold text-gray-900">{p.title}</p>
                           <p className="text-sm text-gray-600">{p.category} • {p.city}</p>
-                          {Array.isArray(p.badges) && p.badges.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                              {p.badges.map((bItem) => {
-                                const b = bItem.badgeId || bItem;
-                                return (
-                                  <span key={b._id} className="px-2 py-1 rounded" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
-                                    {b.icon} {b.name}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          )}
                         </div>
-                        <a
-                          href={`/products/${p._id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary-600 hover:text-primary-700 text-sm font-bold"
-                        >
-                          {t('admin.common.open')}
-                        </a>
+                        <div className="flex flex-col gap-2 items-end shrink-0">
+                          <a
+                            href={`/products/${p._id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                          >
+                            {t('admin.common.open')}
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleUnassignEntity(p._id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-bold"
+                          >
+                            {t('admin.badges.unassign', 'Retirer')}
+                          </button>
+                        </div>
                       </div>
                     ))}
 
                     {badgeEntitiesModal.type === 'operators' && badgeEntitiesModal.items.map((op) => (
-                      <div key={op._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start">
+                      <div key={op._id} className="p-3 border border-gray-200 rounded-lg flex justify-between items-start gap-3">
                         <div>
                           <p className="font-bold text-gray-900">{op.companyName || t('admin.common.operator')}</p>
                           <p className="text-sm text-gray-600">{op.user?.name} • {op.status}</p>
-                          {Array.isArray(op.badges) && op.badges.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                              {op.badges.map((bItem) => {
-                                const b = bItem.badgeId || bItem;
-                                return (
-                                  <span key={b._id} className="px-2 py-1 rounded" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
-                                    {b.icon} {b.name}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          )}
                         </div>
-                        <a
-                          href={`/admin/operators`}
-                          className="text-primary-600 hover:text-primary-700 text-sm font-bold"
-                        >
-                          {t('admin.badges.go_operators')}
-                        </a>
+                        <div className="flex flex-col gap-2 items-end shrink-0">
+                          <Link
+                            to="/admin/operators"
+                            className="text-primary-600 hover:text-primary-700 text-sm font-bold"
+                          >
+                            {t('admin.badges.go_operators')}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleUnassignEntity(op._id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-bold"
+                          >
+                            {t('admin.badges.unassign', 'Retirer')}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

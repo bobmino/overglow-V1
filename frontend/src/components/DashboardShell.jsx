@@ -92,6 +92,8 @@ const DashboardShell = ({ variant = 'admin' }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [messagesBadge, setMessagesBadge] = useState(0);
   const [bookingsBadge, setBookingsBadge] = useState(0);
+  const [badgeRequestsBadge, setBadgeRequestsBadge] = useState(0);
+  const [reviewsBadge, setReviewsBadge] = useState(0);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
   );
@@ -145,6 +147,28 @@ const DashboardShell = ({ variant = 'admin' }) => {
       } catch {
         setBookingsBadge(0);
       }
+
+      if (variant === 'admin') {
+        try {
+          const { data } = await api.get('/api/badge-requests/admin/pending-count');
+          setBadgeRequestsBadge(data.count ?? 0);
+        } catch {
+          setBadgeRequestsBadge(0);
+        }
+        try {
+          const { data } = await api.get('/api/admin/reviews', {
+            params: { status: 'Pending', limit: 1, page: 1 },
+          });
+          setReviewsBadge(
+            data.stats?.pendingModeration ?? data.pagination?.total ?? data.total ?? 0
+          );
+        } catch {
+          setReviewsBadge(0);
+        }
+      } else {
+        setBadgeRequestsBadge(0);
+        setReviewsBadge(0);
+      }
     };
 
     fetchBadges();
@@ -173,6 +197,8 @@ const DashboardShell = ({ variant = 'admin' }) => {
         onCloseMobile={() => setMobileOpen(false)}
         messagesBadge={messagesBadge}
         bookingsBadge={bookingsBadge}
+        badgeRequestsBadge={badgeRequestsBadge}
+        reviewsBadge={reviewsBadge}
       />
 
       <div className="md:hidden sticky top-0 z-40 flex flex-col gap-2 px-3 py-2 bg-white border-b border-gray-200 shadow-sm">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { Users, Shield } from 'lucide-react';
@@ -7,6 +7,8 @@ import AdvancedFilters from '../components/AdvancedFilters';
 import DataTable from '../components/DataTable';
 import EmptyState from '../components/EmptyState';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm } from '../utils/notify.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -18,15 +20,17 @@ const getDateLocale = (language) => {
 
 const AdminUsersPage = () => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const dateLocale = getDateLocale(i18n.language);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
   const fetchUsers = async () => {
     try {
       const { data } = await api.get('/api/admin/users');
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : data?.users || []);
       setLoading(false);
     } catch (error) {
       logger.error('Failed to fetch users:', error);
@@ -39,15 +43,15 @@ const AdminUsersPage = () => {
   }, []);
 
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(t('admin.users.confirm_delete', { name: userName }))) {
-      return;
-    }
+    const ok = await askConfirm(t('admin.users.confirm_delete', { name: userName }));
+    if (!ok) return;
 
     try {
       await api.delete(`/api/admin/users/${userId}`);
+      toast.success(t('admin.users.delete_success', 'Utilisateur supprimé'));
       fetchUsers();
     } catch (_error) {
-      alert(t('admin.users.delete_error'));
+      toast.error(t('admin.users.delete_error'));
     }
   };
 
@@ -68,9 +72,17 @@ const AdminUsersPage = () => {
     );
   };
 
-  const filteredUsers = filter === 'all'
-    ? users
-    : users.filter((user) => user.role === filter);
+  const filteredUsers = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return users.filter((user) => {
+      if (filter !== 'all' && user.role !== filter) return false;
+      if (!term) return true;
+      return (
+        user.name?.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term)
+      );
+    });
+  }, [users, filter, search]);
 
   if (loading) {
     return (
@@ -92,11 +104,18 @@ const AdminUsersPage = () => {
 
       <AdvancedFilters
         persistUrl={false}
-        values={{ role: filter === 'all' ? '' : filter, search: '' }}
+        values={{ role: filter === 'all' ? '' : filter, search }}
         onChange={(_m, patch) => {
           if ('role' in patch) setFilter(patch.role || 'all');
+          if ('search' in patch) setSearch(patch.search || '');
         }}
         filters={[
+          {
+            key: 'search',
+            type: 'text',
+            label: t('admin.common.search', 'Recherche'),
+            placeholder: t('admin.users.search_placeholder', 'Nom ou email…'),
+          },
           {
             key: 'role',
             type: 'select',

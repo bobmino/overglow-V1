@@ -117,6 +117,19 @@ const operatorSchema = mongoose.Schema({
   companyName: {
     type: String,
   },
+
+  /** Contact téléphone (édition admin / affichage interne) */
+  phone: {
+    type: String,
+    trim: true,
+  },
+
+  /** Notes internes direction (jamais exposées publiquement) */
+  adminNotes: {
+    type: String,
+    trim: true,
+    maxlength: 2000,
+  },
   
   // Validation automatique des produits pour cet opérateur
   autoApproveProducts: {

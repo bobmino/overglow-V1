@@ -223,6 +223,11 @@ function App() {
               <AdminProductsPage />
             </Suspense>
           } />
+          <Route path="products/:id/edit" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorProductFormPage />
+            </Suspense>
+          } />
           <Route path="users" element={
             <Suspense fallback={<LoadingFallback />}>
               <AdminUsersPage />

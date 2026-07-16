@@ -143,7 +143,17 @@ const createFAQ = async (req, res) => {
       tags,
       language,
       order,
+      isActive,
     } = req.body;
+
+    // Avoid duplicate question+language
+    const dup = await FAQ.findOne({
+      question: question?.trim(),
+      language: language || 'fr',
+    });
+    if (dup) {
+      return res.status(409).json({ message: 'Une FAQ identique existe déjà pour cette langue' });
+    }
     
     const faq = await FAQ.create({
       question,
@@ -153,6 +163,7 @@ const createFAQ = async (req, res) => {
       tags: tags || [],
       language: language || 'fr',
       order: order || 0,
+      isActive: isActive !== false,
       createdBy: req.user._id,
       updatedBy: req.user._id,
     });
