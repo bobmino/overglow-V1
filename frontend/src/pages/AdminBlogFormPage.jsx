@@ -27,6 +27,7 @@ const AdminBlogFormPage = () => {
     excerpt: '',
     content: '',
     category: 'Destinations',
+    language: 'fr',
     tags: [],
     featuredImage: '',
     metaTitle: '',
@@ -61,6 +62,7 @@ const AdminBlogFormPage = () => {
           excerpt: post.excerpt || '',
           content: post.content || '',
           category: post.category || 'Destinations',
+          language: post.language || 'fr',
           tags: post.tags || [],
           featuredImage: post.featuredImage || '',
           metaTitle: post.metaTitle || '',
@@ -187,6 +189,7 @@ const AdminBlogFormPage = () => {
         excerpt: formData.excerpt.trim(),
         content: formData.content.trim(),
         category: formData.category,
+        language: formData.language || 'fr',
         tags: Array.isArray(formData.tags) ? formData.tags.filter(tag => tag && tag.trim()).map(tag => tag.trim()) : [],
         featuredImage: formData.featuredImage || '',
         metaTitle: formData.metaTitle?.trim() || '',
@@ -353,6 +356,25 @@ const AdminBlogFormPage = () => {
                   {t(`admin.blog_form.categories.${cat.key}`)}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="language" className="block text-sm font-bold text-gray-700 mb-2">
+              {t('admin.blog_form.language_label')} <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="language"
+              name="language"
+              value={formData.language}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            >
+              <option value="fr">{t('admin.blog_form.lang_fr')}</option>
+              <option value="en">{t('admin.blog_form.lang_en')}</option>
+              <option value="es">{t('admin.blog_form.lang_es')}</option>
+              <option value="ar">{t('admin.blog_form.lang_ar')}</option>
             </select>
           </div>
 

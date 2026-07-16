@@ -183,7 +183,7 @@
     "cancellation_policy": "سياسة الإلغاء",
     "faq": "الأسئلة الشائعة",
     "inquiry_title": "أسئلة أو تحقق مطلوب",
-    "inquiry_required": "يتطلب هذا المنتج",
+    "inquiry_required": "هذه التجربة تتطلب طلباً مسبقاً.",
     "send_inquiry": "إرسال طلب",
     "related_products": "تجارب مشابهة",
     "free_cancellation": "إلغاء مجاني",
@@ -228,7 +228,9 @@
     "new_badge": "جديد",
     "booked_count": "تم الحجز {{count}} مرة",
     "meta_title_fallback": "تجربة Overglow",
-    "meta_description_fallback": "اكتشف هذه التجربة على Overglow Trip."
+    "meta_description_fallback": "اكتشف هذه التجربة على Overglow Trip.",
+    "inquiry_type_manual": "(سؤال / جواب)",
+    "inquiry_type_auto": "(تحقق تلقائي)"
   },
   "cart": {
     "title": "سلتي",
@@ -558,7 +560,8 @@
       }
     },
     "experiences_count_one": "تجربة واحدة",
-    "experiences_count_other": "{{count}} تجارب"
+    "experiences_count_other": "{{count}} تجارب",
+    "fallback_description": "اكتشف التجارب المتوفرة في {{city}}."
   },
   "guide": {
     "practical": "معلومات عملية",
@@ -1522,7 +1525,12 @@
         "adventures": "المغامرات",
         "news": "الأخبار",
         "practical_guides": "أدلة عملية"
-      }
+      },
+      "language_label": "لغة المقال",
+      "lang_fr": "الفرنسية",
+      "lang_en": "الإنجليزية",
+      "lang_es": "الإسبانية",
+      "lang_ar": "العربية"
     },
     "badges": {
       "title": "إدارة الشارات",

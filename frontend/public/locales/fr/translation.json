@@ -191,7 +191,7 @@
     "cancellation_policy": "Politique d'Annulation",
     "faq": "Foire aux questions",
     "inquiry_title": "Questions ou validation requise",
-    "inquiry_required": "Ce produit nécessite une",
+    "inquiry_required": "Ce produit nécessite une demande préalable.",
     "send_inquiry": "Envoyer une demande",
     "related_products": "Produits similaires",
     "free_cancellation": "Annulation gratuite",
@@ -236,7 +236,9 @@
     "new_badge": "Nouveauté",
     "booked_count": "Réservé {{count}} fois",
     "meta_title_fallback": "Expérience Overglow",
-    "meta_description_fallback": "Découvrez cette expérience sur Overglow Trip."
+    "meta_description_fallback": "Découvrez cette expérience sur Overglow Trip.",
+    "inquiry_type_manual": "(question / réponse)",
+    "inquiry_type_auto": "(validation automatique)"
   },
   "cart": {
     "title": "Mon panier",
@@ -566,7 +568,8 @@
       }
     },
     "experiences_count_one": "{{count}} expérience",
-    "experiences_count_other": "{{count}} expériences"
+    "experiences_count_other": "{{count}} expériences",
+    "fallback_description": "Découvrez les expériences disponibles à {{city}}."
   },
   "guide": {
     "practical": "Informations pratiques",
@@ -1530,7 +1533,12 @@
         "adventures": "Aventures",
         "news": "Actualités",
         "practical_guides": "Guides pratiques"
-      }
+      },
+      "language_label": "Langue de l'article",
+      "lang_fr": "Français",
+      "lang_en": "English",
+      "lang_es": "Español",
+      "lang_ar": "العربية"
     },
     "badges": {
       "title": "Gestion des Badges",

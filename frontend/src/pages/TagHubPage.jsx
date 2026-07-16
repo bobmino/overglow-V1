@@ -12,7 +12,7 @@ import { canonicalUrl } from '../utils/siteUrl';
 const slugToTag = (slug) => decodeURIComponent(String(slug || '').replace(/-/g, ' ')).trim();
 
 const TagHubPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { tag: tagSlug } = useParams();
   const tag = useMemo(() => slugToTag(tagSlug), [tagSlug]);
 
@@ -26,7 +26,7 @@ const TagHubPage = () => {
       setLoading(true);
       try {
         const [blogRes, searchRes] = await Promise.all([
-          api.get(`/api/blog?tag=${encodeURIComponent(tag)}&limit=12&sortBy=publishedAt`),
+          api.get(`/api/blog?tag=${encodeURIComponent(tag)}&limit=12&sortBy=publishedAt&language=${i18n.language?.slice(0, 2) || 'fr'}`),
           // Best-effort: reuse advanced search to find experiences matching this tag keyword
           api.get(`/api/search/advanced?q=${encodeURIComponent(tag)}&limit=12&page=1`),
         ]);
@@ -42,7 +42,7 @@ const TagHubPage = () => {
     };
 
     if (tag) fetchAll();
-  }, [tag]);
+  }, [tag, i18n.language]);
 
   const totalCount = blogPosts.length + products.length;
 

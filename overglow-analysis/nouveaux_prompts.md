@@ -29,7 +29,7 @@ Ordre = dépendances respectées
 - [x] FOLLOW-UP — Empty states unifiés (voyageur / opérateur / admin)
 - [x] INT-02 — SEOHead + hreflang + meta multi-langue (fondations)
 - [x] INT-01 — i18n Routing préfixe langue `/fr|/en|/es|/ar`
-- [ ] INT-03 — Contenu éditorial SEO par marché (Wave 1-4)
+- [x] INT-03 — Contenu éditorial SEO par marché (Wave 1 — blog language + seed FR/EN/ES/AR)
 
 PROMPT 1 — 🔴 Sidebar Admin Persistante
 

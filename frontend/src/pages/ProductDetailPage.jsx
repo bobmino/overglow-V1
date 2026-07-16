@@ -643,15 +643,19 @@ const ProductDetailPage = () => {
             {/* Inquiry Section */}
             {product.requiresInquiry && product.inquiryType !== 'none' && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h2 className="text-2xl font-bold mb-4">{t('product.inquiry_title', 'Questions ou validation requise')}</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('product.inquiry_title')}</h2>
                 <p className="text-slate-700 mb-4">
-                  {t('product.inquiry_required', 'Ce produit nécessite une inquiry')} {product.inquiryType === 'manual' ? '(question/réponse)' : '(validation automatique)'}.
+                  {t('product.inquiry_required')}{' '}
+                  {product.inquiryType === 'manual'
+                    ? t('product.inquiry_type_manual')
+                    : t('product.inquiry_type_auto')}
                 </p>
                 <button
+                  type="button"
                   onClick={() => setShowInquiryModal(true)}
                   className="px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
                 >
-                  {t('product.send_inquiry', 'Envoyer une inquiry')}
+                  {t('product.send_inquiry')}
                 </button>
               </div>
             )}

@@ -252,9 +252,14 @@ const AdminBlogPage = () => {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-bold text-gray-900 line-clamp-2 flex-1">{post.title}</h3>
                   </div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-3 gap-2">
                     <span className="text-xs font-semibold text-primary-600 uppercase">{post.category}</span>
-                    {getStatusBadge(post.isPublished)}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        {(post.language || 'fr').toUpperCase()}
+                      </span>
+                      {getStatusBadge(post.isPublished)}
+                    </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
                   {!post.isPublished && (

@@ -191,8 +191,8 @@
     "cancellation_policy": "Cancellation policy",
     "faq": "FAQ",
     "inquiry_title": "Questions or validation required",
-    "inquiry_required": "This product requires",
-    "send_inquiry": "Send a request",
+    "inquiry_required": "This experience requires a prior inquiry.",
+    "send_inquiry": "Send inquiry",
     "related_products": "Similar experiences",
     "free_cancellation": "Free cancellation",
     "free_cancellation_desc": "Cancel up to 24h ahead for a full refund",
@@ -236,7 +236,9 @@
     "new_badge": "New",
     "booked_count": "Booked {{count}} times",
     "meta_title_fallback": "Overglow experience",
-    "meta_description_fallback": "Discover this experience on Overglow Trip."
+    "meta_description_fallback": "Discover this experience on Overglow Trip.",
+    "inquiry_type_manual": "(Q&A)",
+    "inquiry_type_auto": "(automatic validation)"
   },
   "cart": {
     "title": "My cart",
@@ -566,7 +568,8 @@
       }
     },
     "experiences_count_one": "{{count}} experience",
-    "experiences_count_other": "{{count}} experiences"
+    "experiences_count_other": "{{count}} experiences",
+    "fallback_description": "Discover experiences available in {{city}}."
   },
   "guide": {
     "practical": "Practical information",
@@ -1530,7 +1533,12 @@
         "adventures": "Adventures",
         "news": "News",
         "practical_guides": "Practical guides"
-      }
+      },
+      "language_label": "Article language",
+      "lang_fr": "French",
+      "lang_en": "English",
+      "lang_es": "Spanish",
+      "lang_ar": "Arabic"
     },
     "badges": {
       "title": "Badge Management",

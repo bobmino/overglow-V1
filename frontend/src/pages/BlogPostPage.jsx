@@ -32,7 +32,9 @@ const BlogPostPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const { data } = await api.get(`/api/blog/${slug}`);
+        const { data } = await api.get(`/api/blog/${slug}`, {
+          params: { language: locale },
+        });
         setPost(data);
         setRelatedPosts(data.relatedPosts || []);
 
@@ -56,7 +58,7 @@ const BlogPostPage = () => {
     if (slug) {
       fetchPost();
     }
-  }, [slug, t]);
+  }, [slug, t, locale]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
