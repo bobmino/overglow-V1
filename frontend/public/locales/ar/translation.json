@@ -51,7 +51,8 @@
     "close": "إغلاق",
     "and": "و",
     "from": "ابتداءً من",
-    "per_person": "للشخص"
+    "per_person": "للشخص",
+    "per_person_short": "/ للشخص"
   },
   "stores": {
     "badge_soon": "قريباً",
@@ -156,12 +157,34 @@
     "skip_line": "تخطي الطابور",
     "price_unavailable": "السعر غير متوفر",
     "select_date": "اختر تاريخاً",
-    "select_time": "اختر وقتاً",
+    "select_time": "اختر فترة زمنية",
     "book_now": "احجز الآن",
     "add_to_cart": "أضف إلى السلة",
     "secure_payment": "دفع آمن ومشفّر",
     "view_details": "احجز / عدّل",
-    "select_date_btn": "اختر تاريخاً"
+    "select_date_btn": "اختر تاريخاً",
+    "card": {
+      "price_guaranteed": "سعر مضمون",
+      "view_offer": "شاهد العرض"
+    },
+    "time_slot_label": "الفترة الزمنية",
+    "date_label": "التاريخ",
+    "select_date_error": "يرجى اختيار تاريخ",
+    "select_time_error": "يرجى اختيار فترة زمنية",
+    "booking_options": "خيارات الحجز",
+    "cancellation": {
+      "default": "سياسة إلغاء قياسية: إلغاء مجاني حتى 24 ساعة قبل البدء.",
+      "free_title": "إلغاء مجاني",
+      "free_desc": "إلغاء مجاني حتى {{hours}} ساعة قبل بدء التجربة",
+      "moderate_title": "إلغاء متوسط",
+      "moderate_desc": "يمكن الإلغاء حتى {{hours}} ساعة مسبقاً. استرداد جزئي بعد ذلك.",
+      "strict_title": "إلغاء صارم",
+      "strict_desc": "يمكن الإلغاء حتى {{days}} أيام مسبقاً. استرداد جزئي بعد ذلك.",
+      "non_refundable_title": "غير قابل للاسترداد",
+      "non_refundable_desc": "هذا الحجز غير قابل للاسترداد.",
+      "contact_operator": "تواصل مع المشغّل لمزيد من المعلومات.",
+      "refund_pct": "الاسترداد: {{pct}}٪"
+    }
   },
   "cart": {
     "title": "سلتي",
@@ -297,7 +320,8 @@
     "cta_stays": "عرض الإقامات",
     "cta_extras": "عرض الخدمات",
     "cross_after_stay": "لديكم إقامة؟ أضيفوا أنشطة.",
-    "cross_after_tour": "بعد نشاطكم، أضيفوا نقلاً أو كونسيرج."
+    "cross_after_tour": "بعد نشاطكم، أضيفوا نقلاً أو كونسيرج.",
+    "for_you": "من أجلك"
   },
   "about": {
     "hero_title": "عن Overglow Trip",
@@ -488,7 +512,9 @@
         "name": "أكادير",
         "description": "شمس وشواطئ وبوابات الصحراء لتجارب ساحلية وصحراوية."
       }
-    }
+    },
+    "experiences_count_one": "تجربة واحدة",
+    "experiences_count_other": "{{count}} تجارب"
   },
   "guide": {
     "practical": "معلومات عملية",
@@ -2131,5 +2157,19 @@
     "cat_marketing_desc": "الحملات وإعادة التسويق.",
     "save": "حفظ",
     "saved": "تم الحفظ"
+  },
+  "trust": {
+    "secure_title": "دفع آمن",
+    "secure_subtitle": "معاملات مشفّرة ومراقبة للاحتيال",
+    "support_title": "دعم المسافر",
+    "support_subtitle": "مساعدة مخصصة للمسافرين والشركاء",
+    "quality_title": "اختيار بجودة عالية",
+    "quality_subtitle": "تجارب موثّقة من فريقنا"
+  },
+  "carousel": {
+    "scroll_left": "تمرير لليسار",
+    "scroll_right": "تمرير لليمين",
+    "more_count": "+ {{count}} أخرى",
+    "explore_collection": "استكشف المجموعة"
   }
 }

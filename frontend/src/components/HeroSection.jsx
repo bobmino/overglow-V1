@@ -31,7 +31,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative h-[85vh] min-h-[650px] w-full flex items-center justify-center overflow-visible">
+    <section className="relative h-[85vh] min-h-[480px] sm:min-h-[580px] md:min-h-[650px] w-full flex items-center justify-center overflow-x-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src="/images/hero-home.webp"
@@ -43,11 +43,11 @@ const HeroSection = () => {
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center mt-[-6vh]">
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold text-white tracking-tight mb-6 drop-shadow-xl">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold text-white tracking-tight mb-6 drop-shadow-xl">
           {t('home.hero_title_before')}{' '}
           <span className="text-primary-400">{t('home.hero_title_accent')}</span>
         </h1>
-        <p className="text-xl md:text-3xl text-white/90 font-medium max-w-3xl mb-12 drop-shadow-md">
+        <p className="text-lg sm:text-xl md:text-3xl text-white/90 font-medium max-w-3xl mb-8 sm:mb-12 drop-shadow-md">
           {t('home.hero_subtitle')}
         </p>
 

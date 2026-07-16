@@ -221,7 +221,7 @@ const CheckoutPage = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-10">
       <div className="container mx-auto px-4 max-w-6xl">
         <h1 className="text-3xl font-heading font-bold text-slate-900 mb-8">
           {t('checkout.title')}
@@ -234,7 +234,7 @@ const CheckoutPage = () => {
               aria-labelledby="booking-details-heading"
             >
               <h2 id="booking-details-heading" className="text-xl font-bold mb-4">
-                {t('checkout.booking_details')}
+                {t('checkout.details')}
               </h2>
 
               <div className="space-y-4">
@@ -314,8 +314,8 @@ const CheckoutPage = () => {
             </section>
           </div>
 
-          <aside className="lg:col-span-1" aria-labelledby="price-summary-heading">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
+          <aside className="lg:col-span-1 order-first lg:order-none" aria-labelledby="price-summary-heading">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 lg:sticky lg:top-24">
               <h2 id="price-summary-heading" className="text-xl font-bold mb-4">
                 {t('checkout.price_summary')}
               </h2>

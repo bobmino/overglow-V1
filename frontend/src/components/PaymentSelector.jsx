@@ -290,7 +290,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
       </div>
 
       {/* Payment method selection grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label={t('payment.choose_method')}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label={t('payment.choose_method')}>
         <button
           onClick={() => setMethod('stripe')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
@@ -580,14 +580,16 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
                         <span className="text-sm text-gray-500">{t('payment.bank_account')}</span>
                         <span className="font-semibold text-gray-800">{bankDetails?.accountName || '—'}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 py-2 border-b border-gray-100">
                         <span className="text-sm text-gray-500">{t('payment.bank_iban')}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-gray-800">{bankDetails?.iban || t('payment.bank_not_configured')}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-mono font-semibold text-gray-800 text-sm break-all">
+                            {bankDetails?.iban || t('payment.bank_not_configured')}
+                          </span>
                           {bankDetails?.iban ? (
                             <button
                               onClick={() => copyToClipboard(bankDetails.iban)}
-                              className="p-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                              className="p-2 rounded-lg hover:bg-indigo-100 transition-colors shrink-0 min-h-11 min-w-11 inline-flex items-center justify-center"
                               aria-label={copied ? t('payment.bank_copied') : t('payment.bank_copy')}
                               type="button"
                             >

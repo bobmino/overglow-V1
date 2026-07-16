@@ -408,22 +408,22 @@ const SearchPage = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 w-full sm:flex-row sm:items-center sm:w-auto">
                 <button
                   type="button"
-                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium"
+                  className="lg:hidden inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium"
                   onClick={() => setIsMobileDrawerOpen(true)}
                 >
                   <SlidersHorizontal size={18} />
                   {t('catalog.open_filters')}
                 </button>
 
-                <label className="text-sm text-slate-600 flex items-center gap-2">
-                  <span className="hidden sm:inline">{t('catalog.sort_by')}</span>
+                <label className="text-sm text-slate-600 flex items-center gap-2 w-full sm:w-auto">
+                  <span className="hidden sm:inline shrink-0">{t('catalog.sort_by')}</span>
                   <select
                     value={filtersFromUrl.sortBy}
                     onChange={(e) => updateParams({ sortBy: e.target.value })}
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                    className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm w-full sm:w-auto min-h-11"
                   >
                     <option value="recommended">{t('catalog.sort_recommended')}</option>
                     <option value="price-low">{t('catalog.sort_price_low')}</option>

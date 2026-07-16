@@ -51,7 +51,8 @@
     "close": "Fermer",
     "and": "et",
     "from": "À partir de",
-    "per_person": "par personne"
+    "per_person": "par personne",
+    "per_person_short": "/ pers."
   },
   "stores": {
     "badge_soon": "Bientôt disponible",
@@ -164,12 +165,34 @@
     "skip_line": "Coupe-file",
     "price_unavailable": "Prix non disponible",
     "select_date": "Sélectionner une date",
-    "select_time": "Sélectionner une heure",
+    "select_time": "Sélectionner une plage horaire",
     "book_now": "Réserver",
     "add_to_cart": "Ajouter au panier",
     "secure_payment": "Paiement sécurisé et crypté",
     "view_details": "Réserver / Modifier",
-    "select_date_btn": "Sélectionner une date"
+    "select_date_btn": "Sélectionner une date",
+    "card": {
+      "price_guaranteed": "Prix garanti",
+      "view_offer": "Voir l'offre"
+    },
+    "time_slot_label": "Plage horaire",
+    "date_label": "Date",
+    "select_date_error": "Veuillez sélectionner une date",
+    "select_time_error": "Veuillez sélectionner une plage horaire",
+    "booking_options": "Options de réservation",
+    "cancellation": {
+      "default": "Politique d'annulation standard : annulation gratuite jusqu'à 24 h avant le début.",
+      "free_title": "Annulation gratuite",
+      "free_desc": "Annulation gratuite jusqu'à {{hours}} heures avant le début de l'expérience",
+      "moderate_title": "Annulation modérée",
+      "moderate_desc": "Annulation possible jusqu'à {{hours}} heures avant. Remboursement partiel après ce délai.",
+      "strict_title": "Annulation stricte",
+      "strict_desc": "Annulation possible jusqu'à {{days}} jours avant. Remboursement partiel après ce délai.",
+      "non_refundable_title": "Non remboursable",
+      "non_refundable_desc": "Cette réservation n'est pas remboursable.",
+      "contact_operator": "Contactez l'opérateur pour plus d'informations.",
+      "refund_pct": "Remboursement : {{pct}} %"
+    }
   },
   "cart": {
     "title": "Mon panier",
@@ -305,7 +328,8 @@
     "cta_stays": "Voir les logements",
     "cta_extras": "Voir les extras",
     "cross_after_stay": "Vous avez un hébergement ? Complétez avec des activités.",
-    "cross_after_tour": "Après votre activité, ajoutez un transfert ou une conciergerie."
+    "cross_after_tour": "Après votre activité, ajoutez un transfert ou une conciergerie.",
+    "for_you": "Pour vous"
   },
   "about": {
     "hero_title": "À propos d'Overglow Trip",
@@ -496,7 +520,9 @@
         "name": "Agadir",
         "description": "Soleil, plages et portes du Sahara pour des expériences côtières et désertiques."
       }
-    }
+    },
+    "experiences_count_one": "{{count}} expérience",
+    "experiences_count_other": "{{count}} expériences"
   },
   "guide": {
     "practical": "Informations pratiques",
@@ -2139,5 +2165,19 @@
     "cat_marketing_desc": "Campagnes et remarketing.",
     "save": "Enregistrer",
     "saved": "Enregistré"
+  },
+  "trust": {
+    "secure_title": "Paiement sécurisé",
+    "secure_subtitle": "Transactions chiffrées et contrôle anti-fraude",
+    "support_title": "Support voyageur",
+    "support_subtitle": "Assistance dédiée aux voyageurs et partenaires",
+    "quality_title": "Sélection qualité",
+    "quality_subtitle": "Expériences vérifiées par notre équipe"
+  },
+  "carousel": {
+    "scroll_left": "Faire défiler vers la gauche",
+    "scroll_right": "Faire défiler vers la droite",
+    "more_count": "+ {{count}} autres",
+    "explore_collection": "Explorer la collection"
   }
 }

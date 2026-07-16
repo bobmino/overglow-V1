@@ -89,7 +89,7 @@ const Home = () => {
       : layout.topServices || [];
 
   return (
-    <div className="min-h-screen bg-white pb-24 flex flex-col gap-y-16 overflow-x-hidden">
+    <div className="min-h-screen bg-white flex flex-col gap-y-16 overflow-x-hidden">
       <SEOHead
         title={t('home.meta_title', 'Expériences authentiques au Maroc')}
         description={t(

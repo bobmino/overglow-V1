@@ -51,7 +51,8 @@
     "close": "Cerrar",
     "and": "y",
     "from": "Desde",
-    "per_person": "por persona"
+    "per_person": "por persona",
+    "per_person_short": "/ pers."
   },
   "stores": {
     "badge_soon": "Próximamente",
@@ -156,12 +157,34 @@
     "skip_line": "Salta la cola",
     "price_unavailable": "Precio no disponible",
     "select_date": "Seleccionar una fecha",
-    "select_time": "Seleccionar una hora",
+    "select_time": "Seleccionar franja horaria",
     "book_now": "Reservar",
     "add_to_cart": "Añadir al carrito",
     "secure_payment": "Pago seguro y cifrado",
     "view_details": "Reservar / Modificar",
-    "select_date_btn": "Seleccionar una fecha"
+    "select_date_btn": "Seleccionar una fecha",
+    "card": {
+      "price_guaranteed": "Precio garantizado",
+      "view_offer": "Ver oferta"
+    },
+    "time_slot_label": "Franja horaria",
+    "date_label": "Fecha",
+    "select_date_error": "Seleccione una fecha",
+    "select_time_error": "Seleccione una franja horaria",
+    "booking_options": "Opciones de reserva",
+    "cancellation": {
+      "default": "Cancelación estándar: gratuita hasta 24 h antes del inicio.",
+      "free_title": "Cancelación gratuita",
+      "free_desc": "Cancelación gratuita hasta {{hours}} horas antes del inicio",
+      "moderate_title": "Cancelación moderada",
+      "moderate_desc": "Cancelación posible hasta {{hours}} horas antes. Reembolso parcial después.",
+      "strict_title": "Cancelación estricta",
+      "strict_desc": "Cancelación posible hasta {{days}} días antes. Reembolso parcial después.",
+      "non_refundable_title": "No reembolsable",
+      "non_refundable_desc": "Esta reserva no es reembolsable.",
+      "contact_operator": "Contacte al operador para más información.",
+      "refund_pct": "Reembolso: {{pct}} %"
+    }
   },
   "cart": {
     "title": "Mi carrito",
@@ -297,7 +320,8 @@
     "cta_stays": "Ver alojamientos",
     "cta_extras": "Ver extras",
     "cross_after_stay": "¿Ya tiene alojamiento? Añada actividades.",
-    "cross_after_tour": "Tras su actividad, añada un traslado o conserjería."
+    "cross_after_tour": "Tras su actividad, añada un traslado o conserjería.",
+    "for_you": "Para ti"
   },
   "about": {
     "hero_title": "Sobre Overglow Trip",
@@ -488,7 +512,9 @@
         "name": "Agadir",
         "description": "Sol, playas y puertas del Sáhara para experiencias costeras y desérticas."
       }
-    }
+    },
+    "experiences_count_one": "{{count}} experiencia",
+    "experiences_count_other": "{{count}} experiencias"
   },
   "guide": {
     "practical": "Información práctica",
@@ -2131,5 +2157,19 @@
     "cat_marketing_desc": "Campañas y remarketing.",
     "save": "Guardar",
     "saved": "Guardado"
+  },
+  "trust": {
+    "secure_title": "Pago seguro",
+    "secure_subtitle": "Transacciones cifradas y control antifraude",
+    "support_title": "Soporte al viajero",
+    "support_subtitle": "Asistencia dedicada a viajeros y partners",
+    "quality_title": "Selección de calidad",
+    "quality_subtitle": "Experiencias verificadas por nuestro equipo"
+  },
+  "carousel": {
+    "scroll_left": "Desplazar a la izquierda",
+    "scroll_right": "Desplazar a la derecha",
+    "more_count": "+ {{count}} más",
+    "explore_collection": "Explorar la colección"
   }
 }

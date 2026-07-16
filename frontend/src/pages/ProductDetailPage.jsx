@@ -446,14 +446,14 @@ const ProductDetailPage = () => {
           </div>
         )}
         {/* Breadcrumb */}
-        <nav className="text-sm text-slate-600 mb-4">
-          <Link to="/" className="hover:text-primary-600">{t('common.home', 'Accueil')}</Link>
-          <ChevronRight size={14} className="inline mx-2" />
+        <nav className="text-sm text-slate-600 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Link to="/" className="hover:text-primary-600">{t('common.home')}</Link>
+          <ChevronRight size={14} className="shrink-0 opacity-60" />
           <Link to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</Link>
-          <ChevronRight size={14} className="inline mx-2" />
-          <Link to={`/search?category=${product.category}`} className="hover:text-primary-600">{product.category}</Link>
-          <ChevronRight size={14} className="inline mx-2" />
-          <span className="text-slate-900 font-medium truncate">{product.title}</span>
+          <ChevronRight size={14} className="shrink-0 opacity-60" />
+          <Link to={`/search?category=${product.category}`} className="hover:text-primary-600 truncate max-w-[40vw] sm:max-w-none">{product.category}</Link>
+          <ChevronRight size={14} className="shrink-0 opacity-60 hidden sm:inline" />
+          <span className="text-slate-900 font-medium truncate max-w-full hidden sm:inline">{product.title}</span>
         </nav>
  
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -484,11 +484,11 @@ const ProductDetailPage = () => {
                 {t('product.verified_by', 'Vérifié par Overglow')}
               </div>
               
-              <div className="flex items-start justify-between mb-4">
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex-1">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 min-w-0 flex-1">
                   {product.title}
                 </h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                   <ShareButtons product={product} />
                   <FavoriteButton productId={product._id} size={28} />
                 </div>
@@ -828,8 +828,9 @@ const ProductDetailPage = () => {
           </p>
         </div>
         <button
+          type="button"
           onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex-shrink-0 px-3 py-2 sm:px-6 sm:py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition duration-300 shadow-md shadow-emerald-600/10"
+          className="flex-shrink-0 min-h-11 px-4 py-3 sm:px-6 bg-emerald-600 text-white font-bold text-sm sm:text-base rounded-xl hover:bg-emerald-700 active:scale-[0.97] transition duration-300 shadow-md shadow-emerald-600/10"
         >
           {selectedDate && selectedTimeSlot 
             ? t('product.view_details', 'Modifier / Réserver')

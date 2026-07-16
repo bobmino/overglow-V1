@@ -2,7 +2,16 @@
 
 **Date:** 2026-07-16  
 **Branche:** `main`  
-**Source de vérité:** code déployé + ce fichier (remplace l’ancien constat « l’app n’a pas bougé »).
+**Source de vérité:** code déployé + ce fichier.
+
+---
+
+## Décisions métier
+
+- **Stripe / PayPal / CMI live** : reportés — comptes pas encore disponibles ; activer une fois la plateforme « finie ». Le code (booking différé + `bookingId`) est prêt.
+- **Vercel** : OK — ne plus traiter comme bloquant.
+- **Contenu** : tout le UI voyageur doit passer par i18n FR/EN/ES/AR (pas de FR en dur).
+- **Devices** : mobile 375px + tablette prioritaires sur le funnel public.
 
 ---
 
@@ -10,52 +19,32 @@
 
 | Domaine | Status |
 |--------|--------|
-| Prompts 1–19 + hotfixes S0–S2 | Fait |
-| i18n FR/EN/ES/AR + RTL | Fait |
-| INT-01 routes `/{lang}` | Fait |
-| INT-02 SEOHead / hreflang / sitemap | Fait |
-| Admin + opérateur (sidebar, finance, bookings, chat, DataTable…) | Fait |
-| Sécurité P0 (CORS, uploads, sanitizer, payment sim guard, logger) | Fait |
-| Emails Handlebars FR/EN | Fait |
-| ESLint 0 erreur | Fait |
-| Empty states unifiés | Fait |
-| **Vercel deploys** | OK (confirmé métier — ne plus traiter comme bloquant) |
-| Cookie banner GDPR + gate GA4 | En cours / livré ce sprint |
-| Checkout Stripe `bookingId` avant PaymentIntent | En cours / livré ce sprint |
+| Prompts 1–19 + INT-01/02 + admin/SEO/sécurité | Fait |
+| Checkout différé + Stripe `bookingId` | Fait (prêt pour clés live plus tard) |
+| Cookie banner GDPR + gate GA4 | Fait |
+| i18n ProductCard, TrustBar, Carousel, Destination, Date/Time, Cancellation | Fait (cette passe) |
+| Polish mobile Home/Hero/Checkout/Search/Product/Payment | Fait (cette passe) |
+| Micro-UX hover/press sur cards | Partiel |
 
 ---
 
-## Ce qui RESTE (priorité business)
+## Ce qui RESTE
 
-### Sprint 1 (cette semaine) — en cours
-1. ~~Corriger Vercel~~ → **zappé (OK)**
-2. Smoke E2E manuel sur URL déployée : search → produit → booking → paiement → confirmation
-3. Cookie banner + consent analytics → **code livré**
-4. Fix flux Stripe (booking différé + `bookingId`) → **code livré**
-5. 5–10 expériences réelles + opérateur Stripe (contenu métier, hors code)
+### Court terme (Cursor)
+1. Poursuivre i18n restes : ReviewsList, storeCatalog curated, fallbacks ProductDetail
+2. Smoke mobile 375px / tablette sur URL déployée
+3. GEO-01 (villes MA + capitales) quand étude marchés fournie
+4. INT-03 contenu SEO par marché
 
-### Sprint 2
-- Stripe live keys + webhook test carte réelle
-- Polish mobile 375px + micro-interactions
-- GEO-01 API villes MA + capitales marchés (si étude fournie)
-
-### Sprint 3
-- Pages légales validées avocat
-- `strict: true` Product, PayPal webhook verify, PII encryption
-- INT-03 contenu SEO par marché
+### Toi (hors code)
+- 5–10 expériences réelles + opérateur
+- Compte Stripe / PayPal quand plateforme stabilisée
+- Pages légales avocat
+- Étude marchés (UK, GCC, US, JP…) avant GEO
 
 ---
 
-## Ce que TU prépares (non-code)
+## Docs obsolètes comme « état actuel »
 
-- Clés Stripe test/live + webhook URL
-- Contenu catalogue réel (photos, prix, dispos)
-- Entité légale / IBAN / TVA pour go-live marketing
-- Étude marchés (capitales) **uniquement avant GEO-01**
-
----
-
-## Docs à ignorer comme « état actuel »
-
-- Ancien `plan de situation` (« 0 tâche exécutée ») — **obsolète**
-- `FINAL_AUDIT_REPORT` ESLint FAIL — **obsolète** (corrigé depuis)
+- Ancien constat « 0 tâche exécutée »
+- Audit ESLint FAIL (corrigé)

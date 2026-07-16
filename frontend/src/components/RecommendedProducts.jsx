@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import ProductCard from './ProductCard';
 import LocalizedLink from './LocalizedLink';
@@ -6,10 +7,12 @@ import { Sparkles, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger.js';
 
-const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personalized' }) => {
+const RecommendedProducts = ({ title, limit = 8, type = 'personalized' }) => {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const displayTitle = title || t('home.for_you');
 
   const fetchRecommendations = async () => {
     try {
@@ -48,7 +51,7 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-2 mb-6">
             <Sparkles size={24} className="text-primary-600" />
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{displayTitle}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((n) => (
@@ -70,13 +73,13 @@ const RecommendedProducts = ({ title = "Pour vous", limit = 8, type = 'personali
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Sparkles size={24} className="text-primary-600" />
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{displayTitle}</h2>
           </div>
           <LocalizedLink
             to="/search"
             className="text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
           >
-            Voir tout
+            {t('common.see_all')}
             <TrendingUp size={16} />
           </LocalizedLink>
         </div>

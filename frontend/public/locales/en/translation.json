@@ -51,7 +51,8 @@
     "close": "Close",
     "and": "and",
     "from": "From",
-    "per_person": "per person"
+    "per_person": "per person",
+    "per_person_short": "/ pers."
   },
   "stores": {
     "badge_soon": "Coming soon",
@@ -164,12 +165,34 @@
     "skip_line": "Skip the line",
     "price_unavailable": "Price unavailable",
     "select_date": "Select a date",
-    "select_time": "Select a time",
+    "select_time": "Select a time slot",
     "book_now": "Book now",
     "add_to_cart": "Add to cart",
     "secure_payment": "Secure encrypted payment",
     "view_details": "Book / Edit",
-    "select_date_btn": "Select a date"
+    "select_date_btn": "Select a date",
+    "card": {
+      "price_guaranteed": "Best price",
+      "view_offer": "View offer"
+    },
+    "time_slot_label": "Time slot",
+    "date_label": "Date",
+    "select_date_error": "Please select a date",
+    "select_time_error": "Please select a time slot",
+    "booking_options": "Booking options",
+    "cancellation": {
+      "default": "Standard cancellation: free cancellation up to 24h before start.",
+      "free_title": "Free cancellation",
+      "free_desc": "Free cancellation up to {{hours}} hours before the experience starts",
+      "moderate_title": "Moderate cancellation",
+      "moderate_desc": "Cancellation possible up to {{hours}} hours before. Partial refund after that.",
+      "strict_title": "Strict cancellation",
+      "strict_desc": "Cancellation possible up to {{days}} days before. Partial refund after that.",
+      "non_refundable_title": "Non-refundable",
+      "non_refundable_desc": "This booking is non-refundable.",
+      "contact_operator": "Contact the operator for more information.",
+      "refund_pct": "Refund: {{pct}}%"
+    }
   },
   "cart": {
     "title": "My cart",
@@ -305,7 +328,8 @@
     "cta_stays": "See stays",
     "cta_extras": "See extras",
     "cross_after_stay": "Already booked a stay? Add activities.",
-    "cross_after_tour": "After your activity, add a transfer or concierge."
+    "cross_after_tour": "After your activity, add a transfer or concierge.",
+    "for_you": "For you"
   },
   "about": {
     "hero_title": "About Overglow Trip",
@@ -496,7 +520,9 @@
         "name": "Agadir",
         "description": "Sun, beaches, and Sahara gateways for coastal and desert experiences."
       }
-    }
+    },
+    "experiences_count_one": "{{count}} experience",
+    "experiences_count_other": "{{count}} experiences"
   },
   "guide": {
     "practical": "Practical information",
@@ -2139,5 +2165,19 @@
     "cat_marketing_desc": "Campaigns and remarketing.",
     "save": "Save",
     "saved": "Saved"
+  },
+  "trust": {
+    "secure_title": "Secure payment",
+    "secure_subtitle": "Encrypted transactions and fraud checks",
+    "support_title": "Traveler support",
+    "support_subtitle": "Dedicated help for travelers and partners",
+    "quality_title": "Quality selection",
+    "quality_subtitle": "Experiences verified by our team"
+  },
+  "carousel": {
+    "scroll_left": "Scroll left",
+    "scroll_right": "Scroll right",
+    "more_count": "+ {{count}} more",
+    "explore_collection": "Explore the collection"
   }
 }
