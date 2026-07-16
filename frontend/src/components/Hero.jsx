@@ -75,7 +75,7 @@ const Hero = () => {
             />
           </div>
 
-          <button type="submit" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 py-4 m-1 transition-all shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-105 flex items-center justify-center">
+          <button type="submit" className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-8 py-4 m-1 transition-all shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-105 flex items-center justify-center">
             <Search size={24} strokeWidth={2.5} />
             <span className="md:hidden ms-2 font-bold">Search</span>
           </button>

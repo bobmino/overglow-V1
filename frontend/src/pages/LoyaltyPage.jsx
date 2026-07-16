@@ -112,7 +112,7 @@ const LoyaltyPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">Points</p>
-                    <p className="text-2xl font-heading font-bold text-emerald-700">
+                    <p className="text-2xl font-heading font-bold text-primary-700">
                       {status.loyaltyPoints ?? 0}
                     </p>
                   </div>
@@ -136,7 +136,7 @@ const LoyaltyPage = () => {
                             <span className="text-slate-600">{entry.reason || 'Transaction'}</span>
                             <span
                               className={`font-semibold ${
-                                entry.points >= 0 ? 'text-emerald-600' : 'text-red-600'
+                                entry.points >= 0 ? 'text-primary-600' : 'text-red-600'
                               }`}
                             >
                               {entry.points >= 0 ? '+' : ''}

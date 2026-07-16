@@ -55,7 +55,7 @@ const BookingSuccessPage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">{t('booking_success.no_booking')}</p>
-          <Link to="/" className="text-emerald-700 font-semibold hover:underline">
+          <Link to="/" className="text-primary-700 font-semibold hover:underline">
             {t('booking_success.back_home')}
           </Link>
         </div>
@@ -78,8 +78,8 @@ const BookingSuccessPage = () => {
         <div className="max-w-2xl mx-auto">
           {/* Success Icon */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 rounded-full mb-4">
-              <CheckCircle size={48} className="text-emerald-600" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full mb-4">
+              <CheckCircle size={48} className="text-primary-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {isCircuit ? t('booking_success.title_circuit') : t('booking_success.title')}
@@ -94,7 +94,7 @@ const BookingSuccessPage = () => {
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-500 mb-1">{t('booking_success.payment_ref')}</p>
-                <p className="font-bold text-lg text-emerald-700">{referenceGlobal}</p>
+                <p className="font-bold text-lg text-primary-700">{referenceGlobal}</p>
               </div>
 
               <div className="border-t border-gray-100 pt-6">
@@ -108,19 +108,19 @@ const BookingSuccessPage = () => {
                       <p className="font-semibold text-gray-900">{item.schedule?.product?.title || t('booking_success.experience_fallback')}</p>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex items-center">
-                          <MapPin size={14} className="me-2 text-emerald-500" />
+                          <MapPin size={14} className="me-2 text-primary-500" />
                           {item.schedule?.product?.city}
                         </div>
                         <div className="flex items-center">
-                          <Calendar size={14} className="me-2 text-emerald-500" />
+                          <Calendar size={14} className="me-2 text-primary-500" />
                           {new Date(item.schedule?.date).toLocaleDateString(dateLocale)}
                         </div>
                         <div className="flex items-center">
-                          <Clock size={14} className="me-2 text-emerald-500" />
+                          <Clock size={14} className="me-2 text-primary-500" />
                           {item.schedule?.time}
                         </div>
                         <div className="flex items-center">
-                          <Users size={14} className="me-2 text-emerald-500" />
+                          <Users size={14} className="me-2 text-primary-500" />
                           {t('booking_success.tickets', { count: item.numberOfTickets })}
                         </div>
                       </div>
@@ -132,7 +132,7 @@ const BookingSuccessPage = () => {
               <div className="border-t border-gray-100 pt-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">{t('booking_success.total')}</span>
-                  <span className="text-2xl font-bold text-emerald-600">
+                  <span className="text-2xl font-bold text-primary-600">
                     {formatPrice(totalAmountGlobal, 'EUR')}
                   </span>
                 </div>
@@ -154,7 +154,7 @@ const BookingSuccessPage = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
               to="/dashboard" 
-              className="flex-1 bg-emerald-600 text-white text-center py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
+              className="flex-1 bg-primary-600 text-white text-center py-3 rounded-xl font-bold hover:bg-primary-700 transition"
             >
               {t('booking_success.view_bookings')}
             </Link>

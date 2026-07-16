@@ -159,7 +159,7 @@ const ReviewModal = ({ booking, onClose, onSubmitted }) => {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-green-500 hover:text-green-600 transition"
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary-500 hover:text-primary-600 transition"
                 >
                   <Camera size={18} />
                   <span>Add Photos ({photos.length}/5)</span>
@@ -188,7 +188,7 @@ const ReviewModal = ({ booking, onClose, onSubmitted }) => {
               type="submit"
               disabled={loading}
               className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white transition ${
-                loading ? 'bg-gray-400' : 'bg-green-700 hover:bg-green-800'
+                loading ? 'bg-gray-400' : 'bg-primary-700 hover:bg-primary-800'
               }`}
             >
               {loading ? 'Submitting...' : 'Submit Review'}

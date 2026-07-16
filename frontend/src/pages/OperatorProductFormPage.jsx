@@ -551,7 +551,7 @@ const OperatorProductFormPage = () => {
                       ...prev,
                       serviceDetails: { ...prev.serviceDetails, guideIncluded: e.target.checked },
                     }))}
-                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-green-500"
                   />
                   <span className="ms-2 text-sm font-semibold text-gray-700">{t('operator.product_form.guide_included')}</span>
                 </label>
@@ -600,7 +600,7 @@ const OperatorProductFormPage = () => {
                         serviceDetails: { ...prev.serviceDetails, languages: [...prev.serviceDetails.languages, ''] },
                       }));
                     }}
-                    className="text-sm text-green-700 font-bold hover:underline"
+                    className="text-sm text-primary-700 font-bold hover:underline"
                   >
                     {t('operator.product_form.add_language')}
                   </button>
@@ -643,7 +643,7 @@ const OperatorProductFormPage = () => {
                   </button>
                 </div>
               ))}
-              <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-green-500 transition">
+              <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-24 cursor-pointer hover:border-primary-500 transition">
                 <ImageIcon className="text-gray-400 mb-1" />
                 <span className="text-xs text-gray-500">{uploading ? t('operator.common.uploading') : t('operator.product_form.add_image')}</span>
                 <input type="file" className="hidden" onChange={handleImageUpload} disabled={uploading} />
@@ -684,7 +684,7 @@ const OperatorProductFormPage = () => {
               <button
                 type="button"
                 onClick={() => addArrayItem(field)}
-                className="text-sm text-green-700 font-bold hover:underline"
+                className="text-sm text-primary-700 font-bold hover:underline"
               >
                 {getAddFieldLabel(field)}
               </button>
@@ -701,7 +701,7 @@ const OperatorProductFormPage = () => {
                   id="requiresInquiry"
                   checked={formData.requiresInquiry}
                   onChange={(e) => setFormData(prev => ({ ...prev, requiresInquiry: e.target.checked, inquiryType: e.target.checked ? 'manual' : 'none' }))}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-green-500"
                 />
                 <label htmlFor="requiresInquiry" className="ms-2 text-sm font-semibold text-gray-700">
                   {t('operator.product_form.requires_inquiry')}
@@ -742,7 +742,7 @@ const OperatorProductFormPage = () => {
                       enabled: e.target.checked
                     }
                   }))}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-green-500"
                 />
                 <label htmlFor="skipTheLineEnabled" className="ms-2 text-sm font-semibold text-gray-700">
                   {t('operator.product_form.skip_the_line_enable')}
@@ -989,7 +989,7 @@ const OperatorProductFormPage = () => {
                 onClick={() => {
                   setFormData(prev => ({ ...prev, timeSlots: [...prev.timeSlots, { startTime: '09:00', endTime: '17:00' }] }));
                 }}
-                className="text-sm text-green-700 font-bold hover:underline"
+                className="text-sm text-primary-700 font-bold hover:underline"
               >
                 {t('operator.product_form.add_time_slot')}
               </button>
@@ -1007,7 +1007,7 @@ const OperatorProductFormPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="bg-green-700 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-800 transition flex items-center"
+              className="bg-primary-700 text-white px-8 py-2 rounded-lg font-bold hover:bg-primary-800 transition flex items-center"
             >
               {loading ? t('operator.common.saving') : (
                 <>

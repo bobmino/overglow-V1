@@ -20,7 +20,7 @@ const Layout = () => {
       <DynamicManifest />
       <Header />
       <ToastContainer />
-      <main className="flex-grow w-full pb-24 md:pb-0">
+      <main className="flex-grow w-full pt-20 pb-24 md:pb-0">
         <Outlet />
       </main>
       <Footer />

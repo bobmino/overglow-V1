@@ -356,7 +356,7 @@ const AdminBadgeManagementPage = () => {
 
       {message && (
         <div className={`mb-6 p-4 rounded-lg ${
-          isSuccessMessage ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+          isSuccessMessage ? 'bg-primary-50 text-primary-700' : 'bg-red-50 text-red-700'
         }`}>
           {message}
         </div>
@@ -407,7 +407,7 @@ const AdminBadgeManagementPage = () => {
             <div className="flex gap-2">
               <button
                 onClick={handleInitializeBadges}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2"
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition flex items-center gap-2"
               >
                 <Award size={20} />
                 {t('admin.badges.init_badges')}
@@ -484,7 +484,7 @@ const AdminBadgeManagementPage = () => {
                   </button>
                   <button
                     onClick={() => openBadgeEntities(badge, 'products')}
-                    className="text-green-600 hover:text-green-700 text-sm font-bold"
+                    className="text-primary-600 hover:text-primary-700 text-sm font-bold"
                   >
                     {t('admin.common.products')}
                   </button>

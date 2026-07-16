@@ -161,11 +161,11 @@ const BadgeRequestModal = ({ isOpen, onClose, productId, productTitle }) => {
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {success ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-              <CheckCircle className="text-green-600" size={24} />
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="text-primary-600" size={24} />
               <div>
-                <p className="font-semibold text-green-900">Demande soumise avec succès !</p>
-                <p className="text-sm text-green-700">Un administrateur examinera votre demande.</p>
+                <p className="font-semibold text-primary-900">Demande soumise avec succès !</p>
+                <p className="text-sm text-primary-700">Un administrateur examinera votre demande.</p>
               </div>
             </div>
           ) : (

@@ -4,6 +4,7 @@ import { Star, ThumbsUp, CheckCircle, Filter, Flag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../utils/logger.js';
+import { notify, notifyError, notifySuccess, askText } from '../utils/notify.js';
 
 const ReviewItem = ({ review, onVote, onRefresh }) => {
   const { t, i18n } = useTranslation();
@@ -26,7 +27,7 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
 
   const handleVote = async (helpful) => {
     if (!user) {
-      alert(t('reviews.login_to_vote'));
+      notify(t('reviews.login_to_vote'));
       return;
     }
 
@@ -38,17 +39,20 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
       if (onVote) onVote();
     } catch (error) {
       logger.error('Vote error:', error);
-      alert(error.response?.data?.message || t('reviews.vote_error'));
+      notifyError(error.response?.data?.message || t('reviews.vote_error'));
     }
   };
 
   const handleReport = async () => {
     if (!user) {
-      alert(t('reviews.login_to_report'));
+      notify(t('reviews.login_to_report'));
       return;
     }
 
-    const reason = prompt(t('reviews.report_prompt'));
+    const reason = await askText(t('reviews.report_prompt'), {
+      submitLabel: t('common.submit', 'OK'),
+      cancelLabel: t('common.cancel', 'Annuler'),
+    });
     if (!reason) return;
 
     const reasonMap = {
@@ -65,17 +69,21 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
     };
 
     const mappedReason = reasonMap[reason.toLowerCase()] || 'other';
-    const description = prompt(t('reviews.report_description_optional'));
+    const description =
+      (await askText(t('reviews.report_description_optional'), {
+        submitLabel: t('common.submit', 'OK'),
+        cancelLabel: t('common.cancel', 'Annuler'),
+      })) || '';
 
     try {
       await api.post(`/api/reviews/${review._id}/report`, {
         reason: mappedReason,
-        description: description || '',
+        description,
       });
-      alert(t('reviews.report_success'));
+      notifySuccess(t('reviews.report_success'));
     } catch (error) {
       logger.error('Report error:', error);
-      alert(error.response?.data?.message || t('reviews.report_error'));
+      notifyError(error.response?.data?.message || t('reviews.report_error'));
     }
   };
 
@@ -96,7 +104,7 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
           </div>
           <span className="font-bold text-gray-900">{review.rating}.0</span>
           {review.isVerified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold">
               <CheckCircle size={12} />
               {t('reviews.verified')}
             </span>
@@ -153,8 +161,8 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
             disabled={hasVotedHelpful}
             className={`flex items-center gap-1 text-sm transition ${
               hasVotedHelpful
-                ? 'text-green-600 font-semibold cursor-default'
-                : 'text-gray-500 hover:text-green-600 cursor-pointer'
+                ? 'text-primary-600 font-semibold cursor-default'
+                : 'text-gray-500 hover:text-primary-600 cursor-pointer'
             }`}
             title={hasVotedHelpful ? t('reviews.already_voted') : t('reviews.mark_helpful')}
           >
@@ -175,26 +183,29 @@ const ReviewItem = ({ review, onVote, onRefresh }) => {
           {user && user.role === 'Opérateur' && !review.operatorResponse && (
             <button
               type="button"
-              onClick={() => {
-                const response = prompt(t('reviews.reply_prompt'));
+              onClick={async () => {
+                const response = await askText(t('reviews.reply_prompt'), {
+                  submitLabel: t('common.submit', 'OK'),
+                  cancelLabel: t('common.cancel', 'Annuler'),
+                });
                 if (response?.trim()) {
-                  api
-                    .post(`/api/reviews/${review._id}/reply`, { message: response.trim() })
-                    .then(() => {
-                      alert(t('reviews.reply_success'));
-                      if (onRefresh) onRefresh();
-                      else window.location.reload();
-                    })
-                    .catch((err) =>
-                      alert(
-                        t('reviews.reply_error') +
-                          ': ' +
-                          (err.response?.data?.message || '')
-                      )
+                  try {
+                    await api.post(`/api/reviews/${review._id}/reply`, {
+                      message: response.trim(),
+                    });
+                    notifySuccess(t('reviews.reply_success'));
+                    if (onRefresh) onRefresh();
+                    else window.location.reload();
+                  } catch (err) {
+                    notifyError(
+                      t('reviews.reply_error') +
+                        ': ' +
+                        (err.response?.data?.message || '')
                     );
+                  }
                 }
               }}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
             >
               {t('reviews.reply')}
             </button>

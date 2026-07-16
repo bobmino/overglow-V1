@@ -9,7 +9,7 @@ const iconByType = {
 };
 
 const stylesByType = {
-  success: 'border-green-200 bg-green-50 text-green-800',
+  success: 'border-primary-200 bg-primary-50 text-primary-800',
   error: 'border-red-200 bg-red-50 text-red-800',
   info: 'border-slate-200 bg-white text-slate-800',
 };

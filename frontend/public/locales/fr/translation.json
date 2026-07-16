@@ -544,7 +544,15 @@
     "cities": {
       "Marrakech": {
         "name": "Marrakech",
-        "description": "Découvrez la perle du Sud marocain avec ses souks animés, ses palais historiques et ses expériences authentiques."
+        "description": "Découvrez la perle du Sud marocain avec ses souks animés, ses palais historiques et ses expériences authentiques.",
+        "fullDescription": "Marrakech, la Ville Rouge, allie médina UNESCO, souks et jardins. Idéale pour 3 à 4 jours avec une excursion Atlas ou désert.",
+        "highlights": [
+          "Place Jemaa el-Fnaa",
+          "Jardin Majorelle",
+          "Palais Bahia",
+          "Souks de la médina",
+          "Tombeaux Saadiens"
+        ]
       },
       "Casablanca": {
         "name": "Casablanca",
@@ -552,7 +560,14 @@
       },
       "Fès": {
         "name": "Fès",
-        "description": "Plongez dans la plus grande médina piétonne du monde, joyau du patrimoine marocain."
+        "description": "Plongez dans la plus grande médina piétonne du monde, joyau du patrimoine marocain.",
+        "fullDescription": "Fès abrite l’une des plus grandes médinas piétonnes au monde. Prévoyez un guide local pour l’artisanat et les médersas.",
+        "highlights": [
+          "Médina Fès el-Bali",
+          "Artisanat",
+          "Médersas",
+          "Tanneries"
+        ]
       },
       "Rabat": {
         "name": "Rabat",
@@ -564,7 +579,14 @@
       },
       "Agadir": {
         "name": "Agadir",
-        "description": "Soleil, plages et portes du Sahara pour des expériences côtières et désertiques."
+        "description": "Soleil, plages et portes du Sahara pour des expériences côtières et désertiques.",
+        "fullDescription": "Agadir offre soleil, plages et accès à Taghazout et à la Vallée du Paradis — base idéale pour un séjour mer et nature.",
+        "highlights": [
+          "Plage",
+          "Taghazout",
+          "Vallée du Paradis",
+          "Souk El Had"
+        ]
       }
     },
     "experiences_count_one": "{{count}} expérience",
@@ -2278,5 +2300,11 @@
     "sort_recent": "Plus récents",
     "sort_rating": "Meilleure note",
     "breakdown": "Répartition des notes"
+  },
+  "errors": {
+    "500_title": "Erreur serveur",
+    "500_body": "Nous avons rencontré un problème inattendu. Réessayez ou revenez à l’accueil.",
+    "reload": "Recharger la page",
+    "home": "Accueil"
   }
 }

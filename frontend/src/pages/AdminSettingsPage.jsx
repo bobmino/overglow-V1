@@ -421,7 +421,7 @@ const AdminSettingsPage = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         settings.stripeEnabled
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-primary-100 text-primary-800'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -451,7 +451,7 @@ const AdminSettingsPage = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         settings.paypalEnabled
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-primary-100 text-primary-800'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -481,7 +481,7 @@ const AdminSettingsPage = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         settings.cmiEnabled
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-primary-100 text-primary-800'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -503,7 +503,7 @@ const AdminSettingsPage = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         settings.bankTransferEnabled
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-primary-100 text-primary-800'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >

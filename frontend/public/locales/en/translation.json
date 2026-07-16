@@ -544,7 +544,15 @@
     "cities": {
       "Marrakech": {
         "name": "Marrakech",
-        "description": "Discover the pearl of southern Morocco with lively souks, historic palaces, and authentic experiences."
+        "description": "Discover the pearl of southern Morocco with lively souks, historic palaces, and authentic experiences.",
+        "fullDescription": "Marrakech blends a UNESCO medina, souks and gardens. Plan 3–4 days plus an Atlas or desert day trip.",
+        "highlights": [
+          "Jemaa el-Fnaa",
+          "Majorelle Garden",
+          "Bahia Palace",
+          "Medina souks",
+          "Saadian Tombs"
+        ]
       },
       "Casablanca": {
         "name": "Casablanca",
@@ -552,7 +560,14 @@
       },
       "Fès": {
         "name": "Fez",
-        "description": "Dive into the world's largest car-free medina, a jewel of Moroccan heritage."
+        "description": "Dive into the world's largest car-free medina, a jewel of Moroccan heritage.",
+        "fullDescription": "Fes hosts one of the world’s largest pedestrian medinas. A local guide helps with craft quarters and madrasas.",
+        "highlights": [
+          "Fes el-Bali medina",
+          "Crafts",
+          "Madrasas",
+          "Tanneries"
+        ]
       },
       "Rabat": {
         "name": "Rabat",
@@ -564,7 +579,14 @@
       },
       "Agadir": {
         "name": "Agadir",
-        "description": "Sun, beaches, and Sahara gateways for coastal and desert experiences."
+        "description": "Sun, beaches, and Sahara gateways for coastal and desert experiences.",
+        "fullDescription": "Agadir means beaches, Taghazout surf and Paradise Valley day trips — a strong base for coast and nature.",
+        "highlights": [
+          "Beach",
+          "Taghazout",
+          "Paradise Valley",
+          "Souk El Had"
+        ]
       }
     },
     "experiences_count_one": "{{count}} experience",
@@ -2278,5 +2300,11 @@
     "sort_recent": "Most recent",
     "sort_rating": "Highest rating",
     "breakdown": "Rating breakdown"
+  },
+  "errors": {
+    "500_title": "Server error",
+    "500_body": "Something unexpected went wrong. Please retry or go back home.",
+    "reload": "Reload page",
+    "home": "Home"
   }
 }

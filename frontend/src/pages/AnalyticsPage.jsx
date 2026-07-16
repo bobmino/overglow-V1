@@ -138,7 +138,7 @@ const AnalyticsPage = () => {
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
           >
             <Download size={16} />
             {t('analytics.export_csv')}
@@ -202,7 +202,7 @@ const AnalyticsPage = () => {
               icon={DollarSign}
               label={t('analytics.stats.total_revenue')}
               value={`€${totalRevenue.toFixed(2)}`}
-              color="bg-green-600"
+              color="bg-primary-600"
             />
             <StatCard
               icon={Users}
@@ -289,7 +289,7 @@ const AnalyticsPage = () => {
               icon={Users}
               label={t('analytics.stats.bookings')}
               value={funnel.bookings || 0}
-              color="bg-green-600"
+              color="bg-primary-600"
               subtitle={t('analytics.stats.conversion', { rate: funnel.viewToBookingRate?.toFixed(2) || 0 })}
             />
           </div>
@@ -331,7 +331,7 @@ const AnalyticsPage = () => {
                       <td className="text-end py-3 px-4">€{product.revenue?.toFixed(2) || '0.00'}</td>
                       <td className="text-end py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          product.conversionRate >= 3 ? 'bg-green-100 text-green-800' :
+                          product.conversionRate >= 3 ? 'bg-primary-100 text-primary-800' :
                           product.conversionRate >= 1 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
@@ -373,7 +373,7 @@ const AnalyticsPage = () => {
                       <td className="text-end py-3 px-4">
                         {cat.priceDifference !== null ? (
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            cat.priceDifference > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            cat.priceDifference > 0 ? 'bg-red-100 text-red-800' : 'bg-primary-100 text-primary-800'
                           }`}>
                             {cat.priceDifference > 0 ? '+' : ''}€{cat.priceDifference.toFixed(2)}
                             {cat.priceDifferencePercent !== null && ` (${cat.priceDifferencePercent > 0 ? '+' : ''}${cat.priceDifferencePercent.toFixed(1)}%)`}
@@ -393,9 +393,9 @@ const AnalyticsPage = () => {
       {activeTab === 'recommendations' && (
         <div className="space-y-4">
           {recommendations.length === 0 ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <CheckCircle className="mx-auto h-12 w-12 text-green-600 mb-4" />
-              <p className="text-green-800 font-semibold">{t('analytics.no_recommendations')}</p>
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 text-center">
+              <CheckCircle className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+              <p className="text-primary-800 font-semibold">{t('analytics.no_recommendations')}</p>
             </div>
           ) : (
             recommendations.map((rec, index) => (

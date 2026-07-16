@@ -12,6 +12,7 @@ import { initSentry } from './utils/sentry.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { logger } from './utils/logger.js';
+import { notify, askConfirm } from './utils/notify.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,11 @@ const queryClient = new QueryClient({
 
 // Initialize Sentry BEFORE everything else
 initSentry();
+
+// Soft-launch: replace blocking alert() with toast (ToastProvider listens for app-toast)
+window.alert = (message) => {
+  notify(message == null ? '' : String(message), 'info');
+};
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
@@ -42,10 +48,12 @@ if ('serviceWorker' in navigator) {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker available, prompt user to refresh
-              if (confirm('Une nouvelle version est disponible. Voulez-vous recharger la page ?')) {
-                window.location.reload();
-              }
+              askConfirm('Une nouvelle version est disponible. Voulez-vous recharger la page ?', {
+                confirmLabel: 'OK',
+                cancelLabel: 'Plus tard',
+              }).then((ok) => {
+                if (ok) window.location.reload();
+              });
             }
           });
         });

@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 const FeatureItem = ({ icon, title, description }) => (
   <div className="flex flex-col items-center text-center p-8 bg-white shadow-sm rounded-2xl border border-slate-100 hover:shadow-md transition-shadow">
-    <div className="mb-4 p-4 bg-emerald-50 rounded-full">
-      {React.createElement(icon, { size: 32, className: 'text-emerald-600', strokeWidth: 1.5 })}
+    <div className="mb-4 p-4 bg-primary-50 rounded-full">
+      {React.createElement(icon, { size: 32, className: 'text-primary-600', strokeWidth: 1.5 })}
     </div>
     <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
     <p className="text-slate-600 leading-relaxed">{description}</p>

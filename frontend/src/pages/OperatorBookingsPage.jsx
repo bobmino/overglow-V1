@@ -100,7 +100,7 @@ const OperatorBookingsPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Confirmed': return 'bg-green-100 text-green-800';
+      case 'Confirmed': return 'bg-primary-100 text-primary-800';
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -117,7 +117,7 @@ const OperatorBookingsPage = () => {
 
   const getPaymentStatusColor = (paymentStatus) => {
     const normalized = (paymentStatus || 'pending').toLowerCase();
-    if (normalized === 'paid') return 'bg-emerald-100 text-emerald-800';
+    if (normalized === 'paid') return 'bg-primary-100 text-primary-800';
     if (normalized === 'refunded') return 'bg-slate-200 text-slate-800';
     if (normalized === 'failed') return 'bg-rose-100 text-rose-800';
     return 'bg-amber-100 text-amber-800';
@@ -170,7 +170,7 @@ const OperatorBookingsPage = () => {
                     <button
                       onClick={() => handleConfirmPaymentAdmin(booking._id)}
                       disabled={confirmingPaymentId === booking._id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-600 text-white rounded-full text-xs font-bold hover:bg-primary-700 transition disabled:opacity-50"
                       title={t('operator.bookings.confirm_payment_title')}
                     >
                       <CreditCard size={12} />
@@ -220,7 +220,7 @@ const OperatorBookingsPage = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">{t('operator.bookings.revenue')}</p>
-                  <p className="text-xl font-bold text-green-700">€{booking.totalAmount.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-primary-700">€{booking.totalAmount.toFixed(2)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">{t('operator.bookings.estimated_payout')}</p>
@@ -240,7 +240,7 @@ const OperatorBookingsPage = () => {
                 </a>
                 <button
                   onClick={() => window.open(`/products/${booking.schedule?.product?._id || booking.schedule?.product}`, '_blank')}
-                  className="inline-flex items-center gap-2 text-gray-700 hover:text-green-700 font-semibold"
+                  className="inline-flex items-center gap-2 text-gray-700 hover:text-primary-700 font-semibold"
                 >
                   <ExternalLink size={16} />
                   {t('operator.bookings.view_product')}

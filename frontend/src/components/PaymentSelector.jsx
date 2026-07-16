@@ -124,7 +124,7 @@ const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
       <button
         type="submit"
         disabled={!stripe || processing}
-        className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-3 rounded-xl font-bold hover:from-emerald-700 hover:to-emerald-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
+        className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
         aria-label={processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
       >
         {processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
@@ -283,7 +283,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
         {madAmount && (
           <div className="text-end backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
             <p className="text-xs text-gray-500 uppercase tracking-wide">{t('payment.total_amount')}</p>
-            <p className="text-2xl font-bold text-emerald-700">{formattedMadAmount} MAD</p>
+            <p className="text-2xl font-bold text-primary-700">{formattedMadAmount} MAD</p>
             <p className="text-xs text-gray-400">≈ {formattedEurAmount} €</p>
           </div>
         )}
@@ -295,14 +295,14 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
           onClick={() => setMethod('stripe')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'stripe'
-              ? 'border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-100'
-              : 'border-gray-200 hover:border-emerald-300 hover:shadow-md bg-white'
+              ? 'border-primary-500 bg-primary-50 shadow-lg shadow-emerald-100'
+              : 'border-gray-200 hover:border-primary-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'stripe'}
           aria-label={t('payment.aria_card')}
         >
-          <CreditCard size={36} className={`mb-3 ${method === 'stripe' ? 'text-emerald-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <CreditCard size={36} className={`mb-3 ${method === 'stripe' ? 'text-primary-600' : 'text-gray-400'}`} aria-hidden="true" />
           <span className="font-bold text-gray-800">{t('payment.card')}</span>
           <span className="text-xs text-gray-500 mt-1">{t('payment.card_hint')}</span>
         </button>
@@ -345,14 +345,14 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
           onClick={() => setMethod('cash_pickup')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'cash_pickup'
-              ? 'border-green-500 bg-green-50 shadow-lg shadow-green-100'
-              : 'border-gray-200 hover:border-green-300 hover:shadow-md bg-white'
+              ? 'border-primary-500 bg-primary-50 shadow-lg shadow-green-100'
+              : 'border-gray-200 hover:border-primary-300 hover:shadow-md bg-white'
           }`}
           role="radio"
           aria-checked={method === 'cash_pickup'}
           aria-label={t('payment.aria_cash')}
         >
-          <Banknote size={36} className={`mb-3 ${method === 'cash_pickup' ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true" />
+          <Banknote size={36} className={`mb-3 ${method === 'cash_pickup' ? 'text-primary-600' : 'text-gray-400'}`} aria-hidden="true" />
           <span className="font-bold text-gray-800">{t('payment.cash')}</span>
           <span className="text-xs text-gray-500 mt-1">{t('payment.cash_hint')}</span>
         </button>
@@ -463,19 +463,19 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
         )}
 
         {method === 'cash_pickup' && (
-          <div className="backdrop-blur-md bg-green-50/80 rounded-2xl p-8 shadow-xl border border-green-200">
+          <div className="backdrop-blur-md bg-primary-50/80 rounded-2xl p-8 shadow-xl border border-primary-200">
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <Banknote size={40} className="text-green-600" />
+                <Banknote size={40} className="text-primary-600" />
                 <h4 className="font-bold text-gray-900 text-xl">{t('payment.cash_title')}</h4>
               </div>
               <p className="text-gray-700 mb-4">
                 {t('payment.cash_body')}
               </p>
               {madAmount && (
-                <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-green-200">
+                <div className="backdrop-blur-md bg-white/60 rounded-xl p-5 border border-primary-200">
                   <p className="text-sm text-gray-500 uppercase tracking-wide">{t('payment.amount_to_pay')}</p>
-                  <p className="text-3xl font-bold text-green-700">{formattedMadAmount} MAD</p>
+                  <p className="text-3xl font-bold text-primary-700">{formattedMadAmount} MAD</p>
                 </div>
               )}
             </div>
@@ -593,7 +593,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
                               aria-label={copied ? t('payment.bank_copied') : t('payment.bank_copy')}
                               type="button"
                             >
-                              {copied ? <CheckCircle size={16} className="text-green-600" /> : <Copy size={16} className="text-indigo-600" />}
+                              {copied ? <CheckCircle size={16} className="text-primary-600" /> : <Copy size={16} className="text-indigo-600" />}
                             </button>
                           ) : null}
                         </div>
@@ -606,24 +606,24 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
                   </div>
 
                   {/* Payment Reference Card */}
-                  <div className="backdrop-blur-md bg-emerald-50/80 rounded-xl p-6 border border-emerald-200 mb-6">
+                  <div className="backdrop-blur-md bg-primary-50/80 rounded-xl p-6 border border-primary-200 mb-6">
                     <div className="flex items-center gap-3 mb-3">
-                      <CheckCircle size={24} className="text-emerald-600" />
+                      <CheckCircle size={24} className="text-primary-600" />
                       <h5 className="font-bold text-gray-800 text-lg">{t('payment.bank_ref')}</h5>
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
                       {t('payment.bank_instructions')}
                     </p>
-                    <div className="flex items-center justify-between backdrop-blur-md bg-white/80 rounded-lg p-4 border border-emerald-200">
-                      <span className="font-mono text-xl font-bold text-emerald-700 tracking-wider">
+                    <div className="flex items-center justify-between backdrop-blur-md bg-white/80 rounded-lg p-4 border border-primary-200">
+                      <span className="font-mono text-xl font-bold text-primary-700 tracking-wider">
                         {paymentReference || bankDetails?.paymentReference || 'OG-XXXXXXXX'}
                       </span>
                       <button
                         onClick={() => copyToClipboard(paymentReference || bankDetails?.paymentReference || '')}
-                        className="p-2 rounded-lg hover:bg-emerald-100 transition-colors"
+                        className="p-2 rounded-lg hover:bg-primary-100 transition-colors"
                         aria-label={copied ? t('payment.bank_copied') : t('payment.bank_copy_ref')}
                       >
-                        {copied ? <CheckCircle size={20} className="text-green-600" /> : <Copy size={20} className="text-emerald-600" />}
+                        {copied ? <CheckCircle size={20} className="text-primary-600" /> : <Copy size={20} className="text-primary-600" />}
                       </button>
                     </div>
                   </div>

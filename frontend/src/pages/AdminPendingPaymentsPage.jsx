@@ -196,13 +196,13 @@ const AdminPendingPaymentsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link
               to="/admin/dashboard"
-              className="p-2 rounded-xl bg-white/60 backdrop-blur-md border border-gray-200 hover:border-emerald-400 transition shadow-sm"
+              className="p-2 rounded-xl bg-white/60 backdrop-blur-md border border-gray-200 hover:border-primary-400 transition shadow-sm"
             >
               <ArrowLeft size={20} className="text-gray-700" />
             </Link>
@@ -227,8 +227,8 @@ const AdminPendingPaymentsPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-emerald-100">
-                <DollarSign size={24} className="text-emerald-600" />
+              <div className="p-3 rounded-xl bg-primary-100">
+                <DollarSign size={24} className="text-primary-600" />
               </div>
               <div>
                 <p className="text-gray-500 text-sm">{t('admin.pending_payments.total_amount')}</p>
@@ -251,7 +251,7 @@ const AdminPendingPaymentsPage = () => {
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-600" />
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-emerald-600" />
           </div>
         )}
 
@@ -298,7 +298,7 @@ const AdminPendingPaymentsPage = () => {
                   {bookings.map((booking) => (
                     <tr
                       key={booking._id}
-                      className="hover:bg-emerald-50/30 transition"
+                      className="hover:bg-primary-50/30 transition"
                     >
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-mono font-bold text-amber-700">
@@ -323,8 +323,8 @@ const AdminPendingPaymentsPage = () => {
 
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-emerald-100">
-                            <Package size={16} className="text-emerald-600" />
+                          <div className="p-2 rounded-lg bg-primary-100">
+                            <Package size={16} className="text-primary-600" />
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900 text-sm">
@@ -379,7 +379,7 @@ const AdminPendingPaymentsPage = () => {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleConfirmPayment(booking._id)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm hover:shadow-md"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 transition shadow-sm hover:shadow-md"
                           >
                             <CheckCircle size={14} />
                             {t('admin.pending_payments.confirm_payment')}
@@ -442,7 +442,7 @@ const AdminPendingPaymentsPage = () => {
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => handleConfirmPayment(booking._id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition"
                     >
                       <CheckCircle size={16} />
                       {t('admin.pending_payments.confirm_payment_mobile')}

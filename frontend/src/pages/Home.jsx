@@ -173,7 +173,7 @@ const Home = () => {
                 <p className="text-slate-600 mb-6 max-w-2xl">{t('stores.stays.subtitle')}</p>
                 <LocalizedLink
                   to="/stays"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-700 text-white font-semibold hover:bg-emerald-800"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary-700 text-white font-semibold hover:bg-primary-800"
                 >
                   {t('home.cta_stays')}
                   <ArrowRight size={16} />
@@ -259,9 +259,9 @@ const Home = () => {
           <section className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <LocalizedLink
               to="/explore"
-              className="rounded-2xl bg-gradient-to-br from-emerald-800 to-teal-700 text-white p-6 hover:shadow-lg transition"
+              className="rounded-2xl bg-gradient-to-br from-primary-800 to-teal-700 text-white p-6 hover:shadow-lg transition"
             >
-              <p className="text-sm text-emerald-100 mb-1">{t('home.cross_after_stay')}</p>
+              <p className="text-sm text-primary-100 mb-1">{t('home.cross_after_stay')}</p>
               <span className="inline-flex items-center gap-2 font-bold">
                 {t('home.cta_explore')}
                 <ArrowRight size={16} />

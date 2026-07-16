@@ -8,7 +8,7 @@ import { logger } from '../utils/logger.js';
 const statusBadge = (status) => {
   const map = {
     Pending: 'bg-amber-100 text-amber-800',
-    Approved: 'bg-green-100 text-green-800',
+    Approved: 'bg-primary-100 text-primary-800',
     Rejected: 'bg-red-100 text-red-800',
   };
   const labels = {
@@ -242,7 +242,7 @@ const AdminReviewsPage = () => {
                               type="button"
                               disabled={busyId === r._id}
                               onClick={() => approve(r._id)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-primary-600 text-white text-xs font-semibold hover:bg-primary-700 disabled:opacity-50"
                             >
                               <Check size={12} /> Approuver
                             </button>
@@ -348,7 +348,7 @@ const AdminReviewsPage = () => {
                       type="button"
                       disabled={busyId === r._id}
                       onClick={() => approve(r._id)}
-                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-green-600 text-white text-sm font-semibold disabled:opacity-50"
+                      className="min-h-11 inline-flex items-center justify-center gap-2 px-3 rounded-lg bg-primary-600 text-white text-sm font-semibold disabled:opacity-50"
                     >
                       <Check size={16} /> Approuver
                     </button>

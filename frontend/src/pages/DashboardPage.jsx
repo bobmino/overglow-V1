@@ -74,13 +74,13 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
         ) : refundInfo && (
           <div className={`mb-4 p-4 rounded-lg border-2 ${
             refundInfo.refundAmount > 0
-              ? 'bg-green-50 border-green-200' 
+              ? 'bg-primary-50 border-primary-200' 
               : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-semibold text-gray-900">{t('dashboard.refund_estimated')}</span>
               <span className={`text-lg font-bold ${
-                refundInfo.refundAmount > 0 ? 'text-green-700' : 'text-red-700'
+                refundInfo.refundAmount > 0 ? 'text-primary-700' : 'text-red-700'
               }`}>
                 €{refundInfo.refundAmount.toFixed(2)}
               </span>
@@ -98,7 +98,7 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
               <p className="text-xs text-gray-600 mt-1">
                 {t('dashboard.hours_left', { hours: refundInfo.hoursUntilStart.toFixed(1) })}
                 {refundInfo.isFreeCancellation && (
-                  <span className="ms-2 text-green-600 font-semibold">{t('dashboard.free_cancel_badge')}</span>
+                  <span className="ms-2 text-primary-600 font-semibold">{t('dashboard.free_cancel_badge')}</span>
                 )}
               </p>
             )}
@@ -149,7 +149,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Confirmed': return 'bg-green-100 text-green-800';
+      case 'Confirmed': return 'bg-primary-100 text-primary-800';
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -234,7 +234,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
               <>
                 <Link 
                   to={`/products/${booking.schedule?.product?._id}`}
-                  className="text-green-700 font-semibold hover:underline"
+                  className="text-primary-700 font-semibold hover:underline"
                 >
                   {t('dashboard.view_details')}
                 </Link>
@@ -250,7 +250,7 @@ const BookingCard = ({ booking, onBookingCancelled }) => {
             {isPastBooking() && (
               <button
                 onClick={() => setShowReviewModal(true)}
-                className="flex items-center text-green-700 font-semibold hover:underline"
+                className="flex items-center text-primary-700 font-semibold hover:underline"
               >
                 <Star size={16} className="me-1" />
                 {t('dashboard.leave_review')}

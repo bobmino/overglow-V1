@@ -23,8 +23,8 @@ const ScheduleSelector = ({ schedules, selectedSchedule, onSelectSchedule }) => 
             onClick={() => onSelectSchedule(schedule)}
             className={`w-full text-start p-4 rounded-lg border-2 transition ${
               isSelected 
-                ? 'border-green-700 bg-green-50' 
-                : 'border-gray-200 hover:border-green-300'
+                ? 'border-primary-700 bg-primary-50' 
+                : 'border-gray-200 hover:border-primary-300'
             }`}
           >
             <div className="flex justify-between items-start">

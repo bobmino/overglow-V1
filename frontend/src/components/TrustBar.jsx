@@ -29,7 +29,7 @@ const TrustBar = ({ compact = false }) => {
       <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
         {items.map((item) => (
           <div key={item.title} className="flex items-start gap-3">
-            <item.icon size={20} className="text-emerald-600 mt-0.5 shrink-0" />
+            <item.icon size={20} className="text-primary-600 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-bold text-slate-900">{item.title}</p>
               <p className="text-xs text-slate-600">{item.subtitle}</p>

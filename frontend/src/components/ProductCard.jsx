@@ -79,7 +79,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         <div className="absolute top-4 start-4 flex flex-col gap-2 max-w-[60%]">
-          <div className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md w-fit">
+          <div className="inline-flex items-center gap-1 bg-gradient-to-r from-primary-600 to-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md w-fit">
             {t('product.card.price_guaranteed')}
           </div>
           {product.badges && Array.isArray(product.badges) && product.badges.length > 0 && (
@@ -109,13 +109,13 @@ const ProductCard = ({ product }) => {
           <div>
             <span className="text-xs text-slate-400 block mb-0.5">{t('common.from')}</span>
             <div className="flex items-baseline gap-1">
-              <span className="font-bold text-2xl text-emerald-600">
+              <span className="font-bold text-2xl text-primary-600">
                 {price != null ? formatPrice(price, 'MAD') : '—'}
               </span>
               <span className="text-xs text-slate-500 font-medium">{t('common.per_person_short')}</span>
             </div>
           </div>
-          <span className="inline-flex items-center justify-center min-h-11 w-full sm:w-auto bg-slate-50 text-slate-900 group-hover:bg-emerald-600 group-hover:text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-colors duration-300 shadow-sm">
+          <span className="inline-flex items-center justify-center min-h-11 w-full sm:w-auto bg-slate-50 text-slate-900 group-hover:bg-primary-600 group-hover:text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-colors duration-300 shadow-sm">
             {t('product.card.view_offer')}
           </span>
         </div>

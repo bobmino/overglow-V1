@@ -536,7 +536,15 @@
     "cities": {
       "Marrakech": {
         "name": "Marrakech",
-        "description": "Descubre la perla del sur de Marruecos con sus zocos, palacios históricos y experiencias auténticas."
+        "description": "Descubre la perla del sur de Marruecos con sus zocos, palacios históricos y experiencias auténticas.",
+        "fullDescription": "Marrakech combina medina UNESCO, zocos y jardines. Ideal 3–4 días con una excursión al Atlas o al desierto.",
+        "highlights": [
+          "Jemaa el-Fnaa",
+          "Jardín Majorelle",
+          "Palacio Bahia",
+          "Zocos",
+          "Tumbas Saadíes"
+        ]
       },
       "Casablanca": {
         "name": "Casablanca",
@@ -544,7 +552,14 @@
       },
       "Fès": {
         "name": "Fez",
-        "description": "Sumérgete en la medina peatonal más grande del mundo, joya del patrimonio marroquí."
+        "description": "Sumérgete en la medina peatonal más grande del mundo, joya del patrimonio marroquí.",
+        "fullDescription": "Fez alberga una de las medinas peatonales más grandes del mundo. Reserva un guía local para artesanía y madrazas.",
+        "highlights": [
+          "Medina Fes el-Bali",
+          "Artesanía",
+          "Madrazas",
+          "Curtidurías"
+        ]
       },
       "Rabat": {
         "name": "Rabat",
@@ -556,7 +571,14 @@
       },
       "Agadir": {
         "name": "Agadir",
-        "description": "Sol, playas y puertas del Sáhara para experiencias costeras y desérticas."
+        "description": "Sol, playas y puertas del Sáhara para experiencias costeras y desérticas.",
+        "fullDescription": "Agadir ofrece playas, Taghazout y el Valle del Paraíso — base ideal entre mar y naturaleza.",
+        "highlights": [
+          "Playa",
+          "Taghazout",
+          "Valle del Paraíso",
+          "Souk El Had"
+        ]
       }
     },
     "experiences_count_one": "{{count}} experiencia",
@@ -2270,5 +2292,11 @@
     "sort_recent": "Más recientes",
     "sort_rating": "Mejor nota",
     "breakdown": "Distribución de notas"
+  },
+  "errors": {
+    "500_title": "Error del servidor",
+    "500_body": "Ha ocurrido un problema inesperado. Reintenta o vuelve al inicio.",
+    "reload": "Recargar página",
+    "home": "Inicio"
   }
 }

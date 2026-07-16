@@ -95,7 +95,7 @@ const CircuitPage = () => {
                             {t('circuit.tickets', { count: item.numberOfTickets })}
                           </span>
                           {item.skipTheLine && (
-                            <span className="flex items-center gap-1 font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                            <span className="flex items-center gap-1 font-medium text-primary-700 bg-primary-50 px-3 py-1 rounded-full">
                               <FiCheckCircle className="w-4 h-4" />
                               {t('circuit.skip_line')}
                             </span>
@@ -114,7 +114,7 @@ const CircuitPage = () => {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border-t-4 border-emerald-500">
+              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border-t-4 border-primary-500">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">{t('circuit.summary')}</h3>
                 
                 <div className="space-y-4 mb-8">
@@ -132,20 +132,20 @@ const CircuitPage = () => {
                 <div className="border-t border-gray-100 pt-6 mb-8">
                   <div className="flex justify-between items-end mb-2">
                     <span className="text-lg font-bold text-gray-900">{t('circuit.total')}</span>
-                    <span className="text-3xl font-bold text-emerald-600">{formatPrice(totalPrice)}</span>
+                    <span className="text-3xl font-bold text-primary-600">{formatPrice(totalPrice)}</span>
                   </div>
                   <p className="text-sm text-gray-500 text-end">{t('circuit.taxes_included')}</p>
                 </div>
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(5,150,105,0.4)] hover:shadow-[0_12px_25px_-8px_rgba(5,150,105,0.5)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-xl font-bold text-lg shadow-[0_8px_20px_-6px_rgba(5,150,105,0.4)] hover:shadow-[0_12px_25px_-8px_rgba(5,150,105,0.5)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                 >
                   <FiCheckCircle className="w-6 h-6" />
                   {t('circuit.continue')}
                 </button>
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <FiCheckCircle className="w-4 h-4 text-emerald-500" /> {t('circuit.secure_payment')}
+                  <FiCheckCircle className="w-4 h-4 text-primary-500" /> {t('circuit.secure_payment')}
                 </div>
               </div>
             </div>

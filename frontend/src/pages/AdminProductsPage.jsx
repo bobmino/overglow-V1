@@ -79,7 +79,7 @@ const AdminProductsPage = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      Published: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      Published: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
       'Pending Review': { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       Draft: { color: 'bg-gray-100 text-gray-800', icon: Package },
     };
@@ -189,7 +189,7 @@ const AdminProductsPage = () => {
                     <>
                       <button
                         onClick={() => handleStatusChange(product._id, 'Published')}
-                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                        className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                       >
                         {t('admin.common.approve')}
                       </button>

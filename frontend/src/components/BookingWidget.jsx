@@ -55,14 +55,14 @@ const BookingWidget = ({ product, selectedSchedule, numberOfTickets, onTicketsCh
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => onTicketsChange(Math.max(1, numberOfTickets - 1))}
-              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-700 transition font-bold"
+              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-primary-700 transition font-bold"
             >
               -
             </button>
             <span className="font-bold text-lg w-8 text-center">{numberOfTickets}</span>
             <button 
               onClick={() => onTicketsChange(numberOfTickets + 1)}
-              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-700 transition font-bold"
+              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-primary-700 transition font-bold"
             >
               +
             </button>
@@ -82,7 +82,7 @@ const BookingWidget = ({ product, selectedSchedule, numberOfTickets, onTicketsCh
         disabled={!selectedSchedule}
         className={`w-full py-3 rounded-lg font-bold text-white transition ${
           selectedSchedule 
-            ? 'bg-green-700 hover:bg-green-800' 
+            ? 'bg-primary-700 hover:bg-primary-800' 
             : 'bg-gray-300 cursor-not-allowed'
         }`}
       >

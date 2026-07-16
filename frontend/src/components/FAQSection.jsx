@@ -167,7 +167,7 @@ const FAQSection = ({ category, language = 'fr', limit = 10 }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleFeedback(faq._id, true)}
-                        className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-green-600 transition rounded-lg hover:bg-green-50"
+                        className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-primary-600 transition rounded-lg hover:bg-primary-50"
                         aria-label="Utile"
                       >
                         <ThumbsUp size={16} />

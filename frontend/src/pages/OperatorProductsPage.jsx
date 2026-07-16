@@ -114,7 +114,7 @@ const OperatorProductsPage = () => {
       <div className="flex justify-end mb-8">
         <Link
           to="/operator/products/new"
-          className="flex items-center bg-green-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-800 transition"
+          className="flex items-center bg-primary-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-800 transition"
         >
           <Plus size={20} className="me-2" />
           {t('operator.common.create_product')}
@@ -149,7 +149,7 @@ const OperatorProductsPage = () => {
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       product.status === 'Published' 
-                        ? 'bg-green-100 text-green-800' 
+                        ? 'bg-primary-100 text-primary-800' 
                         : product.status === 'Pending Review'
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-gray-100 text-gray-800'
@@ -161,7 +161,7 @@ const OperatorProductsPage = () => {
                   <div className="flex flex-wrap gap-4">
                     <Link
                       to={`/products/${product._id}`}
-                      className="flex items-center text-gray-700 hover:text-green-700 transition"
+                      className="flex items-center text-gray-700 hover:text-primary-700 transition"
                     >
                       <Eye size={16} className="me-1" />
                       {t('operator.common.view')}
@@ -187,7 +187,7 @@ const OperatorProductsPage = () => {
                       <button
                         onClick={() => handleTogglePublish(product)}
                         className={`flex items-center ${
-                          product.status === 'Published' ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'
+                          product.status === 'Published' ? 'text-amber-600 hover:text-amber-700' : 'text-primary-600 hover:text-primary-700'
                         } transition`}
                       >
                         {product.status === 'Published' ? (

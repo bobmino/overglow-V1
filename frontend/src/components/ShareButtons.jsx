@@ -99,7 +99,7 @@ const ShareButtons = ({ product, url, title, description, contentType = 'product
       {/* WhatsApp */}
       <button
         onClick={() => handleShare('whatsapp')}
-        className="p-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 transition"
+        className="p-2 rounded-lg bg-primary-100 hover:bg-primary-200 text-primary-700 transition"
         aria-label="Partager sur WhatsApp"
         title="WhatsApp"
       >
@@ -115,8 +115,8 @@ const ShareButtons = ({ product, url, title, description, contentType = 'product
       >
         {copied ? (
           <>
-            <Check size={18} className="text-green-600" />
-            <span className="text-xs text-green-600">Copié!</span>
+            <Check size={18} className="text-primary-600" />
+            <span className="text-xs text-primary-600">Copié!</span>
           </>
         ) : (
           <LinkIcon size={18} />

@@ -3,7 +3,7 @@ import { Search, Filter as FilterIcon, Check, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const REASSURANCE_TAG_IDS = [
-  { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-green-100 text-green-700' },
+  { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-primary-100 text-primary-700' },
   { id: 'confirmation-immediate', labelKey: 'filters.tag_instant', color: 'bg-blue-100 text-blue-700' },
   { id: 'bestseller', labelKey: 'filters.tag_bestseller', color: 'bg-amber-100 text-amber-700' },
 ];

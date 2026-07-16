@@ -219,7 +219,7 @@ const AdminBadgeRequestsPage = () => {
                     <button
                       onClick={() => handleApprove(request._id)}
                       disabled={processing}
-                      className="flex items-center text-green-600 hover:text-green-700 transition disabled:opacity-50"
+                      className="flex items-center text-primary-600 hover:text-primary-700 transition disabled:opacity-50"
                     >
                       <CheckCircle size={16} className="me-1" />
                       {t('admin.common.approve')}
@@ -363,7 +363,7 @@ const AdminBadgeRequestsPage = () => {
                 <button
                   onClick={() => handleApprove(selectedRequest._id)}
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
                   <CheckCircle size={16} className="inline me-1" />
                   {t('admin.common.approve')}

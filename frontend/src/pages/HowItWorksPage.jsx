@@ -14,7 +14,7 @@ const HowItWorksPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-16">
+    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white py-16">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-14">
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-4">
@@ -29,7 +29,7 @@ const HowItWorksPage = () => {
             return (
             <div
               key={titleKey}
-              className="flex gap-6 items-start bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm"
+              className="flex gap-6 items-start bg-white border border-primary-100 rounded-2xl p-6 shadow-sm"
             >
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
                 {index + 1}

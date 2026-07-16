@@ -6,13 +6,37 @@ import { logger } from '../utils/logger.js';
 import { sanitizeHtml, sanitizeText, sanitizeName } from '../utils/sanitizer.js';
 
 /** Sanitize UGC fields on blog create/update payloads. */
+const BLOG_ALLOWED_FIELDS = [
+  'title',
+  'slug',
+  'excerpt',
+  'content',
+  'featuredImage',
+  'category',
+  'tags',
+  'metaTitle',
+  'metaDescription',
+  'keywords',
+  'isPublished',
+  'publishedAt',
+  'featured',
+  'language',
+  'relatedProducts',
+  'relatedDestinations',
+  'readingTime',
+];
+
 const sanitizeBlogPayload = (body = {}) => {
-  const next = { ...body };
+  const next = {};
+  for (const key of BLOG_ALLOWED_FIELDS) {
+    if (body[key] !== undefined) next[key] = body[key];
+  }
   if (next.title !== undefined) next.title = sanitizeName(next.title);
   if (next.content !== undefined) next.content = sanitizeHtml(next.content || '');
   if (next.excerpt !== undefined) next.excerpt = sanitizeText(next.excerpt || '');
   if (next.metaDescription !== undefined) next.metaDescription = sanitizeText(next.metaDescription || '');
   if (Array.isArray(next.tags)) next.tags = next.tags.map((t) => sanitizeText(String(t)));
+  if (Array.isArray(next.keywords)) next.keywords = next.keywords.map((t) => sanitizeText(String(t)));
   if (next.language !== undefined) {
     const lang = String(next.language).slice(0, 2).toLowerCase();
     next.language = ['fr', 'en', 'es', 'ar'].includes(lang) ? lang : 'fr';

@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { MobileMenuProvider } from './context/MobileMenuContext';
 import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
 import RtlDocumentSync from './components/RtlDocumentSync';
@@ -113,6 +114,7 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
+      <MobileMenuProvider>
       <Router>
         <RtlDocumentSync />
         <CartDrawer />
@@ -558,6 +560,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+      </MobileMenuProvider>
       </ToastProvider>
     </AuthProvider>
   );

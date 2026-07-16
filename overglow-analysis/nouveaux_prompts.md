@@ -921,5 +921,5 @@ Ordre : INT-02 (livré partiel) → INT-01 → INT-03…
 - i18n : détection path index 0
 - Sitemap : + /explore, /stays, /extras + préfixe langue
 
-[ ] INT-03 — 🟡 Contenu éditorial SEO par marché (Wave 1–4)
+[x] INT-03 — 🟡 Contenu éditorial SEO par marché (Wave 1 — blog language + seed)
 Voir STRATEGIC-PLAN.md § PROMPT INT-03.

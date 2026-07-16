@@ -75,7 +75,7 @@ const CookieConsentPage = () => {
             {t('cookies.policy_link')}
           </LocalizedLink>
           {saved && (
-            <span className="text-sm text-green-700 font-semibold self-center">
+            <span className="text-sm text-primary-700 font-semibold self-center">
               {t('cookies.saved')}
             </span>
           )}

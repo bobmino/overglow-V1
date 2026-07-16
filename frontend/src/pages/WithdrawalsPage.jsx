@@ -108,7 +108,7 @@ const WithdrawalsPage = () => {
     const badges = {
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       Approved: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-      Processed: { color: 'bg-green-100 text-green-800', icon: CheckCheck },
+      Processed: { color: 'bg-primary-100 text-primary-800', icon: CheckCheck },
       Rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
     const badge = badges[status] || badges.Pending;
@@ -138,7 +138,7 @@ const WithdrawalsPage = () => {
         <DashboardNavBar />
       </div>
 
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-6 text-white mb-6">
+      <div className="bg-gradient-to-r from-green-600 to-primary-600 rounded-xl p-6 text-white mb-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-green-100 text-sm mb-2">{t('withdrawals.available_balance')}</p>
@@ -146,7 +146,7 @@ const WithdrawalsPage = () => {
           </div>
           <DollarSign size={48} className="opacity-20" />
         </div>
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-green-500/30">
+        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-primary-500/30">
           <div>
             <p className="text-green-100 text-xs mb-1">{t('withdrawals.total_revenue')}</p>
             <p className="text-lg font-semibold">€{balance.totalRevenue.toFixed(2)}</p>
@@ -287,7 +287,7 @@ const WithdrawalsPage = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition disabled:opacity-50"
                     aria-label={submitting ? t('withdrawals.submitting_aria') : t('withdrawals.submit_aria')}
                   >
                     {submitting ? t('withdrawals.submitting') : t('withdrawals.submit')}
@@ -352,7 +352,7 @@ const WithdrawalsPage = () => {
                 )}
 
                 {withdrawal.status === 'Processed' && withdrawal.processedAt && (
-                  <div className="bg-green-50 text-green-700 p-3 rounded-lg">
+                  <div className="bg-primary-50 text-primary-700 p-3 rounded-lg">
                     <p className="font-semibold">
                       {t('withdrawals.processed_on', {
                         date: new Date(withdrawal.processedAt).toLocaleDateString(dateLocale),

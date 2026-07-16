@@ -28,7 +28,7 @@ const STATUS_OPTIONS = [
 const statusBadgeClass = (status) => {
   switch (status) {
     case 'Confirmed':
-      return 'bg-green-100 text-green-800';
+      return 'bg-primary-100 text-primary-800';
     case 'Pending':
       return 'bg-yellow-100 text-yellow-800';
     case 'Cancelled':
@@ -379,7 +379,7 @@ const AdminBookingsPage = () => {
                   <Eye size={16} />
                 </button>
                 {b.status === 'PENDING_PAYMENT' && (
-                  <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
+                  <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50">
                     <CheckCircle size={14} /> Valider
                   </button>
                 )}
@@ -414,7 +414,7 @@ const AdminBookingsPage = () => {
                 <Eye size={16} /> Détails
               </button>
               {b.status === 'PENDING_PAYMENT' && (
-                <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="min-h-11 inline-flex items-center gap-2 px-3 rounded-lg bg-green-600 text-white font-semibold disabled:opacity-50">
+                <button type="button" disabled={actionLoading === b._id} onClick={() => confirmPayment(b._id)} className="min-h-11 inline-flex items-center gap-2 px-3 rounded-lg bg-primary-600 text-white font-semibold disabled:opacity-50">
                   <CheckCircle size={16} /> Valider
                 </button>
               )}

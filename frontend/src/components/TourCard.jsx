@@ -64,7 +64,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           <div className="mb-2 text-xs text-gray-400">Nouveauté</div>
         )}
         
-        <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-green-700 transition min-h-[48px]">
+        <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-primary-700 transition min-h-[48px]">
           {product.title}
         </h3>
         {product.price !== undefined && (

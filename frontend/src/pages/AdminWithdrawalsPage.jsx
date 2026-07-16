@@ -76,7 +76,7 @@ const AdminWithdrawalsPage = () => {
     const badges = {
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       Approved: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-      Processed: { color: 'bg-green-100 text-green-800', icon: CheckCheck },
+      Processed: { color: 'bg-primary-100 text-primary-800', icon: CheckCheck },
       Rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
     const badge = badges[status] || badges.Pending;
@@ -144,7 +144,7 @@ const AdminWithdrawalsPage = () => {
         <button
           onClick={() => setFilter('Processed')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Processed' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            filter === 'Processed' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           {t('admin.withdrawals.filter_processed')}
@@ -247,7 +247,7 @@ const AdminWithdrawalsPage = () => {
                   <>
                     <button
                       onClick={() => handleApprove(withdrawal._id)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2"
                     >
                       <CheckCircle size={16} />
                       {t('admin.common.approve')}
@@ -267,7 +267,7 @@ const AdminWithdrawalsPage = () => {
                 {withdrawal.status === 'Approved' && (
                   <button
                     onClick={() => handleProcess(withdrawal._id)}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2"
                   >
                     <CheckCheck size={16} />
                     {t('admin.withdrawals.mark_processed')}

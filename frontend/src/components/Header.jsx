@@ -5,6 +5,7 @@ import LanguageSelector from './LanguageSelector';
 import CurrencySelector from './CurrencySelector';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useMobileMenu } from '../context/MobileMenuContext';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import DiscoverMenu from './DiscoverMenu';
@@ -12,12 +13,13 @@ import NotificationBell from './NotificationBell';
 import LocalizedLink from './LocalizedLink';
 import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import { logger } from '../utils/logger.js';
+import { notifyError } from '../utils/notify.js';
 
 const Header = () => {
   const { user, login, logout, isAuthenticated, updateUser } = useAuth();
   const { cartItems, setIsCartOpen } = useCart();
+  const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDiscoverMenu, setShowDiscoverMenu] = useState(false);
   const [showLuxuryMenu, setShowLuxuryMenu] = useState(false);
   const [showServicesMenu, setShowServicesMenu] = useState(false);
@@ -107,7 +109,7 @@ const Header = () => {
       navigate('/operator/wizard');
     } catch (error) {
       logger.error('Failed to upgrade to operator:', error);
-      alert('Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.');
+      notifyError(t('header.upgrade_error', 'Une erreur est survenue lors de la mise à niveau. Veuillez réessayer.'));
     } finally {
       setIsUpgrading(false);
     }
@@ -260,7 +262,7 @@ const Header = () => {
                       </Link>
                       <Link 
                         to="/admin/products" 
-                        className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-green-50 hover:text-green-700 transition"
+                        className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Package size={18} className="me-3" />
@@ -284,7 +286,7 @@ const Header = () => {
                       </Link>
                       <Link 
                         to="/admin/withdrawals" 
-                        className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition"
+                        className="flex items-center px-4 py-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <DollarSign size={18} className="me-3" />

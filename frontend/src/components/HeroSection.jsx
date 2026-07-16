@@ -75,7 +75,7 @@ const HeroSection = () => {
 
             <button
               type="submit"
-              className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-full py-4 px-10 font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-105"
+              className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white rounded-full py-4 px-10 font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-105"
             >
               <Search size={22} strokeWidth={2.5} />
               <span>{t('common.search')}</span>

@@ -21,7 +21,7 @@ const iconForType = (type = '') => {
     return { Icon: CalendarDays, className: 'bg-blue-100 text-blue-600' };
   }
   if (type.startsWith('product')) {
-    return { Icon: Package, className: 'bg-green-100 text-green-600' };
+    return { Icon: Package, className: 'bg-primary-100 text-primary-600' };
   }
   if (type.startsWith('review') || type === 'new_review' || type === 'low_rating') {
     return { Icon: Star, className: 'bg-yellow-100 text-yellow-700' };
@@ -30,7 +30,7 @@ const iconForType = (type = '') => {
     return { Icon: MessageSquare, className: 'bg-purple-100 text-purple-600' };
   }
   if (type.startsWith('withdrawal') || type.includes('refund')) {
-    return { Icon: Banknote, className: 'bg-emerald-100 text-emerald-700' };
+    return { Icon: Banknote, className: 'bg-primary-100 text-primary-700' };
   }
   return { Icon: Bell, className: 'bg-gray-100 text-gray-600' };
 };
@@ -188,7 +188,7 @@ const NotificationBell = () => {
                 </div>
               ) : items.length === 0 ? (
                 <div className="py-10 px-4 text-center text-slate-500">
-                  <Check size={32} className="mx-auto text-green-500 mb-2" />
+                  <Check size={32} className="mx-auto text-primary-500 mb-2" />
                   <p className="text-sm font-medium">Aucune nouvelle notification</p>
                 </div>
               ) : (

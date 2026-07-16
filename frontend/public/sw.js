@@ -4,7 +4,7 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/vite.svg',
+  '/favicon.svg',
 ];
 
 // Install prompt handling
@@ -101,8 +101,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Overglow';
   const options = {
     body: data.message || 'Vous avez une nouvelle notification',
-    icon: '/vite.svg',
-    badge: '/vite.svg',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
     tag: data.type || 'notification',
     requireInteraction: false,
     data: data.relatedEntity || {},

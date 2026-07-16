@@ -156,7 +156,7 @@ const DestinationGuide = ({ city: _city, guide }) => {
 
       {/* Safety Tips */}
       {guide.safety && (
-        <div className="bg-white rounded-xl p-6 shadow-sm border-s-4 border-green-500">
+        <div className="bg-white rounded-xl p-6 shadow-sm border-s-4 border-primary-500">
           <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Shield size={24} />
             {t('guide.safety')}
@@ -166,7 +166,7 @@ const DestinationGuide = ({ city: _city, guide }) => {
             <div className="space-y-2">
               {guide.safety.tips.map((tip, index) => (
                 <div key={index} className="flex items-start gap-2 text-slate-700">
-                  <Shield size={16} className="text-green-600 mt-1 flex-shrink-0" />
+                  <Shield size={16} className="text-primary-600 mt-1 flex-shrink-0" />
                   <span className="text-sm">{tip}</span>
                 </div>
               ))}

@@ -17,26 +17,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user info on mount
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      const parsedUser = JSON.parse(userInfo);
-      setUser(parsedUser);
-      // Set Sentry user context
-      setSentryUser(parsedUser);
+    try {
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        const parsedUser = JSON.parse(userInfo);
+        setUser(parsedUser);
+        setSentryUser(parsedUser);
+      }
+    } catch (err) {
+      logger.error('Failed to parse stored userInfo:', err);
+      localStorage.removeItem('userInfo');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    
-    // Listen for token refresh events
+
     const handleTokenRefresh = (event) => {
       if (event.detail) {
         setUser(event.detail);
         setSentryUser(event.detail);
       }
     };
-    
+
     window.addEventListener('tokenRefreshed', handleTokenRefresh);
-    
+
     return () => {
       window.removeEventListener('tokenRefreshed', handleTokenRefresh);
     };
@@ -103,7 +106,13 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50" role="status" aria-live="polite">
+          <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

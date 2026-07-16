@@ -192,7 +192,7 @@ const LoginPage = () => {
                 type="submit"
                 disabled={loading}
                 className={`w-full min-h-11 py-3 rounded-lg font-bold text-white transition ${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800'
+                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-700 hover:bg-primary-800'
                 }`}
               >
                 {loading ? t('auth.login.submitting') : t('auth.login.submit')}
@@ -202,7 +202,7 @@ const LoginPage = () => {
             <form onSubmit={handleForgot} className="space-y-5">
               <p className="text-sm text-gray-600">{t('auth.login.forgot_intro')}</p>
               {forgotMessage && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex gap-2 text-sm text-emerald-800">
+                <div className="bg-primary-50 border border-primary-200 rounded-lg p-3 flex gap-2 text-sm text-primary-800">
                   <CheckCircle size={18} className="shrink-0 mt-0.5" />
                   {forgotMessage}
                 </div>
@@ -225,7 +225,7 @@ const LoginPage = () => {
               <button
                 type="submit"
                 disabled={forgotLoading}
-                className="w-full min-h-11 py-3 rounded-lg font-bold text-white bg-green-700 hover:bg-green-800 disabled:bg-gray-400"
+                className="w-full min-h-11 py-3 rounded-lg font-bold text-white bg-primary-700 hover:bg-primary-800 disabled:bg-gray-400"
               >
                 {forgotLoading ? t('auth.login.forgot_sending') : t('auth.login.forgot_submit')}
               </button>
@@ -274,7 +274,7 @@ const LoginPage = () => {
               <Link
                 to="/register"
                 state={{ from: location.state?.from }}
-                className="text-green-700 font-semibold hover:underline"
+                className="text-primary-700 font-semibold hover:underline"
               >
                 {t('auth.login.sign_up')}
               </Link>

@@ -83,7 +83,7 @@ const AdminAnalytics = () => {
               {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(kpis.totalRevenue)}
             </p>
           </div>
-          <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center">
             <DollarSign size={24} />
           </div>
         </div>

@@ -24,7 +24,7 @@ const iconForType = (type = '') => {
     return { Icon: CalendarDays, className: 'bg-blue-100 text-blue-600' };
   }
   if (type.startsWith('product')) {
-    return { Icon: Package, className: 'bg-green-100 text-green-600' };
+    return { Icon: Package, className: 'bg-primary-100 text-primary-600' };
   }
   if (type.startsWith('review')) {
     return { Icon: Star, className: 'bg-yellow-100 text-yellow-700' };
@@ -33,7 +33,7 @@ const iconForType = (type = '') => {
     return { Icon: MessageSquare, className: 'bg-purple-100 text-purple-600' };
   }
   if (type.startsWith('withdrawal') || type.includes('refund')) {
-    return { Icon: Banknote, className: 'bg-emerald-100 text-emerald-700' };
+    return { Icon: Banknote, className: 'bg-primary-100 text-primary-700' };
   }
   return { Icon: Bell, className: 'bg-gray-100 text-gray-600' };
 };
@@ -199,7 +199,7 @@ const NotificationsPage = () => {
           <button
             type="button"
             onClick={markAllAsRead}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
           >
             <CheckCheck size={18} />
             Tout marquer comme lu

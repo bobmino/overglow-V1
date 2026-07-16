@@ -509,8 +509,8 @@ const OperatorOnboardingPage = () => {
       <div className="min-h-screen bg-gray-50 py-12 flex items-center">
         <div className="container mx-auto px-4 max-w-lg">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 animate-pulse">
-              <CheckCircle className="h-12 w-12 text-green-600" aria-hidden="true" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary-50 animate-pulse">
+              <CheckCircle className="h-12 w-12 text-primary-600" aria-hidden="true" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               {t('operator.onboarding.pending_title')}
@@ -599,7 +599,7 @@ const OperatorOnboardingPage = () => {
                       }`}
                     >
                       {status === 'completed' ? (
-                        <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
+                        <CheckCircle size={20} className="text-primary-600 flex-shrink-0" />
                       ) : (
                         <Circle size={20} className="flex-shrink-0" />
                       )}
@@ -1366,9 +1366,9 @@ const OperatorOnboardingPage = () => {
               )}
 
               {success && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2" role="status" aria-live="polite">
-                  <CheckCircle className="text-green-600" size={20} aria-hidden="true" />
-                  <p className="text-green-800">{success}</p>
+                <div className="mt-6 p-4 bg-primary-50 border border-primary-200 rounded-lg flex items-center gap-2" role="status" aria-live="polite">
+                  <CheckCircle className="text-primary-600" size={20} aria-hidden="true" />
+                  <p className="text-primary-800">{success}</p>
                 </div>
               )}
 
@@ -1409,7 +1409,7 @@ const OperatorOnboardingPage = () => {
                       type="button"
                       onClick={handleSubmit}
                       disabled={saving || uploading}
-                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                       {saving ? (
                         <>

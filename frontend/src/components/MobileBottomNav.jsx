@@ -4,10 +4,12 @@ import { Home, Search, Heart, User, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LocalizedLink from './LocalizedLink';
 import { stripLangPrefix } from '../utils/i18nRouting';
+import { useMobileMenu } from '../context/MobileMenuContext';
 
 const MobileBottomNav = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const { open: openMobileMenu } = useMobileMenu();
   const barePath = stripLangPrefix(location.pathname);
   const isActive = (path) => barePath === path || barePath.startsWith(`${path}/`);
 
@@ -76,10 +78,7 @@ const MobileBottomNav = () => {
           type="button"
           className="mobile-menu-button flex flex-col items-center justify-center flex-1 py-2 text-slate-500 hover:text-primary-600 transition-colors"
           aria-label={t('nav.menu', 'Menu')}
-          onClick={() => {
-            const menuButton = document.querySelector('.mobile-menu-button-header');
-            if (menuButton) menuButton.click();
-          }}
+          onClick={openMobileMenu}
         >
           <Menu size={24} />
           <span className="text-xs mt-1 font-medium">{t('nav.menu', 'Menu')}</span>

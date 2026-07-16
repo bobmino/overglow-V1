@@ -440,7 +440,7 @@ const ProductDetailPage = () => {
                 {product.city} • {product.category}
               </div>
               
-              <div className="flex items-center gap-2 mb-4 text-emerald-600 bg-emerald-50 w-fit px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="flex items-center gap-2 mb-4 text-primary-600 bg-primary-50 w-fit px-3 py-1 rounded-full text-sm font-semibold">
                 <CheckCircle size={16} />
                 {t('product.verified_by', 'Vérifié par Overglow')}
               </div>
@@ -505,7 +505,7 @@ const ProductDetailPage = () => {
                 {included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
                     {item.included ? (
-                      <CheckCircle className="text-green-600 me-3 mt-0.5 flex-shrink-0" size={20} />
+                      <CheckCircle className="text-primary-600 me-3 mt-0.5 flex-shrink-0" size={20} />
                     ) : (
                       <X className="text-red-500 me-3 mt-0.5 flex-shrink-0" size={20} />
                     )}
@@ -563,11 +563,11 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">{t('product.guarantees_title', 'Garanties et Certifications')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <Shield size={24} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-primary-50 rounded-lg border border-primary-200">
+                  <Shield size={24} className="text-primary-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-green-900 mb-1">{t('product.guarantee_low_price', 'Garantie Prix Bas')}</h3>
-                    <p className="text-sm text-green-700">{t('product.guarantee_low_price_desc', 'Meilleur prix garanti ou remboursement de la différence')}</p>
+                    <h3 className="font-bold text-primary-900 mb-1">{t('product.guarantee_low_price', 'Garantie Prix Bas')}</h3>
+                    <p className="text-sm text-primary-700">{t('product.guarantee_low_price_desc', 'Meilleur prix garanti ou remboursement de la différence')}</p>
                   </div>
                 </div>
                 {product.cancellationPolicy?.type === 'free' && (
@@ -762,7 +762,7 @@ const ProductDetailPage = () => {
                   )}
                   <div className="flex justify-between items-center pt-1.5 border-t border-slate-200">
                     <span className="font-bold text-xs text-slate-800">{t('cart.total', 'Total')}</span>
-                    <span className="font-black text-sm text-emerald-600">
+                    <span className="font-black text-sm text-primary-600">
                       {formatPrice(
                         (minPrice * numberOfTickets) + 
                         (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
@@ -780,7 +780,7 @@ const ProductDetailPage = () => {
                 data-testid="book-now-button"
                 onClick={handleBookNow}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                className="w-full py-2 bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                className="w-full py-2 bg-primary-600 text-white font-bold text-sm rounded-xl hover:bg-primary-700 transition-all duration-300 shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {!hasValidPrice
                   ? t('product.price_unavailable', 'Prix non disponible')
@@ -794,14 +794,14 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                className="w-full mt-2 py-2 border border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm"
+                className="w-full mt-2 py-2 border border-primary-600 text-primary-700 font-bold rounded-xl hover:bg-primary-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm"
               >
                 <span>🛒</span>
                 {t('product.add_to_cart', 'Ajouter au panier')}
               </button>
 
               <p className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 mt-3 font-semibold">
-                <Shield size={12} className="text-emerald-500" />
+                <Shield size={12} className="text-primary-500" />
                 {t('product.secure_payment', 'Paiement sécurisé et crypté')}
               </p>
             </div>
@@ -820,7 +820,7 @@ const ProductDetailPage = () => {
         <button
           type="button"
           onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex-shrink-0 min-h-11 px-4 py-3 sm:px-6 bg-emerald-600 text-white font-bold text-sm sm:text-base rounded-xl hover:bg-emerald-700 active:scale-[0.97] transition duration-300 shadow-md shadow-emerald-600/10"
+          className="flex-shrink-0 min-h-11 px-4 py-3 sm:px-6 bg-primary-600 text-white font-bold text-sm sm:text-base rounded-xl hover:bg-primary-700 active:scale-[0.97] transition duration-300 shadow-md shadow-emerald-600/10"
         >
           {selectedDate && selectedTimeSlot 
             ? t('product.view_details', 'Modifier / Réserver')
@@ -928,7 +928,7 @@ const ProductDetailPage = () => {
                     )}
                     <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                       <span className="font-bold text-xs text-slate-800">{t('cart.total', 'Total')}</span>
-                      <span className="font-black text-sm text-emerald-600">
+                      <span className="font-black text-sm text-primary-600">
                         {formatPrice(
                           (minPrice * numberOfTickets) + 
                           (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
@@ -949,7 +949,7 @@ const ProductDetailPage = () => {
                       setIsMobileDrawerOpen(false);
                     }}
                     disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                    className="py-3 border-2 border-emerald-600 text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1.5"
+                    className="py-3 border-2 border-primary-600 text-primary-700 font-bold rounded-xl hover:bg-primary-50 transition disabled:opacity-50 text-sm flex items-center justify-center gap-1.5"
                   >
                     <span>🛒</span>
                     {t('product.add_to_cart', 'Ajouter au panier')}
@@ -960,7 +960,7 @@ const ProductDetailPage = () => {
                       setIsMobileDrawerOpen(false);
                     }}
                     disabled={!selectedDate || !selectedTimeSlot || !hasValidPrice}
-                    className="py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
+                    className="py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition disabled:opacity-50 shadow-lg shadow-emerald-600/20 text-sm"
                   >
                     {t('product.book_now', 'Réserver maintenant')}
                   </button>

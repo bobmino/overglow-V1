@@ -82,7 +82,7 @@ const AdminOperatorsPage = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      Active: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      Active: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
       Suspended: { color: 'bg-red-100 text-red-800', icon: XCircle },
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       Rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
@@ -106,7 +106,7 @@ const AdminOperatorsPage = () => {
       in_progress: { color: 'bg-gray-100 text-gray-800' },
       completed: { color: 'bg-blue-100 text-blue-800' },
       pending_approval: { color: 'bg-yellow-100 text-yellow-800' },
-      approved: { color: 'bg-green-100 text-green-800' },
+      approved: { color: 'bg-primary-100 text-primary-800' },
       rejected: { color: 'bg-red-100 text-red-800' },
     };
     const badge = badges[status] || badges.in_progress;
@@ -153,7 +153,7 @@ const AdminOperatorsPage = () => {
         <button
           onClick={() => setFilter('Active')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            filter === 'Active' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           {t('admin.operators.filter_active')}
@@ -242,7 +242,7 @@ const AdminOperatorsPage = () => {
                           setSelectedOperator(operator);
                           setShowDetailModal(true);
                         }}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                        className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                       >
                         {t('admin.common.approve')}
                       </button>
@@ -268,7 +268,7 @@ const AdminOperatorsPage = () => {
                   {operator.status === 'Suspended' && (
                     <button
                       onClick={() => handleStatusChange(operator._id, 'Active')}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                     >
                       {t('admin.operators.reactivate')}
                     </button>
@@ -446,7 +446,7 @@ const AdminOperatorsPage = () => {
                   </div>
                   <button
                     onClick={() => handleStatusChange(selectedOperator._id, 'Active', '', approvalNotes)}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                    className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                   >
                     {t('admin.common.approve')}
                   </button>
@@ -490,7 +490,7 @@ const AdminOperatorsPage = () => {
                 <div className="flex flex-wrap justify-end gap-2">
                   <button
                     onClick={() => handleStatusChange(selectedOperator._id, 'Active')}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                    className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                   >
                     {t('admin.operators.reactivate_account')}
                   </button>

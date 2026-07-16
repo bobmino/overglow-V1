@@ -1,12 +1,10 @@
 /**
- * Error Boundary Component for React
- * Catches JavaScript errors anywhere in the child component tree
+ * Error Boundary — catches render errors and shows a 500-style fallback.
  */
 
 import React from 'react';
 import { captureException } from '../utils/sentry.js';
-import { AlertCircle, RefreshCw, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Error500Page from '../pages/Error500Page.jsx';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,21 +13,15 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(_error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to Sentry
     captureException(error, {
       componentStack: errorInfo.componentStack,
       errorBoundary: true,
     });
-
-    this.setState({
-      error,
-      errorInfo,
-    });
+    this.setState({ error, errorInfo });
   }
 
   handleReset = () => {
@@ -39,63 +31,19 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <AlertCircle size={32} className="text-red-600" />
+        <>
+          {import.meta.env.DEV && this.state.error ? (
+            <div className="fixed bottom-4 start-4 end-4 z-[100000] max-w-xl mx-auto p-3 bg-slate-900 text-white text-xs rounded-lg opacity-90 overflow-auto max-h-32">
+              {String(this.state.error)}
             </div>
-            
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Oups ! Une erreur s'est produite
-            </h1>
-            
-            <p className="text-gray-600 mb-6">
-              Nous avons rencontré un problème inattendu. Notre équipe a été notifiée et travaille à le résoudre.
-            </p>
-
-            {import.meta.env.DEV && this.state.error && (
-              <div className="mb-6 p-4 bg-gray-100 rounded-lg text-start">
-                <p className="text-sm font-mono text-red-600 mb-2">
-                  {this.state.error.toString()}
-                </p>
-                {this.state.errorInfo && (
-                  <details className="text-xs text-gray-600">
-                    <summary className="cursor-pointer mb-2">Stack trace</summary>
-                    <pre className="overflow-auto max-h-40">
-                      {this.state.errorInfo.componentStack}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={this.handleReset}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
-              >
-                <RefreshCw size={18} />
-                Recharger la page
-              </button>
-              
-              <a
-                href="/"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                <Home size={18} />
-                Retour à l'accueil
-              </a>
-            </div>
-          </div>
-        </div>
+          ) : null}
+          <Error500Page onRetry={this.handleReset} />
+        </>
       );
     }
-
     return this.props.children;
   }
 }
 
 export default ErrorBoundary;
-

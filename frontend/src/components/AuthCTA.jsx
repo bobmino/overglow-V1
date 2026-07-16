@@ -8,7 +8,7 @@ const AuthCTA = () => {
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="bg-emerald-50 rounded-2xl p-8 md:p-12 text-center max-w-4xl mx-auto border border-emerald-100 shadow-sm">
+        <div className="bg-primary-50 rounded-2xl p-8 md:p-12 text-center max-w-4xl mx-auto border border-primary-100 shadow-sm">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
             {t('home.auth_title')}
           </h2>

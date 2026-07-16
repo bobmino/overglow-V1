@@ -18,7 +18,7 @@ const getPasswordStrength = (password) => {
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
   if (score <= 2) return { score, labelKey: 'auth.register.strength_weak', color: 'bg-red-500' };
   if (score <= 3) return { score, labelKey: 'auth.register.strength_medium', color: 'bg-amber-500' };
-  return { score, labelKey: 'auth.register.strength_strong', color: 'bg-emerald-600' };
+  return { score, labelKey: 'auth.register.strength_strong', color: 'bg-primary-600' };
 };
 
 const RegisterPage = () => {
@@ -299,7 +299,7 @@ const RegisterPage = () => {
               type="submit"
               disabled={loading}
               className={`w-full min-h-11 py-3 rounded-lg font-bold text-white transition ${
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800'
+                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-700 hover:bg-primary-800'
               }`}
             >
               {loading ? t('auth.register.submitting') : t('auth.register.submit')}
@@ -312,7 +312,7 @@ const RegisterPage = () => {
               <Link
                 to="/login"
                 state={{ from: location.state?.from }}
-                className="text-green-700 font-semibold hover:underline"
+                className="text-primary-700 font-semibold hover:underline"
               >
                 {t('auth.register.sign_in')}
               </Link>

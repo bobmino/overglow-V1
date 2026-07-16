@@ -122,7 +122,7 @@ const AdminFinancePage = () => {
         label: 'Revenu total',
         value: formatMoney(k.revenue),
         icon: Banknote,
-        color: 'bg-emerald-600',
+        color: 'bg-primary-600',
       },
       {
         key: 'commissions',
@@ -447,7 +447,7 @@ const AdminFinancePage = () => {
           className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-primary-400 hover:shadow-sm transition"
         >
           <span className="inline-flex items-center gap-2 font-semibold text-gray-800">
-            <Wallet size={18} className="text-emerald-600" />
+            <Wallet size={18} className="text-primary-600" />
             Gérer les retraits
           </span>
           <ArrowRight size={16} className="text-gray-400" />

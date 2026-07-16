@@ -15,8 +15,8 @@ const MENU_DATA = {
     icon: Compass,
     categories: [
       { name: 'Surf & Plage', icon: Palmtree, color: 'text-cyan-500' },
-      { name: 'Aventure & Nature', icon: Tent, color: 'text-green-600' },
-      { name: 'Visites Guidées', icon: MapIcon, color: 'text-emerald-500' },
+      { name: 'Aventure & Nature', icon: Tent, color: 'text-primary-600' },
+      { name: 'Visites Guidées', icon: MapIcon, color: 'text-primary-500' },
       { name: 'Gastronomie', icon: Utensils, color: 'text-orange-500' },
       { name: 'Culture & Médina', icon: Camera, color: 'text-rose-500' },
       { name: 'Détente & Bien-être', icon: Sparkles, color: 'text-purple-500' }
@@ -70,7 +70,7 @@ const MENU_DATA = {
     title: "Logements",
     icon: Home,
     categories: [
-      { name: 'Villas de Prestige', icon: Home, color: 'text-emerald-500' },
+      { name: 'Villas de Prestige', icon: Home, color: 'text-primary-500' },
       { name: 'Appartements Vue Océan', icon: MapIcon, color: 'text-blue-500' },
       { name: 'Riads Insolites', icon: Sparkles, color: 'text-amber-500' }
     ],
@@ -198,13 +198,13 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                   key={idx}
                   onMouseEnter={() => setActiveCategory(category.name)}
                   className={`flex items-center gap-4 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-300 group ${
-                    isActive ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-700'
+                    isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-slate-50 text-slate-700'
                   }`}
                 >
                   <div className={`p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                     <Icon size={20} className={category.color} strokeWidth={1.5} />
                   </div>
-                  <span className={`text-sm font-semibold transition-colors ${isActive ? 'text-emerald-700' : 'group-hover:text-emerald-600'}`}>
+                  <span className={`text-sm font-semibold transition-colors ${isActive ? 'text-primary-700' : 'group-hover:text-primary-600'}`}>
                     {t(tKey, category.name)}
                   </span>
                 </div>
@@ -225,10 +225,10 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
                 key={index}
                 to={storePath}
                 onClick={onClose}
-                className="block px-4 py-2 rounded-xl hover:bg-emerald-50/45 transition-all duration-300 text-sm text-slate-600 hover:text-emerald-700 font-medium group"
+                className="block px-4 py-2 rounded-xl hover:bg-primary-50/45 transition-all duration-300 text-sm text-slate-600 hover:text-primary-700 font-medium group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-emerald-400 transition-colors duration-300"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-primary-400 transition-colors duration-300"></span>
                   {activity}
                 </div>
               </LocalizedLink>
@@ -272,7 +272,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
         <LocalizedLink
           to={viewAllHref}
           onClick={onClose}
-          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40"
+          className="inline-flex items-center gap-2 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 transition-colors px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40"
         >
           {t('menu.viewCategory')} {data.title}
           <ChevronRight size={16} strokeWidth={2} />

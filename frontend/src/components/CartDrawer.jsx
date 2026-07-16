@@ -46,7 +46,7 @@ const CartDrawer = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white/80">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-emerald-600" />
+                <ShoppingBag className="w-5 h-5 text-primary-600" />
                 <h2 className="text-xl font-bold text-slate-800">
                   {t('cart.title', 'Mon Panier')} ({cartItems.length})
                 </h2>
@@ -77,7 +77,7 @@ const CartDrawer = () => {
                       setIsCartOpen(false);
                       navigate('/');
                     }}
-                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 active:scale-95 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all text-sm"
+                    className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 active:scale-95 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all text-sm"
                   >
                     {t('cart.explore', 'Explorer')}
                   </button>
@@ -144,7 +144,7 @@ const CartDrawer = () => {
                           <span className="text-xs font-semibold bg-slate-100/80 px-2 py-1 rounded-lg text-slate-600">
                             {item.numberOfTickets} × {t('cart.tickets', 'Billet(s)')}
                           </span>
-                          <span className="font-extrabold text-emerald-600 text-sm">
+                          <span className="font-extrabold text-primary-600 text-sm">
                             {formatPrice(item.priceBreakdown?.subtotal || 0)}
                           </span>
                         </div>
@@ -170,7 +170,7 @@ const CartDrawer = () => {
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-2.5"
+                  className="w-full bg-primary-600 hover:bg-primary-700 active:scale-98 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-2.5"
                 >
                   <CheckCircle className="w-5 h-5" />
                   {t('cart.checkout', 'Valider la commande')}

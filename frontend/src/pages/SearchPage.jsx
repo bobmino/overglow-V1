@@ -397,13 +397,13 @@ const SearchPage = () => {
 
       <div className="container mx-auto px-4 pt-24 pb-8">
         {store && (
-          <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-700 text-white p-6 md:p-10">
-            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200 mb-2">
+          <div className="mb-8 rounded-2xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white p-6 md:p-10">
+            <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-2">
               Overglow Trip
             </p>
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{pageTitle}</h1>
             {pageSubtitle && (
-              <p className="text-emerald-50/90 max-w-2xl text-base md:text-lg">{pageSubtitle}</p>
+              <p className="text-primary-50/90 max-w-2xl text-base md:text-lg">{pageSubtitle}</p>
             )}
           </div>
         )}
@@ -527,7 +527,7 @@ const SearchPage = () => {
                               className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                                 item.badge === 'soon'
                                   ? 'bg-amber-50 text-amber-700'
-                                  : 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-primary-50 text-primary-700'
                               }`}
                             >
                               {item.badge === 'soon'

@@ -167,7 +167,7 @@ const OperatorWizardPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-700"></div>
       </div>
     );
   }
@@ -724,7 +724,7 @@ const OperatorWizardPage = () => {
                   }}
                 >
                   {isCompleted ? (
-                    <CheckCircle size={20} className="text-green-600" />
+                    <CheckCircle size={20} className="text-primary-600" />
                   ) : (
                     <Circle size={20} />
                   )}
@@ -774,7 +774,7 @@ const OperatorWizardPage = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? t('operator.wizard.submitting') : t('operator.wizard.validate_submit')}
                 </button>

@@ -41,8 +41,8 @@ const MyInquiryCard = ({ inquiry, onOpenChat }) => {
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
           inquiry.type === 'manual'
-            ? (inquiry.answer ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800')
-            : (inquiry.status === 'approved' ? 'bg-green-100 text-green-800' :
+            ? (inquiry.answer ? 'bg-primary-100 text-primary-800' : 'bg-yellow-100 text-yellow-800')
+            : (inquiry.status === 'approved' ? 'bg-primary-100 text-primary-800' :
                inquiry.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
         }`}>
           {getStatusLabel()}
@@ -59,14 +59,14 @@ const MyInquiryCard = ({ inquiry, onOpenChat }) => {
       {inquiry.type === 'manual' && inquiry.answer && (
         <div className="mb-4">
           <p className="text-sm font-semibold text-gray-700 mb-2">{t('my_inquiries.answer')}</p>
-          <p className="text-gray-700 bg-green-50 p-3 rounded-lg">{inquiry.answer}</p>
+          <p className="text-gray-700 bg-primary-50 p-3 rounded-lg">{inquiry.answer}</p>
         </div>
       )}
 
       {inquiry.type === 'automatic' && inquiry.status === 'approved' && (
-        <div className="mb-4 p-3 bg-green-50 rounded-lg">
-          <CheckCircle size={16} className="inline me-2 text-green-700" />
-          <span className="text-green-700 font-semibold">{t('my_inquiries.approved')}</span>
+        <div className="mb-4 p-3 bg-primary-50 rounded-lg">
+          <CheckCircle size={16} className="inline me-2 text-primary-700" />
+          <span className="text-primary-700 font-semibold">{t('my_inquiries.approved')}</span>
         </div>
       )}
 

@@ -59,9 +59,9 @@ const ResetPasswordPage = () => {
         )}
 
         {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2" role="status">
-            <CheckCircle className="text-green-600 flex-shrink-0" size={18} />
-            <p className="text-sm text-green-800">{success}</p>
+          <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg flex items-center gap-2" role="status">
+            <CheckCircle className="text-primary-600 flex-shrink-0" size={18} />
+            <p className="text-sm text-primary-800">{success}</p>
           </div>
         )}
 

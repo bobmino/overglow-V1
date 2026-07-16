@@ -48,7 +48,7 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
             <button
               type="button"
               onClick={handleSeeMore}
-              className="text-emerald-600 font-bold hover:text-emerald-700 transition-colors flex items-center gap-1.5 text-sm md:text-base group/all shrink-0 min-h-11"
+              className="text-primary-600 font-bold hover:text-primary-700 transition-colors flex items-center gap-1.5 text-sm md:text-base group/all shrink-0 min-h-11"
             >
               <span>{t('common.see_all')}</span>
               <ArrowRight size={16} className="group-hover/all:translate-x-1 transition-transform rtl:rotate-180" />
@@ -97,8 +97,8 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
               whileHover={{ y: -6 }}
               onClick={handleSeeMore}
             >
-              <div className="h-[430px] w-full rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-8 text-center transition-all duration-300 hover:shadow-xl hover:border-emerald-300 hover:bg-emerald-50/20 group/more">
-                <div className="bg-white p-4.5 rounded-full shadow-md mb-4 group-hover/more:bg-emerald-500 group-hover/more:text-white transition-colors duration-300 text-emerald-600">
+              <div className="h-[430px] w-full rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-8 text-center transition-all duration-300 hover:shadow-xl hover:border-primary-300 hover:bg-primary-50/20 group/more">
+                <div className="bg-white p-4.5 rounded-full shadow-md mb-4 group-hover/more:bg-primary-500 group-hover/more:text-white transition-colors duration-300 text-primary-600">
                   <ArrowRight size={28} className="group-hover/more:translate-x-1.5 transition-transform duration-300 rtl:rotate-180" />
                 </div>
                 <h3 className="text-2xl font-extrabold text-slate-900 mb-2">

@@ -25,9 +25,9 @@ const CancellationPolicy = ({ policy, compact = false }) => {
       case 'free':
         return {
           icon: CheckCircle,
-          color: 'text-green-700',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
+          color: 'text-primary-700',
+          bgColor: 'bg-primary-50',
+          borderColor: 'border-primary-200',
           title: t('product.cancellation.free_title'),
           description:
             policy.description ||

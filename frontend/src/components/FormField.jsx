@@ -41,7 +41,7 @@ const FormField = ({
           <Icon 
             size={20} 
             className={`absolute start-3 top-1/2 -translate-y-1/2 ${
-              hasError ? 'text-red-500' : isValid ? 'text-green-500' : 'text-gray-400'
+              hasError ? 'text-red-500' : isValid ? 'text-primary-500' : 'text-gray-400'
             } transition-colors`} 
           />
         )}
@@ -60,7 +60,7 @@ const FormField = ({
             hasError
               ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500'
               : isValid
-              ? 'border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500'
+              ? 'border-primary-500 focus:ring-2 focus:ring-green-500 focus:border-primary-500'
               : 'border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
           }`}
           aria-invalid={hasError}
@@ -74,7 +74,7 @@ const FormField = ({
             <AlertCircle size={18} className="text-red-500" aria-hidden="true" />
           )}
           {isValid && (
-            <CheckCircle size={18} className="text-green-500" aria-hidden="true" />
+            <CheckCircle size={18} className="text-primary-500" aria-hidden="true" />
           )}
         </div>
       </div>

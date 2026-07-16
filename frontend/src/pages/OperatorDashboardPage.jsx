@@ -131,7 +131,7 @@ const OperatorDashboardPage = () => {
         </div>
         <Link
           to="/operator/products/new"
-          className="inline-flex items-center justify-center gap-2 bg-green-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-green-800 transition"
+          className="inline-flex items-center justify-center gap-2 bg-primary-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-primary-800 transition"
         >
           <Plus size={18} />
           {t('operator.dashboard.create_product')}
@@ -156,7 +156,7 @@ const OperatorDashboardPage = () => {
           icon={Users}
           label={t('operator.dashboard.top_experiences')}
           value={stats.topExperiences?.length || 0}
-          color="bg-green-600"
+          color="bg-primary-600"
         />
       </div>
 

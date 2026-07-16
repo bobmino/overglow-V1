@@ -73,7 +73,7 @@ const TrendBadge = ({ value }) => {
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-semibold ${
-        up ? 'text-green-600' : 'text-red-600'
+        up ? 'text-primary-600' : 'text-red-600'
       }`}
     >
       <Icon size={14} />
@@ -144,7 +144,7 @@ const AdminDashboardPage = () => {
         value: formatMoney(current.revenue),
         trend: trendPct(current.revenue, previous.revenue),
         icon: Banknote,
-        color: 'bg-emerald-600',
+        color: 'bg-primary-600',
       },
       {
         key: 'bookings',

@@ -231,7 +231,7 @@ const productSchema = mongoose.Schema({
   },
 }, {
   timestamps: true,
-  strict: false,
+  strict: true,
 });
 
 // Performance compound indexes for Sprint 1

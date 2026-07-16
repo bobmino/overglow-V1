@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import tailwindcssRtl from 'tailwindcss-rtl';
+import tailwindcssAnimate from 'tailwindcss-animate';
 
 export default {
   content: [
@@ -46,5 +47,5 @@ export default {
     },
   },
   // [TASK-16] RTL variants (rtl: / ltr:) — with Tailwind 3.4 logical utilities (ms/me/ps/pe)
-  plugins: [tailwindcssRtl],
+  plugins: [tailwindcssRtl, tailwindcssAnimate],
 };

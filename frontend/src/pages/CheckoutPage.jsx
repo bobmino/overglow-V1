@@ -357,7 +357,7 @@ const CheckoutPage = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold">{t('checkout.total')}</span>
-                  <span className="text-2xl font-bold text-green-700">
+                  <span className="text-2xl font-bold text-primary-700">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
@@ -367,7 +367,7 @@ const CheckoutPage = () => {
                 className="text-xs text-gray-500 mt-4 flex items-center gap-1"
                 aria-live="polite"
               >
-                <Lock size={12} className="text-emerald-600" />
+                <Lock size={12} className="text-primary-600" />
                 {t('checkout.secure_payment')}
               </p>
             </div>

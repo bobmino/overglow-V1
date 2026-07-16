@@ -21,9 +21,9 @@ const HelpPage = () => {
           <p className="text-xl text-gray-600">{t('help.subtitle')}</p>
         </div>
 
-        <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-100 rounded-xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-primary-50 to-cyan-50 border border-primary-100 rounded-xl p-6 mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <ShieldCheck className="text-emerald-700" />
+            <ShieldCheck className="text-primary-700" />
             <h2 className="text-xl font-bold text-slate-900">{t('help.guarantees_title')}</h2>
           </div>
           <p className="text-slate-700 text-sm">{t('help.guarantees_body')}</p>
