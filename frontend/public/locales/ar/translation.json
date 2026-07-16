@@ -82,6 +82,41 @@
       "subtitle": "نقل، كونسيرج، تصوير احترافي وخدمات مميزة لإكمال إقامتكم.",
       "curated_title": "خدمات رائجة",
       "also_coming": "قريباً أيضاً على Overglow"
+    },
+    "curated": {
+      "airport_pickup_title": "نقل VIP من المطار",
+      "airport_pickup_city": "أكادير / مراكش",
+      "airport_pickup_desc": "استقبال بالاسم، سيارة مكيفة، تتبع الرحلة.",
+      "private_shuttle_title": "نقل خاص بين المدن",
+      "private_shuttle_city": "المغرب",
+      "private_shuttle_desc": "رحلات مريحة أكادير–الصويرة، مراكش–فاس، سائق مخصص.",
+      "pro_shoot_title": "جلسة تصوير احترافية",
+      "pro_shoot_city": "المدينة والساحل",
+      "pro_shoot_desc": "صور سفر أو عائلة — تسليم خلال 48 ساعة.",
+      "concierge_title": "كونسيرج في الموقع",
+      "concierge_city": "في الموقع",
+      "concierge_desc": "حجوزات مطاعم، حمام، تذاكر عروض.",
+      "surf_coach_title": "تدريب ركوب أمواج خاص",
+      "surf_coach_city": "تغازوت",
+      "surf_coach_desc": "درس فردي مع مدرب معتمد — لوح مشمول.",
+      "private_guide_title": "مرشد خاص متعدد اللغات",
+      "private_guide_city": "المدن العتيقة",
+      "private_guide_desc": "FR / EN / ES / AR — نصف يوم أو يوم كامل.",
+      "yacht_title": "رحلة يخت نصف يوم",
+      "yacht_city": "مرسى أكادير",
+      "yacht_desc": "قبطان مشمول، مشروبات، خيار الغروب.",
+      "spa_title": "حمام وسبا خاص",
+      "spa_city": "رياض / سبا شريك",
+      "spa_desc": "طقوس تقليدية + مساج أركان لشخصين.",
+      "villa_title": "فيلات مع مسبح خاص",
+      "villa_city": "خليج تغازوت وأكادير",
+      "villa_desc": "فاخرة، كونسيرج، إطلالة محيط أو أطلس.",
+      "riad_title": "رياضات أنيقة",
+      "riad_city": "مراكش وتارودانت",
+      "riad_desc": "فناء، حمام خاص، إفطار فاخر.",
+      "ocean_title": "أجنحة بإطلالة محيط",
+      "ocean_city": "أكادير والصويرة",
+      "ocean_desc": "شقق ودوبلكس فاخرة أمام الأطلسي."
     }
   },
   "catalog": {
@@ -117,7 +152,12 @@
     "tag_free_cancel": "إلغاء مجاني",
     "tag_instant": "تأكيد فوري",
     "tag_bestseller": "الأكثر مبيعاً",
-    "clear_all": "مسح الكل"
+    "clear_all": "مسح الكل",
+    "cancellation_policy": "سياسة الإلغاء",
+    "cancel_free": "إلغاء مجاني",
+    "cancel_moderate": "إلغاء معتدل",
+    "cancel_strict": "إلغاء صارم",
+    "cancel_non_refundable": "غير قابل للاسترداد"
   },
   "product": {
     "claim_question": "هل أنت منظّم هذا النشاط؟",
@@ -138,8 +178,8 @@
     "guarantee_free_cancel_desc": "ألغِ حتى 24 ساعة مسبقاً لاسترداد كامل",
     "guarantee_verified_operator": "مشغّل موثّق",
     "guarantee_verified_operator_desc": "جميع مشغّلينا موثّقون ومعتمدون",
-    "guarantee_support": "دعم على مدار الساعة",
-    "guarantee_support_desc": "دعم العملاء متاح في أي وقت",
+    "guarantee_support": "دعم العملاء",
+    "guarantee_support_desc": "المساعدة عبر مركز المساعدة والرسائل.",
     "cancellation_policy": "سياسة الإلغاء",
     "faq": "الأسئلة الشائعة",
     "inquiry_title": "أسئلة أو تحقق مطلوب",
@@ -173,7 +213,7 @@
     "select_time_error": "يرجى اختيار فترة زمنية",
     "booking_options": "خيارات الحجز",
     "cancellation": {
-      "default": "سياسة إلغاء قياسية: إلغاء مجاني حتى 24 ساعة قبل البدء.",
+      "default": "تُحدد سياسة الإلغاء من قِبل المشغّل لهذه التجربة.",
       "free_title": "إلغاء مجاني",
       "free_desc": "إلغاء مجاني حتى {{hours}} ساعة قبل بدء التجربة",
       "moderate_title": "إلغاء متوسط",
@@ -184,7 +224,11 @@
       "non_refundable_desc": "هذا الحجز غير قابل للاسترداد.",
       "contact_operator": "تواصل مع المشغّل لمزيد من المعلومات.",
       "refund_pct": "الاسترداد: {{pct}}٪"
-    }
+    },
+    "new_badge": "جديد",
+    "booked_count": "تم الحجز {{count}} مرة",
+    "meta_title_fallback": "تجربة Overglow",
+    "meta_description_fallback": "اكتشف هذه التجربة على Overglow Trip."
   },
   "cart": {
     "title": "سلتي",
@@ -2005,6 +2049,17 @@
       "id_number_label": "رقم وثيقة الهوية *",
       "validate_submit": "التحقق والإرسال",
       "submitting": "جارٍ الإرسال…"
+    },
+    "community": {
+      "title": "مجتمع المشغّلين",
+      "subtitle": "تواصل مع شركاء آخرين وتابع أخبارنا.",
+      "meta": "مجتمع مشغّلي Overglow Trip: المنتدى والشبكات.",
+      "breadcrumb_operator": "مشغّل",
+      "breadcrumb_community": "مجتمع",
+      "forum_title": "منتدى المشغّلين",
+      "forum_body": "مساحة تبادل بين الشركاء — قريباً.",
+      "coming_soon": "قريباً",
+      "social_title": "الشبكات الاجتماعية"
     }
   },
   "withdrawals": {
@@ -2171,5 +2226,41 @@
     "scroll_right": "تمرير لليمين",
     "more_count": "+ {{count}} أخرى",
     "explore_collection": "استكشف المجموعة"
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "count": "{{count}} تقييم",
+    "empty": "لا توجد تقييمات بعد. كن أول من يشارك تجربته!",
+    "empty_filter": "لا توجد تقييمات تطابق هذا الفلتر.",
+    "loading": "جاري تحميل التقييمات…",
+    "verified": "موثّق",
+    "anonymous": "مجهول",
+    "helpful": "مفيد",
+    "mark_helpful": "وضع علامة مفيد",
+    "already_voted": "لقد صوّت مسبقاً",
+    "report": "إبلاغ",
+    "operator_reply": "رد المشغّل",
+    "reply": "رد",
+    "reply_prompt": "ردّك على هذا التعليق:",
+    "reply_success": "تمت إضافة الرد",
+    "reply_error": "خطأ",
+    "login_to_vote": "يرجى تسجيل الدخول للتصويت",
+    "login_to_report": "يرجى تسجيل الدخول للإبلاغ",
+    "vote_error": "فشل التصويت",
+    "report_prompt": "سبب الإبلاغ:\n1. spam\n2. inappropriate\n3. fake\n4. offensive\n5. other",
+    "report_description_optional": "الوصف (اختياري):",
+    "report_success": "تم الإبلاغ. شكراً.",
+    "report_error": "فشل الإبلاغ",
+    "photo_alt": "صورة التقييم {{n}}",
+    "filter_label": "تصفية التقييمات",
+    "filter_all": "كل التقييمات",
+    "filter_stars": "{{stars}} نجوم",
+    "filter_photos": "مع صور",
+    "filter_verified": "موثّقة",
+    "sort_label": "ترتيب التقييمات",
+    "sort_helpful": "الأكثر فائدة",
+    "sort_recent": "الأحدث",
+    "sort_rating": "أعلى تقييم",
+    "breakdown": "توزيع التقييمات"
   }
 }

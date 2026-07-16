@@ -225,8 +225,8 @@ const Home = () => {
                       <span className="text-[10px] font-bold uppercase text-amber-700">
                         {t('stores.badge_soon')}
                       </span>
-                      <p className="font-semibold text-slate-900 mt-2">{item.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">{item.city}</p>
+                      <p className="font-semibold text-slate-900 mt-2">{t(item.titleKey)}</p>
+                      <p className="text-xs text-slate-500 mt-1">{t(item.cityKey)}</p>
                     </div>
                   ))}
                 </div>

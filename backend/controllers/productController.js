@@ -22,6 +22,30 @@ import { buildProductI18n } from '../utils/catalogLexicon.js';
 import { sanitizeHtml, sanitizeText, sanitizeName } from '../utils/sanitizer.js';
 import connectDB from '../../config/db.js';
 
+const CANCELLATION_TYPES = ['free', 'moderate', 'strict', 'non_refundable'];
+
+/** Normalize + validate cancellationPolicy from request body (DB source of truth). */
+const normalizeCancellationPolicy = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const type = CANCELLATION_TYPES.includes(raw.type) ? raw.type : 'moderate';
+  const hours = Number(raw.freeCancellationHours);
+  const pct = Number(raw.refundPercentage);
+  return {
+    type,
+    freeCancellationHours: Number.isFinite(hours) && hours >= 0 ? hours : 24,
+    refundPercentage: Number.isFinite(pct) && pct >= 0 && pct <= 100 ? pct : 100,
+    description: sanitizeText(String(raw.description || '')),
+  };
+};
+
+/** Keep tag `annulation-gratuite` in sync with cancellationPolicy.type */
+const syncFreeCancelTag = (tags = [], policyType) => {
+  const list = Array.isArray(tags) ? tags.map(String).filter(Boolean) : [];
+  const without = list.filter((t) => t.toLowerCase() !== 'annulation-gratuite');
+  if (policyType === 'free') without.push('annulation-gratuite');
+  return [...new Set(without)];
+};
+
 const ensureDbConnected = async () => {
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     return;
@@ -214,6 +238,17 @@ const createProduct = async (req, res) => {
       }
     }
 
+    const policy = normalizeCancellationPolicy(req.body.cancellationPolicy) || {
+      type: 'moderate',
+      freeCancellationHours: 24,
+      refundPercentage: 100,
+      description: '',
+    };
+    const initialTags = syncFreeCancelTag(
+      Array.isArray(req.body.tags) ? req.body.tags : [],
+      policy.type
+    );
+
     const product = new Product({
       operator: operator._id,
       title: sanitizeName(title),
@@ -233,6 +268,8 @@ const createProduct = async (req, res) => {
       timeSlots: Array.isArray(timeSlots) ? timeSlots : [],
       status: finalStatus,
       user: req.user._id,
+      cancellationPolicy: policy,
+      tags: initialTags,
     });
 
     // Auto-generate catalogue i18n from FR source (lexicon-based)
@@ -411,6 +448,19 @@ const updateProduct = async (req, res) => {
         }
       }
       product.status = nextStatus;
+
+      if (req.body.cancellationPolicy !== undefined) {
+        const policy = normalizeCancellationPolicy(req.body.cancellationPolicy);
+        if (policy) {
+          product.cancellationPolicy = policy;
+          product.tags = syncFreeCancelTag(product.tags || [], policy.type);
+        }
+      } else if (Array.isArray(req.body.tags)) {
+        product.tags = syncFreeCancelTag(
+          req.body.tags,
+          product.cancellationPolicy?.type
+        );
+      }
 
       // Rebuild multilingual fields when core copy changes
       if (title !== undefined || description !== undefined || highlights !== undefined || included !== undefined || requirements !== undefined) {
@@ -604,7 +654,7 @@ const getProductById = async (req, res) => {
         logger.error('Error fetching schedules:', err);
         return [];
       }),
-      Review.find({ product: product._id })
+      Review.find({ product: product._id, status: 'Approved' })
         .populate('user', 'name')
         .lean()
         .catch(err => {

@@ -226,7 +226,7 @@ const productSchema = mongoose.Schema({
     },
     description: {
       type: String,
-      default: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+      default: '',
     },
   },
 }, {

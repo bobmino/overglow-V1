@@ -82,6 +82,41 @@
       "subtitle": "Traslados, conserjería, foto pro y servicios premium para completar su viaje.",
       "curated_title": "Servicios en tendencia",
       "also_coming": "También próximamente en Overglow"
+    },
+    "curated": {
+      "airport_pickup_title": "Traslado VIP al aeropuerto",
+      "airport_pickup_city": "Agadir / Marrakech",
+      "airport_pickup_desc": "Recepción nominativa, vehículo con A/C, seguimiento de vuelo.",
+      "private_shuttle_title": "Lanzadera privada interciudad",
+      "private_shuttle_city": "Marruecos",
+      "private_shuttle_desc": "Trayectos cómodos Agadir–Essaouira, Marrakech–Fez, chófer dedicado.",
+      "pro_shoot_title": "Sesión de fotos profesional",
+      "pro_shoot_city": "Medina y costa",
+      "pro_shoot_desc": "Retratos de viaje, pareja o familia — entrega en 48 h.",
+      "concierge_title": "Conserjería in situ",
+      "concierge_city": "In situ",
+      "concierge_desc": "Reservas de restaurantes, hammam, entradas.",
+      "surf_coach_title": "Clase de surf privada",
+      "surf_coach_city": "Taghazout",
+      "surf_coach_desc": "Clase 1:1 con instructor certificado — tabla incluida.",
+      "private_guide_title": "Guía privado multilingüe",
+      "private_guide_city": "Medinas",
+      "private_guide_desc": "FR / EN / ES / AR — media jornada o jornada completa.",
+      "yacht_title": "Salida en yate media jornada",
+      "yacht_city": "Marina de Agadir",
+      "yacht_desc": "Patrón incluido, soft drinks, opción atardecer.",
+      "spa_title": "Hammam y spa privado",
+      "spa_city": "Riad / spa asociado",
+      "spa_desc": "Ritual tradicional + masaje de argán para 2.",
+      "villa_title": "Villas con piscina privada",
+      "villa_city": "Taghazout Bay y Agadir",
+      "villa_desc": "Alto standing, conserjería, vistas al océano o al Atlas.",
+      "riad_title": "Riads con encanto",
+      "riad_city": "Marrakech y Taroudant",
+      "riad_desc": "Patio, hammam privado, desayuno gourmet.",
+      "ocean_title": "Suites con vistas al océano",
+      "ocean_city": "Agadir y Essaouira",
+      "ocean_desc": "Apartamentos y dúplex de lujo frente al Atlántico."
     }
   },
   "catalog": {
@@ -117,7 +152,12 @@
     "tag_free_cancel": "Cancelación gratuita",
     "tag_instant": "Confirmación inmediata",
     "tag_bestseller": "Más vendido",
-    "clear_all": "Borrar todo"
+    "clear_all": "Borrar todo",
+    "cancellation_policy": "Política de cancelación",
+    "cancel_free": "Cancelación gratuita",
+    "cancel_moderate": "Cancelación moderada",
+    "cancel_strict": "Cancelación estricta",
+    "cancel_non_refundable": "No reembolsable"
   },
   "product": {
     "claim_question": "¿Eres el organizador de esta actividad?",
@@ -138,8 +178,8 @@
     "guarantee_free_cancel_desc": "Cancela hasta 24 h antes para un reembolso completo",
     "guarantee_verified_operator": "Operador verificado",
     "guarantee_verified_operator_desc": "Todos nuestros operadores están verificados y certificados",
-    "guarantee_support": "Soporte 24/7",
-    "guarantee_support_desc": "Atención al cliente disponible en cualquier momento",
+    "guarantee_support": "Atención al cliente",
+    "guarantee_support_desc": "Ayuda a través del centro de ayuda y mensajería.",
     "cancellation_policy": "Política de cancelación",
     "faq": "Preguntas frecuentes",
     "inquiry_title": "Preguntas o validación requerida",
@@ -173,7 +213,7 @@
     "select_time_error": "Seleccione una franja horaria",
     "booking_options": "Opciones de reserva",
     "cancellation": {
-      "default": "Cancelación estándar: gratuita hasta 24 h antes del inicio.",
+      "default": "La política de cancelación la define el operador para esta experiencia.",
       "free_title": "Cancelación gratuita",
       "free_desc": "Cancelación gratuita hasta {{hours}} horas antes del inicio",
       "moderate_title": "Cancelación moderada",
@@ -184,7 +224,11 @@
       "non_refundable_desc": "Esta reserva no es reembolsable.",
       "contact_operator": "Contacte al operador para más información.",
       "refund_pct": "Reembolso: {{pct}} %"
-    }
+    },
+    "new_badge": "Novedad",
+    "booked_count": "Reservado {{count}} veces",
+    "meta_title_fallback": "Experiencia Overglow",
+    "meta_description_fallback": "Descubre esta experiencia en Overglow Trip."
   },
   "cart": {
     "title": "Mi carrito",
@@ -2005,6 +2049,17 @@
       "id_number_label": "Número de documento de identidad *",
       "validate_submit": "Validar y enviar",
       "submitting": "Enviando…"
+    },
+    "community": {
+      "title": "Comunidad de operadores",
+      "subtitle": "Conecta con otros socios y sigue nuestras novedades.",
+      "meta": "Comunidad de operadores Overglow Trip: foro y redes.",
+      "breadcrumb_operator": "Operador",
+      "breadcrumb_community": "Comunidad",
+      "forum_title": "Foro de operadores",
+      "forum_body": "Espacio de intercambio entre socios — próximamente.",
+      "coming_soon": "Próximamente",
+      "social_title": "Redes sociales"
     }
   },
   "withdrawals": {
@@ -2171,5 +2226,41 @@
     "scroll_right": "Desplazar a la derecha",
     "more_count": "+ {{count}} más",
     "explore_collection": "Explorar la colección"
+  },
+  "reviews": {
+    "title": "Opiniones",
+    "count": "{{count}} opiniones",
+    "empty": "Aún no hay opiniones. ¡Sé el primero en compartir tu experiencia!",
+    "empty_filter": "Ninguna opinión coincide con este filtro.",
+    "loading": "Cargando opiniones…",
+    "verified": "Verificado",
+    "anonymous": "Anónimo",
+    "helpful": "Útil",
+    "mark_helpful": "Marcar como útil",
+    "already_voted": "Ya has votado",
+    "report": "Reportar",
+    "operator_reply": "Respuesta del operador",
+    "reply": "Responder",
+    "reply_prompt": "Tu respuesta a este comentario:",
+    "reply_success": "Respuesta añadida",
+    "reply_error": "Error",
+    "login_to_vote": "Inicia sesión para votar",
+    "login_to_report": "Inicia sesión para reportar",
+    "vote_error": "Error al votar",
+    "report_prompt": "Motivo:\n1. spam\n2. inappropriate\n3. fake\n4. offensive\n5. other",
+    "report_description_optional": "Descripción (opcional):",
+    "report_success": "Opinión reportada. Gracias.",
+    "report_error": "Error al reportar",
+    "photo_alt": "Foto de opinión {{n}}",
+    "filter_label": "Filtrar opiniones",
+    "filter_all": "Todas",
+    "filter_stars": "{{stars}} estrellas",
+    "filter_photos": "Con fotos",
+    "filter_verified": "Verificadas",
+    "sort_label": "Ordenar",
+    "sort_helpful": "Más útiles",
+    "sort_recent": "Más recientes",
+    "sort_rating": "Mejor nota",
+    "breakdown": "Distribución de notas"
   }
 }

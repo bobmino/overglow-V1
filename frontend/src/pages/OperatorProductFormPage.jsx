@@ -70,9 +70,9 @@ const OperatorProductFormPage = () => {
     status: 'Draft',
     cancellationPolicy: {
       type: 'moderate',
-      freeCancellationHours: 24,
-      refundPercentage: 100,
-      description: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+      freeCancellationHours: 48,
+      refundPercentage: 50,
+      description: '',
     },
     skipTheLine: {
       enabled: false,
@@ -123,9 +123,9 @@ const OperatorProductFormPage = () => {
         },
         cancellationPolicy: data.cancellationPolicy || {
           type: 'moderate',
-          freeCancellationHours: 24,
-          refundPercentage: 100,
-          description: 'Annulation gratuite jusqu\'à 24h avant le début de l\'expérience',
+          freeCancellationHours: 48,
+          refundPercentage: 50,
+          description: '',
         },
       }));
 

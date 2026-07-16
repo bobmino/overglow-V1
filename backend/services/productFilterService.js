@@ -100,6 +100,13 @@ export const parseFilterParams = (query = {}) => {
     tags = tagsRaw.split(',').map((t) => t.trim()).filter(Boolean);
   }
 
+  const cancellationTypes = ['free', 'moderate', 'strict', 'non_refundable'];
+  const cancellationType =
+    typeof query.cancellationType === 'string' &&
+    cancellationTypes.includes(query.cancellationType)
+      ? query.cancellationType
+      : null;
+
   const OBJECT_ID_RE = /^[a-f\d]{24}$/i;
   let categoryGroup =
     typeof query.categoryGroup === 'string' && OBJECT_ID_RE.test(query.categoryGroup.trim())
@@ -151,6 +158,7 @@ export const parseFilterParams = (query = {}) => {
     radius: query.radius != null && query.radius !== '' ? Number(query.radius) : null,
     skipTheLine: query.skipTheLine === 'true' || query.skipTheLine === true,
     tags,
+    cancellationType,
     sortBy: typeof query.sortBy === 'string' ? query.sortBy : 'recommended',
     page: Math.max(1, parseInt(query.page, 10) || 1),
     limit: Math.min(50, Math.max(1, parseInt(query.limit, 10) || 20)),
@@ -223,11 +231,45 @@ export const buildPublishedProductQuery = (filters) => {
   }
 
   if (filters.tags?.length) {
-    and.push({
-      tags: {
-        $all: filters.tags.map((tag) => new RegExp(`^${escapeRegex(tag)}$`, 'i')),
-      },
-    });
+    const freeCancelRequested = filters.tags.some(
+      (t) => String(t).toLowerCase() === 'annulation-gratuite'
+    );
+    const otherTags = filters.tags.filter(
+      (t) => String(t).toLowerCase() !== 'annulation-gratuite'
+    );
+
+    if (otherTags.length) {
+      and.push({
+        tags: {
+          $all: otherTags.map((tag) => new RegExp(`^${escapeRegex(tag)}$`, 'i')),
+        },
+      });
+    }
+
+    if (freeCancelRequested && !filters.cancellationType) {
+      and.push({
+        $or: [
+          { 'cancellationPolicy.type': 'free' },
+          { tags: { $elemMatch: { $regex: /^annulation-gratuite$/i } } },
+        ],
+      });
+    }
+  }
+
+  if (
+    filters.cancellationType &&
+    ['free', 'moderate', 'strict', 'non_refundable'].includes(filters.cancellationType)
+  ) {
+    if (filters.cancellationType === 'free') {
+      and.push({
+        $or: [
+          { 'cancellationPolicy.type': 'free' },
+          { tags: { $elemMatch: { $regex: /^annulation-gratuite$/i } } },
+        ],
+      });
+    } else {
+      and.push({ 'cancellationPolicy.type': filters.cancellationType });
+    }
   }
 
   if (Number.isFinite(filters.minPrice) || Number.isFinite(filters.maxPrice)) {

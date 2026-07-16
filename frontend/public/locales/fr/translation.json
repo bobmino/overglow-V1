@@ -90,6 +90,41 @@
       "type_wellness": "Bien-être",
       "type_premium": "Premium",
       "type_loisirs": "Loisirs"
+    },
+    "curated": {
+      "airport_pickup_title": "Transfert aéroport VIP",
+      "airport_pickup_city": "Agadir / Marrakech",
+      "airport_pickup_desc": "Accueil nominatif, véhicule climatisé, suivi de vol en temps réel.",
+      "private_shuttle_title": "Navette privée inter-villes",
+      "private_shuttle_city": "Maroc",
+      "private_shuttle_desc": "Trajets confort Agadir–Essaouira, Marrakech–Fès, etc. chauffeur dédié.",
+      "pro_shoot_title": "Séance photo professionnelle",
+      "pro_shoot_city": "Médina et côte",
+      "pro_shoot_desc": "Portrait voyage, couple ou famille — livrable sous 48 h.",
+      "concierge_title": "Conciergerie sur place",
+      "concierge_city": "Sur place",
+      "concierge_desc": "Réservations restaurants, hammam, billetterie spectacles.",
+      "surf_coach_title": "Coaching surf privé",
+      "surf_coach_city": "Taghazout",
+      "surf_coach_desc": "Cours 1:1 avec moniteur certifié — planche incluse.",
+      "private_guide_title": "Guide privé multilingue",
+      "private_guide_city": "Médinas",
+      "private_guide_desc": "FR / EN / ES / AR — demi-journée ou journée complète.",
+      "yacht_title": "Sortie yacht demi-journée",
+      "yacht_city": "Agadir Marina",
+      "yacht_desc": "Skipper inclus, soft drinks, option sunset.",
+      "spa_title": "Hammam et spa privé",
+      "spa_city": "Riad / spa partenaire",
+      "spa_desc": "Rituel traditionnel + massage argan pour 2 personnes.",
+      "villa_title": "Villas avec piscine privée",
+      "villa_city": "Taghazout Bay et Agadir",
+      "villa_desc": "Haut standing, conciergerie, vue océan ou Atlas.",
+      "riad_title": "Riads de charme",
+      "riad_city": "Marrakech et Taroudant",
+      "riad_desc": "Patio, hammam privé, petit-déjeuner gastronomique.",
+      "ocean_title": "Suites vue océan",
+      "ocean_city": "Agadir et Essaouira",
+      "ocean_desc": "Appartements et duplex luxe face à l'Atlantique."
     }
   },
   "catalog": {
@@ -125,7 +160,12 @@
     "tag_free_cancel": "Annulation gratuite",
     "tag_instant": "Confirmation immédiate",
     "tag_bestseller": "Bestseller",
-    "clear_all": "Tout effacer"
+    "clear_all": "Tout effacer",
+    "cancellation_policy": "Politique d'annulation",
+    "cancel_free": "Annulation gratuite",
+    "cancel_moderate": "Annulation modérée",
+    "cancel_strict": "Annulation stricte",
+    "cancel_non_refundable": "Non remboursable"
   },
   "product": {
     "claim_question": "Vous êtes l'organisateur de cette activité ?",
@@ -146,8 +186,8 @@
     "guarantee_free_cancel_desc": "Annulez jusqu'à 24h avant pour un remboursement complet",
     "guarantee_verified_operator": "Opérateur Vérifié",
     "guarantee_verified_operator_desc": "Tous nos opérateurs sont vérifiés et certifiés",
-    "guarantee_support": "Support 24/7",
-    "guarantee_support_desc": "Assistance client disponible à tout moment",
+    "guarantee_support": "Support client",
+    "guarantee_support_desc": "Assistance via le centre d'aide et la messagerie.",
     "cancellation_policy": "Politique d'Annulation",
     "faq": "Foire aux questions",
     "inquiry_title": "Questions ou validation requise",
@@ -181,7 +221,7 @@
     "select_time_error": "Veuillez sélectionner une plage horaire",
     "booking_options": "Options de réservation",
     "cancellation": {
-      "default": "Politique d'annulation standard : annulation gratuite jusqu'à 24 h avant le début.",
+      "default": "La politique d'annulation est définie par l'opérateur pour cette expérience.",
       "free_title": "Annulation gratuite",
       "free_desc": "Annulation gratuite jusqu'à {{hours}} heures avant le début de l'expérience",
       "moderate_title": "Annulation modérée",
@@ -192,7 +232,11 @@
       "non_refundable_desc": "Cette réservation n'est pas remboursable.",
       "contact_operator": "Contactez l'opérateur pour plus d'informations.",
       "refund_pct": "Remboursement : {{pct}} %"
-    }
+    },
+    "new_badge": "Nouveauté",
+    "booked_count": "Réservé {{count}} fois",
+    "meta_title_fallback": "Expérience Overglow",
+    "meta_description_fallback": "Découvrez cette expérience sur Overglow Trip."
   },
   "cart": {
     "title": "Mon panier",
@@ -2013,6 +2057,17 @@
       "id_number_label": "Numéro de pièce d'identité *",
       "validate_submit": "Valider et soumettre",
       "submitting": "Envoi…"
+    },
+    "community": {
+      "title": "Communauté opérateurs",
+      "subtitle": "Échangez avec d'autres partenaires et suivez nos actualités.",
+      "meta": "Communauté opérateurs Overglow Trip : forum et réseaux sociaux.",
+      "breadcrumb_operator": "Opérateur",
+      "breadcrumb_community": "Communauté",
+      "forum_title": "Forum opérateurs",
+      "forum_body": "Espace d'échange entre partenaires — bientôt disponible.",
+      "coming_soon": "Bientôt disponible",
+      "social_title": "Réseaux sociaux"
     }
   },
   "withdrawals": {
@@ -2179,5 +2234,41 @@
     "scroll_right": "Faire défiler vers la droite",
     "more_count": "+ {{count}} autres",
     "explore_collection": "Explorer la collection"
+  },
+  "reviews": {
+    "title": "Avis",
+    "count": "{{count}} avis",
+    "empty": "Aucun avis pour le moment. Soyez le premier à partager votre expérience !",
+    "empty_filter": "Aucun avis ne correspond à ce filtre.",
+    "loading": "Chargement des avis…",
+    "verified": "Vérifié",
+    "anonymous": "Anonyme",
+    "helpful": "Utile",
+    "mark_helpful": "Marquer comme utile",
+    "already_voted": "Vous avez déjà voté",
+    "report": "Signaler",
+    "operator_reply": "Réponse de l'opérateur",
+    "reply": "Répondre",
+    "reply_prompt": "Votre réponse à ce commentaire :",
+    "reply_success": "Réponse ajoutée avec succès",
+    "reply_error": "Erreur",
+    "login_to_vote": "Veuillez vous connecter pour voter",
+    "login_to_report": "Veuillez vous connecter pour signaler",
+    "vote_error": "Erreur lors du vote",
+    "report_prompt": "Raison du signalement:\n1. spam\n2. inappropriate\n3. fake\n4. offensive\n5. other",
+    "report_description_optional": "Description (optionnel) :",
+    "report_success": "Avis signalé. Merci pour votre contribution.",
+    "report_error": "Erreur lors du signalement",
+    "photo_alt": "Photo avis {{n}}",
+    "filter_label": "Filtrer les avis",
+    "filter_all": "Tous les avis",
+    "filter_stars": "{{stars}} étoiles",
+    "filter_photos": "Avec photos",
+    "filter_verified": "Vérifiés",
+    "sort_label": "Trier les avis",
+    "sort_helpful": "Plus utiles",
+    "sort_recent": "Plus récents",
+    "sort_rating": "Meilleure note",
+    "breakdown": "Répartition des notes"
   }
 }

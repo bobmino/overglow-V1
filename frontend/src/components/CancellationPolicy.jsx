@@ -2,13 +2,19 @@ import React from 'react';
 import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const CancellationPolicy = ({ policy }) => {
+const CancellationPolicy = ({ policy, compact = false }) => {
   const { t } = useTranslation();
 
-  if (!policy) {
+  if (!policy?.type) {
     return (
-      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-        <p className="text-slate-600 text-sm">{t('product.cancellation.default')}</p>
+      <div
+        className={`bg-slate-50 border border-slate-200 ${
+          compact ? 'rounded-lg p-2.5' : 'rounded-lg p-4'
+        }`}
+      >
+        <p className={`text-slate-600 ${compact ? 'text-[11px] leading-tight' : 'text-sm'}`}>
+          {t('product.cancellation.default')}
+        </p>
       </div>
     );
   }
@@ -19,7 +25,7 @@ const CancellationPolicy = ({ policy }) => {
       case 'free':
         return {
           icon: CheckCircle,
-          color: 'text-green-600',
+          color: 'text-green-700',
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
           title: t('product.cancellation.free_title'),
@@ -30,7 +36,7 @@ const CancellationPolicy = ({ policy }) => {
       case 'moderate':
         return {
           icon: Clock,
-          color: 'text-yellow-600',
+          color: 'text-yellow-700',
           bgColor: 'bg-yellow-50',
           borderColor: 'border-yellow-200',
           title: t('product.cancellation.moderate_title'),
@@ -41,7 +47,7 @@ const CancellationPolicy = ({ policy }) => {
       case 'strict':
         return {
           icon: AlertCircle,
-          color: 'text-orange-600',
+          color: 'text-orange-700',
           bgColor: 'bg-orange-50',
           borderColor: 'border-orange-200',
           title: t('product.cancellation.strict_title'),
@@ -52,7 +58,7 @@ const CancellationPolicy = ({ policy }) => {
       case 'non_refundable':
         return {
           icon: XCircle,
-          color: 'text-red-600',
+          color: 'text-red-700',
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
           title: t('product.cancellation.non_refundable_title'),
@@ -62,7 +68,7 @@ const CancellationPolicy = ({ policy }) => {
       default:
         return {
           icon: Clock,
-          color: 'text-slate-600',
+          color: 'text-slate-700',
           bgColor: 'bg-slate-50',
           borderColor: 'border-slate-200',
           title: t('product.cancellation_policy'),
@@ -75,6 +81,20 @@ const CancellationPolicy = ({ policy }) => {
   const policyInfo = getPolicyInfo();
   const Icon = policyInfo.icon;
 
+  if (compact) {
+    return (
+      <div className={`p-2.5 ${policyInfo.bgColor} border ${policyInfo.borderColor} rounded-lg`}>
+        <div className={`flex items-center ${policyInfo.color} mb-0.5`}>
+          <Icon size={16} className="me-2 shrink-0" />
+          <span className="font-bold text-xs">{policyInfo.title}</span>
+        </div>
+        <p className={`text-[11px] leading-tight ${policyInfo.color} opacity-90`}>
+          {policyInfo.description}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={`${policyInfo.bgColor} rounded-lg p-4 border ${policyInfo.borderColor}`}>
       <div className="flex items-start gap-3">
@@ -82,7 +102,7 @@ const CancellationPolicy = ({ policy }) => {
         <div className="flex-1 min-w-0">
           <h3 className={`font-bold ${policyInfo.color} mb-1`}>{policyInfo.title}</h3>
           <p className="text-slate-700 text-sm leading-relaxed">{policyInfo.description}</p>
-          {policy.type !== 'non_refundable' && policy.refundPercentage && (
+          {policy.type !== 'non_refundable' && policy.refundPercentage != null && (
             <p className="text-slate-600 text-xs mt-2">
               {t('product.cancellation.refund_pct', { pct: policy.refundPercentage })}
             </p>

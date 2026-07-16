@@ -8,6 +8,13 @@ const REASSURANCE_TAG_IDS = [
   { id: 'bestseller', labelKey: 'filters.tag_bestseller', color: 'bg-amber-100 text-amber-700' },
 ];
 
+const CANCELLATION_TYPES = [
+  { id: 'free', labelKey: 'filters.cancel_free' },
+  { id: 'moderate', labelKey: 'filters.cancel_moderate' },
+  { id: 'strict', labelKey: 'filters.cancel_strict' },
+  { id: 'non_refundable', labelKey: 'filters.cancel_non_refundable' },
+];
+
 const FilterSidebar = ({
   searchQuery,
   setSearchQuery,
@@ -77,6 +84,7 @@ const FilterSidebar = ({
     (filters.minPrice || filters.maxPrice ? 1 : 0) +
     (filters.minRating ? 1 : 0) +
     (filters.tags?.length || 0) +
+    (filters.cancellationType ? 1 : 0) +
     (selectedCity ? 1 : 0) +
     (searchQuery ? 1 : 0);
 
@@ -209,6 +217,41 @@ const FilterSidebar = ({
                     {t(tag.labelKey)}
                   </span>
                 </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pt-6">
+          <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
+            {t('filters.cancellation_policy')}
+          </h3>
+          <div className="space-y-2">
+            {CANCELLATION_TYPES.map((opt) => {
+              const isActive = filters.cancellationType === opt.id;
+              return (
+                <button
+                  type="button"
+                  key={opt.id}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      cancellationType: isActive ? null : opt.id,
+                    }))
+                  }
+                  className="flex items-center space-x-3 cursor-pointer group w-full text-start"
+                >
+                  <div
+                    className={`flex items-center justify-center w-5 h-5 rounded-full border ${
+                      isActive
+                        ? 'border-4 border-primary-600'
+                        : 'border-slate-300 group-hover:border-primary-500'
+                    }`}
+                  />
+                  <span className="text-slate-700 text-sm group-hover:text-slate-900">
+                    {t(opt.labelKey)}
+                  </span>
+                </button>
               );
             })}
           </div>

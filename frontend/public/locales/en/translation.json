@@ -90,6 +90,41 @@
       "type_wellness": "Wellness",
       "type_premium": "Premium",
       "type_loisirs": "Leisure"
+    },
+    "curated": {
+      "airport_pickup_title": "VIP airport transfer",
+      "airport_pickup_city": "Agadir / Marrakech",
+      "airport_pickup_desc": "Named meet and greet, A/C vehicle, live flight tracking.",
+      "private_shuttle_title": "Private intercity shuttle",
+      "private_shuttle_city": "Morocco",
+      "private_shuttle_desc": "Comfort rides Agadir–Essaouira, Marrakech–Fes, dedicated driver.",
+      "pro_shoot_title": "Professional photo session",
+      "pro_shoot_city": "Medina and coast",
+      "pro_shoot_desc": "Travel, couple or family portraits — delivered within 48h.",
+      "concierge_title": "On-site concierge",
+      "concierge_city": "On site",
+      "concierge_desc": "Restaurant bookings, hammam, show tickets.",
+      "surf_coach_title": "Private surf coaching",
+      "surf_coach_city": "Taghazout",
+      "surf_coach_desc": "1:1 lesson with certified instructor — board included.",
+      "private_guide_title": "Multilingual private guide",
+      "private_guide_city": "Medinas",
+      "private_guide_desc": "FR / EN / ES / AR — half or full day.",
+      "yacht_title": "Half-day yacht outing",
+      "yacht_city": "Agadir Marina",
+      "yacht_desc": "Skipper included, soft drinks, sunset option.",
+      "spa_title": "Private hammam and spa",
+      "spa_city": "Riad / partner spa",
+      "spa_desc": "Traditional ritual + argan massage for 2.",
+      "villa_title": "Villas with private pool",
+      "villa_city": "Taghazout Bay and Agadir",
+      "villa_desc": "High-end stays, concierge, ocean or Atlas views.",
+      "riad_title": "Charming riads",
+      "riad_city": "Marrakech and Taroudant",
+      "riad_desc": "Patio, private hammam, gourmet breakfast.",
+      "ocean_title": "Ocean-view suites",
+      "ocean_city": "Agadir and Essaouira",
+      "ocean_desc": "Luxury apartments and duplexes facing the Atlantic."
     }
   },
   "catalog": {
@@ -125,7 +160,12 @@
     "tag_free_cancel": "Free cancellation",
     "tag_instant": "Instant confirmation",
     "tag_bestseller": "Bestseller",
-    "clear_all": "Clear all"
+    "clear_all": "Clear all",
+    "cancellation_policy": "Cancellation policy",
+    "cancel_free": "Free cancellation",
+    "cancel_moderate": "Moderate cancellation",
+    "cancel_strict": "Strict cancellation",
+    "cancel_non_refundable": "Non-refundable"
   },
   "product": {
     "claim_question": "Are you the organizer of this activity?",
@@ -146,8 +186,8 @@
     "guarantee_free_cancel_desc": "Cancel up to 24h before for a full refund",
     "guarantee_verified_operator": "Verified operator",
     "guarantee_verified_operator_desc": "All our operators are verified and certified",
-    "guarantee_support": "24/7 support",
-    "guarantee_support_desc": "Customer support available anytime",
+    "guarantee_support": "Customer support",
+    "guarantee_support_desc": "Help via our help centre and messaging.",
     "cancellation_policy": "Cancellation policy",
     "faq": "FAQ",
     "inquiry_title": "Questions or validation required",
@@ -181,7 +221,7 @@
     "select_time_error": "Please select a time slot",
     "booking_options": "Booking options",
     "cancellation": {
-      "default": "Standard cancellation: free cancellation up to 24h before start.",
+      "default": "The cancellation policy is set by the operator for this experience.",
       "free_title": "Free cancellation",
       "free_desc": "Free cancellation up to {{hours}} hours before the experience starts",
       "moderate_title": "Moderate cancellation",
@@ -192,7 +232,11 @@
       "non_refundable_desc": "This booking is non-refundable.",
       "contact_operator": "Contact the operator for more information.",
       "refund_pct": "Refund: {{pct}}%"
-    }
+    },
+    "new_badge": "New",
+    "booked_count": "Booked {{count}} times",
+    "meta_title_fallback": "Overglow experience",
+    "meta_description_fallback": "Discover this experience on Overglow Trip."
   },
   "cart": {
     "title": "My cart",
@@ -2013,6 +2057,17 @@
       "id_number_label": "ID document number *",
       "validate_submit": "Validate and submit",
       "submitting": "Submitting…"
+    },
+    "community": {
+      "title": "Operator community",
+      "subtitle": "Connect with other partners and follow our news.",
+      "meta": "Overglow Trip operator community: forum and social links.",
+      "breadcrumb_operator": "Operator",
+      "breadcrumb_community": "Community",
+      "forum_title": "Operator forum",
+      "forum_body": "Partner discussion space — coming soon.",
+      "coming_soon": "Coming soon",
+      "social_title": "Social networks"
     }
   },
   "withdrawals": {
@@ -2179,5 +2234,41 @@
     "scroll_right": "Scroll right",
     "more_count": "+ {{count}} more",
     "explore_collection": "Explore the collection"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "count": "{{count}} reviews",
+    "empty": "No reviews yet. Be the first to share your experience!",
+    "empty_filter": "No reviews match this filter.",
+    "loading": "Loading reviews…",
+    "verified": "Verified",
+    "anonymous": "Anonymous",
+    "helpful": "Helpful",
+    "mark_helpful": "Mark as helpful",
+    "already_voted": "You already voted",
+    "report": "Report",
+    "operator_reply": "Operator reply",
+    "reply": "Reply",
+    "reply_prompt": "Your reply to this review:",
+    "reply_success": "Reply added successfully",
+    "reply_error": "Error",
+    "login_to_vote": "Please sign in to vote",
+    "login_to_report": "Please sign in to report",
+    "vote_error": "Vote failed",
+    "report_prompt": "Report reason:\n1. spam\n2. inappropriate\n3. fake\n4. offensive\n5. other",
+    "report_description_optional": "Description (optional):",
+    "report_success": "Review reported. Thank you.",
+    "report_error": "Report failed",
+    "photo_alt": "Review photo {{n}}",
+    "filter_label": "Filter reviews",
+    "filter_all": "All reviews",
+    "filter_stars": "{{stars}} stars",
+    "filter_photos": "With photos",
+    "filter_verified": "Verified",
+    "sort_label": "Sort reviews",
+    "sort_helpful": "Most helpful",
+    "sort_recent": "Most recent",
+    "sort_rating": "Highest rating",
+    "breakdown": "Rating breakdown"
   }
 }

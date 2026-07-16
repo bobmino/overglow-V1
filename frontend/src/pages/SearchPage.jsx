@@ -77,6 +77,7 @@ const SearchPage = () => {
       minRating: searchParams.get('minRating') ? Number(searchParams.get('minRating')) : null,
       skipTheLine: searchParams.get('skipTheLine') === 'true',
       tags: tagsParam ? tagsParam.split(',').filter(Boolean) : [],
+      cancellationType: searchParams.get('cancellationType') || null,
       sortBy: searchParams.get('sortBy') || 'recommended',
       page: Math.max(1, parseInt(searchParams.get('page') || '1', 10)),
     };
@@ -188,6 +189,9 @@ const SearchPage = () => {
     if (filtersFromUrl.minRating != null) params.set('minRating', String(filtersFromUrl.minRating));
     if (filtersFromUrl.skipTheLine) params.set('skipTheLine', 'true');
     if (filtersFromUrl.tags.length) params.set('tags', filtersFromUrl.tags.join(','));
+    if (filtersFromUrl.cancellationType) {
+      params.set('cancellationType', filtersFromUrl.cancellationType);
+    }
     params.set('sortBy', filtersFromUrl.sortBy);
     params.set('page', String(filtersFromUrl.page));
     params.set('limit', '20');
@@ -236,6 +240,7 @@ const SearchPage = () => {
     minRating: filtersFromUrl.minRating,
     skipTheLine: filtersFromUrl.skipTheLine,
     tags: filtersFromUrl.tags,
+    cancellationType: filtersFromUrl.cancellationType,
     propertyType: filtersFromUrl.propertyType || null,
     pool: filtersFromUrl.pool,
     garden: filtersFromUrl.garden,
@@ -270,6 +275,7 @@ const SearchPage = () => {
       minRating: next.minRating,
       skipTheLine: next.skipTheLine || null,
       tags: next.tags || [],
+      cancellationType: next.cancellationType || null,
       propertyType: next.propertyType || null,
       pool: next.pool || null,
       garden: next.garden || null,
@@ -327,6 +333,18 @@ const SearchPage = () => {
   if (filtersFromUrl.minRating) {
     activeChips.push({ key: 'rating', label: `${filtersFromUrl.minRating}+ ★` });
   }
+  if (filtersFromUrl.cancellationType) {
+    const cancelKeyMap = {
+      free: 'filters.cancel_free',
+      moderate: 'filters.cancel_moderate',
+      strict: 'filters.cancel_strict',
+      non_refundable: 'filters.cancel_non_refundable',
+    };
+    activeChips.push({
+      key: 'cancellationType',
+      label: t(cancelKeyMap[filtersFromUrl.cancellationType] || 'filters.cancellation_policy'),
+    });
+  }
 
   const removeChip = (chip) => {
     if (chip.key === 'q') updateParams({ q: '' });
@@ -346,6 +364,8 @@ const SearchPage = () => {
       updateParams({ minPrice: null, maxPrice: null });
     } else if (chip.key === 'rating') {
       updateParams({ minRating: null });
+    } else if (chip.key === 'cancellationType') {
+      updateParams({ cancellationType: null });
     }
   };
 
@@ -501,7 +521,7 @@ const SearchPage = () => {
                         >
                           <div className="flex items-start justify-between gap-2">
                             <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              {item.category}
+                              {t(item.categoryKey)}
                             </span>
                             <span
                               className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
@@ -515,9 +535,9 @@ const SearchPage = () => {
                                 : t('stores.badge_available')}
                             </span>
                           </div>
-                          <h3 className="font-semibold text-slate-900">{item.title}</h3>
-                          <p className="text-xs text-slate-500">{item.city}</p>
-                          <p className="text-sm text-slate-600 flex-1">{item.description}</p>
+                          <h3 className="font-semibold text-slate-900">{t(item.titleKey)}</h3>
+                          <p className="text-xs text-slate-500">{t(item.cityKey)}</p>
+                          <p className="text-sm text-slate-600 flex-1">{t(item.descriptionKey)}</p>
                           <p className="text-sm font-bold text-slate-900 pt-2 border-t border-slate-100">
                             {t('common.from')} {item.priceFrom} MAD
                           </p>
@@ -544,9 +564,9 @@ const SearchPage = () => {
                           <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                             {t('stores.badge_soon')}
                           </span>
-                          <h3 className="font-semibold text-slate-900 mt-3">{item.title}</h3>
-                          <p className="text-xs text-slate-500 mt-1">{item.city}</p>
-                          <p className="text-sm text-slate-600 mt-2">{item.description}</p>
+                          <h3 className="font-semibold text-slate-900 mt-3">{t(item.titleKey)}</h3>
+                          <p className="text-xs text-slate-500 mt-1">{t(item.cityKey)}</p>
+                          <p className="text-sm text-slate-600 mt-2">{t(item.descriptionKey)}</p>
                         </div>
                       ))}
                     </div>
@@ -583,7 +603,7 @@ const SearchPage = () => {
                             <span className="text-[10px] font-bold uppercase text-amber-700">
                               {t('stores.badge_soon')}
                             </span>
-                            <p className="font-medium text-slate-800 mt-1">{item.title}</p>
+                            <p className="font-medium text-slate-800 mt-1">{t(item.titleKey)}</p>
                           </div>
                         ))}
                     </div>

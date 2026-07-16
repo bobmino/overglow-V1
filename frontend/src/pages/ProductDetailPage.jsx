@@ -243,8 +243,8 @@ const ProductDetailPage = () => {
         city: product.city,
         price: getMinPrice(),
         minPrice: getMinPrice(),
-        rating: product.averageRating,
-        reviewCount: product.reviews?.length || 0,
+        rating: product.metrics?.averageRating,
+        reviewCount: product.metrics?.reviewCount || 0,
       });
     }
   }, [product]);
@@ -339,72 +339,31 @@ const ProductDetailPage = () => {
     return (
       <div className="container mx-auto px-4 py-12 pt-24">
         <div className="bg-red-50 text-red-700 p-6 rounded-lg">
-          {error || 'Product not found'}
+          {error || t('product.err_not_found')}
         </div>
       </div>
     );
   }
 
-  const highlights = Array.isArray(product?.highlights) && product.highlights.length > 0
-    ? product.highlights
-    : [
-        "Skip-the-line access",
-        "Expert local guide",
-        "Small group experience",
-        "Free cancellation up to 24 hours"
-      ];
+  // Real DB fields only — never invent Paris/Louvre placeholders
+  const highlights = Array.isArray(product?.highlights) ? product.highlights.filter(Boolean) : [];
+  const includedRaw = Array.isArray(product?.included) ? product.included : [];
+  const included = includedRaw.map((item) => {
+    if (item && typeof item === 'object') {
+      return {
+        item: item.item || item.label || String(item.text || ''),
+        included: item.included !== false,
+      };
+    }
+    return { item: String(item), included: true };
+  }).filter((row) => row.item);
+  const itinerary = Array.isArray(product?.itinerary) ? product.itinerary.filter(Boolean) : [];
+  const faqs = Array.isArray(product?.faqs) ? product.faqs.filter((f) => f?.q || f?.question) : [];
 
-  const included = Array.isArray(product?.included) && product.included.length > 0
-    ? product.included
-    : [
-        { item: "Hotel pickup and drop-off", included: true },
-        { item: "Professional tour guide", included: true },
-        { item: "Entrance tickets", included: true },
-        { item: "Audio headset", included: true },
-        { item: "Food and drinks", included: false },
-        { item: "Gratuities", included: false }
-      ];
-
-  const itinerary = Array.isArray(product?.itinerary) && product.itinerary.length > 0
-    ? product.itinerary
-    : [
-        { 
-          stop: "Eiffel Tower", 
-          duration: "30 min", 
-          description: "Commencez votre journée avec les vues époustouflantes d'Agadir. Parfait pour vos photos !" 
-        },
-        { 
-          stop: "Louvre Museum", 
-          duration: "45 min", 
-          description: "Explore the world's largest art museum and see the Mona Lisa up close." 
-        },
-        { 
-          stop: "Notre-Dame Cathedral", 
-          duration: "20 min", 
-          description: "Visit the famous Gothic cathedral and learn about its rich history." 
-        }
-      ];
-
-  const faqs = Array.isArray(product?.faqs) && product.faqs.length > 0
-    ? product.faqs
-    : [
-        { 
-          q: "What should I bring?", 
-          a: "We recommend comfortable walking shoes, a water bottle, sunscreen, and a camera. Don't forget your confirmation voucher!" 
-        },
-        { 
-          q: "Is this tour wheelchair accessible?", 
-          a: "Yes, this tour is wheelchair accessible. Please inform us in advance so we can make necessary arrangements." 
-        },
-        { 
-          q: "What's the cancellation policy?", 
-          a: "Free cancellation up to 24 hours before the experience starts. Cancel at least 24 hours before the start time for a full refund." 
-        },
-        { 
-          q: "What languages are available?", 
-          a: "This tour is available in English, French, Spanish, German, and Italian. Please select your preferred language when booking." 
-        }
-      ];
+  const avgRating = Number(product?.metrics?.averageRating);
+  const reviewCount = Number(product?.metrics?.reviewCount) || 0;
+  const hasReviews = Number.isFinite(avgRating) && avgRating > 0 && reviewCount > 0;
+  const bookingCount = Number(product?.metrics?.bookingCount) || 0;
 
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
@@ -413,8 +372,10 @@ const ProductDetailPage = () => {
   const ogImage = normalizedImages[0]
     ? absoluteUrl(normalizedImages[0])
     : DEFAULT_OG_IMAGE;
-  const metaTitle = `${product?.title || 'Experience'} a ${product?.city || 'Maroc'}`;
-  const shortDescription = (product?.description || 'Experience locale verifiee, paiement securise et support 24/7 sur Overglow.')
+  const metaTitle = product?.title
+    ? `${product.title}${product.city ? ` — ${product.city}` : ''}`
+    : t('product.meta_title_fallback');
+  const shortDescription = (product?.description || t('product.meta_description_fallback'))
     .trim()
     .slice(0, 155);
 
@@ -495,25 +456,37 @@ const ProductDetailPage = () => {
               </div>
  
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <Star size={18} className="text-yellow-500 fill-yellow-500 me-1" />
-                    <span className="font-bold">4.8</span>
-                    <span className="text-slate-500 ms-1">({product.reviews?.length || 0} {t('product.reviews_suffix', 'avis')})</span>
-                  </div>
-                  <div className="flex items-center text-slate-600">
-                    <Clock size={16} className="me-1" />
-                    <span>{product.duration || t('product.duration_fallback', '3-4 heures')}</span>
-                  </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {hasReviews ? (
+                    <div className="flex items-center">
+                      <Star size={18} className="text-yellow-500 fill-yellow-500 me-1" />
+                      <span className="font-bold">{avgRating.toFixed(1)}</span>
+                      <span className="text-slate-500 ms-1">
+                        ({reviewCount} {t('product.reviews_suffix')})
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-sm font-semibold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-full">
+                      {t('product.new_badge')}
+                    </span>
+                  )}
+                  {product.duration && (
+                    <div className="flex items-center text-slate-600">
+                      <Clock size={16} className="me-1" />
+                      <span>{product.duration}</span>
+                    </div>
+                  )}
                 </div>
               </div>
- 
-              {/* Urgency Message */}
-              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <p className="text-sm text-orange-700">
-                  <span className="font-bold">{t('product.popular_badge', 'Populaire :')}</span> {t('product.booked_urgency', 'Réservé 127 fois ces dernières 24 heures')}
-                </p>
-              </div>
+
+              {bookingCount > 0 && (
+                <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-sm text-orange-700">
+                    <span className="font-bold">{t('product.popular_badge')}</span>{' '}
+                    {t('product.booked_count', { count: bookingCount })}
+                  </p>
+                </div>
+              )}
             </div>
  
             {/* Description */}
@@ -524,11 +497,12 @@ const ProductDetailPage = () => {
               </p>
             </div>
 
-            {/* What's Included */}
+            {/* What's Included — DB only */}
+            {included.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">{t('product.included', 'Ce qui est inclus')}</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.included')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {Array.isArray(included) && included.map((item, idx) => (
+                {included.map((item, idx) => (
                   <div key={idx} className="flex items-start">
                     {item.included ? (
                       <CheckCircle className="text-green-600 me-3 mt-0.5 flex-shrink-0" size={20} />
@@ -542,12 +516,14 @@ const ProductDetailPage = () => {
                 ))}
               </div>
             </div>
+            )}
 
-            {/* Highlights */}
+            {/* Highlights — DB only */}
+            {highlights.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">{t('product.highlights', 'Points forts')}</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.highlights')}</h2>
               <ul className="space-y-3">
-                {Array.isArray(highlights) && highlights.map((highlight, index) => (
+                {highlights.map((highlight, index) => (
                   <li key={index} className="flex items-start">
                     <CheckCircle size={20} className="text-primary-600 me-3 mt-0.5 flex-shrink-0" />
                     <span className="text-slate-700">{highlight}</span>
@@ -555,28 +531,33 @@ const ProductDetailPage = () => {
                 ))}
               </ul>
             </div>
+            )}
 
-            {/* Itinerary */}
+            {/* Itinerary — DB only */}
+            {itinerary.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">{t('product.itinerary', 'Itinéraire')}</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.itinerary')}</h2>
               <div className="space-y-4">
-                {Array.isArray(itinerary) && itinerary.map((stop, idx) => (
+                {itinerary.map((stop, idx) => (
                   <div key={idx} className="flex gap-4 pb-4 border-b border-slate-200 last:border-0">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-lg">
                       {idx + 1}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1">{stop.stop}</h3>
-                      <p className="text-sm text-slate-600 mb-2 flex items-center">
-                        <Clock size={14} className="inline me-1" />
-                        {stop.duration}
-                      </p>
-                      <p className="text-slate-700">{stop.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg mb-1">{stop.stop || stop.title}</h3>
+                      {stop.duration && (
+                        <p className="text-sm text-slate-600 mb-2 flex items-center">
+                          <Clock size={14} className="inline me-1" />
+                          {stop.duration}
+                        </p>
+                      )}
+                      {stop.description && <p className="text-slate-700">{stop.description}</p>}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+            )}
 
             {/* Trust & Guarantees */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -589,13 +570,20 @@ const ProductDetailPage = () => {
                     <p className="text-sm text-green-700">{t('product.guarantee_low_price_desc', 'Meilleur prix garanti ou remboursement de la différence')}</p>
                   </div>
                 </div>
+                {product.cancellationPolicy?.type === 'free' && (
                 <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <CheckCircle size={24} className="text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-blue-900 mb-1">{t('product.guarantee_free_cancel', 'Annulation Gratuite')}</h3>
-                    <p className="text-sm text-blue-700">{t('product.guarantee_free_cancel_desc', "Annulez jusqu'à 24h avant pour un remboursement complet")}</p>
+                    <h3 className="font-bold text-blue-900 mb-1">{t('product.guarantee_free_cancel')}</h3>
+                    <p className="text-sm text-blue-700">
+                      {product.cancellationPolicy?.description ||
+                        t('product.cancellation.free_desc', {
+                          hours: product.cancellationPolicy?.freeCancellationHours || 24,
+                        })}
+                    </p>
                   </div>
                 </div>
+                )}
                 <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                   <Award size={24} className="text-purple-600 flex-shrink-0 mt-0.5" />
                   <div>
@@ -606,8 +594,8 @@ const ProductDetailPage = () => {
                 <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <TrendingUp size={24} className="text-orange-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-orange-900 mb-1">{t('product.guarantee_support', 'Support 24/7')}</h3>
-                    <p className="text-sm text-orange-700">{t('product.guarantee_support_desc', 'Assistance client disponible à tout moment')}</p>
+                    <h3 className="font-bold text-orange-900 mb-1">{t('product.guarantee_support')}</h3>
+                    <p className="text-sm text-orange-700">{t('product.guarantee_support_desc')}</p>
                   </div>
                 </div>
               </div>
@@ -621,31 +609,36 @@ const ProductDetailPage = () => {
               />
             </div>
 
-            {/* FAQ */}
+            {/* FAQ — DB only */}
+            {faqs.length > 0 && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">{t('product.faq', 'Foire aux questions')}</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('product.faq')}</h2>
               <div className="space-y-3">
-                {Array.isArray(faqs) && faqs.map((faq, idx) => (
+                {faqs.map((faq, idx) => {
+                  const question = faq.q || faq.question;
+                  const answer = faq.a || faq.answer;
+                  return (
                   <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
                     <button
+                      type="button"
                       onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
                       className="w-full p-4 text-start font-medium flex justify-between items-center hover:bg-slate-50 transition"
                     >
-                      {faq.q}
+                      {question}
                       <ChevronDown 
                         className={`transition-transform ${expandedFaq === idx ? 'rotate-180' : ''}`} 
                         size={20} 
                       />
                     </button>
-                    {expandedFaq === idx && (
-                      <div className="px-4 pb-4 text-slate-700 border-t border-slate-100 pt-3">
-                        {faq.a}
-                      </div>
+                    {expandedFaq === idx && answer && (
+                      <div className="px-4 pb-4 text-slate-600 text-sm">{answer}</div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
+            )}
 
             {/* Inquiry Section */}
             {product.requiresInquiry && product.inquiryType !== 'none' && (
@@ -665,7 +658,7 @@ const ProductDetailPage = () => {
 
             {/* Reviews */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <ReviewsList reviews={product.reviews || []} productId={product._id} />
+              <ReviewsList productId={product._id} />
             </div>
 
             {/* Related Products */}
@@ -687,15 +680,8 @@ const ProductDetailPage = () => {
           {/* Booking Widget (Sidebar) - Desktop */}
           <div className="col-span-1 lg:col-span-4 hidden lg:block self-start">
             <div className="sticky top-24 h-fit bg-white border border-slate-100 rounded-2xl p-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-              {/* Cancellation Policy */}
-              <div className="mb-2.5 p-2.5 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center text-green-700 mb-0.5">
-                  <CheckCircle size={16} className="me-2" />
-                  <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
-                </div>
-                <p className="text-[11px] text-green-600 leading-tight">
-                  {t('product.free_cancellation_desc', "Annulez jusqu'à 24h à l'avance pour un remboursement complet")}
-                </p>
+              <div className="mb-2.5">
+                <CancellationPolicy policy={product.cancellationPolicy} compact />
               </div>
 
               {/* Price Display */}
@@ -875,16 +861,7 @@ const ProductDetailPage = () => {
 
               {/* Booking Widget contents replicated here for Mobile */}
               <div className="space-y-4">
-                {/* Cancellation Info */}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
-                  <div className="flex items-center text-green-700 mb-1">
-                    <CheckCircle size={16} className="me-2" />
-                    <span className="font-bold text-xs">{t('product.free_cancellation', 'Annulation gratuite')}</span>
-                  </div>
-                  <p className="text-xs text-green-600 leading-tight">
-                    {t('product.free_cancellation_desc', "Annulez jusqu'à 24h à l'avance pour un remboursement complet")}
-                  </p>
-                </div>
+                <CancellationPolicy policy={product.cancellationPolicy} compact />
 
                 {/* Date Picker */}
                 <div>

@@ -134,6 +134,16 @@ const approveReview = async (req, res) => {
     review.status = 'Approved';
     review.approvedAt = new Date();
     await review.save();
+
+    const { updateProductMetrics, updateOperatorMetrics } = await import('../utils/badgeService.js');
+    updateProductMetrics(review.product).catch((err) =>
+      logger.error('Error updating product metrics after approve:', err)
+    );
+    if (review.operator) {
+      updateOperatorMetrics(review.operator).catch((err) =>
+        logger.error('Error updating operator metrics after approve:', err)
+      );
+    }
     
     // Notify user that their review was approved
     await notifyReviewApproved(review, review.user);
@@ -160,6 +170,11 @@ const rejectReview = async (req, res) => {
     review.rejectedAt = new Date();
     review.rejectionReason = reason || '';
     await review.save();
+
+    const { updateProductMetrics } = await import('../utils/badgeService.js');
+    updateProductMetrics(review.product).catch((err) =>
+      logger.error('Error updating product metrics after reject:', err)
+    );
     
     res.json(review);
   } catch (error) {
@@ -184,6 +199,8 @@ const getProductReviews = async (req, res) => {
       query.photos = { $exists: true, $ne: [] };
     } else if (filter === 'verified') {
       query.isVerified = true;
+    } else if (/^[1-5]$/.test(String(filter || ''))) {
+      query.rating = Number(filter);
     }
     
     let reviews = await Review.find(query)
@@ -438,6 +455,11 @@ const updateAdminReviewStatus = async (req, res) => {
     } else {
       await review.save();
     }
+
+    const { updateProductMetrics } = await import('../utils/badgeService.js');
+    updateProductMetrics(review.product).catch((err) =>
+      logger.error('Error updating product metrics after admin status:', err)
+    );
 
     res.json({ message: 'Statut mis à jour', review });
   } catch (error) {
