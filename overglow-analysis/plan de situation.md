@@ -40,9 +40,9 @@
 | CI/CD Deploy | Fait |
 | Admin + seed CMS FAQ/blog | Fait |
 | Resend SMTP | Fait (rotater clé si exposée) |
-| Seed catalogue Maroc (`npm run seed:catalog`) | Prêt — à lancer sur VPS |
-| Backup cron Mongo/uploads | Scripts dans `deploy/` — à installer |
-| Certbot renew hooks | Scripts dans `deploy/` — à installer |
+| Seed catalogue Maroc (`npm run seed:catalog`) | Auto via `deploy/post-deploy-harden.sh` au Deploy |
+| Backup cron Mongo/uploads | Auto via post-deploy (cron 03:15) |
+| Certbot renew hooks | Auto via post-deploy ; dry-run manuel une fois |
 | Paiements live | Reporté (différé assumé) |
 | Audit Fable | Non prévu |
 
@@ -58,11 +58,9 @@
 
 ---
 
-## Prochaines commandes VPS
+## Ops manuels restants
 
-```bash
-cd ~/overglow-V1 && git pull
-docker compose up -d --build
-docker compose exec api node -r dotenv/config scripts/seedMoroccoCatalog.js
-# puis install backup + certbot hooks — voir deploy/OPS-VPS.md
-```
+1. **Rotation clé Resend** (si exposée dans un chat) — voir `deploy/OPS-VPS.md`
+2. Si 502 / stack down : Actions → **Deploy VPS** → Run workflow, ou sur VPS :
+   `cd ~/overglow-V1 && git fetch && git reset --hard origin/main && docker compose up -d --build && bash deploy/post-deploy-harden.sh`
+3. Une fois : `sudo certbot renew --dry-run`

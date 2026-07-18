@@ -45,10 +45,17 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/overglow-reload.sh
 sudo certbot renew --dry-run
 ```
 
-## Seed catalogue Maroc
+## Seed catalogue Maroc + harden (auto au Deploy)
+
+Le workflow **Deploy VPS** exécute `deploy/post-deploy-harden.sh` après `compose up` :
+seed catalogue idempotent, cron backup, hooks Certbot.
+
+Manuellement :
 
 ```bash
 cd ~/overglow-V1
-docker compose exec api node -r dotenv/config scripts/seedMoroccoCatalog.js
+bash deploy/post-deploy-harden.sh
 # Smoke: https://www.overglow.online/fr/search
+# Certbot dry-run (une fois) :
+sudo certbot renew --dry-run
 ```
