@@ -45,6 +45,20 @@ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/overglow-reload.sh
 sudo certbot renew --dry-run
 ```
 
+## Mongo replica set (rs0)
+
+Compose lance Mongo avec `--replSet rs0`. Le healthcheck initialise `rs0` si besoin.
+
+Vérif :
+
+```bash
+docker compose exec mongo mongosh --quiet --eval 'rs.status().set'
+# → rs0
+```
+
+URI API : `mongodb://mongo:27017/overglow?replicaSet=rs0`  
+Si l’API ne démarre pas : `DISABLE_MONGO_TX=true` temporaire dans `.env`.
+
 ## Seed catalogue Maroc + harden (auto au Deploy)
 
 Le workflow **Deploy VPS** exécute `deploy/post-deploy-harden.sh` après `compose up` :

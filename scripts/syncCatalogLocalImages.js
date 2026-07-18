@@ -1,6 +1,6 @@
 /**
- * Remplace les images distantes (Unsplash/etc.) des produits Published
- * par les WebP locaux /images/cities/* (frontend public).
+ * Assigne des galeries WebP locales uniques (frontend/public/images/cities)
+ * aux produits Published. Remplace Unsplash / images distantes.
  *
  * Usage:
  *   node -r dotenv/config scripts/syncCatalogLocalImages.js
@@ -13,30 +13,63 @@ import Product from '../backend/models/productModel.js';
 
 dotenv.config();
 
-const CITY_IMAGE = {
-  Marrakech: ['/images/cities/marrakech-hero.webp', '/images/cities/marrakech-card.webp', '/images/cities/marrakech-g2.webp'],
-  Casablanca: ['/images/cities/casablanca-hero.webp', '/images/cities/casablanca-card.webp', '/images/cities/casablanca-g1.webp'],
-  Fès: ['/images/cities/fes-hero.webp', '/images/cities/fes-card.webp', '/images/cities/fes-g1.webp'],
-  Agadir: ['/images/cities/agadir-hero.webp', '/images/cities/agadir-card.webp', '/images/cities/taghazout-hero.webp'],
-  Essaouira: ['/images/cities/essaouira-hero.webp', '/images/cities/essaouira-card.webp', '/images/cities/essaouira-g1.webp'],
-  Imlil: ['/images/cities/marrakech-hero.webp', '/images/cities/taroudant-hero.webp', '/images/cities/marrakech-g2.webp'],
-  Taghazout: ['/images/cities/taghazout-hero.webp', '/images/cities/taghazout-card.webp', '/images/cities/taghazout-g1.webp'],
+/** Galeries distinctes par expérience (évite le même hero partout). */
+const SLUG_IMAGES = {
+  'medina-marrakech-guide-prive': [
+    '/images/cities/marrakech-hero.webp',
+    '/images/cities/marrakech-card.webp',
+    '/images/cities/marrakech-g2.webp',
+  ],
+  'desert-agafay-coucher-soleil': [
+    '/images/cities/marrakech-g2.webp',
+    '/images/cities/taroudant-hero.webp',
+    '/images/cities/marrakech-hero.webp',
+  ],
+  'atelier-cuisine-tagine-fes': [
+    '/images/cities/fes-hero.webp',
+    '/images/cities/fes-card.webp',
+    '/images/cities/fes-g1.webp',
+  ],
+  'surf-taghazout-demi-journee': [
+    '/images/cities/taghazout-hero.webp',
+    '/images/cities/taghazout-card.webp',
+    '/images/cities/agadir-hero.webp',
+  ],
+  'essaouira-journee-vent-et-medina': [
+    '/images/cities/essaouira-hero.webp',
+    '/images/cities/essaouira-card.webp',
+    '/images/cities/essaouira-g1.webp',
+  ],
+  'trek-toubkal-2-jours': [
+    '/images/cities/taroudant-hero.webp',
+    '/images/cities/taroudant-g1.webp',
+    '/images/cities/marrakech-g2.webp',
+  ],
+  'riad-visite-architecture-marrakech': [
+    '/images/cities/marrakech-card.webp',
+    '/images/cities/fes-g2.webp',
+    '/images/cities/marrakech-hero.webp',
+  ],
+  'casablanca-hassan-ii-et-corniche': [
+    '/images/cities/casablanca-hero.webp',
+    '/images/cities/casablanca-card.webp',
+    '/images/cities/casablanca-g1.webp',
+  ],
 };
 
-const SLUG_IMAGES = {
-  'medina-marrakech-guide-prive': CITY_IMAGE.Marrakech,
-  'desert-agafay-coucher-soleil': ['/images/cities/marrakech-hero.webp', '/images/cities/marrakech-g2.webp'],
-  'atelier-cuisine-tagine-fes': CITY_IMAGE.Fès,
-  'surf-taghazout-demi-journee': CITY_IMAGE.Taghazout,
-  'essaouira-journee-vent-et-medina': CITY_IMAGE.Essaouira,
-  'trek-toubkal-2-jours': CITY_IMAGE.Imlil,
-  'riad-visite-architecture-marrakech': ['/images/cities/marrakech-card.webp', '/images/cities/marrakech-hero.webp'],
-  'casablanca-hassan-ii-et-corniche': CITY_IMAGE.Casablanca,
+const CITY_FALLBACK = {
+  Marrakech: SLUG_IMAGES['medina-marrakech-guide-prive'],
+  Casablanca: SLUG_IMAGES['casablanca-hassan-ii-et-corniche'],
+  Fès: SLUG_IMAGES['atelier-cuisine-tagine-fes'],
+  Agadir: SLUG_IMAGES['surf-taghazout-demi-journee'],
+  Essaouira: SLUG_IMAGES['essaouira-journee-vent-et-medina'],
+  Imlil: SLUG_IMAGES['trek-toubkal-2-jours'],
+  Taghazout: SLUG_IMAGES['surf-taghazout-demi-journee'],
 };
 
 const resolveImages = (product) => {
   if (SLUG_IMAGES[product.slug]) return SLUG_IMAGES[product.slug];
-  if (CITY_IMAGE[product.city]) return CITY_IMAGE[product.city];
+  if (CITY_FALLBACK[product.city]) return CITY_FALLBACK[product.city];
   return ['/images/placeholder.webp'];
 };
 
@@ -58,7 +91,7 @@ const run = async () => {
     product.images = next;
     await product.save();
     updated += 1;
-    console.log(`OK ${product.slug || product._id} → ${next[0]}`);
+    console.log(`OK ${product.slug || product._id} → ${next[0]} (+${next.length - 1})`);
   }
 
   console.log(JSON.stringify({ total: products.length, updated }, null, 2));
