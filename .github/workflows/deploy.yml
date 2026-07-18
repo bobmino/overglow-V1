@@ -30,16 +30,23 @@ jobs:
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+
+          # Secret = clé PEM multiligne OU base64 (recommandé, évite libcrypto)
+          if printf '%s' "$SSH_PRIVATE_KEY" | grep -q "BEGIN.*PRIVATE KEY"; then
+            printf '%s\n' "$SSH_PRIVATE_KEY" | sed 's/\r$//' > ~/.ssh/id_deploy
+          else
+            printf '%s' "$SSH_PRIVATE_KEY" | tr -d '\r\n ' | base64 -d > ~/.ssh/id_deploy
+          fi
           chmod 600 ~/.ssh/id_deploy
 
-          # Normalise fins de ligne Windows éventuelles
-          sed -i 's/\r$//' ~/.ssh/id_deploy
+          # Valide la clé avant SSH
+          ssh-keygen -y -f ~/.ssh/id_deploy >/dev/null
 
           ssh-keyscan -H -p 22 "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
           echo "Connecting to ${VPS_USER}@${VPS_HOST} ..."
-          ssh -i ~/.ssh/id_deploy -p 22 -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new \
+          ssh -i ~/.ssh/id_deploy -p 22 -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
             "${VPS_USER}@${VPS_HOST}" bash -s <<EOF
           set -e
           cd "${APP_PATH}"
