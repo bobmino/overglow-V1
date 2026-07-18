@@ -33,11 +33,11 @@
 ## 5. Smoke
 
 - [x] HTTPS home
-- [ ] Upload image → `/uploads/{uuid}.webp`
-- [ ] Booking différé end-to-end
+- [x] Upload image → `/uploads/{uuid}.webp` (smoke API + HTTPS 200, 2026-07-18)
+- [x] Booking différé API + TX rs0 (UI E2E = manuel)
 - [x] BO login
 - [x] Mail SMTP configured successfully
-- [ ] AR RTL smoke
+- [x] AR RTL smoke (`/ar` → `dir=rtl`, UI arabe OK)
 - [x] CI Deploy VPS vert
 - [x] Backup cron installé + test manuel OK (`/root/backups/overglow/`)
 - [x] Certbot renew hooks + `certbot renew --dry-run` OK
