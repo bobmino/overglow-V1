@@ -22,7 +22,7 @@
 ## 3. Données
 
 - [x] Admin + seed CMS FAQ/blog
-- [ ] Catalogue : `docker compose exec api node -r dotenv/config scripts/seedMoroccoCatalog.js` (ou produits réels BO)
+- [ ] Catalogue : auto via `deploy/post-deploy-harden.sh` au prochain Deploy (ou seed manuel / produits BO)
 - [ ] Mentions légales / CGU email `@overglow.online` (avocat)
 
 ## 4. Paiements
@@ -39,8 +39,8 @@
 - [x] Mail SMTP configured successfully
 - [ ] AR RTL smoke
 - [x] CI Deploy VPS vert
-- [ ] Backup cron installé
-- [ ] Certbot renew dry-run OK
+- [ ] Backup cron installé (auto post-deploy)
+- [ ] Certbot renew hooks installés (auto) + dry-run manuel une fois
 
 ## 6. Critère Done
 
