@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { LocalizedLink } from '../components/LocalizedLink';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
@@ -398,21 +399,21 @@ const ProductDetailPage = () => {
               <Shield size={18} className="text-slate-600" />
               {t('product.claim_question', "Vous êtes l'organisateur de cette activité ?")}
             </p>
-            <Link
+            <LocalizedLink
               to={`/partners/signup?activity=${encodeURIComponent(product?.title || '')}`}
               className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
             >
               {t('product.claim_action', "Prenez le contrôle de votre fiche")}
-            </Link>
+            </LocalizedLink>
           </div>
         )}
         {/* Breadcrumb */}
         <nav className="text-sm text-slate-600 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Link to="/" className="hover:text-primary-600">{t('common.home')}</Link>
+          <LocalizedLink to="/" className="hover:text-primary-600">{t('common.home')}</LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60" />
-          <Link to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</Link>
+          <LocalizedLink to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60" />
-          <Link to={`/search?category=${product.category}`} className="hover:text-primary-600 truncate max-w-[40vw] sm:max-w-none">{product.category}</Link>
+          <LocalizedLink to={`/search?category=${product.category}`} className="hover:text-primary-600 truncate max-w-[40vw] sm:max-w-none">{product.category}</LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60 hidden sm:inline" />
           <span className="text-slate-900 font-medium truncate max-w-full hidden sm:inline">{product.title}</span>
         </nav>

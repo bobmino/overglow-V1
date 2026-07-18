@@ -298,4 +298,114 @@ export const FAQ_SEED = [
       'استخدم مركز المساعدة / اتصل بنا، أو رسائل الحساب لحجز نشط. أرفق رقم الحجز لتسريع المعالجة.',
     tags: ['دعم'],
   },
+
+  // --- Enrichissement Wave 2 (parcours Booking-like) ---
+  {
+    language: 'fr',
+    category: 'payment',
+    order: 10,
+    question: 'Le paiement en ligne est-il obligatoire ?',
+    answer:
+      'Pas toujours. Certaines expériences acceptent un paiement différé (virement ou validation manuelle). Votre réservation reste en attente jusqu’à confirmation. Les cartes Stripe/PayPal/CMI seront activées dès que les comptes marchands sont prêts.',
+    tags: ['paiement', 'différé', 'virement'],
+  },
+  {
+    language: 'fr',
+    category: 'booking',
+    order: 11,
+    question: 'Que dois-je préparer avant l’expérience ?',
+    answer:
+      'Vérifiez le point de rendez-vous, l’heure, les documents demandés (pièce d’identité, vouchers) et la politique d’annulation sur la fiche produit. En cas de doute, contactez l’opérateur via la messagerie du compte.',
+    tags: ['rdv', 'documents', 'préparation'],
+  },
+  {
+    language: 'fr',
+    category: 'operator',
+    order: 12,
+    question: 'Comment publier un produit et retirer mes revenus ?',
+    answer:
+      'Complétez l’onboarding partenaire (3 étapes), créez votre expérience, puis soumettez-la à validation. Les retraits se gèrent depuis l’espace opérateur → Retraits, une fois le solde disponible et le compte validé.',
+    tags: ['publier', 'retrait', 'partenaire'],
+  },
+  {
+    language: 'en',
+    category: 'payment',
+    order: 10,
+    question: 'Is online payment mandatory?',
+    answer:
+      'Not always. Some experiences allow deferred payment (bank transfer or manual validation). Your booking stays pending until confirmed. Card payments (Stripe/PayPal/CMI) go live once merchant accounts are ready.',
+    tags: ['payment', 'deferred'],
+  },
+  {
+    language: 'en',
+    category: 'booking',
+    order: 11,
+    question: 'What should I prepare before the experience?',
+    answer:
+      'Check the meeting point, time, required documents (ID, vouchers) and the cancellation policy on the product page. If unsure, message the operator from your account.',
+    tags: ['meeting', 'documents'],
+  },
+  {
+    language: 'en',
+    category: 'operator',
+    order: 12,
+    question: 'How do I publish a product and withdraw earnings?',
+    answer:
+      'Complete the 3-step partner onboarding, create your experience, then submit it for review. Withdrawals are in Operator → Withdrawals once your balance is available and your account is approved.',
+    tags: ['publish', 'withdrawal'],
+  },
+  {
+    language: 'es',
+    category: 'payment',
+    order: 10,
+    question: '¿Es obligatorio pagar en línea?',
+    answer:
+      'No siempre. Algunas experiencias permiten pago diferido (transferencia o validación manual). La reserva queda pendiente hasta confirmación. Las tarjetas se activarán cuando existan cuentas de comercio.',
+    tags: ['pago', 'diferido'],
+  },
+  {
+    language: 'es',
+    category: 'booking',
+    order: 11,
+    question: '¿Qué debo preparar antes de la experiencia?',
+    answer:
+      'Revisa el punto de encuentro, la hora, los documentos pedidos y la política de cancelación en la ficha. Ante dudas, escribe al operador desde tu cuenta.',
+    tags: ['encuentro', 'documentos'],
+  },
+  {
+    language: 'es',
+    category: 'operator',
+    order: 12,
+    question: '¿Cómo publico un producto y retiro ingresos?',
+    answer:
+      'Completa el onboarding de 3 pasos, crea tu experiencia y envíala a revisión. Los retiros están en Operador → Retiros cuando el saldo esté disponible.',
+    tags: ['publicar', 'retiro'],
+  },
+  {
+    language: 'ar',
+    category: 'payment',
+    order: 10,
+    question: 'هل الدفع عبر الإنترنت إلزامي؟',
+    answer:
+      'ليس دائمًا. بعض التجارب تقبل دفعًا مؤجّلًا (تحويل أو تأكيد يدوي). يبقى الحجز معلّقًا حتى التأكيد. بطاقات Stripe/PayPal/CMI تُفعَّل عند جاهزية الحسابات.',
+    tags: ['دفع', 'مؤجل'],
+  },
+  {
+    language: 'ar',
+    category: 'booking',
+    order: 11,
+    question: 'ماذا أحضّر قبل التجربة؟',
+    answer:
+      'تحقّق من نقطة اللقاء والوقت والمستندات المطلوبة وسياسة الإلغاء في صفحة المنتج. عند الشك راسل المشغّل من حسابك.',
+    tags: ['لقاء', 'مستندات'],
+  },
+  {
+    language: 'ar',
+    category: 'operator',
+    order: 12,
+    question: 'كيف أنشر منتجًا وأسحب أرباحي؟',
+    answer:
+      'أكمل إعداد الشريك من 3 خطوات، أنشئ تجربتك ثم أرسلها للمراجعة. السحوبات من مساحة المشغّل → السحوبات عند توفر الرصيد.',
+    tags: ['نشر', 'سحب'],
+  },
 ];

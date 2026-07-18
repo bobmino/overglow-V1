@@ -31,7 +31,7 @@ const CareersPage = () => {
         </h2>
         <p className="text-slate-700 mb-4">{t('careers.openings_body')}</p>
         <a
-          href={`mailto:careers@overglowtrip.com?subject=${encodeURIComponent(t('careers.email_subject'))}`}
+          href={`mailto:careers@overglow.online?subject=${encodeURIComponent(t('careers.email_subject'))}`}
           className="btn-primary inline-flex"
         >
           {t('careers.apply_cta')}

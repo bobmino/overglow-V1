@@ -3,10 +3,11 @@ import crypto from 'crypto';
 import multer from 'multer';
 import { compressImageBuffer } from '../utils/imageCompression.js';
 import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryService.js';
+import { isLocalStorageEnabled, saveBufferToUploads } from '../utils/localStorageService.js';
 import { isAllowedCsvUpload } from '../utils/csvSanitize.js';
 import { logger } from '../utils/logger.js';
 
-// Use memory storage for Vercel (read-only filesystem)
+// Memory storage — post-process écrit sur disque (local) ou Cloudinary (legacy)
 const storage = multer.memoryStorage();
 
 /**
@@ -30,19 +31,23 @@ export const validateImageMagicBytes = (buffer) => {
   return false;
 };
 
-const assignUniqueFilename = (file) => {
-  const ext = path.extname(file.originalname || '').toLowerCase() || '.bin';
-  file.storedName = `${crypto.randomUUID()}${ext}`;
+const assignUniqueFilename = (file, ext = '.webp') => {
+  const fromName = path.extname(file.originalname || '').toLowerCase();
+  file.storedName = `${crypto.randomUUID()}${ext || fromName || '.bin'}`;
 };
 
-// Post-processing: compress and upload images (memory storage)
+/**
+ * STORAGE_DRIVER=local (défaut) → /uploads/{uuid}.webp
+ * STORAGE_DRIVER=cloudinary → Cloudinary si configuré
+ * Sinon fallback base64 (dev sans disque / sans cloud)
+ */
 const compressAfterUpload = async (req, res, next) => {
-  const useCloudinary = isCloudinaryConfigured();
+  const useLocal = isLocalStorageEnabled();
+  const useCloudinary = !useLocal && isCloudinaryConfigured();
 
   const processOne = async (file) => {
-    assignUniqueFilename(file);
+    assignUniqueFilename(file, '.webp');
 
-    // [TASK-9] Signature binaire obligatoire
     if (!validateImageMagicBytes(file.buffer)) {
       const err = new Error('Signature de fichier image invalide');
       err.statusCode = 400;
@@ -58,6 +63,14 @@ const compressAfterUpload = async (req, res, next) => {
       });
       file.buffer = compressedBuffer;
       file.compressed = true;
+      file.mimetype = 'image/webp';
+
+      if (useLocal) {
+        const saved = await saveBufferToUploads(compressedBuffer, file.storedName);
+        file.dataUrl = saved.url;
+        file.storageSource = 'local';
+        return;
+      }
 
       if (useCloudinary) {
         try {
@@ -67,18 +80,21 @@ const compressAfterUpload = async (req, res, next) => {
           });
           file.cloudinaryUrl = cloudinaryUrl;
           file.dataUrl = cloudinaryUrl;
+          file.storageSource = 'cloudinary';
+          return;
         } catch (cloudinaryError) {
           logger.error('Cloudinary upload failed, falling back to base64:', cloudinaryError);
-          file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
         }
-      } else {
-        file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
       }
+
+      file.dataUrl = `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
+      file.storageSource = 'base64';
     } catch (error) {
       logger.error('Error compressing image:', error);
       if (file.buffer) {
         const mimeType = file.mimetype || 'image/jpeg';
         file.dataUrl = `data:${mimeType};base64,${file.buffer.toString('base64')}`;
+        file.storageSource = 'base64';
       }
     }
   };
@@ -98,7 +114,6 @@ const compressAfterUpload = async (req, res, next) => {
   }
 };
 
-// Allowed MIME types (strict validation) — images only
 const allowedMimeTypes = [
   'image/jpeg',
   'image/jpg',
@@ -139,14 +154,13 @@ function checkFileType(file, cb) {
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max per image
+    fileSize: 5 * 1024 * 1024,
   },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
 });
 
-/** [TASK-9] Upload CSV/XLSX admin (5MB) */
 export const uploadCsv = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -158,7 +172,6 @@ export const uploadCsv = multer({
   },
 });
 
-/** Documents PDF/DOC (10MB) — auth admin côté route */
 export const uploadDocument = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },

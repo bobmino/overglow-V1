@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { HelpCircle, Mail, MessageSquare, ShieldCheck, HandCoins, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, HelpCircle, Mail, MessageSquare, ShieldCheck, HandCoins, Users } from 'lucide-react';
 import FAQSection from '../components/FAQSection';
 import ChatWidget from '../components/ChatWidget';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from '../components/LocalizedLink';
 
 const HelpPage = () => {
   const navigate = useNavigate();
@@ -13,27 +14,34 @@ const HelpPage = () => {
   const [showChat, setShowChat] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="page-shell py-12">
       <div className="container mx-auto px-4 max-w-4xl">
+        <LocalizedLink
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800 mb-6"
+        >
+          <ArrowLeft size={16} />
+          {t('common.back_home', 'Retour à l’accueil')}
+        </LocalizedLink>
         <div className="text-center mb-12">
           <HelpCircle className="mx-auto h-16 w-16 text-primary-600 mb-4" />
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('help.title')}</h1>
+          <h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">{t('help.title')}</h1>
           <p className="text-xl text-gray-600">{t('help.subtitle')}</p>
         </div>
 
-        <div className="bg-gradient-to-r from-primary-50 to-cyan-50 border border-primary-100 rounded-xl p-6 mb-8">
+        <div className="surface-card border-primary-100 p-6 mb-8">
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="text-primary-700" />
-            <h2 className="text-xl font-bold text-slate-900">{t('help.guarantees_title')}</h2>
+            <h2 className="text-xl font-heading font-bold text-slate-900">{t('help.guarantees_title')}</h2>
           </div>
           <p className="text-slate-700 text-sm">{t('help.guarantees_body')}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="surface-card p-8">
             <div className="flex items-center gap-2 mb-4">
               <Users className="text-primary-600" />
-              <h2 className="text-2xl font-bold text-gray-900">{t('help.travelers_title')}</h2>
+              <h2 className="text-2xl font-heading font-bold text-gray-900">{t('help.travelers_title')}</h2>
             </div>
             <ul className="space-y-3 text-gray-700">
               <li>
@@ -51,10 +59,10 @@ const HelpPage = () => {
             </ul>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="surface-card p-8">
             <div className="flex items-center gap-2 mb-4">
               <HandCoins className="text-primary-600" />
-              <h2 className="text-2xl font-bold text-gray-900">{t('help.partners_title')}</h2>
+              <h2 className="text-2xl font-heading font-bold text-gray-900">{t('help.partners_title')}</h2>
             </div>
             <ul className="space-y-3 text-gray-700">
               <li>
@@ -73,22 +81,22 @@ const HelpPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('help.faq_title')}</h2>
+        <div className="surface-card p-8 mb-8">
+          <h2 className="text-2xl font-heading font-bold text-gray-900 mb-6">{t('help.faq_title')}</h2>
           <FAQSection language={i18n.language?.slice(0, 2) || 'fr'} limit={20} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('help.more_title')}</h2>
+        <div className="surface-card p-8">
+          <h2 className="text-2xl font-heading font-bold text-gray-900 mb-6">{t('help.more_title')}</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg">
+            <div className="flex items-start gap-4 p-6 border border-border rounded-xl">
               <Mail className="text-primary-600 flex-shrink-0" size={24} />
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">{t('help.contact_title')}</h3>
                 <p className="text-gray-600 mb-4">{t('help.contact_body')}</p>
-                <Link to="/contact" className="text-primary-600 font-semibold hover:underline">
+                <LocalizedLink to="/contact" className="text-primary-600 font-semibold hover:underline">
                   {t('help.contact_cta')}
-                </Link>
+                </LocalizedLink>
               </div>
             </div>
 

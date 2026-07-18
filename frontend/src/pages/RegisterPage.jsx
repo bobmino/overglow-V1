@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { LocalizedLink } from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { User, Mail, Lock, AlertCircle, Building2, MapPin, Briefcase } from 'lucide-react';
@@ -285,13 +286,13 @@ const RegisterPage = () => {
               />
               <span>
                 {t('auth.register.terms_prefix')}{' '}
-                <Link to="/terms" className="text-primary-700 font-semibold underline" target="_blank">
+                <LocalizedLink to="/terms" className="text-primary-700 font-semibold underline" target="_blank">
                   {t('auth.register.terms_link')}
-                </Link>{' '}
+                </LocalizedLink>{' '}
                 {t('auth.register.and')}{' '}
-                <Link to="/privacy" className="text-primary-700 font-semibold underline" target="_blank">
+                <LocalizedLink to="/privacy" className="text-primary-700 font-semibold underline" target="_blank">
                   {t('auth.register.privacy_link')}
-                </Link>
+                </LocalizedLink>
               </span>
             </label>
 
@@ -309,13 +310,13 @@ const RegisterPage = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               {t('auth.register.has_account')}{' '}
-              <Link
+              <LocalizedLink
                 to="/login"
                 state={{ from: location.state?.from }}
                 className="text-primary-700 font-semibold hover:underline"
               >
                 {t('auth.register.sign_in')}
-              </Link>
+              </LocalizedLink>
             </p>
           </div>
         </div>

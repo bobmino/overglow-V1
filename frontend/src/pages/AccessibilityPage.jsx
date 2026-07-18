@@ -72,7 +72,7 @@ const AccessibilityPage = () => {
             )}
           </p>
           <a
-            href="mailto:accessibility@overglowtrip.com?subject=Accessibilit%C3%A9%20Overglow"
+            href="mailto:accessibility@overglow.online?subject=Accessibilit%C3%A9%20Overglow"
             className="btn-primary"
           >
             {t('accessibility.report_cta', 'Contacter l’équipe accessibilité')}

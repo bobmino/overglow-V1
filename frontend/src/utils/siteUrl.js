@@ -2,7 +2,7 @@
  * URL de production du site (canonical / OG).
  * Ne jamais utiliser window.location.origin (preview Vercel indexable).
  */
-const FALLBACK_SITE_URL = 'https://www.overglowtrip.com';
+const FALLBACK_SITE_URL = 'https://www.overglow.online';
 
 export const getSiteUrl = () => {
   const fromEnv = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SITE_URL : '';

@@ -35,7 +35,7 @@ const OperatorCommunityPage = () => {
 
         <section className="grid sm:grid-cols-2 gap-4">
           <a
-            href="mailto:partners@overglowtrip.com?subject=Communaut%C3%A9%20op%C3%A9rateurs"
+            href="mailto:partners@overglow.online?subject=Communaut%C3%A9%20op%C3%A9rateurs"
             className="surface-card p-5 hover:border-primary-400 transition flex gap-3"
           >
             <Mail className="text-primary-600 shrink-0" size={22} />
@@ -43,7 +43,7 @@ const OperatorCommunityPage = () => {
               <p className="font-bold text-slate-900">
                 {t('operator.community.email_title', 'Écrire à partenariats')}
               </p>
-              <p className="text-sm text-slate-600">partners@overglowtrip.com</p>
+              <p className="text-sm text-slate-600">partners@overglow.online</p>
             </div>
           </a>
           <LocalizedLink

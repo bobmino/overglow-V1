@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates', 'emails');
 
-const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.overglowtrip.com').replace(/\/$/, '');
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.overglow.online').replace(/\/$/, '');
 
 export const EMAIL_TEMPLATE_META = [
   { id: 'confirmation', name: 'Confirmation de réservation', description: 'Envoyé au voyageur après paiement' },

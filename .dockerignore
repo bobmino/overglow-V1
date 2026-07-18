@@ -1,0 +1,14 @@
+node_modules
+frontend/node_modules
+frontend/dist
+.git
+.github
+.env
+.env.*
+*.log
+uploads/*
+!uploads/.gitkeep
+overglow-analysis
+docs/archive_infrastructure
+.vercel
+coverage

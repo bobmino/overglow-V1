@@ -7,7 +7,11 @@ import {
 } from './emailTemplates.js';
 import { renderEmailTemplate } from './emailTemplateRenderer.js';
 
-const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.overglowtrip.com').replace(/\/$/, '');
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.overglow.online').replace(/\/$/, '');
+
+const emailFrom = () =>
+  process.env.EMAIL_FROM
+  || `"Overglow Trip" <${process.env.EMAIL_USER || 'noreply@overglow.online'}>`;
 
 const formatBookingDate = (rawDate, locale = 'fr') => {
   if (!rawDate) return locale === 'en' ? 'To confirm' : 'À confirmer';
@@ -109,7 +113,7 @@ export const sendRawHtmlEmail = async ({ to, subject, html }) => {
     throw new Error('Service email non configuré (EMAIL_USER / EMAIL_PASS / EMAIL_ENABLED)');
   }
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to,
     subject,
     html,
@@ -146,7 +150,7 @@ export const sendBookingConfirmation = async (booking, user, customHtml) => {
   }
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject,
     html,
@@ -177,7 +181,7 @@ export const sendBookingConfirmation = async (booking, user, customHtml) => {
 // Send cancellation email
 export const sendCancellationEmail = async (booking, user, refundInfo = null) => {
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: '❌ Réservation annulée - Overglow Trip',
     html: getCancellationTemplate(booking, user, refundInfo),
@@ -237,7 +241,7 @@ export const sendOperatorBookingNotification = async (booking, operator, user) =
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: operatorUser.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -285,7 +289,7 @@ export const sendRefundProcessedEmail = async (withdrawal, user) => {
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -321,7 +325,7 @@ export const sendWelcomeEmail = async (user) => {
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -350,7 +354,7 @@ export const sendPasswordResetEmail = async (user, resetUrl) => {
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -372,7 +376,7 @@ export const sendPasswordResetEmail = async (user, resetUrl) => {
 // Send operator onboarding pending email
 export const sendOperatorOnboardingPendingEmail = async (user) => {
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: "⏳ Votre demande est en cours d'examen",
     html: getOperatorOnboardingPendingTemplate(user),
@@ -400,7 +404,7 @@ export const sendOperatorApprovedEmail = async (user) => {
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -423,13 +427,13 @@ export const sendOperatorRejectedEmail = async (user, reason = '') => {
     {
       userName: user?.name || 'Partenaire',
       reason: reason || (locale === 'en' ? 'Not specified' : 'Non précisé'),
-      ctaUrl: `${FRONTEND_URL}/operator/onboarding`,
+      ctaUrl: `${FRONTEND_URL}/operator/wizard`,
     },
     locale
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -467,7 +471,7 @@ export const sendReviewNotificationEmail = async ({
   );
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: operatorUser.email,
     subject: rendered.subject,
     html: rendered.html,
@@ -522,7 +526,7 @@ export const sendCircuitBookingConfirmation = async (bookings, user, paymentRefe
   `;
 
   const mailOptions = {
-    from: `"Overglow Trip" <${process.env.EMAIL_USER}>`,
+    from: emailFrom(),
     to: user.email,
     subject: '🌍 Votre circuit est confirmé - Overglow Trip',
     html: htmlContent,

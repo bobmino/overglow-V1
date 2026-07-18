@@ -12,5 +12,5 @@ Disallow: /register
 Disallow: /checkout
 Disallow: /booking-success
 
-Sitemap: https://www.overglowtrip.com/sitemap.xml
-Sitemap: https://www.overglowtrip.com/api/sitemap.xml
+Sitemap: https://www.overglow.online/sitemap.xml
+Sitemap: https://www.overglow.online/api/sitemap.xml

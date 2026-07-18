@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from './LocalizedLink';
 
 /**
  * Shell commun pour pages contenu (PROMPT 13).
@@ -12,7 +13,9 @@ const StaticContentPage = ({
   icon: Icon,
   children,
   breadcrumbs,
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <div className="page-shell">
     <Helmet>
       <title>{title} | Overglow Trip</title>
@@ -23,16 +26,16 @@ const StaticContentPage = ({
       <div className="container mx-auto px-4">
         {breadcrumbs && (
           <nav className="text-sm text-primary-100 mb-4 flex flex-wrap items-center gap-1">
-            <Link to="/" className="hover:text-white">
-              Accueil
-            </Link>
+            <LocalizedLink to="/" className="hover:text-white">
+              {t('common.home', 'Accueil')}
+            </LocalizedLink>
             {breadcrumbs.map((b) => (
               <React.Fragment key={b.label}>
                 <span aria-hidden>/</span>
                 {b.to ? (
-                  <Link to={b.to} className="hover:text-white">
+                  <LocalizedLink to={b.to} className="hover:text-white">
                     {b.label}
-                  </Link>
+                  </LocalizedLink>
                 ) : (
                   <span className="text-white font-medium">{b.label}</span>
                 )}
@@ -50,6 +53,7 @@ const StaticContentPage = ({
 
     <div className="container mx-auto px-4 py-12 md:py-16">{children}</div>
   </div>
-);
+  );
+};
 
 export default StaticContentPage;

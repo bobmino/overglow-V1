@@ -52,7 +52,8 @@
     "and": "and",
     "from": "From",
     "per_person": "per person",
-    "per_person_short": "/ pers."
+    "per_person_short": "/ pers.",
+    "back_home": "Back to home"
   },
   "stores": {
     "badge_soon": "Coming soon",
@@ -2426,8 +2427,20 @@
     "logo_body": "Primary logo. Non-commercial press use with credit “Overglow Trip”.",
     "logo_cta": "Download logo (SVG)",
     "mentions_title": "Media coverage",
-    "mentions_body": "We only list verified coverage. Contact press@overglowtrip.com for an updated pack.",
+    "mentions_body": "We only list verified coverage. Contact press@overglow.online for an updated pack.",
     "contact_title": "Media contact",
     "contact_body": "Interviews, editorial partnerships and image requests:"
+  },
+  "faq_ui": {
+    "search_placeholder": "Search the FAQ...",
+    "all": "All",
+    "all_categories": "All categories",
+    "category": "Category",
+    "loading": "Loading questions...",
+    "empty": "No questions found",
+    "load_error": "Failed to load FAQ",
+    "helpful_prompt": "Was this answer helpful?",
+    "helpful": "Helpful",
+    "not_helpful": "Not helpful"
   }
 }

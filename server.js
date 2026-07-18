@@ -14,6 +14,7 @@ import { apiLimiter } from './backend/middleware/rateLimiter.js';
 import { requestLogger } from './backend/middleware/requestLogger.js';
 import { notFound, errorHandler } from './backend/middleware/errorMiddleware.js';
 import { logger } from './backend/utils/logger.js';
+import { ensureUploadDir, getUploadDir } from './backend/utils/localStorageService.js';
 
 // Routes API
 import authRoutes from './backend/routes/authRoutes.js';
@@ -107,7 +108,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 
 // ─── Fichiers statiques (images uploadées localement) ───────────────────────
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+ensureUploadDir().catch((err) => logger.warn('Could not ensure uploads dir', { err: err?.message }));
+app.use('/uploads', express.static(getUploadDir()));
 
 // ─── Connexion MongoDB ──────────────────────────────────────────────────────
 connectDB().catch((err) => {

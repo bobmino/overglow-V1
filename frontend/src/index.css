@@ -4,7 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* [TASK-10] Design system — CSS custom properties */
+/* Design system Overglow — tokens (public + BO)
+ * Primary emerald · headings Outfit · body Inter · surfaces page-shell / surface-card / btn-primary
+ */
 :root {
   --color-primary: #059669;
   --color-primary-dark: #047857;
@@ -18,6 +20,8 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --font-heading: 'Outfit', 'Noto Sans Arabic', sans-serif;
+  --font-body: 'Inter', 'Noto Sans Arabic', sans-serif;
 }
 
 /* Safe area for mobile devices */

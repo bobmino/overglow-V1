@@ -1,6 +1,7 @@
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { ArrowLeft, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from '../components/LocalizedLink';
 
 /**
  * Privacy policy page (i18n).
@@ -15,12 +16,19 @@ const PrivacyPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="page-shell py-12">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+        <LocalizedLink
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800 mb-6"
+        >
+          <ArrowLeft size={16} />
+          {t('common.back_home', 'Retour à l’accueil')}
+        </LocalizedLink>
+        <div className="surface-card p-8 md:p-12">
           <div className="text-center mb-12">
             <Shield className="mx-auto h-16 w-16 text-primary-600 mb-4" />
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('privacy.title')}</h1>
+            <h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">{t('privacy.title')}</h1>
             <p className="text-gray-600">{t('privacy.last_updated', { date })}</p>
             <p className="mt-2 text-xs text-gray-400">{t('privacy.legal_note')}</p>
           </div>

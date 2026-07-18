@@ -1,33 +1,30 @@
-# 02 — Décisions stack (réel vs dette)
+# 02 — Décisions stack (souveraineté V1)
 
-## Choix retenus (V1)
+## Retenu
 
-| Couche | Choix | Pourquoi |
-|--------|--------|----------|
-| Frontend | React 19 + Vite SPA | Déjà en place ; API Express séparée |
-| Styles | Tailwind + `primary` brand | Tokens existants ; éviter emerald générique |
-| i18n | react-i18next, 4 locales FR/EN/ES/AR | `frontend/public/locales/…` |
-| HTTP client | axios + interceptors | Standard actuel du repo |
-| State serveur | Mix axios/context (+ React Query dispo) | Ne pas migrer en masse sans besoin |
-| Backend | Express + Mongoose ESM | MVC `backend/` |
-| DB | MongoDB Atlas | `MONGO_URI` |
-| Images | Cloudinary | Uploads auth |
-| Paiements | Stripe + PayPal + CMI + virement | Marketplace MAD ; live = ops |
-| Email | Resend et/ou SMTP | `.env.example` |
-| Cache | Upstash Redis optionnel | Rate limit / cache |
-| Hosting | Vercel (front) + API Node | Soft-launch |
+| Couche | Choix |
+|--------|--------|
+| Domaine | `www.overglow.online` |
+| Host | **VPS** (Docker Compose) |
+| Frontend | React 19 + Vite → static nginx |
+| Backend | Express + Mongoose |
+| DB | **MongoDB Docker sur VPS** (pas Atlas long terme) |
+| Médias | **`STORAGE_DRIVER=local`** → volume `/uploads` — **pas Cloudinary** |
+| i18n | FR/EN/ES/AR |
+| Paiements | Stripe/PayPal/CMI **quand comptes** ; sinon booking différé |
+| Mail | SMTP (`EMAIL_*`) — voir 09-MAIL-DNS |
+| CI/CD | GitHub Actions → SSH / compose sur VPS |
+| Cache | Upstash optionnel |
 
-## Explicitement NON (pour l’instant)
+## Abandonné / reporté
 
-- Next.js App Router obligatoire  
-- TypeScript obligatoire  
-- Envelope API uniforme `{status,data,meta}` partout (dette possible plus tard)  
-- Stripe Connect « Express multi-comptes » comme déjà livré — vérifier le code `paymentController` avant d’écrire de la doc Connect avancée  
-- Redux Toolkit  
+- Cloudinary en prod  
+- Dépendance exclusive Vercel serverless  
+- Activation live paiements sans comptes  
+- Deux domaines SEO actifs (trip.com + online)
 
-## Dette technique documentée (cible, pas « done »)
+## Dette
 
-- Harmoniser réponses API  
-- Réduire pages admin monolithiques (>1000 lignes)  
-- Brancher React Query sur listes publiques si perf le demande  
-- Rôles admin granulaires  
+- Migration images base64 → fichiers locaux  
+- Envelope API uniforme  
+- Pages admin encore denses  

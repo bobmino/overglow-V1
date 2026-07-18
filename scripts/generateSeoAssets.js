@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const publicDir = path.join(root, 'frontend', 'public');
 
-const SITE_URL = (process.env.VITE_SITE_URL || process.env.FRONTEND_URL || 'https://www.overglowtrip.com').replace(
+const SITE_URL = (process.env.VITE_SITE_URL || process.env.FRONTEND_URL || 'https://www.overglow.online').replace(
   /\/$/,
   ''
 );

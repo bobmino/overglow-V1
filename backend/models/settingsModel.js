@@ -41,7 +41,7 @@ settingsSchema.statics.getDefaultSettings = () => ({
   bankTransferEnabled: true,
   showIban: true,
   // Notifications
-  supportEmail: 'support@overglowtrip.com',
+  supportEmail: 'support@overglow.online',
   notifyNewUser: true,
   notifyNewBooking: true,
   notifyPaymentReceived: true,

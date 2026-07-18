@@ -1,39 +1,44 @@
-# 07 — Checklist déploiement soft-launch
+# 07 — Déploiement VPS (overglow.online)
 
-> Pas TypeScript. Pas de claim « E2E 100 % ». Aligné repo JS + Vercel.
+## Prérequis serveur
 
-## Avant deploy
+- [ ] Ubuntu LTS, Docker, Compose  
+- [ ] Firewall 22/80/443  
+- [ ] User `deploy` + clé SSH  
+- [ ] Clone `overglow-V1`  
 
-- [ ] `main` vert / build frontend OK  
-- [ ] `.env` prod : `MONGO_URI`, `JWT_SECRET`, `FRONTEND_URL` / `SITE_URL`  
-- [ ] `SEO_NOINDEX` / `ALLOW_INDEXING` selon phase  
-- [ ] Cloudinary configuré  
-- [ ] Sentry DSN si utilisé  
-- [ ] Paiements live **ou** parcours différé validé  
+## App
+
+- [ ] `.env` prod (`STORAGE_DRIVER=local`, `MONGO_URI`, `JWT_SECRET`, `SITE_URL=https://www.overglow.online`)  
+- [ ] `frontend/.env` build (`VITE_API_URL`, `VITE_SITE_URL`)  
+- [ ] `docker compose up -d --build`  
+- [ ] Volume `uploads` persistant + backup cron  
+- [ ] TLS (certbot)  
+
+## CI
+
+- [ ] Secrets GitHub : `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`  
+- [ ] Workflow `.github/workflows/ci.yml` + `deploy.yml` verts  
 
 ## Données
 
-- [ ] `npm run create-admin` (prod) si besoin  
-- [ ] `npm run seed:cms` si blog/FAQ vides  
-- [ ] Initialiser badges (admin)  
-- [ ] 5–10 produits Published + opérateur Active  
+- [ ] `create-admin` / `seed:cms` / badges  
+- [ ] 5–10 produits réels  
 
-## Deploy
+## DNS (Wave 3)
 
-- [ ] Frontend Vercel (vars `VITE_*`)  
-- [ ] API déployée + health OK  
-- [ ] CORS origines prod  
-- [ ] Webhooks paiements (si live)  
+- [ ] A/AAAA `overglow.online` + `www` → VPS  
+- [ ] Redirect apex → www  
+- [ ] Ancien `overglowtrip.com` → 301 vers `.online` si conservé  
 
-## Après deploy
+## Paiements
 
-- [ ] `/fr` home + search  
-- [ ] `/fr/blog` + `/fr/faq` non vides  
-- [ ] Login admin + 1 edit produit  
-- [ ] Cookie banner  
-- [ ] Rollback plan : redeploy previous Vercel + restore Mongo si migration  
+- [ ] Soit clés live configurées  
+- [ ] Soit différé assumé + FAQ à jour  
 
-## Interdit
+## Smoke
 
-- Committer `.env`  
-- Activer `ENABLE_PAYMENT_SIM` en prod  
+- [ ] Home + search + blog + FAQ  
+- [ ] Upload image → URL `/uploads/...`  
+- [ ] Login admin + edit produit  
+- [ ] `node scripts/smokeAdminBo.js` (contre API prod avec tunnel ou IP)  

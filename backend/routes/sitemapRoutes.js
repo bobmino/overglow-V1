@@ -9,7 +9,7 @@ const router = express.Router();
 const LOCALES = ['fr', 'en', 'es', 'ar'];
 
 const getBaseUrl = () =>
-  (process.env.FRONTEND_URL || process.env.SITE_URL || 'https://www.overglowtrip.com').replace(/\/$/, '');
+  (process.env.FRONTEND_URL || process.env.SITE_URL || 'https://www.overglow.online').replace(/\/$/, '');
 
 const hreflangBlock = (baseUrl, pathname) => {
   const path = pathname.startsWith('/') ? pathname : `/${pathname}`;

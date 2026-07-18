@@ -1,64 +1,50 @@
-# 00 — Setup local & environnement (V1 réel)
+# 00 — Setup local & VPS
 
-## Prérequis
+## Domaine & URLs
 
-| Outil | Version |
-|-------|---------|
-| Node.js | 20.x recommandé |
-| npm | 10.x |
-| Git | 2.40+ |
-| Compte MongoDB Atlas | requis |
-| Cloudinary / Stripe / PayPal / CMI | selon go-live |
+| Usage | Valeur |
+|-------|--------|
+| Canonique | `https://www.overglow.online` |
+| API (même host ou) | `https://www.overglow.online/api` |
+| Uploads | `https://www.overglow.online/uploads/...` |
+| Legacy | `overglowtrip.com` → redirect vers `.online` (Wave 3) |
 
-## Install
+## Local
 
 ```bash
-cd overglow-V1
-npm install                 # dépendances API (racine)
+npm install
 cd frontend && npm install && cd ..
+cp .env.example .env
+cp frontend/.env.example frontend/.env
 ```
 
-## Variables d’environnement
-
-- Racine : copier [`.env.example`](../../.env.example) → `.env`
-- Frontend : `frontend/.env.example` → `frontend/.env` (`VITE_API_URL=http://127.0.0.1:5001`)
-
-Variables critiques : `MONGO_URI`, `MONGO_DB_NAME`, `JWT_SECRET`, `FRONTEND_URL`, `PORT` (défaut **5001**).
-
-Paiements : `STRIPE_*`, `PAYPAL_*`, `CMI_*`, `BANK_*` — sans elles, endpoints paiement peuvent répondre 503 (comportement attendu soft-launch).
-
-Admin bootstrap : `ADMIN_EMAIL`, `ADMIN_PASSWORD` → `npm run create-admin`.
-
-## Seeds
-
-| Commande | Effet |
-|----------|--------|
-| `npm run create-admin` | User Admin |
-| `npm run seed:cms` | Blog SEO (20) + FAQ (32), idempotent |
-| Admin UI « Initialiser badges » | Badges défaut + métriques |
-
-## Run
+Vars critiques : `MONGO_URI`, `JWT_SECRET`, `PORT=5001`, `STORAGE_DRIVER=local`, `UPLOAD_DIR=uploads`, `FRONTEND_URL`, `SITE_URL`.
 
 ```bash
-# Terminal 1 — API
-node -r dotenv/config server.js
-# ou: npm run start
-
-# Terminal 2 — SPA
-cd frontend && npm run dev
+npm run create-admin
+npm run seed:cms
+node -r dotenv/config server.js   # :5001
+cd frontend && npm run dev        # :5173
 ```
 
-- API : http://127.0.0.1:5001  
-- SPA : http://localhost:5173  
+`VITE_API_URL=http://127.0.0.1:5001`  
+`VITE_SITE_URL=https://www.overglow.online` (canonical même en local pour OG)
 
-## Smoke
+## Docker (proche prod)
 
 ```bash
-node scripts/smokeAdminBo.js
+docker compose up -d --build
 ```
 
-Login : `POST /api/auth/login` (pas `/api/users/login`).
+Services : `mongo`, `api`, `web` (nginx). Volume `uploads_data`.
 
-## Repo GitHub
+## VPS (résumé)
 
-Référence réelle du projet : organisation/compte GitHub du dépôt `overglow-V1` (ne pas utiliser des URLs `your-org` inventées).
+1. Ubuntu LTS, ufw 22/80/443, fail2ban  
+2. Docker + Compose  
+3. Clone repo + `.env` prod  
+4. `docker compose up -d`  
+5. Certbot / TLS sur nginx  
+6. DNS Wave 3 → IP VPS  
+
+Détail deploy : [07-DEPLOYMENT-CHECKLIST.md](./07-DEPLOYMENT-CHECKLIST.md).

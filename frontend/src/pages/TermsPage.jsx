@@ -1,18 +1,25 @@
 import React from 'react';
-import { FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { LocalizedLink } from '../components/LocalizedLink';
 
 const TermsPage = () => {
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="page-shell py-12">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+        <LocalizedLink
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800 mb-6"
+        >
+          <ArrowLeft size={16} />
+          {t('common.back_home', 'Retour à l’accueil')}
+        </LocalizedLink>
+        <div className="surface-card p-8 md:p-12">
           <div className="text-center mb-12">
             <FileText className="mx-auto h-16 w-16 text-primary-600 mb-4" />
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('legal.terms_title')}</h1>
+            <h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">{t('legal.terms_title')}</h1>
             <p className="text-gray-600">
               {t('legal.terms_updated')} : {new Date().toLocaleDateString(i18n.language)}
             </p>
@@ -50,13 +57,13 @@ const TermsPage = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('legal.terms_s7_title')}</h2>
               <p className="text-gray-700 leading-relaxed">
-                <Link to="/contact" className="text-primary-600 font-semibold hover:underline">
+                <LocalizedLink to="/contact" className="text-primary-600 font-semibold hover:underline">
                   {t('legal.help_link')}
-                </Link>
+                </LocalizedLink>
                 {' · '}
-                <Link to="/privacy" className="text-primary-600 font-semibold hover:underline">
+                <LocalizedLink to="/privacy" className="text-primary-600 font-semibold hover:underline">
                   {t('legal.privacy_link')}
-                </Link>
+                </LocalizedLink>
               </p>
             </section>
           </div>

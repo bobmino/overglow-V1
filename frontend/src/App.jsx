@@ -192,6 +192,16 @@ function App() {
               <WithdrawalsPage />
             </Suspense>
           } />
+          <Route path="wizard" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorWizardPage />
+            </Suspense>
+          } />
+          <Route path="onboarding" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorOnboardingPage />
+            </Suspense>
+          } />
         </Route>
 
         <Route
@@ -349,20 +359,6 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<LoadingFallback />}>
                 <MyInquiriesPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="/operator/wizard" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorWizardPage />
-              </Suspense>
-            </PrivateRoute>
-          } />
-          <Route path="/operator/onboarding" element={
-            <PrivateRoute>
-              <Suspense fallback={<LoadingFallback />}>
-                <OperatorOnboardingPage />
               </Suspense>
             </PrivateRoute>
           } />

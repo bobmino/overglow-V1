@@ -69,12 +69,12 @@ const Footer = () => {
 
         <div className="flex items-center justify-center gap-6 py-6 border-t border-slate-700">
           <a
-            href="mailto:hello@overglowtrip.com"
+            href="mailto:hello@overglow.online"
             className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-primary-400 transition"
             aria-label={t('footer.contact_email', 'Nous écrire')}
           >
             <Mail size={20} />
-            <span>hello@overglowtrip.com</span>
+            <span>hello@overglow.online</span>
           </a>
         </div>
 

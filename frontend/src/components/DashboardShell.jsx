@@ -36,6 +36,7 @@ const TITLE_MAP = {
   '/operator/withdrawals': 'Mes revenus',
   '/operator/analytics': 'Statistiques',
   '/operator/onboarding': 'Intégration',
+  '/operator/wizard': 'Onboarding',
 };
 
 const resolveTitle = (pathname) => {
@@ -188,7 +189,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <AdminSidebar
         variant={variant}
         collapsed={collapsed}
@@ -242,10 +243,12 @@ const DashboardShell = ({ variant = 'admin' }) => {
       </div>
 
       <div
-        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-3.5rem)]"
+        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-3.5rem)] page-shell"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
-        <Outlet />
+        <div className="p-4 md:p-6">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

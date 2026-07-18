@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
 
 const OperatorWizardPage = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [wizardData, setWizardData] = useState(null);
@@ -15,12 +17,24 @@ const OperatorWizardPage = () => {
   const [error, setError] = useState('');
 
   const STEPS = useMemo(() => [
-    { id: 'providerType', label: t('operator.wizard.steps.provider_type'), icon: Building2 },
-    { id: 'publicInfo', label: t('operator.wizard.steps.public_info'), icon: User },
-    { id: 'photos', label: t('operator.wizard.steps.photos'), icon: Camera },
-    { id: 'address', label: t('operator.wizard.steps.address'), icon: MapPin },
-    { id: 'experiences', label: t('operator.wizard.steps.experiences'), icon: FileText },
-    { id: 'privateInfo', label: t('operator.wizard.steps.private_info'), icon: Home },
+    {
+      id: 'identity',
+      label: t('operator.wizard.steps.identity', 'Identité'),
+      icon: Building2,
+      backendIds: ['providerType', 'publicInfo'],
+    },
+    {
+      id: 'presence',
+      label: t('operator.wizard.steps.presence', 'Présence'),
+      icon: Camera,
+      backendIds: ['photos', 'address', 'experiences'],
+    },
+    {
+      id: 'legal',
+      label: t('operator.wizard.steps.legal', 'Légal'),
+      icon: Home,
+      backendIds: ['privateInfo'],
+    },
   ], [t]);
   
   // Form data
@@ -28,10 +42,10 @@ const OperatorWizardPage = () => {
     providerType: null,
     publicName: '',
     description: '',
-    location: { city: '', address: '', postalCode: '', country: 'France' },
+    location: { city: '', address: '', postalCode: '', country: 'Maroc' },
     logo: '',
     gallery: [],
-    companyAddress: { street: '', city: '', postalCode: '', country: 'France' },
+    companyAddress: { street: '', city: '', postalCode: '', country: 'Maroc' },
     experiences: '',
     companyInfo: {},
     individualWithStatusInfo: {},
@@ -50,10 +64,10 @@ const OperatorWizardPage = () => {
             providerType: data.providerType,
             publicName: data.publicName || '',
             description: data.description || '',
-            location: data.location || { city: '', address: '', postalCode: '', country: 'France' },
+            location: data.location || { city: '', address: '', postalCode: '', country: 'Maroc' },
             logo: data.photos?.logo || '',
             gallery: data.photos?.gallery || [],
-            companyAddress: data.companyAddress || { street: '', city: '', postalCode: '', country: 'France' },
+            companyAddress: data.companyAddress || { street: '', city: '', postalCode: '', country: 'Maroc' },
             experiences: data.experiences || '',
             companyInfo: data.companyInfo || {},
             individualWithStatusInfo: data.individualWithStatusInfo || {},
@@ -62,7 +76,9 @@ const OperatorWizardPage = () => {
           
           // Set current step to first incomplete step
           const completedSteps = data.completedSteps || [];
-          const firstIncomplete = STEPS.findIndex(step => !completedSteps.includes(step.id));
+          const firstIncomplete = STEPS.findIndex(
+            (step) => !(step.backendIds || [step.id]).every((id) => completedSteps.includes(id))
+          );
           if (firstIncomplete !== -1) {
             setCurrentStep(firstIncomplete);
           }
@@ -77,14 +93,8 @@ const OperatorWizardPage = () => {
     fetchWizardData();
   }, []);
 
-  const handleNext = async () => {
-    setError('');
-    setSaving(true);
-
-    try {
-      const stepId = STEPS[currentStep].id;
-
-      switch (stepId) {
+  const saveBackendStep = async (stepId) => {
+    switch (stepId) {
         case 'providerType':
           await api.put('/api/operator/wizard/provider-type', {
             providerType: formData.providerType,
@@ -120,8 +130,19 @@ const OperatorWizardPage = () => {
             individualWithoutStatusInfo: formData.individualWithoutStatusInfo,
           });
           break;
-      }
+      default:
+        break;
+    }
+  };
 
+  const handleNext = async () => {
+    setError('');
+    setSaving(true);
+    try {
+      const backendIds = STEPS[currentStep].backendIds || [];
+      for (const stepId of backendIds) {
+        await saveBackendStep(stepId);
+      }
       if (currentStep < STEPS.length - 1) {
         setCurrentStep(currentStep + 1);
       }
@@ -137,8 +158,12 @@ const OperatorWizardPage = () => {
     setSaving(true);
 
     try {
+      const backendIds = STEPS[currentStep].backendIds || [];
+      for (const stepId of backendIds) {
+        await saveBackendStep(stepId);
+      }
       await api.post('/api/operator/wizard/submit');
-      alert(t('operator.wizard.submit_success'));
+      toast.success(t('operator.wizard.submit_success'));
       navigate('/operator/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || t('operator.wizard.submit_error'));
@@ -159,9 +184,10 @@ const OperatorWizardPage = () => {
     return Math.round((completedSteps.length / STEPS.length) * 100);
   };
 
-  const isStepCompleted = (stepId) => {
+  const isStepCompleted = (step) => {
     if (!wizardData) return false;
-    return wizardData.completedSteps?.includes(stepId);
+    const ids = step?.backendIds || [step?.id];
+    return ids.every((id) => wizardData.completedSteps?.includes(id));
   };
 
   if (loading) {
@@ -172,9 +198,7 @@ const OperatorWizardPage = () => {
     );
   }
 
-  const StepContent = () => {
-    const stepId = STEPS[currentStep].id;
-
+  const renderBackendPanel = (stepId) => {
     switch (stepId) {
       case 'providerType':
         return (
@@ -685,11 +709,22 @@ const OperatorWizardPage = () => {
     }
   };
 
+  const StepContent = () => {
+    const backendIds = STEPS[currentStep].backendIds || [STEPS[currentStep].id];
+    return (
+      <div className="space-y-10">
+        {backendIds.map((id) => (
+          <div key={id}>{renderBackendPanel(id)}</div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-white border-e border-gray-200 p-6">
+    <div className="page-shell py-6 px-4 md:px-6">
+      <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+        {/* Stepper */}
+        <div className="w-full lg:w-64 surface-card p-6 h-fit">
           <div className="mb-8">
             <h3 className="text-sm font-bold text-gray-500 mb-2">{t('operator.wizard.progress', { percent: getProgress() })}</h3>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -703,7 +738,7 @@ const OperatorWizardPage = () => {
           <nav className="space-y-1">
             {STEPS.map((step, index) => {
               const Icon = step.icon;
-              const isCompleted = isStepCompleted(step.id);
+              const isCompleted = isStepCompleted(step);
               const isCurrent = index === currentStep;
 
               return (
@@ -736,8 +771,7 @@ const OperatorWizardPage = () => {
           </nav>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-8">
+        <div className="flex-1">
           <div className="max-w-3xl mx-auto">
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
@@ -746,7 +780,7 @@ const OperatorWizardPage = () => {
               </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="surface-card p-6 md:p-8">
               <StepContent />
             </div>
 
@@ -765,7 +799,7 @@ const OperatorWizardPage = () => {
                 <button
                   onClick={handleNext}
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t('operator.common.next')}
                   <ChevronRight size={20} />
@@ -774,7 +808,7 @@ const OperatorWizardPage = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? t('operator.wizard.submitting') : t('operator.wizard.validate_submit')}
                 </button>

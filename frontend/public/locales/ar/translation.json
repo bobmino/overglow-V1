@@ -52,7 +52,8 @@
     "and": "و",
     "from": "ابتداءً من",
     "per_person": "للشخص",
-    "per_person_short": "/ للشخص"
+    "per_person_short": "/ للشخص",
+    "back_home": "العودة إلى الرئيسية"
   },
   "stores": {
     "badge_soon": "قريباً",
@@ -2418,8 +2419,20 @@
     "logo_body": "Primary logo. Non-commercial press use with credit “Overglow Trip”.",
     "logo_cta": "Download logo (SVG)",
     "mentions_title": "Media coverage",
-    "mentions_body": "نعرض فقط التغطيات الموثّقة. تواصل مع press@overglowtrip.com.",
+    "mentions_body": "نعرض فقط التغطيات الموثّقة. تواصل مع press@overglow.online.",
     "contact_title": "Media contact",
     "contact_body": "Interviews, editorial partnerships and image requests:"
+  },
+  "faq_ui": {
+    "search_placeholder": "ابحث في الأسئلة الشائعة...",
+    "all": "الكل",
+    "all_categories": "كل الفئات",
+    "category": "فئة",
+    "loading": "جاري تحميل الأسئلة...",
+    "empty": "لا توجد أسئلة",
+    "load_error": "تعذّر تحميل الأسئلة الشائعة",
+    "helpful_prompt": "هل كانت هذه الإجابة مفيدة؟",
+    "helpful": "مفيد",
+    "not_helpful": "غير مفيد"
   }
 }

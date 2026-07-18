@@ -24,6 +24,7 @@ import {
   HelpCircle,
   ShieldCheck,
   BookOpen,
+  ClipboardList,
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
@@ -95,6 +96,7 @@ const getOperatorSections = (t) => [
     label: t('admin.nav.operator_section_account'),
     items: [
       { to: '/profile', label: t('admin.nav.operator_profile'), icon: UserRound },
+      { to: '/operator/wizard', label: t('admin.nav.operator_onboarding', 'Onboarding'), icon: ClipboardList },
       { to: '/operator/help', label: t('admin.nav.operator_help'), icon: BookOpen },
       { to: '/operator/resources', label: t('admin.nav.operator_resources'), icon: FileText },
     ],

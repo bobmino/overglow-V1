@@ -1,108 +1,89 @@
 # OVERGLOW TRIP V1 — Master Playbook
 
-Point d’entrée unique pour humains et agents. Si un doc du pack contredit le **code** ou `plan de situation.md`, le code + plan de situation gagnent.
+Point d’entrée unique. Si un doc contredit le **code** ou `plan de situation.md`, le code gagne.
 
 ---
 
-## 1. Qu’est-ce que c’est
+## 1. Produit
 
-Marketplace **voyageurs ↔ opérateurs locaux** (produits/expériences au Maroc).  
-Stack : **Express + Mongoose** (API :5001) + **React 19 / Vite** (SPA) + **MongoDB Atlas** + Cloudinary + i18n **FR/EN/ES/AR**.  
-Déploiement typique : frontend Vercel + API Node (Vercel serverless ou host Node).
-
-**Ce n’est pas** : un catalogue Next.js « trips », ni Stripe Connect « déjà live » à 100 %.
+Marketplace **voyageurs ↔ opérateurs** (expériences Maroc).  
+Stack cible souveraine : **Express + Mongo (Docker VPS) + React/Vite + nginx + uploads locaux**.  
+i18n **FR/EN/ES/AR**. Domaine canonique : **`https://www.overglow.online`**.
 
 ---
 
-## 2. Statut (2026-07)
+## 2. Statut & cap finalisation
 
 | Domaine | État |
 |--------|------|
-| Catalogue produits / opérateurs / bookings | En place |
-| i18n public + RTL AR | En place |
-| Soft-launch hardening (sécu, headers, toasts) | En place |
-| CMS blog (20) + FAQ (32) seed Mongo | En place (`npm run seed:cms`) |
-| BO direction UX P0 (badges, edit produits/opérateurs, FAQ CRUD) | En place — voir `../BACKOFFICE-UX-AUDIT.md` |
-| Avis / annulation 100 % DB | En place |
-| Paiements Stripe/PayPal/CMI **live** | **Reportés** (code différé prêt ; activer avec comptes) |
-| Contenu réel 5–10 expériences + pages légales avocat | Ops / métier |
+| App métier (catalogue, bookings, BO CRUD) | En place |
+| Paiements live Stripe/PayPal/CMI | **Reportés** — code différé OK ; clés en Wave 3 |
+| Cloudinary | **Abandonné** — `STORAGE_DRIVER=local` → disque VPS |
+| Hébergement | Cible **VPS** (pas dépendance Vercel long terme) |
+| Domaine / DNS | `overglow.online` — DNS Wave 3 |
+| CI/CD | GitHub Actions + Docker Compose (repo) |
+| Charte / nav / BO skin / onboarding / Help | Wave 2 UX |
 
-Détail court : [`../plan de situation.md`](../plan%20de%20situation.md).
+Détail : [`../plan de situation.md`](../plan%20de%20situation.md) · Feuille de route finalisation (plan Cursor).
 
 ---
 
-## 3. Architecture (réelle)
+## 3. Architecture cible (souveraineté)
 
 ```
-Browser (Vite SPA)
-  ├─ /{fr|en|es|ar}/*     public + LocalizedLink
-  ├─ /admin/*             AdminRoute + DashboardShell
-  └─ /operator/*          OperatorRoute + DashboardShell
-         │
-         ▼  axios → VITE_API_URL
-Express (server.js)  /api/auth|products|bookings|admin|payments|faq|blog|…
-         │
-         ├─ MongoDB Atlas
-         ├─ Cloudinary (images)
-         ├─ Stripe / PayPal / CMI (si env)
-         ├─ Email (Resend et/ou SMTP)
-         └─ Sentry / Upstash (optionnel)
+Internet → nginx (TLS www.overglow.online)
+              ├─ /          → SPA (frontend/dist)
+              ├─ /api       → Node API (server.js)
+              └─ /uploads   → volume disque persistant
+                    │
+              Docker Compose
+              ├─ api
+              ├─ mongo
+              └─ (optionnel) mail relay
 ```
 
 ---
 
-## 4. Carte des documents
+## 4. Carte documents playbook
 
 | Fichier | Rôle |
 |---------|------|
-| [00-SETUP-COMPLETE.md](./00-SETUP-COMPLETE.md) | Install local, env, seeds |
-| [01-CURSOR-CONFIGURATION.md](./01-CURSOR-CONFIGURATION.md) | Rules `.mdc`, usage agents |
-| [02-TECH-STACK-DECISIONS.md](./02-TECH-STACK-DECISIONS.md) | Choix stack **réels** vs dette |
-| [03-GDPR-COMPLIANCE.md](./03-GDPR-COMPLIANCE.md) | Cookies, privacy, droits |
-| [04-PAYMENT-SETUP.md](./04-PAYMENT-SETUP.md) | Stripe / PayPal / CMI / différé |
-| [05-TESTING-STRATEGY.md](./05-TESTING-STRATEGY.md) | Smoke API, manuels BO, CI |
-| [06-AUDIT-PLANS.md](./06-AUDIT-PLANS.md) | Checklists sécu / perf / a11y |
-| [07-DEPLOYMENT-CHECKLIST.md](./07-DEPLOYMENT-CHECKLIST.md) | Soft-launch deploy |
-| [08-POST-LAUNCH-MONITORING.md](./08-POST-LAUNCH-MONITORING.md) | Sentry, uptime, incidents |
-| [../BACKOFFICE-UX-AUDIT.md](../BACKOFFICE-UX-AUDIT.md) | UX BO direction |
-| `.cursor/rules/*.mdc` | Règles agent Cursor |
+| [00-SETUP-COMPLETE.md](./00-SETUP-COMPLETE.md) | Local + VPS |
+| [01-CURSOR-CONFIGURATION.md](./01-CURSOR-CONFIGURATION.md) | Rules agents |
+| [02-TECH-STACK-DECISIONS.md](./02-TECH-STACK-DECISIONS.md) | Stack réel + dette |
+| [03-GDPR-COMPLIANCE.md](./03-GDPR-COMPLIANCE.md) | Privacy |
+| [04-PAYMENT-SETUP.md](./04-PAYMENT-SETUP.md) | Paiements différés → live |
+| [05-TESTING-STRATEGY.md](./05-TESTING-STRATEGY.md) | Smoke / CI |
+| [06-AUDIT-PLANS.md](./06-AUDIT-PLANS.md) | Checklists |
+| [07-DEPLOYMENT-CHECKLIST.md](./07-DEPLOYMENT-CHECKLIST.md) | Deploy VPS |
+| [08-POST-LAUNCH-MONITORING.md](./08-POST-LAUNCH-MONITORING.md) | Ops |
+| [09-MAIL-DNS.md](./09-MAIL-DNS.md) | SMTP + SPF/DKIM |
+| [10-WAVE3-GOLIVE.md](./10-WAVE3-GOLIVE.md) | DNS + secrets bloc |
+| [11-BRAND-TOKENS.md](./11-BRAND-TOKENS.md) | Charte UI tokens |
 
 ---
 
-## 5. Quick start
+## 5. Quick start local
 
 ```bash
-git clone <repo> && cd overglow-V1
-npm install
-cd frontend && npm install && cd ..
-cp .env.example .env          # remplir MONGO_URI, JWT_SECRET, …
-cp frontend/.env.example frontend/.env
-npm run create-admin          # si besoin
-npm run seed:cms              # blog + FAQ
-node -r dotenv/config server.js   # API :5001
-cd frontend && npm run dev        # :5173
+npm install && cd frontend && npm install && cd ..
+cp .env.example .env
+# STORAGE_DRIVER=local  MONGO_URI=...  JWT_SECRET=...
+npm run create-admin
+npm run seed:cms
+node -r dotenv/config server.js
+cd frontend && npm run dev
 ```
 
-Smoke admin API (serveur up) : `node scripts/smokeAdminBo.js`.
+Docker (proche prod) : `docker compose up -d` (voir `docker-compose.yml`).
 
 ---
 
-## 6. Priorités soft-launch
+## 6. Waves (rappel)
 
-1. Contenu réel (produits + opérateur) en DB  
-2. Env prod paiements **quand comptes prêts**  
-3. Smoke UI admin + parcours booking différé  
-4. Seed CMS prod si collections vides  
-5. Sitemap / Search Console  
+0. Docs décisions (fait dans ce playbook)  
+1. Infra VPS + uploads locaux + CI  
+2. UX charte / nav / BO / onboarding / Help  
+3. DNS + secrets + smoke (+ paiements si comptes)  
 
-Hors scope immédiat : calendrier type Booking Extranet, multi-rôles admin granulaires, app mobile Pulse.
-
----
-
-## 7. Décisions figées (ne pas « re-décider » en chat)
-
-- JS pas TS ; Vite SPA pas Next obligatoire  
-- Rôles Admin / Opérateur / Client  
-- 4 langues FR/EN/ES/AR  
-- Contenu confiance (avis, FAQ, blog) = Mongo  
-- Pas de fake social proof  
+**Fable** : audit UX optionnel *après* staging sur `overglow.online`, pas avant.

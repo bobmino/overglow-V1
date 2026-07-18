@@ -1,6 +1,5 @@
 import React from 'react';
 import { HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 import FAQSection from '../components/FAQSection';

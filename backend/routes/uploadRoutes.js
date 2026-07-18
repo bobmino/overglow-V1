@@ -3,6 +3,7 @@ import upload, { compressAfterUpload, uploadCsv, uploadDocument } from '../middl
 import { strictLimiter } from '../middleware/rateLimiter.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { sanitizeCsvRows } from '../utils/csvSanitize.js';
+import { isLocalStorageEnabled, saveBufferToUploads } from '../utils/localStorageService.js';
 import crypto from 'crypto';
 import path from 'path';
 
@@ -33,12 +34,18 @@ router.post(
     }
 
     if (req.file.dataUrl) {
-      const isCloudinaryUrl = req.file.dataUrl.startsWith('http');
+      const source =
+        req.file.storageSource
+        || (req.file.dataUrl.startsWith('http')
+          ? 'cloudinary'
+          : req.file.dataUrl.startsWith('/uploads')
+            ? 'local'
+            : 'base64');
       return res.json({
         url: req.file.dataUrl,
         filename: req.file.storedName,
         message: 'Image uploaded successfully',
-        source: isCloudinaryUrl ? 'cloudinary' : 'base64',
+        source,
       });
     }
 
@@ -85,7 +92,14 @@ router.post(
       return res.status(500).json({ message: 'Error processing images' });
     }
 
-    const source = urls[0]?.startsWith('http') ? 'cloudinary' : 'base64';
+    const first = req.files.find((f) => f.dataUrl);
+    const source =
+      first?.storageSource
+      || (urls[0]?.startsWith('http')
+        ? 'cloudinary'
+        : urls[0]?.startsWith('/uploads')
+          ? 'local'
+          : 'base64');
     res.json({
       urls,
       images: urls,
@@ -162,18 +176,35 @@ router.post(
   authorize('Admin'),
   strictLimiter,
   uploadDocument.single('document'),
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No document uploaded' });
     }
 
     const storedName = `${crypto.randomUUID()}${path.extname(req.file.originalname || '').toLowerCase()}`;
-    // Pas de stockage disque sur Vercel — retourne métadonnées + base64 court-circuité volontairement
+
+    if (isLocalStorageEnabled()) {
+      try {
+        const saved = await saveBufferToUploads(req.file.buffer, storedName, 'documents');
+        return res.status(200).json({
+          message: 'Document uploaded successfully',
+          url: saved.url,
+          filename: saved.filename,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+          source: 'local',
+        });
+      } catch (err) {
+        return res.status(500).json({ message: 'Failed to store document', error: err.message });
+      }
+    }
+
     return res.status(200).json({
-      message: 'Document accepted',
+      message: 'Document accepted (metadata only — set STORAGE_DRIVER=local to persist)',
       filename: storedName,
       size: req.file.size,
       mimetype: req.file.mimetype,
+      source: 'metadata',
     });
   }
 );

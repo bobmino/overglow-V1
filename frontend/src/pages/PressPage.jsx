@@ -24,7 +24,7 @@ const PressPage = () => {
           </h2>
           <p className="text-slate-700 mb-4">{t('press.kit_body')}</p>
           <a
-            href={`mailto:press@overglowtrip.com?subject=${encodeURIComponent(t('press.kit_email_subject'))}`}
+            href={`mailto:press@overglow.online?subject=${encodeURIComponent(t('press.kit_email_subject'))}`}
             className="btn-primary"
           >
             {t('press.kit_cta')}
@@ -51,10 +51,10 @@ const PressPage = () => {
         </h2>
         <p className="text-slate-700 mb-3">{t('press.contact_body')}</p>
         <a
-          href="mailto:press@overglowtrip.com"
+          href="mailto:press@overglow.online"
           className="text-primary-700 font-semibold hover:underline"
         >
-          press@overglowtrip.com
+          press@overglow.online
         </a>
       </section>
     </StaticContentPage>
