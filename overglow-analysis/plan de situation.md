@@ -28,7 +28,7 @@
 | **L0** Marque | `overglow.online` only | **Fait** |
 | **L1** Infra | DNS TLS Docker CI backup Certbot Mongo rs0 | **Fait** |
 | **L2** Catalogue | 8 produits MAD + images cities + schedules | **Fait** |
-| **L3** Smoke critique | Upload · AR RTL · booking UI · mdp | **Presque** (reste UI + mdp) |
+| **L3** Smoke critique | Upload · AR RTL · booking UI · mdp | **Presque** — bug checkout MAD corrigé (à redéployer) |
 | **L4** Conformité | CGU / Privacy avocat | **À toi** |
 | **L5** Post-launch | Photos métier · PSP live · Sentry | **Différé** |
 

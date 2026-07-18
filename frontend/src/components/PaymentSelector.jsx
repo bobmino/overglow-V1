@@ -4,6 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
+import { useCurrency } from '../context/CurrencyContext';
 import { logger } from '../utils/logger.js';
 
 /** [TASK-20] Simulator UI only when explicitly enabled outside production builds. */
@@ -133,8 +134,16 @@ const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
   );
 };
 
-const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, disabled }) => {
+const PaymentSelector = ({
+  amount,
+  currency = 'MAD',
+  onPaymentComplete,
+  bookingId,
+  bookingIds,
+  disabled,
+}) => {
   const { t } = useTranslation();
+  const { convert } = useCurrency();
   const [method, setMethod] = useState('stripe');
   const [error, setError] = useState('');
   const [madAmount, setMadAmount] = useState(null);
@@ -145,17 +154,30 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
   const [loadingBankDetails, setLoadingBankDetails] = useState(false);
 
   useEffect(() => {
-    // Fetch MAD conversion
-    const fetchMadConversion = async () => {
+    // Montants catalogue = MAD ; ne plus convertir en supposant EUR
+    const resolveMadAmount = async () => {
+      const n = Number(amount);
+      if (!Number.isFinite(n) || n < 0) {
+        setMadAmount(null);
+        return;
+      }
+      const from = String(currency || 'MAD').toUpperCase();
+      if (from === 'MAD') {
+        setMadAmount(Math.round(n * 100) / 100);
+        return;
+      }
       try {
-        const { data } = await api.get(`/api/payments/convert-to-mad?amount=${amount}&from=EUR`);
+        const { data } = await api.get(
+          `/api/payments/convert-to-mad?amount=${n}&from=${encodeURIComponent(from)}`
+        );
         setMadAmount(data.madAmount);
       } catch (error) {
         logger.error('Failed to convert to MAD:', error);
+        setMadAmount(null);
       }
     };
-    fetchMadConversion();
-  }, [amount]);
+    resolveMadAmount();
+  }, [amount, currency]);
 
   // Fetch bank details when bank transfer is selected
   useEffect(() => {
@@ -269,11 +291,17 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
     });
   };
 
-  const formattedEurAmount = amount.toFixed(2);
-  const formattedMadAmount = madAmount ? madAmount.toFixed(2) : null;
-  const cmiPayAmount = madAmount
+  const formattedMadAmount =
+    madAmount != null && Number.isFinite(Number(madAmount))
+      ? Number(madAmount).toFixed(2)
+      : null;
+  const eurApprox =
+    madAmount != null && Number.isFinite(Number(madAmount))
+      ? Number(convert(madAmount, 'MAD', 'EUR')).toFixed(2)
+      : Number(convert(amount, currency || 'MAD', 'EUR')).toFixed(2);
+  const cmiPayAmount = formattedMadAmount
     ? `${formattedMadAmount} MAD`
-    : `${formattedEurAmount} EUR`;
+    : `${eurApprox} EUR`;
 
   return (
     <div className="space-y-8">
@@ -284,7 +312,7 @@ const PaymentSelector = ({ amount, onPaymentComplete, bookingId, bookingIds, dis
           <div className="text-end backdrop-blur-md bg-white/60 rounded-xl px-5 py-3 shadow-sm border border-gray-200">
             <p className="text-xs text-gray-500 uppercase tracking-wide">{t('payment.total_amount')}</p>
             <p className="text-2xl font-bold text-primary-700">{formattedMadAmount} MAD</p>
-            <p className="text-xs text-gray-400">≈ {formattedEurAmount} €</p>
+            <p className="text-xs text-gray-400">≈ {eurApprox} €</p>
           </div>
         )}
       </div>

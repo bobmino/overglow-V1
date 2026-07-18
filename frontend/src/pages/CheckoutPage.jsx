@@ -303,6 +303,7 @@ const CheckoutPage = () => {
               ) : primaryBookingId ? (
                 <PaymentSelector
                   amount={totalPrice}
+                  currency="MAD"
                   bookingId={primaryBookingId}
                   bookingIds={bookingIds}
                   onPaymentComplete={handlePaymentComplete}
