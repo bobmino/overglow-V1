@@ -15,24 +15,38 @@ jobs:
        github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          command_timeout: 30m
-          script_stop: true
-          script: |
-            set -e
-            APP_PATH="${{ secrets.VPS_APP_PATH }}"
-            cd "${APP_PATH:-$HOME/overglow-V1}"
-            echo "Deploy in $(pwd) as $(whoami)"
-            git fetch origin main
-            git reset --hard origin/main
-            docker compose pull || true
-            docker compose up -d --build
-            docker compose ps
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$VPS_HOST"
+          test -n "$VPS_USER"
+          test -n "$SSH_PRIVATE_KEY"
+          APP_PATH="${VPS_APP_PATH:-/root/overglow-V1}"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
+          # Normalise fins de ligne Windows éventuelles
+          sed -i 's/\r$//' ~/.ssh/id_deploy
+
+          ssh-keyscan -H -p 22 "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          echo "Connecting to ${VPS_USER}@${VPS_HOST} ..."
+          ssh -i ~/.ssh/id_deploy -p 22 -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new \
+            "${VPS_USER}@${VPS_HOST}" bash -s <<EOF
+          set -e
+          cd "${APP_PATH}"
+          echo "Deploy in \$(pwd) as \$(whoami)"
+          git fetch origin main
+          git reset --hard origin/main
+          docker compose pull || true
+          docker compose up -d --build
+          docker compose ps
+          EOF
