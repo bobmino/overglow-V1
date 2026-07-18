@@ -194,7 +194,7 @@ const BookingPage = () => {
                           {new Date(slot.date).toLocaleDateString(dateLocale, { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="text-sm font-medium text-primary-700 mt-2">
-                          {formatPrice(slot.price, 'EUR')}
+                          {formatPrice(slot.price, 'MAD')}
                         </div>
                       </button>
                     ))}
@@ -308,8 +308,8 @@ const BookingPage = () => {
                     <>
                       <div className="space-y-2 mb-3">
                         <div className="flex justify-between text-sm text-slate-600">
-                          <span>{formatPrice(selectedSlot.price, 'EUR')} × {t('booking_page.tickets_line', { count: tickets })}</span>
-                          <span>{formatPrice(selectedSlot.price * tickets, 'EUR')}</span>
+                          <span>{formatPrice(selectedSlot.price, 'MAD')} × {t('booking_page.tickets_line', { count: tickets })}</span>
+                          <span>{formatPrice(selectedSlot.price * tickets, 'MAD')}</span>
                         </div>
                         {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                           <div className="flex justify-between text-sm text-slate-600">
@@ -317,14 +317,14 @@ const BookingPage = () => {
                               <span>⚡</span>
                               {t('booking_page.skip_the_line', { type: product.skipTheLine.type })}
                             </span>
-                            <span>{formatPrice(product.skipTheLine.additionalPrice * tickets, 'EUR')}</span>
+                            <span>{formatPrice(product.skipTheLine.additionalPrice * tickets, 'MAD')}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                         <span className="font-bold text-slate-900">{t('booking_page.total')}</span>
                         <span className="font-bold text-xl text-primary-700">
-                          {formatPrice(totalPrice, 'EUR')}
+                          {formatPrice(totalPrice, 'MAD')}
                         </span>
                       </div>
                     </>

@@ -13,6 +13,9 @@ chmod +x deploy/backup-overglow.sh deploy/certbot-renew-hook.sh deploy/post-depl
 echo "==> Seed catalogue Maroc (idempotent)"
 docker compose exec -T api node -r dotenv/config scripts/seedMoroccoCatalog.js
 
+echo "==> Créneaux produits (idempotent)"
+docker compose exec -T api node -r dotenv/config scripts/ensureProductSchedules.js
+
 echo "==> Cron backup (si absent)"
 mkdir -p /root/backups/overglow
 CRON_LINE="15 3 * * * ${APP_DIR}/deploy/backup-overglow.sh >> /var/log/overglow-backup.log 2>&1"

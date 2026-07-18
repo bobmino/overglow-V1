@@ -34,7 +34,7 @@ const buildBookingPayload = (item, paymentMethod = 'stripe') => {
       endTime: item.schedule.endTime || '',
       price: item.product.price || 0,
       capacity: 100,
-      currency: 'EUR',
+      currency: 'MAD',
     };
   }
 

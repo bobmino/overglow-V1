@@ -68,7 +68,7 @@ const TourCard = ({ product, isLikelyToSellOut = false }) => {
           {product.title}
         </h3>
         {product.price !== undefined && (
-          <p className="text-sm font-bold text-gray-900">{formatPrice(product.price, 'EUR')}</p>
+          <p className="text-sm font-bold text-gray-900">{formatPrice(product.price, 'MAD')}</p>
         )}
       </div>
     </Link>

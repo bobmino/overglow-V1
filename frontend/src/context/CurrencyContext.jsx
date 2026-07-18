@@ -59,9 +59,19 @@ const ratesFromToMad = (pairs) => {
   return next;
 };
 
+const CURRENCY_PREF_KEY = 'overglow_currency';
+
 export const CurrencyProvider = ({ children }) => {
   const { i18n } = useTranslation();
-  const [selectedCurrency, setSelectedCurrency] = useState('EUR');
+  const [selectedCurrency, setSelectedCurrency] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CURRENCY_PREF_KEY);
+      if (saved && DEFAULT_RATES[saved]) return saved;
+    } catch {
+      // ignore
+    }
+    return 'MAD';
+  });
   const [rates, setRates] = useState(() => readLocalCache() || DEFAULT_RATES);
   const [baseCurrency] = useState('MAD');
 
@@ -110,10 +120,15 @@ export const CurrencyProvider = ({ children }) => {
 
   const handleCurrencyChange = (newCurrency) => {
     setSelectedCurrency(newCurrency);
+    try {
+      localStorage.setItem(CURRENCY_PREF_KEY, newCurrency);
+    } catch {
+      // ignore
+    }
     trackCurrencyChange(newCurrency);
   };
 
-  const convert = (amount, from = 'EUR', to = selectedCurrency) => {
+  const convert = (amount, from = 'MAD', to = selectedCurrency) => {
     if (!amount || Number.isNaN(Number(amount))) return 0;
     const fromRate = rates[from] ?? 1;
     const toRate = rates[to] ?? 1;
@@ -121,7 +136,7 @@ export const CurrencyProvider = ({ children }) => {
     return madAmount * toRate;
   };
 
-  const formatPrice = (amount, from = 'EUR', opts = {}) => {
+  const formatPrice = (amount, from = 'MAD', opts = {}) => {
     let value = convert(amount, from, selectedCurrency);
     const currencyDisplay = selectedCurrency === 'MAD' ? 'MAD' : selectedCurrency;
     const minimumFractionDigits = selectedCurrency === 'MAD' ? 0 : 2;

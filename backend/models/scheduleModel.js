@@ -30,7 +30,7 @@ const scheduleSchema = mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'EUR',
+    default: 'MAD',
   },
   bookings: [{
     type: mongoose.Schema.Types.ObjectId,

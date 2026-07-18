@@ -39,7 +39,7 @@
 | TLS Let’s Encrypt | Fait |
 | CI/CD Deploy | Fait |
 | Admin + seed CMS FAQ/blog | Fait |
-| Resend SMTP | Fait (rotater clé si exposée) |
+| Resend SMTP | Fait (clé rotée) |
 | Seed catalogue Maroc (`npm run seed:catalog`) | Fait en prod (8 produits, opérateur Active) |
 | Backup cron Mongo/uploads | Installé + test OK (cron 03:15 → `/root/backups/overglow/`) |
 | Certbot renew hooks | Installés + `certbot renew --dry-run` OK |
@@ -58,9 +58,16 @@
 
 ---
 
+## Accès soft-launch
+
+| Compte | Email | Note |
+|--------|-------|------|
+| Admin | `admin@overglow.online` | Changer le mdp après soft-launch |
+| Opérateur seed | `partenaire@overglow.online` | Compte catalogue démo |
+
 ## Ops manuels restants
 
-1. **Rotation clé Resend** (si exposée dans un chat) — voir `deploy/OPS-VPS.md`
-2. Si 502 / stack down : Actions → **Deploy VPS** → Run workflow, ou sur VPS :
+1. Changer mdp admin (et partenaire seed) en prod
+2. Si 502 / stack down : Actions → **Deploy VPS**, ou sur VPS :
    `cd ~/overglow-V1 && git fetch && git reset --hard origin/main && docker compose up -d --build && bash deploy/post-deploy-harden.sh`
-3. Une fois : `sudo certbot renew --dry-run`
+3. Remplacer images Unsplash seed par uploads locaux `/uploads/...` quand contenu réel prêt

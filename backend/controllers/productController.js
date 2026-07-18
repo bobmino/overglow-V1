@@ -114,7 +114,7 @@ const buildDefaultSchedules = ({ productId, price, startDate = new Date() }) => 
       endTime: '13:00',
       capacity: 20,
       price,
-      currency: 'EUR',
+      currency: 'MAD',
     });
     current.setDate(current.getDate() + 1);
   }

@@ -133,7 +133,7 @@ const BookingSuccessPage = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">{t('booking_success.total')}</span>
                   <span className="text-2xl font-bold text-primary-600">
-                    {formatPrice(totalAmountGlobal, 'EUR')}
+                    {formatPrice(totalAmountGlobal, 'MAD')}
                   </span>
                 </div>
               </div>

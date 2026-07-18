@@ -15,7 +15,7 @@
 - [x] JWT + MONGO Docker + SITE_URL / FRONTEND_URL / CORS
 - [x] `STORAGE_DRIVER=local`
 - [x] EMAIL Resend SMTP (`noreply@overglow.online`)
-- [ ] Rotation clé Resend si exposée (chat)
+- [x] Rotation clé Resend faite
 - [ ] SENTRY_DSN
 - [ ] Paiements : laisser différé tant que comptes absents
 

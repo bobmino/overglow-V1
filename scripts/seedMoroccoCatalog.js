@@ -12,7 +12,28 @@ import connectDB from '../config/db.js';
 import User from '../backend/models/userModel.js';
 import Operator from '../backend/models/operatorModel.js';
 import Product from '../backend/models/productModel.js';
+import Schedule from '../backend/models/scheduleModel.js';
 import { logger } from '../backend/utils/logger.js';
+
+const buildSchedules = ({ productId, price, days = 90 }) => {
+  const entries = [];
+  const current = new Date();
+  current.setHours(0, 0, 0, 0);
+  for (let i = 0; i < days; i += 1) {
+    const date = new Date(current);
+    date.setDate(current.getDate() + i);
+    entries.push({
+      product: productId,
+      date,
+      time: '10:00',
+      endTime: '13:00',
+      capacity: 20,
+      price,
+      currency: 'MAD',
+    });
+  }
+  return entries;
+};
 
 dotenv.config();
 
@@ -191,7 +212,7 @@ const run = async () => {
       skipped += 1;
       continue;
     }
-    await Product.create({
+    const product = await Product.create({
       ...p,
       operator: operator._id,
       status: 'Published',
@@ -199,6 +220,7 @@ const run = async () => {
       cancellationPolicy: { type: 'moderate', refundPercentage: 50, hoursBeforeStart: 48 },
       paymentMethod: 'Paiement sur place',
     });
+    await Schedule.insertMany(buildSchedules({ productId: product._id, price: p.price }));
     created += 1;
   }
 

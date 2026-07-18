@@ -262,7 +262,7 @@ const ProductDetailPage = () => {
     
     // Track add_to_cart equivalent (user starting booking process)
     trackEvent('add_to_cart', {
-      currency: 'EUR',
+      currency: 'MAD',
       value: getMinPrice() || product.price || 0,
       items: [{
         item_id: product._id,
@@ -368,7 +368,7 @@ const ProductDetailPage = () => {
 
   const minPrice = getMinPrice();
   const hasValidPrice = typeof minPrice === 'number';
-  const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'EUR') : null;
+  const formattedMinPrice = hasValidPrice ? formatPrice(minPrice, 'MAD') : null;
   const normalizedImages = Array.isArray(product?.images) ? product.images.map(formatImageUrl).filter(Boolean) : [];
   const ogImage = normalizedImages[0]
     ? absoluteUrl(normalizedImages[0])
@@ -750,7 +750,7 @@ const ProductDetailPage = () => {
                     <span className="text-slate-600">
                       {formattedMinPrice} × {numberOfTickets} {numberOfTickets > 1 ? t('product.tickets', 'billets') : t('product.ticket', 'billet')}
                     </span>
-                    <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
+                    <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'MAD')}</span>
                   </div>
                   {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                     <div className="flex justify-between items-center mb-1 text-[11px]">
@@ -758,7 +758,7 @@ const ProductDetailPage = () => {
                         <span>⚡</span>
                         {t('product.skip_line', 'Coupe-file')}
                       </span>
-                      <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
+                      <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'MAD')}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center pt-1.5 border-t border-slate-200">
@@ -769,7 +769,7 @@ const ProductDetailPage = () => {
                         (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
                           ? product.skipTheLine.additionalPrice * numberOfTickets 
                           : 0),
-                        'EUR'
+                        'MAD'
                       )}
                     </span>
                   </div>
@@ -916,7 +916,7 @@ const ProductDetailPage = () => {
                       <span className="text-slate-600">
                         {formattedMinPrice} × {numberOfTickets} {numberOfTickets > 1 ? t('product.tickets', 'billets') : t('product.ticket', 'billet')}
                       </span>
-                      <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'EUR')}</span>
+                      <span className="font-bold text-slate-700">{formatPrice(minPrice * numberOfTickets, 'MAD')}</span>
                     </div>
                     {product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 && (
                       <div className="flex justify-between items-center mb-1.5 text-xs">
@@ -924,7 +924,7 @@ const ProductDetailPage = () => {
                           <span>⚡</span>
                           {t('product.skip_line', 'Coupe-file')}
                         </span>
-                        <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'EUR')}</span>
+                        <span className="font-bold text-slate-700">{formatPrice(product.skipTheLine.additionalPrice * numberOfTickets, 'MAD')}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center pt-2 border-t border-slate-200">
@@ -935,7 +935,7 @@ const ProductDetailPage = () => {
                           (product?.skipTheLine?.enabled && product?.skipTheLine?.additionalPrice > 0 
                             ? product.skipTheLine.additionalPrice * numberOfTickets 
                             : 0),
-                          'EUR'
+                          'MAD'
                         )}
                       </span>
                     </div>
