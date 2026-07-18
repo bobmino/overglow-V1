@@ -22,7 +22,7 @@ const testLogin = async () => {
     console.log('✅ Database connected\n');
 
     // Check admin user
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@overglow.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@overglow.online';
     console.log(`👤 Looking for admin user: ${adminEmail}`);
     
     const admin = await User.findOne({ email: adminEmail });

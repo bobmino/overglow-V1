@@ -166,6 +166,10 @@ const ALIASES = {
   'agadir marina': 'Agadir',
   "la médina d'agadir": 'Agadir',
   "la medina d'agadir": 'Agadir',
+  imlil: 'Marrakech',
+  agafay: 'Marrakech',
+  'désert d’agafay': 'Marrakech',
+  'desert d agafay': 'Marrakech',
 };
 
 export const normalizeCityKey = (name = '') => {

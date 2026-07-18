@@ -40,7 +40,7 @@ const getEmailWrapper = (content, title = 'Overglow Trip') => {
     </div>
     <div style="${BASE_STYLES.footer}">
       <p style="margin: 0 0 10px 0;">
-        <a href="${process.env.FRONTEND_URL || 'https://overglow-trip.com'}" style="color: #10b981; text-decoration: none;">Visitez notre site</a>
+        <a href="${process.env.FRONTEND_URL || 'https://www.overglow.online'}" style="color: #10b981; text-decoration: none;">Visitez notre site</a>
       </p>
       <p style="margin: 0; font-size: 12px;">
         © ${new Date().getFullYear()} Overglow Trip. Tous droits réservés.
@@ -142,7 +142,7 @@ export const getBookingConfirmationTemplate = (booking, user) => {
     <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter.</p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.FRONTEND_URL || 'https://overglow-trip.com'}/bookings" style="${BASE_STYLES.button}">Voir mes réservations</a>
+      <a href="${process.env.FRONTEND_URL || 'https://www.overglow.online'}/bookings" style="${BASE_STYLES.button}">Voir mes réservations</a>
     </div>
     
     <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
@@ -288,7 +288,7 @@ export const getOperatorBookingNotificationTemplate = (booking, operator, user) 
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.FRONTEND_URL || 'https://overglow-trip.com'}/operator/bookings" style="${BASE_STYLES.button}">Voir la réservation</a>
+      <a href="${process.env.FRONTEND_URL || 'https://www.overglow.online'}/operator/bookings" style="${BASE_STYLES.button}">Voir la réservation</a>
     </div>
     
     <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">

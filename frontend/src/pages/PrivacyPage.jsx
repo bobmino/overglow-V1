@@ -81,8 +81,8 @@ const PrivacyPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('privacy.contact_title')}</h2>
               <p className="text-gray-700 leading-relaxed">
                 {t('privacy.contact_body')}{' '}
-                <a href="mailto:privacy@overglow-trip.com" className="text-primary-600 hover:underline">
-                  privacy@overglow-trip.com
+                <a href="mailto:privacy@overglow.online" className="text-primary-600 hover:underline">
+                  privacy@overglow.online
                 </a>
               </p>
             </section>

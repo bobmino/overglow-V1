@@ -13,6 +13,7 @@
     "seed:cms": "node --max-old-space-size=1024 -r dotenv/config scripts/seedProductionContent.js",
     "seed:catalog": "node --max-old-space-size=1024 -r dotenv/config scripts/seedMoroccoCatalog.js",
     "seed:schedules": "node --max-old-space-size=1024 -r dotenv/config scripts/ensureProductSchedules.js",
+    "seed:local-images": "node --max-old-space-size=1024 -r dotenv/config scripts/syncCatalogLocalImages.js",
     "seed:stores": "node --max-old-space-size=1024 -r dotenv/config scripts/seedStoreCatalog.js",
     "publish-all": "node --max-old-space-size=1024 -r dotenv/config scripts/publishAll.js",
     "seed-product-i18n": "node --max-old-space-size=1024 -r dotenv/config scripts/seedProductI18n.js",

@@ -20,7 +20,7 @@ const Hero = () => {
     e.preventDefault();
     const params = new URLSearchParams();
     const normalizedQuery = String(destination || '').trim();
-    params.append('q', normalizedQuery || 'Agadir');
+    params.append('q', normalizedQuery || 'Marrakech');
     if (date) params.append('date', date);
     navigate(`/search?${params.toString()}`);
   };

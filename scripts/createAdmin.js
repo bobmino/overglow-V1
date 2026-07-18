@@ -9,7 +9,7 @@ const createAdmin = async () => {
   try {
     await connectDB();
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@overglow.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@overglow.online';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
     const adminName = process.env.ADMIN_NAME || 'Admin User';
 

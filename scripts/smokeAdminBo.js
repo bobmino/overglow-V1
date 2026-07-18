@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const base = process.env.API_URL || `http://127.0.0.1:${process.env.PORT || 5001}`;
-const email = process.env.ADMIN_EMAIL || 'admin@overglow.com';
+const email = process.env.ADMIN_EMAIL || 'admin@overglow.online';
 const password = process.env.ADMIN_PASSWORD || 'admin123';
 
 const main = async () => {

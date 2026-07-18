@@ -52,7 +52,7 @@ const PRODUCTS = [
     duration: '3 heures',
     price: 350,
     location: { type: 'Point', coordinates: [-7.9811, 31.6258] },
-    images: ['https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200'],
+    images: ['/images/cities/marrakech-hero.webp', '/images/cities/marrakech-card.webp'],
   },
   {
     slug: 'desert-agafay-coucher-soleil',
@@ -65,7 +65,7 @@ const PRODUCTS = [
     duration: '5 heures',
     price: 650,
     location: { type: 'Point', coordinates: [-8.05, 31.45] },
-    images: ['https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=1200'],
+    images: ['/images/cities/marrakech-hero.webp', '/images/cities/marrakech-g2.webp'],
   },
   {
     slug: 'atelier-cuisine-tagine-fes',
@@ -78,7 +78,7 @@ const PRODUCTS = [
     duration: '4 heures',
     price: 420,
     location: { type: 'Point', coordinates: [-4.9998, 34.0331] },
-    images: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200'],
+    images: ['/images/cities/fes-hero.webp', '/images/cities/fes-card.webp'],
   },
   {
     slug: 'surf-taghazout-demi-journee',
@@ -91,7 +91,7 @@ const PRODUCTS = [
     duration: '3 heures',
     price: 380,
     location: { type: 'Point', coordinates: [-9.711, 30.545] },
-    images: ['https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=1200'],
+    images: ['/images/cities/taghazout-hero.webp', '/images/cities/taghazout-card.webp'],
   },
   {
     slug: 'essaouira-journee-vent-et-medina',
@@ -104,7 +104,7 @@ const PRODUCTS = [
     duration: '1 jour',
     price: 550,
     location: { type: 'Point', coordinates: [-9.77, 31.5085] },
-    images: ['https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=1200'],
+    images: ['/images/cities/essaouira-hero.webp', '/images/cities/essaouira-card.webp'],
   },
   {
     slug: 'trek-toubkal-2-jours',
@@ -117,7 +117,7 @@ const PRODUCTS = [
     duration: '2 jours',
     price: 1800,
     location: { type: 'Point', coordinates: [-7.921, 31.136] },
-    images: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200'],
+    images: ['/images/cities/marrakech-hero.webp', '/images/cities/taroudant-hero.webp'],
   },
   {
     slug: 'riad-visite-architecture-marrakech',
@@ -130,7 +130,7 @@ const PRODUCTS = [
     duration: '2 heures',
     price: 280,
     location: { type: 'Point', coordinates: [-7.9891, 31.6295] },
-    images: ['https://images.unsplash.com/photo-1548013146-72479768bada?w=1200'],
+    images: ['/images/cities/marrakech-card.webp', '/images/cities/marrakech-hero.webp'],
   },
   {
     slug: 'casablanca-hassan-ii-et-corniche',
@@ -143,7 +143,7 @@ const PRODUCTS = [
     duration: '4 heures',
     price: 480,
     location: { type: 'Point', coordinates: [-7.6327, 33.6089] },
-    images: ['https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=1200'],
+    images: ['/images/cities/casablanca-hero.webp', '/images/cities/casablanca-card.webp'],
   },
 ];
 
