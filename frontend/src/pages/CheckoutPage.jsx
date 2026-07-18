@@ -53,6 +53,8 @@ const CheckoutPage = () => {
   const [error, setError] = useState('');
   const [pendingBookings, setPendingBookings] = useState([]);
   const preparedRef = useRef(false);
+  /** Empêche navigate('/') quand clearCart vide le panier juste avant booking-success */
+  const completingRef = useRef(false);
 
   const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
   const lang = (i18n.language || 'fr').slice(0, 2);
@@ -96,7 +98,9 @@ const CheckoutPage = () => {
       return;
     }
     if (checkoutItems.length === 0) {
-      navigate('/');
+      if (!completingRef.current) {
+        navigate('/');
+      }
       return;
     }
 
@@ -158,22 +162,17 @@ const CheckoutPage = () => {
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);
     setError('');
+    completingRef.current = true;
 
     try {
       // Bookings already exist (deferred). Offline methods may have updated them via API.
       if (pendingBookings.length > 0) {
-        if (!product || !schedule) {
-          clearCart();
-        }
-        if (pendingBookings.length > 1) {
-          navigate('/booking-success', {
-            state: { bookings: pendingBookings, isCircuit: true, paymentDetails },
-          });
-        } else {
-          navigate('/booking-success', {
-            state: { booking: pendingBookings[0], paymentDetails },
-          });
-        }
+        const successState =
+          pendingBookings.length > 1
+            ? { bookings: pendingBookings, isCircuit: true, paymentDetails }
+            : { booking: pendingBookings[0], paymentDetails };
+        navigate('/booking-success', { state: successState });
+        clearCart();
         return;
       }
 
@@ -200,13 +199,15 @@ const CheckoutPage = () => {
         createdBookings.push(data);
       }
 
-      if (!product || !schedule) {
-        clearCart();
-        navigate('/booking-success', { state: { bookings: createdBookings, isCircuit: true } });
-      } else {
-        navigate('/booking-success', { state: { booking: createdBookings[0] } });
-      }
+      navigate('/booking-success', {
+        state:
+          createdBookings.length > 1
+            ? { bookings: createdBookings, isCircuit: true }
+            : { booking: createdBookings[0] },
+      });
+      clearCart();
     } catch (err) {
+      completingRef.current = false;
       logger.error('Checkout payment complete failed', err);
       setError(
         err.response?.data?.message || err.message || t('checkout.err_booking_failed')
