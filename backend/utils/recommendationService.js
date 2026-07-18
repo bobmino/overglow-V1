@@ -154,24 +154,37 @@ export const getSimilarProducts = async (productId, limit = 6) => {
       ],
     };
 
-    // If product has location, also search by proximity
-    if (product.location && product.location.coordinates) {
+    const baseQuery = { ...query };
+    // Proximité optionnelle — fallback si index 2dsphere absent / invalide
+    if (product.location?.coordinates?.length === 2) {
       query.location = {
         $near: {
           $geometry: {
             type: 'Point',
             coordinates: product.location.coordinates,
           },
-          $maxDistance: 50000, // 50km radius
+          $maxDistance: 50000,
         },
       };
     }
 
-    const similarProducts = await Product.find(query)
-      .populate('operator', 'companyName publicName')
-      .populate('badges.badgeId')
-      .limit(limit)
-      .lean();
+    let similarProducts;
+    try {
+      similarProducts = await Product.find(query)
+        .populate('operator', 'companyName publicName')
+        .populate('badges.badgeId')
+        .limit(limit)
+        .lean();
+    } catch (geoErr) {
+      logger.warn('Similar products geo query failed — fallback without $near', {
+        message: geoErr?.message,
+      });
+      similarProducts = await Product.find(baseQuery)
+        .populate('operator', 'companyName publicName')
+        .populate('badges.badgeId')
+        .limit(limit)
+        .lean();
+    }
 
     // Sort by relevance (category match > city match > rating)
     similarProducts.sort((a, b) => {

@@ -646,11 +646,21 @@ const getProductById = async (req, res) => {
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     
+    const scheduleHorizon = new Date(now);
+    scheduleHorizon.setDate(scheduleHorizon.getDate() + 60);
+
     const [schedules, reviews] = await Promise.all([
       Schedule.find({
         product: product._id,
-        date: { $gte: twoHoursAgo.toISOString().split('T')[0] } // Filtrer les dates passées
-      }).lean().catch(err => {
+        date: {
+          $gte: twoHoursAgo.toISOString().split('T')[0],
+          $lte: scheduleHorizon,
+        },
+      })
+        .sort({ date: 1, time: 1 })
+        .limit(120)
+        .lean()
+        .catch((err) => {
         logger.error('Error fetching schedules:', err);
         return [];
       }),

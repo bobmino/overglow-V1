@@ -162,13 +162,19 @@ const ProductDetailPage = () => {
         
         // Fetch related products with improved similarity logic
         try {
-          const { data: allProductsData } = await api.get('/api/products');
-          const allProducts = Array.isArray(allProductsData) ? allProductsData : [];
+          const { data: allProductsData } = await api.get('/api/products', {
+            params: { limit: 40, status: 'Published' },
+          });
+          const allProducts = Array.isArray(allProductsData)
+            ? allProductsData
+            : Array.isArray(allProductsData?.products)
+              ? allProductsData.products
+              : [];
           
           // Filter out current product and unpublished products
           const availableProducts = allProducts.filter(p => 
             p._id !== id && 
-            p.status === 'published' &&
+            String(p.status || '').toLowerCase() === 'published' &&
             p.price && 
             Number(p.price) > 0
           );
