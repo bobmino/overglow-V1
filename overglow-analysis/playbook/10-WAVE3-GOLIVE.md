@@ -22,7 +22,7 @@
 ## 3. Données
 
 - [x] Admin + seed CMS FAQ/blog
-- [ ] Catalogue : auto via `deploy/post-deploy-harden.sh` au prochain Deploy (ou seed manuel / produits BO)
+- [x] Catalogue : 8 produits Maroc seedés (MAD) via post-deploy — smoke `/api/products` OK
 - [ ] Mentions légales / CGU email `@overglow.online` (avocat)
 
 ## 4. Paiements
@@ -39,8 +39,8 @@
 - [x] Mail SMTP configured successfully
 - [ ] AR RTL smoke
 - [x] CI Deploy VPS vert
-- [ ] Backup cron installé (auto post-deploy)
-- [ ] Certbot renew hooks installés (auto) + dry-run manuel une fois
+- [x] Backup cron installé (auto post-deploy)
+- [x] Certbot renew hooks installés (auto) — dry-run manuel recommandé une fois
 
 ## 6. Critère Done
 

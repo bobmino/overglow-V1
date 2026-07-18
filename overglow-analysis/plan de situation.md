@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-18  
 **Branche:** `main`  
-**Verdict:** Soft-launch ops live ; peau BO + catalogue seed prêts
+**Verdict:** Soft-launch ops live ; BO MAD/peau + catalogue 8 produits prod + harden deploy
 
 ---
 
@@ -40,9 +40,9 @@
 | CI/CD Deploy | Fait |
 | Admin + seed CMS FAQ/blog | Fait |
 | Resend SMTP | Fait (rotater clé si exposée) |
-| Seed catalogue Maroc (`npm run seed:catalog`) | Auto via `deploy/post-deploy-harden.sh` au Deploy |
-| Backup cron Mongo/uploads | Auto via post-deploy (cron 03:15) |
-| Certbot renew hooks | Auto via post-deploy ; dry-run manuel une fois |
+| Seed catalogue Maroc (`npm run seed:catalog`) | Fait en prod (8 produits, opérateur Active) |
+| Backup cron Mongo/uploads | Installé via post-deploy (cron 03:15) |
+| Certbot renew hooks | Installés via post-deploy ; dry-run manuel recommandé |
 | Paiements live | Reporté (différé assumé) |
 | Audit Fable | Non prévu |
 
