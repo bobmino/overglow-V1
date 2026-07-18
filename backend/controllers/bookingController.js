@@ -110,8 +110,13 @@ const createBooking = async (req, res, next) => {
       const skipLinePrice = Number(skipTheLinePrice) || 0;
       const skipLineEnabled = Boolean(skipTheLineEnabled);
 
-      // Initialize session only on first attempt if we want transactions
-      if (attempts === 1) {
+      // Transactions Mongo = replica set only. Skip on attempt 1 if DISABLE_MONGO_TX=true
+      // or after a failed tx retry (attempt 2). Standalone Docker → no transactions.
+      const txDisabled =
+        process.env.DISABLE_MONGO_TX === 'true' ||
+        process.env.DISABLE_MONGO_TX === '1' ||
+        attempts > 1;
+      if (attempts === 1 && !txDisabled) {
         try {
           session = await mongoose.startSession();
           session.startTransaction();
@@ -124,6 +129,9 @@ const createBooking = async (req, res, next) => {
             session = null;
           }
         }
+      } else {
+        transactionActive = false;
+        session = null;
       }
 
       let targetScheduleId = scheduleId;
