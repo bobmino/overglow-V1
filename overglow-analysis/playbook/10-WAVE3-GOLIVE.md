@@ -34,7 +34,8 @@
 
 - [x] HTTPS home
 - [x] Upload image → `/uploads/{uuid}.webp` (smoke API + HTTPS 200, 2026-07-18)
-- [x] Booking différé API + TX rs0 (UI E2E = manuel)
+- [x] Booking différé API + TX rs0
+- [~] Booking UI E2E (cash) — MAD fix + race succès corrigés ; retest écran succès
 - [x] BO login
 - [x] Mail SMTP configured successfully
 - [x] AR RTL smoke (`/ar` → `dir=rtl`, UI arabe OK)
