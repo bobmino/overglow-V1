@@ -70,4 +70,26 @@
 1. Changer mdp admin (et partenaire seed) en prod
 2. Si 502 / stack down : Actions → **Deploy VPS**, ou sur VPS :
    `cd ~/overglow-V1 && git fetch && git reset --hard origin/main && docker compose up -d --build && bash deploy/post-deploy-harden.sh`
-3. Remplacer images Unsplash seed par uploads locaux `/uploads/...` quand contenu réel prêt
+3. Remplacer WebP villes démo par **vos** photos métier (upload BO → `/uploads/...`)
+
+## Soft-launch vérifié (2026-07-18)
+
+| Check | Résultat |
+|-------|----------|
+| Domaines legacy → `www.overglow.online` | Fait (code runtime) |
+| Images catalogue locales `/images/cities/*` | Fait (8/8) |
+| Booking différé API (`deferPayment`) | OK — `PENDING_PAYMENT` |
+| Homepage sections catalogue | OK (destinations + expériences) |
+| Mongo TX standalone | Contourné (`DISABLE_MONGO_TX`) |
+
+## Prochaines tâches (estimations)
+
+| # | Tâche | Temps | Priorité |
+|---|--------|-------|----------|
+| 1 | Changer mdp admin + partenaire | 10 min | P0 toi |
+| 2 | Upload 8–16 photos réelles produits (BO) | 1–2 h | P0 toi |
+| 3 | Smoke UI booking (date → panier → success) navigateur | 45 min | P1 |
+| 4 | Mentions légales / emails `@overglow.online` avocat | 2–4 h | P1 |
+| 5 | Replica set Mongo (ou garder DISABLE_MONGO_TX) | 1–2 h | P2 |
+| 6 | Paiements live (Stripe/CMI) quand comptes OK | 1–3 j | Différé |
+| 7 | Si marque = `overcom.online` : DNS + rebuild + emails | 2–4 h | Décision toi |
