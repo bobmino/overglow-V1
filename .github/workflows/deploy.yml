@@ -23,12 +23,12 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          # Si VPS_PORT vide, appleboy utilise 22 par défaut
           port: ${{ secrets.VPS_PORT }}
           script: |
             set -e
             APP_PATH="${{ secrets.VPS_APP_PATH }}"
             cd "${APP_PATH:-$HOME/overglow-V1}"
+            # Conserver .env local (non versionné)
             git fetch origin main
             git reset --hard origin/main
             docker compose pull || true

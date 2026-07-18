@@ -25,14 +25,14 @@ jobs:
 
       - name: Install frontend
         working-directory: frontend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build frontend
         working-directory: frontend
         env:
           VITE_API_URL: https://www.overglow.online
           VITE_SITE_URL: https://www.overglow.online
-        run: npm run build
+        run: npm pkg delete scripts.prebuild && npm run build
 
       - name: Syntax-check server entry
         run: node --check server.js
