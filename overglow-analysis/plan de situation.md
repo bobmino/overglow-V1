@@ -41,8 +41,8 @@
 | Admin + seed CMS FAQ/blog | Fait |
 | Resend SMTP | Fait (rotater clé si exposée) |
 | Seed catalogue Maroc (`npm run seed:catalog`) | Fait en prod (8 produits, opérateur Active) |
-| Backup cron Mongo/uploads | Installé via post-deploy (cron 03:15) |
-| Certbot renew hooks | Installés via post-deploy ; dry-run manuel recommandé |
+| Backup cron Mongo/uploads | Installé + test OK (cron 03:15 → `/root/backups/overglow/`) |
+| Certbot renew hooks | Installés + `certbot renew --dry-run` OK |
 | Paiements live | Reporté (différé assumé) |
 | Audit Fable | Non prévu |
 

@@ -39,8 +39,8 @@
 - [x] Mail SMTP configured successfully
 - [ ] AR RTL smoke
 - [x] CI Deploy VPS vert
-- [x] Backup cron installé (auto post-deploy)
-- [x] Certbot renew hooks installés (auto) — dry-run manuel recommandé une fois
+- [x] Backup cron installé + test manuel OK (`/root/backups/overglow/`)
+- [x] Certbot renew hooks + `certbot renew --dry-run` OK
 
 ## 6. Critère Done
 
