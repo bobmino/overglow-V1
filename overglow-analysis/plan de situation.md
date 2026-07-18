@@ -28,16 +28,16 @@
 | **L0** Marque | `overglow.online` only | **Fait** |
 | **L1** Infra | DNS TLS Docker CI backup Certbot Mongo rs0 | **Fait** |
 | **L2** Catalogue | 8 produits MAD + images cities + schedules | **Fait** |
-| **L3** Smoke critique | Upload · AR RTL · booking UI · mdp | Upload+AR OK · MAD fix + race succès déployés — retest UI |
+| **L3** Smoke critique | Upload · AR RTL · booking UI · mdp | **Fait** |
 | **L4** Conformité | CGU / Privacy avocat | **À toi** |
 | **L5** Post-launch | Photos métier · PSP live · Sentry | **Différé** |
 
-### File L3 (chemin critique)
+### File L3 (clos)
 
-1. ~~Smoke upload → `/uploads/{uuid}.webp`~~ — **fait**
-2. ~~Smoke AR RTL `/ar`~~ — **fait** (`dir=rtl`)
-3. Smoke UI booking date → panier → cash → succès — **toi** (ou agent browser)
-4. Changer mdp admin + partenaire — **toi**
+1. ~~Smoke upload~~ — fait
+2. ~~Smoke AR RTL `/ar`~~ — fait
+3. ~~Smoke UI booking → `/booking-success`~~ — fait (350 MAD, espèces)
+4. ~~Rotation mdp admin + partenaire~~ — fait (nouveaux mdp communiqués)
 
 ### Critère Done soft-launch
 
