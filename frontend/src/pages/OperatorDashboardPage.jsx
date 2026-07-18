@@ -143,7 +143,7 @@ const OperatorDashboardPage = () => {
         <StatCard
           icon={Package}
           label={t('operator.dashboard.total_sales')}
-          value={`€${Number(stats.totalSales || 0).toFixed(2)}`}
+          value={`${Number(stats.totalSales || 0).toFixed(2)} MAD`}
           color="bg-blue-600"
         />
         <StatCard

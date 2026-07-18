@@ -170,21 +170,21 @@ const AdminFaqPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-3xl font-heading font-bold text-slate-900 flex items-center gap-2">
             <HelpCircle className="text-primary-600" />
             {t('admin.faq.title')}
           </h1>
-          <p className="text-slate-600 mt-1">{t('admin.faq.subtitle')}</p>
+          <p className="text-muted mt-1">{t('admin.faq.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={handleSeed}
             disabled={seeding}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-slate-800 rounded-lg font-semibold hover:bg-slate-50 disabled:opacity-60"
+            className="btn-secondary disabled:opacity-60"
           >
             <RefreshCw size={18} className={seeding ? 'animate-spin' : ''} />
             {t('admin.faq.seed_button')}
@@ -192,7 +192,7 @@ const AdminFaqPage = () => {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700"
+            className="btn-primary"
           >
             <Plus size={18} />
             {t('admin.faq.create_button', 'Créer une FAQ')}

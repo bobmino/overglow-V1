@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-18  
 **Branche:** `main`  
-**Verdict:** Finalisation souveraineté + UX marché en cours / livrée en repo
+**Verdict:** Soft-launch ops live ; peau BO + catalogue seed prêts
 
 ---
 
@@ -12,7 +12,7 @@
 |-----|------|
 | [playbook/OVERGLOW-PLAYBOOK.md](./playbook/OVERGLOW-PLAYBOOK.md) | Master playbook |
 | [playbook/10-WAVE3-GOLIVE.md](./playbook/10-WAVE3-GOLIVE.md) | DNS + secrets + smoke |
-| [playbook/09-MAIL-DNS.md](./playbook/09-MAIL-DNS.md) | SMTP + SPF/DKIM |
+| [deploy/OPS-VPS.md](../deploy/OPS-VPS.md) | Backup, Certbot, Resend, seed catalogue |
 | [BACKOFFICE-UX-AUDIT.md](./BACKOFFICE-UX-AUDIT.md) | UX back-office |
 | `.cursor/rules/*.mdc` | Règles agents |
 
@@ -24,35 +24,45 @@
 |-------|----------|
 | Domaine | `https://www.overglow.online` |
 | Infra | VPS Docker (api + web + mongo + uploads) |
-| Médias | `STORAGE_DRIVER=local` — pas Cloudinary |
-| Paiements | Différés jusqu’aux comptes ; checklist Wave 3 |
-| CI/CD | GitHub Actions `ci.yml` + `deploy.yml` |
+| Médias | `STORAGE_DRIVER=local` |
+| Mail | Resend SMTP (`noreply@overglow.online`) |
+| Paiements | Différés jusqu’aux comptes |
+| CI/CD | GitHub Actions Deploy VPS (clé SSH en base64) |
 
 ---
 
-## Livré code (waves 0–2)
+## Wave 3 ops — statut
+
+| Item | Status |
+|------|--------|
+| DNS A @ + www → VPS | Fait |
+| TLS Let’s Encrypt | Fait |
+| CI/CD Deploy | Fait |
+| Admin + seed CMS FAQ/blog | Fait |
+| Resend SMTP | Fait (rotater clé si exposée) |
+| Seed catalogue Maroc (`npm run seed:catalog`) | Prêt — à lancer sur VPS |
+| Backup cron Mongo/uploads | Scripts dans `deploy/` — à installer |
+| Certbot renew hooks | Scripts dans `deploy/` — à installer |
+| Paiements live | Reporté (différé assumé) |
+| Audit Fable | Non prévu |
+
+---
+
+## Code récent
 
 | Domaine | Status |
 |--------|--------|
-| Playbook souveraineté | Fait |
-| Docker Compose + nginx + Dockerfiles | Fait |
-| Uploads disque `/uploads` | Fait |
-| CI + deploy SSH | Fait (secrets VPS à configurer) |
-| SMTP notes + EMAIL_FROM | Fait |
-| Charte tokens + LocalizedLink + CTA retour | Fait |
-| Onboarding 3 étapes dans shell | Fait |
-| BO skin (shell + dashboard) | Fait (peau) |
-| FAQ enrichies + Help/FAQ i18n | Fait |
+| BO MAD + surface-card + titres shell i18n | Fait |
+| Onboarding 3 étapes / LocalizedLink / FAQ | Fait |
+| Uploads locaux + Docker | Fait |
 
 ---
 
-## Wave 3 (ops — hors repo)
+## Prochaines commandes VPS
 
-1. DNS `overglow.online` → VPS  
-2. Secrets prod en bloc  
-3. Seed CMS + produits réels  
-4. Paiements live **si** comptes OK  
-5. Smoke HTTPS + upload + BO  
-6. (Optionnel) audit Fable sur staging  
-
-Voir [playbook/10-WAVE3-GOLIVE.md](./playbook/10-WAVE3-GOLIVE.md).
+```bash
+cd ~/overglow-V1 && git pull
+docker compose up -d --build
+docker compose exec api node -r dotenv/config scripts/seedMoroccoCatalog.js
+# puis install backup + certbot hooks — voir deploy/OPS-VPS.md
+```

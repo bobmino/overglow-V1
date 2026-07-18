@@ -196,26 +196,26 @@ const AdminPendingPaymentsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
-      <div className="container mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto">
+      <div className="container mx-auto px-0">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link
               to="/admin/dashboard"
-              className="p-2 rounded-xl bg-white/60 backdrop-blur-md border border-gray-200 hover:border-primary-400 transition shadow-sm"
+              className="p-2 rounded-xl surface-card hover:border-primary-400 transition"
             >
               <ArrowLeft size={20} className="text-gray-700" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{t('admin.pending_payments.title')}</h1>
-              <p className="text-gray-500 text-sm mt-1">
+              <h1 className="text-3xl font-heading font-bold text-slate-900">{t('admin.pending_payments.title')}</h1>
+              <p className="text-muted text-sm mt-1">
                 {t('admin.pending_payments.subtitle')}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
+        <div className="surface-card p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-amber-100">

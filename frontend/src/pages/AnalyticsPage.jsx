@@ -201,7 +201,7 @@ const AnalyticsPage = () => {
             <StatCard
               icon={DollarSign}
               label={t('analytics.stats.total_revenue')}
-              value={`€${totalRevenue.toFixed(2)}`}
+              value={`${totalRevenue.toFixed(2)} MAD`}
               color="bg-primary-600"
             />
             <StatCard
@@ -213,7 +213,7 @@ const AnalyticsPage = () => {
             <StatCard
               icon={TrendingUp}
               label={t('analytics.stats.avg_revenue')}
-              value={`€${avgRevenue.toFixed(2)}`}
+              value={`${avgRevenue.toFixed(2)} MAD`}
               color="bg-purple-600"
             />
             <StatCard
@@ -233,7 +233,7 @@ const AnalyticsPage = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `€${Number(value).toFixed(2)}`} />
+                    <Tooltip formatter={(value) => `${Number(value).toFixed(2)} MAD`} />
                     <Legend />
                     <Bar dataKey="revenue" fill="#15803d" name={t('analytics.charts.revenue_label')} radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -328,7 +328,7 @@ const AnalyticsPage = () => {
                       <td className="py-3 px-4">{product.title}</td>
                       <td className="text-end py-3 px-4">{product.views}</td>
                       <td className="text-end py-3 px-4">{product.bookings}</td>
-                      <td className="text-end py-3 px-4">€{product.revenue?.toFixed(2) || '0.00'}</td>
+                      <td className="text-end py-3 px-4">{product.revenue?.toFixed(2) || '0.00'} MAD</td>
                       <td className="text-end py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           product.conversionRate >= 3 ? 'bg-primary-100 text-primary-800' :
@@ -366,16 +366,16 @@ const AnalyticsPage = () => {
                   {competition.map((cat) => (
                     <tr key={cat.category} className="border-b border-gray-100">
                       <td className="py-3 px-4 font-medium">{cat.category}</td>
-                      <td className="text-end py-3 px-4">€{cat.marketAvgPrice?.toFixed(2) || t('admin.common.na')}</td>
+                      <td className="text-end py-3 px-4">{cat.marketAvgPrice != null ? `${cat.marketAvgPrice.toFixed(2)} MAD` : t('admin.common.na')}</td>
                       <td className="text-end py-3 px-4">
-                        {cat.operatorAvgPrice ? `€${cat.operatorAvgPrice.toFixed(2)}` : t('admin.common.na')}
+                        {cat.operatorAvgPrice ? `${cat.operatorAvgPrice.toFixed(2)} MAD` : t('admin.common.na')}
                       </td>
                       <td className="text-end py-3 px-4">
                         {cat.priceDifference !== null ? (
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${
                             cat.priceDifference > 0 ? 'bg-red-100 text-red-800' : 'bg-primary-100 text-primary-800'
                           }`}>
-                            {cat.priceDifference > 0 ? '+' : ''}€{cat.priceDifference.toFixed(2)}
+                            {cat.priceDifference > 0 ? '+' : ''}{cat.priceDifference.toFixed(2)} MAD
                             {cat.priceDifferencePercent !== null && ` (${cat.priceDifferencePercent > 0 ? '+' : ''}${cat.priceDifferencePercent.toFixed(1)}%)`}
                           </span>
                         ) : t('admin.common.na')}

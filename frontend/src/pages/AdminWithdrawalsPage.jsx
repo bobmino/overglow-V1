@@ -208,13 +208,13 @@ const AdminWithdrawalsPage = () => {
       ) : (
         <div className="space-y-4">
           {withdrawals.map((withdrawal) => (
-            <div key={withdrawal._id} className="bg-white rounded-xl border border-gray-200 p-6">
+            <div key={withdrawal._id} className="surface-card p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <DollarSign size={24} className="text-primary-600" />
                     <h3 className="text-xl font-bold text-gray-900">
-                      €{withdrawal.amount.toFixed(2)}
+                      {Number(withdrawal.amount || 0).toFixed(2)} MAD
                     </h3>
                     {getStatusBadge(withdrawal.status)}
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${

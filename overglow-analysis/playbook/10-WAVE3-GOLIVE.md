@@ -1,60 +1,46 @@
 # 10 — Wave 3 Go-Live (ops en bloc)
 
-À exécuter quand VPS + DNS + (optionnel) comptes paiement sont prêts.  
-**Pas de secrets dans git.**
+**Pas de secrets dans git.** Détail VPS : [`deploy/OPS-VPS.md`](../../deploy/OPS-VPS.md).
 
 ## 1. DNS
 
-- [ ] `A` / `AAAA` : `overglow.online` → IP VPS  
-- [ ] `A` / `AAAA` : `www.overglow.online` → IP VPS  
-- [ ] Redirect HTTP→HTTPS, apex→www  
-- [ ] (Option) `api.overglow.online` si split static/API  
-- [ ] Ancien domaine : 301 → `https://www.overglow.online`  
+- [x] `A` : `overglow.online` → `185.194.217.60`
+- [x] `A` : `www.overglow.online` → `185.194.217.60`
+- [x] Redirect HTTP→HTTPS, apex→www
+- [ ] (Option) `api.overglow.online` si split static/API
+- [ ] Ancien domaine : 301 → `https://www.overglow.online` (si conservé)
 
-## 2. Secrets prod (bloc unique)
+## 2. Secrets prod
 
-```
-JWT_SECRET=
-MONGO_URI=mongodb://mongo:27017/overglow
-SITE_URL=https://www.overglow.online
-FRONTEND_URL=https://www.overglow.online
-CORS_ALLOWED_ORIGINS=https://www.overglow.online,https://overglow.online
-STORAGE_DRIVER=local
-UPLOAD_DIR=/app/uploads
-EMAIL_*
-SENTRY_DSN=
-# Paiements seulement si comptes OK :
-STRIPE_* PAYPAL_* CMI_* BANK_*
-ENABLE_PAYMENT_SIM=false
-```
-
-Frontend build :
-
-```
-VITE_API_URL=https://www.overglow.online
-VITE_SITE_URL=https://www.overglow.online
-```
+- [x] JWT + MONGO Docker + SITE_URL / FRONTEND_URL / CORS
+- [x] `STORAGE_DRIVER=local`
+- [x] EMAIL Resend SMTP (`noreply@overglow.online`)
+- [ ] Rotation clé Resend si exposée (chat)
+- [ ] SENTRY_DSN
+- [ ] Paiements : laisser différé tant que comptes absents
 
 ## 3. Données
 
-- [ ] Admin + seed CMS + badges  
-- [ ] Catalogue réel 5–10 produits  
-- [ ] Mentions légales / CGU email `@overglow.online`  
+- [x] Admin + seed CMS FAQ/blog
+- [ ] Catalogue : `docker compose exec api node -r dotenv/config scripts/seedMoroccoCatalog.js` (ou produits réels BO)
+- [ ] Mentions légales / CGU email `@overglow.online` (avocat)
 
 ## 4. Paiements
 
-- [ ] Comptes OK → activer clés + webhooks  
-- [ ] Sinon → rester différé + FAQ à jour (état non ambigu)  
+- [x] Différé assumé + FAQ à jour
+- [ ] Live Stripe/PayPal/CMI quand comptes OK
 
 ## 5. Smoke
 
-- [ ] HTTPS home  
-- [ ] Upload image → `/uploads/{uuid}.webp`  
-- [ ] Booking différé end-to-end  
-- [ ] BO login + edit produit  
-- [ ] Mail test  
-- [ ] AR RTL smoke  
-- [ ] Optionnel : audit Fable UX vs Booking sur staging live  
+- [x] HTTPS home
+- [ ] Upload image → `/uploads/{uuid}.webp`
+- [ ] Booking différé end-to-end
+- [x] BO login
+- [x] Mail SMTP configured successfully
+- [ ] AR RTL smoke
+- [x] CI Deploy VPS vert
+- [ ] Backup cron installé
+- [ ] Certbot renew dry-run OK
 
 ## 6. Critère Done
 

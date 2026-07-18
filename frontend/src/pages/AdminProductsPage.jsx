@@ -133,7 +133,7 @@ const AdminProductsPage = () => {
 
   if (loading && products.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto">
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((n) => (
             <div key={n} className="h-48 bg-gray-200 rounded-xl" />
@@ -144,7 +144,7 @@ const AdminProductsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t('admin.products.title')}</h1>
         <p className="text-sm text-gray-500">
@@ -216,7 +216,7 @@ const AdminProductsPage = () => {
             {products.map((product) => (
               <div
                 key={product._id}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition"
+                className="surface-card overflow-hidden hover:shadow-md transition"
               >
                 {product.images && product.images.length > 0 && (
                   <img

@@ -29,6 +29,7 @@ import {
 import api from '../config/axios';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
+import { formatMoneyMad } from '../utils/formatMoneyMad.js';
 
 const PERIODS = [
   { id: 'today', label: 'Aujourd’hui' },
@@ -38,10 +39,7 @@ const PERIODS = [
   { id: 'thisMonth', label: 'Ce mois' },
 ];
 
-const formatMoney = (n) =>
-  `${Math.round(Number(n) || 0)
-    .toLocaleString('fr-FR')
-    .replace(/\u202f/g, ' ')} €`;
+const formatMoney = (n) => formatMoneyMad(n);
 
 const formatNum = (n) =>
   Math.round(Number(n) || 0)
@@ -222,11 +220,11 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-2 md:py-4">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-heading">Tableau de bord</h1>
-          <p className="text-gray-600 mt-1">Centre de commande plateforme</p>
+          <h1 className="text-3xl font-heading font-bold text-slate-900">Tableau de bord</h1>
+          <p className="text-muted mt-1">Centre de commande plateforme</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {PERIODS.map((p) => (
@@ -261,8 +259,8 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Row 2 — Pending actions */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">
+      <div className="surface-card p-5 mb-6">
+        <h2 className="text-sm font-heading font-bold uppercase tracking-wider text-muted mb-3">
           Actions en attente
         </h2>
         {pendingPills.length === 0 ? (
@@ -290,8 +288,8 @@ const AdminDashboardPage = () => {
 
       {/* Row 3 — Chart + Top products */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
-        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-lg font-heading font-bold text-gray-900 mb-4">Revenus</h2>
+        <div className="lg:col-span-3 surface-card p-5">
+          <h2 className="text-lg font-heading font-bold text-slate-900 mb-4">Revenus (MAD)</h2>
           <div className="h-72 min-h-[18rem] w-full min-w-0">
             {Array.isArray(data?.revenueChart) && data.revenueChart.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>

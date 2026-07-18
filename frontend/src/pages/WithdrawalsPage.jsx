@@ -142,18 +142,18 @@ const WithdrawalsPage = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-green-100 text-sm mb-2">{t('withdrawals.available_balance')}</p>
-            <p className="text-4xl font-bold">€{balance.availableBalance.toFixed(2)}</p>
+            <p className="text-4xl font-bold">{balance.availableBalance.toFixed(2)} MAD</p>
           </div>
           <DollarSign size={48} className="opacity-20" />
         </div>
         <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-primary-500/30">
           <div>
             <p className="text-green-100 text-xs mb-1">{t('withdrawals.total_revenue')}</p>
-            <p className="text-lg font-semibold">€{balance.totalRevenue.toFixed(2)}</p>
+            <p className="text-lg font-semibold">{balance.totalRevenue.toFixed(2)} MAD</p>
           </div>
           <div>
             <p className="text-green-100 text-xs mb-1">{t('withdrawals.total_withdrawn')}</p>
-            <p className="text-lg font-semibold">€{balance.totalWithdrawn.toFixed(2)}</p>
+            <p className="text-lg font-semibold">{balance.totalWithdrawn.toFixed(2)} MAD</p>
           </div>
           <div>
             <p className="text-green-100 text-xs mb-1">{t('withdrawals.pending_count')}</p>
@@ -329,7 +329,7 @@ const WithdrawalsPage = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <DollarSign size={24} className="text-primary-600" />
                       <h3 className="text-xl font-bold text-gray-900">
-                        €{withdrawal.amount.toFixed(2)}
+                        {withdrawal.amount.toFixed(2)} MAD
                       </h3>
                       {getStatusBadge(withdrawal.status)}
                     </div>

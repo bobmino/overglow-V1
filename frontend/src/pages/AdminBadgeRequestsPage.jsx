@@ -147,17 +147,17 @@ const AdminBadgeRequestsPage = () => {
       </div>
 
       {requests.length === 0 ? (
-        <div className="bg-gray-50 rounded-xl p-12 text-center">
+        <div className="surface-card p-12 text-center">
           <Award size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.badge_requests.empty_title')}</h2>
-          <p className="text-gray-600">{t('admin.badge_requests.empty_desc')}</p>
+          <h2 className="text-xl font-heading font-bold text-slate-900 mb-2">{t('admin.badge_requests.empty_title')}</h2>
+          <p className="text-muted">{t('admin.badge_requests.empty_desc')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {requests.map((request) => (
             <div
               key={request._id}
-              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition"
+              className="surface-card p-6 hover:shadow-md transition"
             >
               <div className="flex gap-6 flex-col sm:flex-row">
                 <img

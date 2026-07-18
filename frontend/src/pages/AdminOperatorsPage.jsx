@@ -249,7 +249,7 @@ const AdminOperatorsPage = () => {
       ) : (
         <div className="space-y-4">
           {operators.map((operator) => (
-            <div key={operator._id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition">
+            <div key={operator._id} className="surface-card p-6 hover:shadow-md transition">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -571,7 +571,7 @@ const AdminOperatorsPage = () => {
 
             <div className="p-6 border-t border-gray-200 space-y-4">
               {selectedOperator.status === 'Active' && (
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-border">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">
                       {t('admin.operators.auto_approve_label')}
