@@ -1,34 +1,45 @@
-# Plan de situation — Overglow Trip
-
-**Date:** 2026-07-16  
-**Branche:** `main`  
-**Verdict:** **PRÊT DÉPLOIEMENT** + **BO direction UX P0 livré**
-
----
-
-## Décisions métier (hors code)
-
-- Stripe / PayPal / CMI **live** : activer quand comptes prêts
-- 5–10 expériences réelles + opérateur en DB
-- Pages légales avocat
-
----
-
-## Livré
-
-| Domaine | Status |
-|--------|--------|
-| CMS seed blog (20) + FAQ (32) | Fait (`npm run seed:cms`) |
-| BO menus Ops/Contenu/Confiance/Finance | Fait |
-| **UX BO P0** badges / produits edit / opérateurs edit / FAQ CRUD | Fait — voir `BACKOFFICE-UX-AUDIT.md` |
-| Avis / annulation 100 % DB | Fait |
-| Footer pages honnêtes | Fait |
-
----
-
-## Post-deploy
-
-1. Smoke UI : `/admin/login` → badges, produits edit, opérateurs, FAQ  
-2. `npm run seed:cms` sur Mongo prod si vide  
-3. Env Stripe/PayPal/Sentry quand prêts  
-
+# Plan de situation — Overglow Trip V1
+
+**Date:** 2026-07-18  
+**Branche:** `main`  
+**Verdict:** Soft-launch code + BO UX P0 + **docs/rules alignés**
+
+---
+
+## Point d’entrée docs
+
+| Doc | Rôle |
+|-----|------|
+| [playbook/OVERGLOW-PLAYBOOK.md](./playbook/OVERGLOW-PLAYBOOK.md) | Master playbook (remplace le pack Desktop fantôme) |
+| [BACKOFFICE-UX-AUDIT.md](./BACKOFFICE-UX-AUDIT.md) | UX back-office direction |
+| `.cursor/rules/*.mdc` | Règles agents Cursor (vérité V1) |
+
+Le pack `Desktop/zip/*.md` d’origine n’est **pas** la source de vérité — versions réécrites dans `playbook/`.
+
+---
+
+## Décisions métier (hors code)
+
+- Stripe / PayPal / CMI **live** : activer quand comptes prêts  
+- 5–10 expériences réelles + opérateur en DB  
+- Pages légales avocat  
+
+---
+
+## Livré code
+
+| Domaine | Status |
+|--------|--------|
+| CMS seed blog + FAQ | Fait |
+| BO menus + UX P0 (badges, edit produits/opérateurs, FAQ CRUD) | Fait |
+| Avis / annulation 100 % DB | Fait |
+| Footer / contenu honnête | Fait |
+| Alignement `.mdc` + playbook | Fait (2026-07-18) |
+
+---
+
+## Post-deploy
+
+1. Smoke UI admin + `/fr/blog` + `/fr/faq`  
+2. `npm run seed:cms` prod si vide  
+3. Env paiements / Sentry quand prêts  

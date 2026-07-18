@@ -1,0 +1,50 @@
+---
+description: Patterns backend Express/Mongoose Overglow Trip V1
+globs: backend/**/*,server.js,scripts/**/*
+alwaysApply: false
+---
+
+# Backend — Overglow Trip V1
+
+Complète `general.mdc`. Chemins sous `backend/` + `server.js` + `scripts/`.
+
+## Architecture
+
+- MVC : `routes/` → `controllers/` → `models/` + `utils/` / `middleware/`.
+- Montage API (réel) : `/api/auth`, `/api/products`, `/api/bookings`, `/api/admin`, `/api/operator`, `/api/payments`, `/api/reviews`, `/api/faq`, `/api/blog`, `/api/badges`, `/api/badge-requests`, `/api/withdrawals`, etc. **Pas** de préfixe `/api/v1/trips`.
+- Modèles clés : `Product`, `Operator`, `Booking`, `User`, `Review`, `FAQ`, `Blog`, `Badge`, `BadgeRequest`, `Schedule`.
+
+## Auth & sécurité
+
+- JWT via `protect` + `authorize(...)` (`backend/middleware/authMiddleware.js`).
+- Validation : `express-validator` sur les entrées sensibles.
+- Sanitisation contenu riche (blog) : whitelist HTML existante — ne pas élargir sans revue.
+- Rate limit : `express-rate-limit` (+ Upstash si configuré).
+- Uploads : auth requise ; Cloudinary en prod.
+- **Paiements** : ne jamais logger secrets ; webhooks Stripe/PayPal avec vérif signature ; env `STRIPE_*`, `PAYPAL_*`, `CMI_*`, `BANK_*`. Soft-launch : endpoints peuvent renvoyer 503 si env manquantes — ne pas hardcoder de clés.
+- `strict: true` sur schémas Product (et défaut Mongoose) — ne pas désactiver.
+
+## Mongo & contenu
+
+- `MONGO_URI` / `MONGO_DB_NAME` (pas inventer `MONGODB_URI` dans la doc agent).
+- Contenu CMS seed : `scripts/seedProductionContent.js` (`npm run seed:cms`).
+- Index texte : ne pas utiliser le champ locale `language` comme `language_override` Mongo (casse `ar`) — voir `fixTextLanguageIndex.js`.
+- Badges manuels : l’approbation d’une demande **doit** pousser dans `product.badges` (pas seulement `updateProductMetrics`).
+- FAQ : anti-doublon `question` + `language` à la création.
+- Avis publics : uniquement `status: 'Approved'`.
+
+## Réponses API (état actuel)
+
+- Le projet **ne force pas** encore un envelope `{ status, data, meta }` partout. Respecter le format existant de chaque controller ; ne pas « refactor envelope » sans demande.
+- Erreurs : middleware d’erreurs existant ; ne pas exposer stack en production.
+
+## Logging
+
+- `logger` depuis `backend/utils/logger.js` uniquement.
+- Pas de PII (emails, téléphones) dans les logs.
+
+## Scripts utiles
+
+- `npm run create-admin` — bootstrap admin (`ADMIN_EMAIL` / `ADMIN_PASSWORD`).
+- `npm run seed:cms` — blog SEO + FAQ.
+- `node scripts/smokeAdminBo.js` — smoke login + routes admin clés (serveur up sur :5001).

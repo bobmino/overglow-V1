@@ -1,0 +1,46 @@
+---
+description: Standards globaux Overglow Trip V1 (marketplace expériences Maroc)
+globs:
+alwaysApply: true
+---
+
+# General — Overglow Trip V1
+
+Règles non négociables pour tout le dépôt. Complètent `.cursorrules` (rôle CTO / commit).
+
+## Produit & vérité métier
+
+- Marketplace **voyageurs ↔ opérateurs** (expériences/produits), pas un catalogue « trips/guides » générique.
+- **Source de vérité = MongoDB** pour avis, FAQ, blog, badges, produits, opérateurs, réservations. Pas de faux avis / faux KPIs / faux jobs / faux réseaux.
+- Seeds CMS idempotents : `npm run seed:cms` (blog + FAQ). Badges : `POST /api/admin/initialize-badges`.
+- Soft-launch : Stripe/PayPal/CMI **live** peuvent être reportés ; le code booking différé existe — ne pas prétendre que les paiements live sont « done ».
+- Répondre à l’utilisateur en **français** sauf demande contraire.
+
+## Stack réelle
+
+- **Language** : JavaScript (`.js` / `.jsx`), pas TypeScript.
+- **Backend** : Express + Mongoose (racine repo + `backend/`), port défaut **5001**.
+- **Frontend** : React 19 + Vite SPA (`frontend/`), pas Next.js comme runtime principal.
+- **Package manager** : npm uniquement.
+- **i18n** : FR / EN / ES / AR — fichiers dans `frontend/public/locales/{fr,en,es,ar}/translation.json`.
+- Routes publiques préfixées `/{lang}/…` via `LocalizedLink` ; **admin/opérateur** sans préfixe langue (`/admin/*`, `/operator/*`).
+
+## Qualité code
+
+- Pas de troncatures de code : fichiers complets ou commentaires clairs pour sections inchangées.
+- Pas de `console.log` en prod : frontend Sentry / backend `backend/utils/logger.js`.
+- **Feedback UI** : jamais `alert()` / `prompt()` / `confirm()` natifs. Utiliser `useToast()` + `askConfirm` (`frontend/src/utils/notify.js`).
+- Texte utilisateur : `t('clé')` react-i18next. Pas de chaînes FR hardcodées sur surfaces voyageur.
+- Tailwind pour le style ; palette **primary** (brand). Les couleurs sémantiques de statut (`red`/`amber`/`primary` pour badges Pending/Rejected) sont OK dans le BO.
+- Commits : seulement si l’utilisateur le demande ; jamais committer `.env` ni secrets. Ne pas committer `STRATEGIC-PLAN.md` / `EXECUTION-PLAN-TO-PRODUCTION.md` sauf demande.
+
+## Rôles
+
+- `Admin` | `Opérateur` (variantes normalisées) | `Client`.
+- Guards : `AdminRoute`, `OperatorRoute`, middleware `protect` + `authorize('Admin'|'Opérateur'|…)`.
+
+## Docs de référence (repo)
+
+- Situation : `overglow-analysis/plan de situation.md`
+- UX BO : `overglow-analysis/BACKOFFICE-UX-AUDIT.md`
+- Playbook : `overglow-analysis/playbook/OVERGLOW-PLAYBOOK.md`

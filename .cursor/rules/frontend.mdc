@@ -1,0 +1,46 @@
+---
+description: Patterns frontend React/Vite Overglow Trip V1
+globs: frontend/src/**/*
+alwaysApply: false
+---
+
+# Frontend — Overglow Trip V1
+
+Complète `general.mdc`. Fichiers sous `frontend/src/`.
+
+## Stack réelle
+
+- React 19 + Vite SPA + React Router.
+- Data : **axios** (`frontend/src/config/axios.js`) + contextes (`AuthContext`, `ToastContext`, …). `@tanstack/react-query` peut être présent — **ne pas migrer tout le BO vers React Query** sans demande.
+- i18n : `react-i18next` — locales JSON dans `frontend/public/locales/{fr,en,es,ar}/translation.json`.
+- Liens publics : `LocalizedLink` / `withLang` (préfixe langue). Admin/opérateur : `Link`/`NavLink` sans préfixe.
+- UI : Tailwind + tokens `primary-*` ; `font-heading` / body selon config existante.
+- Motion : framer-motion OK si déjà utilisé ; pas d’animations gadgets.
+
+## Back-office (direction-grade)
+
+- Shell : `DashboardShell` + `AdminSidebar` (sections Ops → Contenu → Confiance → Finance → People → Config).
+- Produits admin : liste + **édition** `/admin/products/:id/edit` (réutilise `OperatorProductFormPage` en contexte admin).
+- Opérateurs : édition fiche via `PUT /api/admin/operators/:id` + statut via `/status`.
+- Badges : CRUD + assign/unassign + demandes (approve = assign Mongo).
+- FAQ admin : create / edit / toggle `isActive` / delete — pas seed-only.
+- Compteurs sidebar : messages, bookings, badge-requests, reviews pending.
+- Toasts + `askConfirm` — zéro `alert`/`prompt`.
+
+## UX public
+
+- Mobile-first **375px** prioritaire.
+- RTL arabe : propriétés logiques Tailwind (`ps`/`pe`/`ms`/`me`/`start`/`end`).
+- Contenu footer : honnête (pas de faux sociaux / fausses offres d’emploi).
+- Avis / notes / politiques d’annulation : données API/DB uniquement.
+
+## Patterns React
+
+- Composants fonctionnels ; lazy + `Suspense` pour pages lourdes (déjà dans `App.jsx`).
+- Pas d’obligation `useMemo`/`useCallback` par défaut (React Compiler / style repo).
+- Ne pas inventer de composants `ui/Modal.jsx` / `FormField` s’ils n’existent pas — réutiliser les patterns des pages admin existantes.
+
+## Perf & SEO
+
+- Images : lazy sous la fold ; Cloudinary/`formatImageUrl` quand applicable.
+- SEO public : `SEOHead`, blog multi-langue, destinations i18n — pas de faux meta inventés.
