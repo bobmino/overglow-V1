@@ -103,4 +103,26 @@
 | 5 | Sync images locales + smoke booking TX | ~~fait~~ | Agent | Done |
 | 6 | Photos métier réelles (upload BO → `/uploads/...`) | 1–2 h | Toi | Post-launch |
 | 7 | Paiements live (Stripe/CMI) quand comptes OK | 1–3 j | Différé | — |
-| 8 | Si marque = `overcom.online` : DNS + rebuild + emails | 2–4 h | Décision toi | — |
+| 8 | Décision marque `overcom.online` vs `overglow.online` (voir § ci-dessous) | 2–4 h si migrate | Toi | Décision |
+
+## Décision marque : `overcom.online` vs `overglow.online`
+
+**État actuel (ne pas casser)**  
+- Marketplace live = **Overglow Trip** sur `https://www.overglow.online`  
+- DNS, TLS, CORS, Resend prod, CI Deploy = tous câblés sur `overglow.online`  
+- Comptes seed = `@overglow.online`
+
+**Ce que signifie `overcom.online`**  
+- Marque **agence** (Overcom), distincte du produit marketplace  
+- Si tu bascules le site réservation dessus, ce n’est pas un rename cosmétique : DNS A/AAAA, Certbot, `FRONTEND_URL` / `SITE_URL` / `CORS`, rebuild Docker web, emails Resend (domaine vérifié), admin emails, redirects 301 depuis `overglow.online`
+
+**3 options**
+
+| Option | Quand | Effort |
+|--------|--------|--------|
+| **A. Statu quo** — marketplace = `overglow.online` ; Overcom = site agence à part | Soft-launch / clarté produit | 0 |
+| **B. Dual** — `overglow.online` = booking ; `overcom.online` = agence (landing) | Tu veux les 2 marques | 1–2 j (2e site ou pages) |
+| **C. Migration** — tout le booking vers `overcom.online` | Une seule marque publique | 2–4 h ops + emails + 301 |
+
+**Reco CTO** : rester en **A** jusqu’après soft-launch + smoke UI. Ne migrate (C) que si la marque client-facing doit être Overcom partout.  
+Si ton `.env` local pointe Resend vers `@overcom.online`, aligne-le sur le domaine **vérifié** chez Resend (prod = `@overglow.online`).
