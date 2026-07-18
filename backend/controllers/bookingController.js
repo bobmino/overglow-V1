@@ -165,7 +165,7 @@ const createBooking = async (req, res, next) => {
             endTime: virtualScheduleData.endTime,
             capacity: virtualScheduleData.capacity || 100,
             price: virtualScheduleData.price || 0,
-            currency: virtualScheduleData.currency || 'EUR',
+            currency: virtualScheduleData.currency || 'MAD',
           };
 
           if (transactionActive && session) {
@@ -646,7 +646,7 @@ const bulkManualCheckout = async (req, res, next) => {
             endTime: virtualScheduleData.endTime,
             capacity: virtualScheduleData.capacity || 100,
             price: virtualScheduleData.price || 0,
-            currency: virtualScheduleData.currency || 'EUR',
+            currency: virtualScheduleData.currency || 'MAD',
           };
 
           if (transactionActive && session) {
