@@ -80,7 +80,8 @@
 | Images catalogue locales `/images/cities/*` | Fait (8/8, HTTP 200 WebP) |
 | Booking différé API (`deferPayment`) | OK — `PENDING_PAYMENT` |
 | Homepage sections catalogue | OK (destinations + expériences) |
-| Mongo TX standalone | Contourné (`DISABLE_MONGO_TX`) ; compose rs0 prêt (non déployé) |
+| Mongo TX / replica set `rs0` | **Déployé prod** — `rs.status().set = rs0`, `DISABLE_MONGO_TX=false` |
+| Booking différé + TX rs0 | OK smoke API (`PENDING_PAYMENT`, 201) |
 
 ## P0 images — statut
 
@@ -98,8 +99,8 @@
 | 1 | Changer mdp admin + partenaire | 10 min | Toi | P0 |
 | 2 | Smoke UI booking (date → panier → cash pickup → success) | 45 min | Toi | P1 |
 | 3 | Mentions légales / CGU avocat `@overglow.online` | 2–4 h | Toi | P1 |
-| 4 | Deploy replica set Mongo (`docker-compose` rs0 + `OPS-VPS.md`) | 1–2 h | Toi | P2 |
-| 5 | Commit/push mapping images + compose rs0 (si pas encore) | 5 min | Toi | Ops |
+| 4 | Deploy replica set Mongo rs0 | ~~fait~~ (2026-07-18) | Agent | Done |
+| 5 | Sync images locales + smoke booking TX | ~~fait~~ | Agent | Done |
 | 6 | Photos métier réelles (upload BO → `/uploads/...`) | 1–2 h | Toi | Post-launch |
 | 7 | Paiements live (Stripe/CMI) quand comptes OK | 1–3 j | Différé | — |
 | 8 | Si marque = `overcom.online` : DNS + rebuild + emails | 2–4 h | Décision toi | — |

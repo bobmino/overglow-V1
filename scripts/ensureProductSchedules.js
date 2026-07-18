@@ -36,12 +36,21 @@ const run = async () => {
   let filled = 0;
   let skipped = 0;
 
+  const tomorrow = new Date();
+  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   for (const product of products) {
-    const count = await Schedule.countDocuments({ product: product._id });
-    if (count > 0) {
+    const futureCount = await Schedule.countDocuments({
+      product: product._id,
+      date: { $gte: tomorrow },
+    });
+    if (futureCount >= 30) {
       skipped += 1;
       continue;
     }
+    // Horizon trop court ou vide → purge + régénère 90 jours
+    await Schedule.deleteMany({ product: product._id });
     const entries = buildSchedules({ productId: product._id, price: product.price || 0 });
     await Schedule.insertMany(entries);
     filled += 1;
