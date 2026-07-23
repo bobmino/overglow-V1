@@ -13,7 +13,16 @@ export const LegacyPublicRedirect = () => {
   const location = useLocation();
   const lang = detectPreferredLang();
   const target = withLang(`${location.pathname}${location.search}`, lang);
-  return <Navigate to={target} replace />;
+  // Critical: preserve location.state (booking payload, checkout context, etc.).
+  // Without this, /booking → /fr/booking drops product/date/timeSlot and BookingPage
+  // redirects to homepage.
+  return (
+    <Navigate
+      to={`${target}${location.hash || ''}`}
+      state={location.state}
+      replace
+    />
+  );
 };
 
 export default RootLangRedirect;
