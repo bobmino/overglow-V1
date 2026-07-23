@@ -151,6 +151,17 @@ const AnalyticsPage = () => {
         </div>
       </div>
 
+      <div className="mb-6 rounded-2xl border border-primary-200 bg-primary-50/80 px-5 py-4 flex gap-3">
+        <Info className="text-primary-700 shrink-0 mt-0.5" size={20} />
+        <div className="text-sm text-primary-950">
+          <p className="font-bold text-primary-900 mb-1">Comment lire vos Insights Overglow</p>
+          <p className="text-primary-900/90 leading-relaxed">
+            {advancedData?.meta?.explanation ||
+              'Toutes les données viennent de votre activité réelle (vues, demandes, réservations) et du catalogue publié Overglow. Le benchmark prix compare vos offres à la moyenne des autres partenaires (en MAD). Plus le catalogue grandit, plus les conseils deviennent précis.'}
+          </p>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
@@ -335,13 +346,23 @@ const AnalyticsPage = () => {
                       <td className="text-end py-3 px-4">{product.bookings}</td>
                       <td className="text-end py-3 px-4">{product.revenue?.toFixed(2) || '0.00'} MAD</td>
                       <td className="text-end py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          product.conversionRate >= 3 ? 'bg-primary-100 text-primary-800' :
-                          product.conversionRate >= 1 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {product.conversionRate.toFixed(2)}%
-                        </span>
+                        {product.conversionRate == null ? (
+                          <span className="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600">
+                            n/a
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-semibold ${
+                              product.conversionRate >= 3
+                                ? 'bg-primary-100 text-primary-800'
+                                : product.conversionRate >= 1
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {product.conversionRate.toFixed(2)}%
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}

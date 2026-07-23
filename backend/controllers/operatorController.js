@@ -3,6 +3,7 @@ import Operator from '../models/operatorModel.js';
 import Product from '../models/productModel.js'; // [BUG-01] Required by getOperatorAnalytics
 import { sanitizeBody } from '../utils/sanitizeBody.js';
 import asyncHandler from '../middleware/asyncHandler.js';
+import { logger } from '../utils/logger.js';
 
 // [TASK-6] Allowlists for future operator mutations (current handlers are read-only)
 export const OPERATOR_UPDATE_FIELDS = ['companyName', 'phone', 'whatsapp', 'description', 'logo'];
@@ -120,37 +121,71 @@ const getOperatorDashboardStats = asyncHandler(async (req, res) => {
 
   const bookings = await Booking.find({
     operator: operator._id,
-    status: 'Confirmed',
+    status: { $in: ['Confirmed', 'PENDING_PAYMENT', 'Pending'] },
+  }).populate({
+    path: 'schedule',
+    populate: { path: 'product', select: 'title' },
   });
 
-  const totalRevenue = bookings.reduce(
+  const confirmed = bookings.filter((b) => b.status === 'Confirmed');
+  const totalRevenue = confirmed.reduce(
     (sum, booking) => sum + (booking.totalPrice ?? booking.totalAmount ?? 0),
     0
   );
-  const confirmedBookingsCount = bookings.length;
+  const confirmedBookingsCount = confirmed.length;
+  const pendingCount = bookings.filter((b) =>
+    ['Pending', 'PENDING_PAYMENT'].includes(b.status)
+  ).length;
 
-  const topExperiences = await Booking.aggregate([
-    {
-      $match: { operator: operator._id },
-    },
-    {
-      $group: {
-        _id: '$schedule.product.title',
-        count: { $sum: 1 },
+  const titleCounts = {};
+  bookings.forEach((b) => {
+    const title = b.schedule?.product?.title;
+    if (!title) return;
+    titleCounts[title] = (titleCounts[title] || 0) + 1;
+  });
+  const topExperiences = Object.entries(titleCounts)
+    .map(([_id, count]) => ({ _id, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  // Insights snappy pour le dashboard (réutilise advanced)
+  let insights = { recommendations: [], competitionAlerts: 0, conversionRate: null };
+  try {
+    const { getAdvancedAnalytics } = await import('./analyticsController.js');
+    const fakeRes = {
+      statusCode: 200,
+      body: null,
+      status(c) {
+        this.statusCode = c;
+        return this;
       },
-    },
-    {
-      $sort: { count: -1 },
-    },
-    {
-      $limit: 5,
-    },
-  ]);
+      json(payload) {
+        this.body = payload;
+        return this;
+      },
+    };
+    await getAdvancedAnalytics(req, fakeRes);
+    if (fakeRes.statusCode === 200 && fakeRes.body) {
+      const recs = fakeRes.body.recommendations || [];
+      insights = {
+        recommendations: recs.slice(0, 3),
+        competitionAlerts: recs.filter((r) => r.type === 'pricing').length,
+        conversionRate: fakeRes.body.funnel?.viewToBookingRate ?? null,
+        explanation: fakeRes.body.meta?.explanation || null,
+      };
+    }
+  } catch (err) {
+    logger.warn('Dashboard insights skipped:', err.message);
+  }
 
   res.json({
     totalRevenue,
+    totalSales: totalRevenue, // alias legacy front
     confirmedBookingsCount,
+    confirmedBookings: confirmedBookingsCount, // alias legacy front
+    pendingCount,
     topExperiences,
+    insights,
   });
 });
 

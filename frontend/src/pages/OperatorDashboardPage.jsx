@@ -2,7 +2,19 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Package, Calendar, Users, Plus, ClipboardList, MessageSquare, UserRound } from 'lucide-react';
+import {
+  Package,
+  Calendar,
+  Users,
+  Plus,
+  ClipboardList,
+  MessageSquare,
+  UserRound,
+  Sparkles,
+  ArrowRight,
+  AlertCircle,
+  Info,
+} from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useToast } from '../context/ToastContext';
 import { motion as Motion } from 'framer-motion';
@@ -19,25 +31,25 @@ const getDateLocale = (language) => {
 const StatCard = ({ icon, label, value, color }) => {
   const Icon = icon;
   return (
-  <Motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5 }}
-    className="bg-white rounded-xl border border-gray-200 p-6"
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-3 rounded-lg ${color}`}>
-        <Icon size={24} className="text-white" />
+    <Motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white rounded-xl border border-gray-200 p-6"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-lg ${color}`}>
+          <Icon size={24} className="text-white" />
+        </div>
       </div>
-    </div>
-    <p className="text-gray-600 text-sm mb-1">{label}</p>
-    <p className="text-3xl font-bold text-gray-900">{value}</p>
-  </Motion.div>
+      <p className="text-gray-600 text-sm mb-1">{label}</p>
+      <p className="text-3xl font-bold text-gray-900">{value}</p>
+    </Motion.div>
   );
 };
 
 /**
- * [PROMPT-9] Operator dashboard — stats + activity (nav via sidebar).
+ * Operator dashboard — stats + Insights Overglow + activité récente.
  */
 const OperatorDashboardPage = () => {
   const { t, i18n } = useTranslation();
@@ -48,6 +60,8 @@ const OperatorDashboardPage = () => {
     totalSales: 0,
     confirmedBookings: 0,
     topExperiences: [],
+    insights: { recommendations: [] },
+    pendingCount: 0,
   });
 
   const [bookings, setBookings] = useState([]);
@@ -57,7 +71,13 @@ const OperatorDashboardPage = () => {
     const fetchStats = async () => {
       try {
         const { data } = await api.get('/api/operator/dashboard-stats');
-        setStats(data);
+        setStats({
+          totalSales: data.totalSales ?? data.totalRevenue ?? 0,
+          confirmedBookings: data.confirmedBookings ?? data.confirmedBookingsCount ?? 0,
+          topExperiences: data.topExperiences || [],
+          insights: data.insights || { recommendations: [] },
+          pendingCount: data.pendingCount || 0,
+        });
       } catch (error) {
         logger.error('Failed to fetch stats:', error);
         toast(t('operator.dashboard.error_stats'), { type: 'error' });
@@ -82,11 +102,14 @@ const OperatorDashboardPage = () => {
 
   const pendingCount = useMemo(
     () =>
+      stats.pendingCount ||
       bookings.filter((b) =>
         ['Pending', 'PENDING', 'PENDING_PAYMENT'].includes(b.status)
       ).length,
-    [bookings]
+    [bookings, stats.pendingCount]
   );
+
+  const insightRecs = stats.insights?.recommendations || [];
 
   const getBookingStatusLabel = (status) => {
     switch (status) {
@@ -121,7 +144,7 @@ const OperatorDashboardPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 font-heading">
             {t('operator.dashboard.title')}
           </h1>
-              {pendingCount > 0 && (
+          {pendingCount > 0 && (
             <p className="text-amber-700 text-sm font-semibold mt-1">
               {pendingCount === 1
                 ? t('operator.dashboard.pending_bookings', { count: pendingCount })
@@ -161,7 +184,6 @@ const OperatorDashboardPage = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard
           icon={Package}
@@ -183,7 +205,54 @@ const OperatorDashboardPage = () => {
         />
       </div>
 
-      {/* Recent bookings */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 mb-8 text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-primary-500/20 text-primary-300">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h2 className="text-xl font-heading font-bold">Insights Overglow</h2>
+              <p className="text-slate-300 text-sm mt-1 max-w-2xl">
+                Conseils calculés sur vos vues, réservations et les prix du catalogue Overglow —
+                pour piloter vos offres comme un extranet intelligent.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/operator/analytics"
+            className="inline-flex items-center gap-2 shrink-0 bg-primary-600 hover:bg-primary-500 text-white font-bold px-4 py-2.5 rounded-xl transition"
+          >
+            Voir les stats
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {insightRecs.length === 0 ? (
+          <p className="text-slate-300 text-sm bg-white/5 rounded-xl px-4 py-3 border border-white/10">
+            Pas d’alerte prioritaire pour le moment. Ouvrez les statistiques pour le benchmark prix
+            et le funnel de conversion.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {insightRecs.map((rec, idx) => (
+              <li
+                key={`${rec.type}-${idx}`}
+                className="flex gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+              >
+                <span className="mt-0.5 text-amber-300 shrink-0">
+                  {rec.priority === 'high' ? <AlertCircle size={18} /> : <Info size={18} />}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-white text-sm">{rec.title}</p>
+                  <p className="text-slate-300 text-sm mt-0.5 line-clamp-2">{rec.message}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8" id="avis">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-xl font-bold text-gray-900">
