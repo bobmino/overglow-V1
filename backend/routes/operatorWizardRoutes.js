@@ -31,9 +31,13 @@ router.put(
 router.put(
   '/public-info',
   [
-    check('publicName', 'Public name is required').not().isEmpty(),
-    check('description', 'Description is required').not().isEmpty().isLength({ min: 100 }),
-    check('location.city', 'City is required').not().isEmpty(),
+    check('publicName', 'Le nom public est obligatoire').not().isEmpty().trim(),
+    check('description', 'La description doit contenir au moins 50 caractères')
+      .not()
+      .isEmpty()
+      .trim()
+      .isLength({ min: 50 }),
+    check('location.city', 'La ville est obligatoire').not().isEmpty().trim(),
   ],
   savePublicInfo
 );
@@ -43,16 +47,22 @@ router.put('/photos', savePhotos);
 router.put(
   '/address',
   [
-    check('companyAddress.street', 'Street is required').not().isEmpty(),
-    check('companyAddress.city', 'City is required').not().isEmpty(),
-    check('companyAddress.postalCode', 'Postal code is required').not().isEmpty(),
+    check('companyAddress.street', 'La rue / adresse est obligatoire').not().isEmpty().trim(),
+    check('companyAddress.city', 'La ville est obligatoire').not().isEmpty().trim(),
+    check('companyAddress.postalCode', 'Le code postal est obligatoire').optional({ checkFalsy: true }),
   ],
   saveAddress
 );
 
 router.put(
   '/experiences',
-  [check('experiences', 'Experiences description is required').not().isEmpty()],
+  [
+    check('experiences', 'Décrivez vos expériences (min. 20 caractères)')
+      .not()
+      .isEmpty()
+      .trim()
+      .isLength({ min: 20 }),
+  ],
   saveExperiences
 );
 

@@ -83,6 +83,9 @@ const OperatorWizardPage = () => {
           );
           if (firstIncomplete !== -1) {
             setCurrentStep(firstIncomplete);
+          } else if (completedSteps.length > 0) {
+            // Tout est coché côté backend → rester sur la dernière étape (soumission / revue)
+            setCurrentStep(STEPS.length - 1);
           }
         }
       } catch (error) {
@@ -101,37 +104,38 @@ const OperatorWizardPage = () => {
   }, [STEPS, t]);
 
   const saveBackendStep = async (stepId) => {
+    let response;
     switch (stepId) {
         case 'providerType':
-          await api.put('/api/operator/wizard/provider-type', {
+          response = await api.put('/api/operator/wizard/provider-type', {
             providerType: formData.providerType,
           });
           break;
         case 'publicInfo':
-          await api.put('/api/operator/wizard/public-info', {
+          response = await api.put('/api/operator/wizard/public-info', {
             publicName: formData.publicName,
             description: formData.description,
             location: formData.location,
           });
           break;
         case 'photos':
-          await api.put('/api/operator/wizard/photos', {
+          response = await api.put('/api/operator/wizard/photos', {
             logo: formData.logo,
             gallery: formData.gallery,
           });
           break;
         case 'address':
-          await api.put('/api/operator/wizard/address', {
+          response = await api.put('/api/operator/wizard/address', {
             companyAddress: formData.companyAddress,
           });
           break;
         case 'experiences':
-          await api.put('/api/operator/wizard/experiences', {
+          response = await api.put('/api/operator/wizard/experiences', {
             experiences: formData.experiences,
           });
           break;
         case 'privateInfo':
-          await api.put('/api/operator/wizard/private-info', {
+          response = await api.put('/api/operator/wizard/private-info', {
             companyInfo: formData.companyInfo,
             individualWithStatusInfo: formData.individualWithStatusInfo,
             individualWithoutStatusInfo: formData.individualWithoutStatusInfo,
@@ -139,6 +143,9 @@ const OperatorWizardPage = () => {
           break;
       default:
         break;
+    }
+    if (response?.data?.operator) {
+      mergeWizardFromResponse(response.data.operator);
     }
   };
 
@@ -154,7 +161,7 @@ const OperatorWizardPage = () => {
         setCurrentStep(currentStep + 1);
       }
     } catch (err) {
-      setError(err.response?.data?.message || t('operator.wizard.save_step_error'));
+      setError(formatWizardError(err));
     } finally {
       setSaving(false);
     }
@@ -173,7 +180,7 @@ const OperatorWizardPage = () => {
       toast.success(t('operator.wizard.submit_success'));
       navigate('/operator/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || t('operator.wizard.submit_error'));
+      setError(formatWizardError(err) || t('operator.wizard.submit_error'));
     } finally {
       setSaving(false);
     }
@@ -185,16 +192,36 @@ const OperatorWizardPage = () => {
     }
   };
 
+  const BACKEND_STEP_IDS = useMemo(
+    () => STEPS.flatMap((step) => step.backendIds || [step.id]),
+    [STEPS]
+  );
+
   const getProgress = () => {
     if (!wizardData) return 0;
-    const completedSteps = wizardData.completedSteps || [];
-    return Math.round((completedSteps.length / STEPS.length) * 100);
+    const completed = new Set(wizardData.completedSteps || []);
+    const done = BACKEND_STEP_IDS.filter((id) => completed.has(id)).length;
+    const total = BACKEND_STEP_IDS.length || 1;
+    return Math.min(100, Math.round((done / total) * 100));
   };
 
   const isStepCompleted = (step) => {
     if (!wizardData) return false;
     const ids = step?.backendIds || [step?.id];
     return ids.every((id) => wizardData.completedSteps?.includes(id));
+  };
+
+  const mergeWizardFromResponse = (operator) => {
+    if (!operator) return;
+    setWizardData(operator);
+  };
+
+  const formatWizardError = (err) => {
+    const validation = err.response?.data?.errors;
+    if (Array.isArray(validation) && validation.length > 0) {
+      return validation.map((e) => e.msg || e.message).filter(Boolean).join(' · ');
+    }
+    return err.response?.data?.message || t('operator.wizard.save_step_error');
   };
 
   if (loading) {
@@ -327,10 +354,13 @@ const OperatorWizardPage = () => {
                 rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
-                minLength={100}
+                minLength={50}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {t('operator.wizard.description_count', { count: formData.description.length })}
+                {t('operator.wizard.description_count', {
+                  count: formData.description.length,
+                  defaultValue: `${formData.description.length} / 50 caractères minimum`,
+                })}
               </p>
             </div>
 
@@ -761,9 +791,9 @@ const OperatorWizardPage = () => {
         <div className="w-full lg:w-64 surface-card p-6 h-fit">
           <div className="mb-8">
             <h3 className="text-sm font-bold text-gray-500 mb-2">{t('operator.wizard.progress', { percent: getProgress() })}</h3>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div 
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                className="bg-primary-600 h-2 rounded-full transition-all duration-300 max-w-full"
                 style={{ width: `${getProgress()}%` }}
               />
             </div>

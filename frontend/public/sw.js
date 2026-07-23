@@ -1,6 +1,6 @@
 // Service Worker Overglow — soft-launch
 // Network-first pour HTML/JS/CSS/API afin d'éviter les bundles et layouts périmés.
-const CACHE_NAME = 'overglow-v1.2';
+const CACHE_NAME = 'overglow-v1.3';
 const PRECACHE = ['/manifest.json', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -31,12 +31,25 @@ const isHtmlNavigation = (request, url) =>
   request.mode === 'navigate' ||
   url.pathname === '/' ||
   url.pathname.endsWith('.html') ||
-  url.pathname.match(/^\/(fr|en|es|ar)(\/|$)/);
+  Boolean(url.pathname.match(/^\/(fr|en|es|ar)(\/|$)/));
 
 const isVersionedAsset = (url) =>
   url.pathname.startsWith('/assets/') ||
   url.pathname.endsWith('.js') ||
   url.pathname.endsWith('.css');
+
+const networkFirst = (request) =>
+  fetch(request)
+    .then((response) => response)
+    .catch(async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      if (request.mode === 'navigate') {
+        const fallback = await caches.match('/index.html');
+        if (fallback) return fallback;
+      }
+      return new Response('', { status: 503, statusText: 'Offline' });
+    });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
@@ -44,13 +57,9 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // API + HTML + bundles versionnés : toujours réseau d'abord (pas de layout/JS fantôme)
+  // API + HTML + bundles : réseau d'abord, jamais de Promise rejetée
   if (isApiRequest(url) || isHtmlNavigation(event.request, url) || isVersionedAsset(url)) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => response)
-        .catch(() => caches.match(event.request).then((r) => r || caches.match('/index.html')))
-    );
+    event.respondWith(networkFirst(event.request));
     return;
   }
 
@@ -58,14 +67,16 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+      return fetch(event.request)
+        .then((response) => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           return response;
-        }
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        return response;
-      });
+        })
+        .catch(() => new Response('', { status: 503, statusText: 'Offline' }));
     })
   );
 });
