@@ -149,6 +149,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
 
   useEffect(() => {
     setMobileOpen(false);
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   useEffect(() => {

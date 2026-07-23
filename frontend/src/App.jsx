@@ -6,6 +6,7 @@ import { MobileMenuProvider } from './context/MobileMenuContext';
 import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
 import RtlDocumentSync from './components/RtlDocumentSync';
+import ScrollToTopOnNavigate from './components/ScrollToTopOnNavigate';
 import LanguageRoot from './components/LanguageRoot';
 import { RootLangRedirect, LegacyPublicRedirect } from './components/LangRedirects';
 
@@ -117,6 +118,7 @@ function App() {
       <ToastProvider>
       <MobileMenuProvider>
       <Router>
+        <ScrollToTopOnNavigate />
         <RtlDocumentSync />
         <CartDrawer />
       <Routes>
