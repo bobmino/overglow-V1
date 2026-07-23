@@ -161,7 +161,7 @@ const CheckoutPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, checkoutItems, t, prepareAttempt, toast]);
+  }, [isAuthenticated, checkoutItems, t, prepareAttempt]);
 
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);

@@ -98,7 +98,7 @@ const OperatorWizardPage = () => {
     };
 
     fetchWizardData();
-  }, [STEPS, t, toast]);
+  }, [STEPS, t]);
 
   const saveBackendStep = async (stepId) => {
     switch (stepId) {
