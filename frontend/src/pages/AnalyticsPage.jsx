@@ -49,18 +49,23 @@ const AnalyticsPage = () => {
 
   const fetchAnalytics = async () => {
     setLoading(true);
+    setError('');
     try {
-      const [basicRes, advancedRes] = await Promise.all([
-        api.get('/api/operator/analytics'),
-        api.get('/api/operator/analytics/advanced', {
+      const basicRes = await api.get('/api/operator/analytics');
+      setBasicData(basicRes.data);
+
+      try {
+        const advancedRes = await api.get('/api/operator/analytics/advanced', {
           params: {
             startDate: dateRange.startDate || undefined,
             endDate: dateRange.endDate || undefined,
           },
-        }),
-      ]);
-      setBasicData(basicRes.data);
-      setAdvancedData(advancedRes.data);
+        });
+        setAdvancedData(advancedRes.data);
+      } catch (advErr) {
+        logger.warn('Advanced analytics unavailable:', advErr?.message || advErr);
+        setAdvancedData(null);
+      }
       setLoading(false);
     } catch (_err) {
       setError(t('analytics.load_error'));

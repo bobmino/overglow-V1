@@ -360,13 +360,13 @@ const exportAnalyticsCSV = async (req, res) => {
     csv += `Total Inquiries,${inquiries}\n`;
     csv += `Total Bookings,${bookings}\n`;
     csv += `View to Booking Rate,${viewToBookingRate.toFixed(2)}%\n`;
-    csv += `Total Revenue,€${totalRevenue.toFixed(2)}\n`;
-    csv += `Average Revenue per Booking,€${avgRevenuePerBooking.toFixed(2)}\n\n`;
+    csv += `Total Revenue,${totalRevenue.toFixed(2)} MAD\n`;
+    csv += `Average Revenue per Booking,${avgRevenuePerBooking.toFixed(2)} MAD\n\n`;
     
     csv += 'Product Performance\n';
-    csv += 'Product,Views,Bookings,Revenue,Conversion Rate\n';
+    csv += 'Product,Views,Bookings,Revenue MAD,Conversion Rate\n';
     productPerformance.forEach((p) => {
-      csv += `"${p.title}",${p.views},${p.bookings},€${p.revenue.toFixed(2)},${p.conversionRate}%\n`;
+      csv += `"${p.title}",${p.views},${p.bookings},${p.revenue.toFixed(2)},${p.conversionRate}%\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');

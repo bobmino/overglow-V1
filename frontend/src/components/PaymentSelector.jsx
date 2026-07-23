@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { CreditCard, Wallet, Banknote, Truck, Copy, CheckCircle, AlertCircle, Landmark } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
@@ -14,133 +12,17 @@ const isPaymentSimEnabled =
     String(import.meta.env.VITE_ENABLE_PAYMENT_SIM || '').trim().toLowerCase()
   );
 
-// FIX TDZ : Ne pas appeler loadStripe() au niveau module car cela cause un
-// ReferenceError lors du build Vite si la variable est accédée avant initialisation.
-// On utilise un pattern lazy : la Promise est créée une seule fois, au premier rendu.
-let _stripePromise = null;
-const getStripePromise = () => {
-  if (!_stripePromise) {
-    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-    if (!key || key.includes('placeholder')) {
-      _stripePromise = Promise.resolve(null);
-      return _stripePromise;
-    }
-    _stripePromise = loadStripe(key).catch((err) => {
-      logger.warn('Failed to load Stripe.js. Payments via card will be unavailable:', err.message);
-      return null;
-    });
-  }
-  return _stripePromise;
-};
-
+/**
+ * Soft-launch : Stripe.js n’est chargé que via lazy StripeCardPanel
+ * (évite iframes m.stripe.network + bruit CSP / AdBlock sur checkout offline).
+ */
 const hasStripePublicKey = () => {
   const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
   return Boolean(key && !key.includes('placeholder'));
 };
 
-const StripeForm = ({ amountMad, bookingId, bookingIds, onSuccess, onError }) => {
-  const { t } = useTranslation();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!elements && !isPaymentSimEnabled) return;
-    if (!stripe && !isPaymentSimEnabled) return;
-    if (!bookingId && !(bookingIds && bookingIds.length)) {
-      onError(t('payment.err_payment_failed'));
-      return;
-    }
-
-    setProcessing(true);
-
-    try {
-      // Create PaymentIntent — bookingId requis (montant serveur)
-      const { data: { clientSecret } } = await api.post('/api/payments/create-stripe-intent', {
-        amount: amountMad,
-        currency: 'mad',
-        bookingId,
-        bookingIds: bookingIds?.length ? bookingIds : undefined,
-      });
-
-      // Handle Mock Payment (dev + VITE_ENABLE_PAYMENT_SIM only)
-      if (
-        isPaymentSimEnabled &&
-        typeof clientSecret === 'string' &&
-        clientSecret.startsWith('mock_secret_')
-      ) {
-        setTimeout(() => {
-          onSuccess({ type: 'stripe', id: 'mock_payment_id_' + Date.now() });
-          setProcessing(false);
-        }, 1500);
-        return;
-      }
-
-      if (!stripe) {
-        onError(t('payment.err_payment_failed'));
-        setProcessing(false);
-        return;
-      }
-
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        }
-      });
-
-      if (result.error) {
-        onError(result.error.message);
-      } else {
-        if (result.paymentIntent.status === 'succeeded') {
-          onSuccess({ type: 'stripe', id: result.paymentIntent.id });
-        }
-      }
-    } catch {
-      onError(t('payment.err_payment_failed'));
-    }
-    setProcessing(false);
-  };
-
-  const payLabel =
-    amountMad != null && Number.isFinite(Number(amountMad))
-      ? `${Number(amountMad).toFixed(2)} MAD`
-      : '';
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4" aria-label={t('payment.pay_card')}>
-      <div className="p-4 border border-gray-300 rounded-lg">
-        <p className="text-sm font-semibold text-gray-700 mb-2" id="card-element-label">
-          {t('payment.card_label')}
-        </p>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                  color: '#aab7c4',
-                },
-              },
-              invalid: {
-                color: '#9e2146',
-              },
-            },
-          }}
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={!stripe || processing || !payLabel}
-        className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
-        aria-label={processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: payLabel })}
-      >
-        {processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: payLabel })}
-      </button>
-    </form>
-  );
-};
+/** Chargé uniquement si Stripe est réellement proposé au checkout. */
+const StripeCardPanel = lazy(() => import('./StripeCardPanel.jsx'));
 
 const PaymentSelector = ({
   amount,
@@ -491,15 +373,19 @@ const PaymentSelector = ({
         {method === 'stripe' && (
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200">
             {hasStripePublicKey() || isPaymentSimEnabled ? (
-              <Elements stripe={getStripePromise()}>
-                <StripeForm
+              <Suspense
+                fallback={
+                  <p className="text-sm text-gray-500 text-center py-6">Chargement du paiement carte…</p>
+                }
+              >
+                <StripeCardPanel
                   amountMad={madAmount ?? amount}
                   bookingId={bookingId}
                   bookingIds={bookingIds}
                   onSuccess={handleSuccess}
                   onError={handleError}
                 />
-              </Elements>
+              </Suspense>
             ) : (
               <div className="text-center space-y-3">
                 <AlertCircle size={40} className="mx-auto text-amber-600" />
