@@ -6,7 +6,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import ChatWidget from '../components/ChatWidget';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
-import { askConfirm, askPrompt } from '../utils/notify.js';
+import { askText } from '../utils/notify.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -58,7 +58,7 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
   };
 
   const handleReject = async () => {
-    const reason = await askPrompt(t('inquiries.reject_prompt'));
+    const reason = await askText(t('inquiries.reject_prompt'));
     if (!reason) return;
     setLoading(true);
     try {

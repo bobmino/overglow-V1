@@ -86,6 +86,7 @@ const AdminBadgeManagementPage = () => {
   const [filterType, setFilterType] = useState('all');
   const [filterActive, setFilterActive] = useState('all');
   const [filterAuto, setFilterAuto] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   const [newBadge, setNewBadge] = useState({
     name: '',
@@ -123,9 +124,13 @@ const AdminBadgeManagementPage = () => {
       if (filterActive === 'inactive' && b.isActive) return false;
       if (filterAuto === 'auto' && !b.isAutomatic) return false;
       if (filterAuto === 'manual' && b.isAutomatic) return false;
+      if (filterCategory !== 'all') {
+        const cat = b.category || (b.type === 'product' ? 'product' : b.isAutomatic === false ? 'nature' : 'merit');
+        if (cat !== filterCategory) return false;
+      }
       return true;
     });
-  }, [badges, filterType, filterActive, filterAuto]);
+  }, [badges, filterType, filterActive, filterAuto, filterCategory]);
 
   useEffect(() => {
     setSelectedBadges([]);
@@ -527,7 +532,23 @@ const AdminBadgeManagementPage = () => {
               <option value="auto">{t('admin.common.automatic')}</option>
               <option value="manual">{t('admin.common.manual')}</option>
             </select>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">{t('admin.badges.filter_cat_all', 'Toutes catégories')}</option>
+              <option value="merit">{t('admin.badges.cat_merit', 'Mérite')}</option>
+              <option value="nature">{t('admin.badges.cat_nature', 'Nature')}</option>
+              <option value="product">{t('admin.badges.cat_product', 'Produit')}</option>
+            </select>
           </div>
+          <p className="text-xs text-gray-500 mb-4">
+            {t(
+              'admin.badges.doc_hint',
+              'Référence formules : docs/BADGES-SYSTEM.md (repo). Mérite = auto ; Nature = assignation manuelle opérateur.'
+            )}
+          </p>
 
           {filteredBadges.length === 0 ? (
             <div className="text-center py-12 text-gray-600">
@@ -584,13 +605,6 @@ const AdminBadgeManagementPage = () => {
                     style={{ backgroundColor: badge.color }}
                   ></span>
                   <span>{badge.isAutomatic ? t('admin.common.automatic') : t('admin.common.manual')}</span>
-                  <a
-                    href="/docs/BADGES-SYSTEM.md"
-                    className="ms-auto text-primary-700 hover:underline hidden"
-                    aria-hidden
-                  >
-                    Doc
-                  </a>
                 </div>
                 {badge.criteria && Object.keys(badge.criteria).length > 0 && (
                   <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
