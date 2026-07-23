@@ -10,6 +10,12 @@ const badgeSchema = mongoose.Schema({
     enum: ['operator', 'product'],
     required: true,
   },
+  /** merit = auto metrics | nature = manuel prestataire | product = marketing produit */
+  category: {
+    type: String,
+    enum: ['merit', 'nature', 'product'],
+    default: 'merit',
+  },
   icon: {
     type: String, // Emoji or icon name
     default: '🏆',
@@ -46,6 +52,12 @@ const badgeSchema = mongoose.Schema({
   isAutomatic: {
     type: Boolean,
     default: true, // Badge is automatically assigned when criteria are met
+  },
+  /** merit = auto metrics | nature = admin qualifies prestataire | product = product marketing */
+  category: {
+    type: String,
+    enum: ['merit', 'nature', 'product'],
+    default: 'merit',
   },
   isActive: {
     type: Boolean,

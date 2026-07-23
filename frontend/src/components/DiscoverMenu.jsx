@@ -52,28 +52,32 @@ const MENU_DATA = {
         incontournables: [
           { label: 'Désert d’Agafay — coucher de soleil', to: '/search?q=agafay' },
           { label: 'Trek Toubkal — 2 jours', to: '/search?q=toubkal' },
+          { label: 'Désert Merzouga', to: '/search?q=merzouga' },
           { label: 'Parcours Atlas & oasis', to: '/explore?city=Marrakech' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
-          { name: 'Taroudant', image: cityImg('Taroudant') },
+          { name: 'Merzouga', image: cityImg('Merzouga') },
         ],
       },
       'Visites Guidées': {
         incontournables: [
           { label: 'Médina de Marrakech — guide privé', to: '/search?q=medina%20marrakech' },
-          { label: 'Casablanca — Hassan II & Corniche', to: '/search?q=casablanca' },
-          { label: 'Architecture riads Marrakech', to: '/search?q=riad%20architecture' },
+          { label: 'Casablanca — Hassan II & Corniche', to: '/search?q=casablanca%20hassan' },
+          { label: 'Chefchaouen — perle bleue', to: '/search?q=chefchaouen' },
+          { label: 'Architecture riads Marrakech', to: '/search?q=riad' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
           { name: 'Casablanca', image: cityImg('Casablanca') },
+          { name: 'Chefchaouen', image: cityImg('Chefchaouen') },
         ],
       },
       Gastronomie: {
         incontournables: [
           { label: 'Atelier cuisine — tajine à Fès', to: '/search?q=tajine%20fes' },
-          { label: 'Expériences food & médina', to: '/explore?city=Fès' },
+          { label: 'Cours de cuisine Marrakech', to: '/search?q=cuisine%20marocaine' },
+          { label: 'Street food médina Fès', to: '/search?q=street%20food' },
           { label: 'Découvrir Fès', to: '/explore?city=Fès' },
         ],
         destinationsPhares: [
@@ -86,10 +90,12 @@ const MENU_DATA = {
           { label: 'Médina de Marrakech', to: '/explore?city=Marrakech' },
           { label: 'Médina de Fès', to: '/explore?city=Fès' },
           { label: 'Essaouira — patrimoine', to: '/explore?city=Essaouira' },
+          { label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
         ],
         destinationsPhares: [
           { name: 'Fès', image: cityImg('Fès') },
           { name: 'Essaouira', image: cityImg('Essaouira') },
+          { name: 'Chefchaouen', image: cityImg('Chefchaouen') },
         ],
       },
       'Villes phares': {
@@ -99,10 +105,12 @@ const MENU_DATA = {
           { label: 'Essaouira', to: '/explore?city=Essaouira' },
           { label: 'Agadir / Taghazout', to: '/explore?city=Agadir' },
           { label: 'Casablanca', to: '/explore?city=Casablanca' },
+          { label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
           { name: 'Casablanca', image: cityImg('Casablanca') },
+          { name: 'Chefchaouen', image: cityImg('Chefchaouen') },
         ],
       },
     },
@@ -119,6 +127,7 @@ const MENU_DATA = {
       'Villas de Prestige': {
         incontournables: [
           { label: 'Villa Océan — Taghazout Bay', to: '/search?q=villa%20ocean%20taghazout' },
+          { label: 'Villa prestige Marina Agadir', to: '/search?q=villa%20marina' },
           { label: 'Séjours luxe Atlantique', to: '/stays?city=Taghazout' },
           { label: 'Voir tous les logements', to: '/stays' },
         ],
@@ -130,6 +139,7 @@ const MENU_DATA = {
       'Appartements Vue Océan': {
         incontournables: [
           { label: 'Appartement Corniche — Agadir', to: '/search?q=appartement%20corniche' },
+          { label: 'Duplex Taghazout', to: '/search?q=duplex%20taghazout' },
           { label: 'Séjours à Agadir', to: '/stays?city=Agadir' },
           { label: 'Voir tous les logements', to: '/stays' },
         ],
@@ -142,6 +152,7 @@ const MENU_DATA = {
         incontournables: [
           { label: 'Riad Dar Atlas — Marrakech', to: '/search?q=riad%20dar%20atlas' },
           { label: 'Riad Essaouira — médina', to: '/search?q=riad%20essaouira' },
+          { label: 'Riad médina Fès', to: '/search?q=riad%20fes' },
           { label: 'Séjours à Marrakech', to: '/stays?city=Marrakech' },
         ],
         destinationsPhares: [
@@ -157,12 +168,14 @@ const MENU_DATA = {
     categories: [
       { name: 'Mobilité & Chauffeurs', icon: Car, color: 'text-slate-700' },
       { name: 'Services À la Carte', icon: CameraIcon, color: 'text-yellow-500' },
+      { name: 'Bien-être & Premium', icon: Sparkles, color: 'text-rose-500' },
     ],
     mapping: {
       'Mobilité & Chauffeurs': {
         incontournables: [
-          { label: 'Transfert aéroport Marrakech', to: '/search?q=transfert%20aeroport' },
+          { label: 'Transfert aéroport Marrakech', to: '/search?q=transfert%20aeroport%20marrakech' },
           { label: 'Chauffeur privé — journée Agadir', to: '/search?q=chauffeur%20prive' },
+          { label: 'Transfert aéroport Agadir', to: '/search?q=transfert%20aeroport%20agadir' },
           { label: 'Tous les extras mobilité', to: '/extras' },
         ],
         destinationsPhares: [
@@ -174,11 +187,24 @@ const MENU_DATA = {
         incontournables: [
           { label: 'Guide privé — médina de Fès', to: '/search?q=guide%20prive%20fes' },
           { label: 'Photographe pro — Marrakech', to: '/search?q=photographe' },
+          { label: 'Conciergerie 24/7', to: '/search?q=conciergerie' },
           { label: 'Tous les extras', to: '/extras' },
         ],
         destinationsPhares: [
           { name: 'Fès', image: cityImg('Fès') },
           { name: 'Marrakech', image: cityImg('Marrakech') },
+        ],
+      },
+      'Bien-être & Premium': {
+        incontournables: [
+          { label: 'Hammam & spa privé', to: '/search?q=hammam' },
+          { label: 'Coaching surf privé', to: '/search?q=coaching%20surf' },
+          { label: 'Sortie yacht Marina', to: '/search?q=yacht' },
+          { label: 'Tous les extras', to: '/extras' },
+        ],
+        destinationsPhares: [
+          { name: 'Marrakech', image: cityImg('Marrakech') },
+          { name: 'Agadir', image: cityImg('Agadir') },
         ],
       },
     },

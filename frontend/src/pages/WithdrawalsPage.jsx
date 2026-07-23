@@ -40,6 +40,18 @@ const WithdrawalsPage = () => {
   useEffect(() => {
     fetchBalance();
     fetchWithdrawals();
+    api
+      .get('/api/operator/account')
+      .then(({ data }) => {
+        const b = data?.banking || {};
+        setFormData((prev) => ({
+          ...prev,
+          accountNumber: prev.accountNumber || b.iban || b.rib || '',
+          bankName: prev.bankName || b.bankName || '',
+          paypalEmail: prev.paypalEmail || b.paypalEmail || '',
+        }));
+      })
+      .catch(() => {});
   }, []);
 
   const fetchBalance = async () => {

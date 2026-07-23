@@ -39,6 +39,7 @@ const TITLE_KEYS = {
   '/operator/analytics': 'admin.shell.op_analytics',
   '/operator/onboarding': 'admin.shell.op_onboarding',
   '/operator/wizard': 'admin.shell.op_wizard',
+  '/operator/account': 'admin.shell.op_account',
 };
 
 const FALLBACK_TITLES = {
@@ -67,6 +68,7 @@ const FALLBACK_TITLES = {
   '/operator/analytics': 'Statistiques',
   '/operator/onboarding': 'Intégration',
   '/operator/wizard': 'Ma fiche',
+  '/operator/account': 'Mon compte',
 };
 
 const resolveTitleKey = (pathname) => {

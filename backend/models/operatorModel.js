@@ -124,6 +124,24 @@ const operatorSchema = mongoose.Schema({
     trim: true,
   },
 
+  /** Email / réseaux publics contact métier */
+  contactEmail: { type: String, trim: true },
+  website: { type: String, trim: true },
+  socialLinks: {
+    instagram: { type: String, trim: true },
+    facebook: { type: String, trim: true },
+    whatsapp: { type: String, trim: true },
+  },
+
+  /** Coordonnées bancaires pour retraits (persistées) */
+  banking: {
+    accountHolder: { type: String, trim: true },
+    bankName: { type: String, trim: true },
+    iban: { type: String, trim: true },
+    rib: { type: String, trim: true },
+    paypalEmail: { type: String, trim: true },
+  },
+
   /** Notes internes direction (jamais exposées publiquement) */
   adminNotes: {
     type: String,

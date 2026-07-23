@@ -487,6 +487,18 @@ const AdminBadgeManagementPage = () => {
             </div>
           </div>
 
+          <div className="mb-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-sm text-emerald-900">
+            <p className="font-semibold mb-1">
+              {t('admin.badges.hybrid_title', 'Système hybride Mérite / Nature / Produit')}
+            </p>
+            <p>
+              {t(
+                'admin.badges.hybrid_hint',
+                'Mérite = auto (SuperOpérateur, Réactif…). Nature = assignation manuelle opérateur (Artisan, Éco…). Produit = perf. catalogue. Réf. : docs/BADGES-SYSTEM.md'
+              )}
+            </p>
+          </div>
+
           <div className="flex flex-wrap gap-2 mb-6">
             <select
               value={filterType}
@@ -544,6 +556,21 @@ const AdminBadgeManagementPage = () => {
                       }`}>
                         {badge.type === 'product' ? t('admin.common.product') : t('admin.common.operator')}
                       </span>
+                      {badge.category && (
+                        <span className={`ms-1 text-xs px-2 py-1 rounded ${
+                          badge.category === 'nature'
+                            ? 'bg-amber-100 text-amber-800'
+                            : badge.category === 'product'
+                            ? 'bg-slate-100 text-slate-700'
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {badge.category === 'nature'
+                            ? t('admin.badges.cat_nature', 'Nature')
+                            : badge.category === 'product'
+                            ? t('admin.badges.cat_product', 'Produit')
+                            : t('admin.badges.cat_merit', 'Mérite')}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {!badge.isActive && (
@@ -557,6 +584,13 @@ const AdminBadgeManagementPage = () => {
                     style={{ backgroundColor: badge.color }}
                   ></span>
                   <span>{badge.isAutomatic ? t('admin.common.automatic') : t('admin.common.manual')}</span>
+                  <a
+                    href="/docs/BADGES-SYSTEM.md"
+                    className="ms-auto text-primary-700 hover:underline hidden"
+                    aria-hidden
+                  >
+                    Doc
+                  </a>
                 </div>
                 {badge.criteria && Object.keys(badge.criteria).length > 0 && (
                   <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">

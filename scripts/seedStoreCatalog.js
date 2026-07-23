@@ -1,16 +1,15 @@
 /**
- * Seed E2E catalogue for Overglow stores: /explore, /stays, /extras
+ * Seed soft-launch catalogue for Overglow stores: /explore, /stays, /extras
  *
  * Idempotent upsert by stable slug (e2e-*). Does NOT wipe the DB.
+ * Tous les produits sont rattachés à UN seul opérateur Active (réassignation facile).
  *
  * Usage:
  *   npm run seed:stores
  *   npm run seed:stores -- --dry-run
  *
- * Operators (password: OverglowE2E2026!):
- *   e2e-tours@overglow.test
- *   e2e-stays@overglow.test
- *   e2e-extras@overglow.test
+ * Opérateur soft-launch (password: SoftLaunch2026!):
+ *   softlaunch@overglow.online
  *
  * Requires MONGO_URI in .env (same as the app).
  */
@@ -29,11 +28,15 @@ import Operator from '../backend/models/operatorModel.js';
 import User from '../backend/models/userModel.js';
 
 const DRY_RUN = process.argv.includes('--dry-run');
-const E2E_PASSWORD = 'OverglowE2E2026!';
+const SOFTLAUNCH_PASSWORD = 'SoftLaunch2026!';
+const SOFTLAUNCH_EMAIL = 'softlaunch@overglow.online';
 
+/** Unsplash — licence ouverte, set cohérent Maroc tourisme */
 const IMG = {
   medina: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=1200&auto=format&fit=crop',
+  medina2: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?q=80&w=1200&auto=format&fit=crop',
   desert: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=1200&auto=format&fit=crop',
+  desert2: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?q=80&w=1200&auto=format&fit=crop',
   surf: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1200&auto=format&fit=crop',
   food: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200&auto=format&fit=crop',
   spa: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop',
@@ -44,6 +47,9 @@ const IMG = {
   yacht: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=1200&auto=format&fit=crop',
   photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1200&auto=format&fit=crop',
   balloon: 'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1200&auto=format&fit=crop',
+  mountain: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop',
+  bluecity: 'https://images.unsplash.com/photo-1555881403-64992e8e7f1e?q=80&w=1200&auto=format&fit=crop',
+  casablanca: 'https://images.unsplash.com/photo-1577147443647-81855cbe4255?q=80&w=1200&auto=format&fit=crop',
 };
 
 const GPS = {
@@ -58,21 +64,23 @@ const GPS = {
   Chefchaouen: [-5.2636, 35.1688],
 };
 
-const ensureOperator = async ({ email, name, companyName, description }) => {
-  let user = await User.findOne({ email });
+const ensureSoftLaunchOperator = async () => {
+  let user = await User.findOne({ email: SOFTLAUNCH_EMAIL });
   if (!user) {
     user = await User.create({
-      name,
-      email,
-      password: E2E_PASSWORD,
+      name: 'Overglow Soft Launch',
+      email: SOFTLAUNCH_EMAIL,
+      password: SOFTLAUNCH_PASSWORD,
       role: 'Opérateur',
       isApproved: true,
       approvedAt: new Date(),
+      phone: '+212600000001',
     });
   } else {
-    user.password = E2E_PASSWORD;
+    user.password = SOFTLAUNCH_PASSWORD;
     user.role = 'Opérateur';
     user.isApproved = true;
+    user.name = user.name || 'Overglow Soft Launch';
     await user.save();
   }
 
@@ -80,16 +88,26 @@ const ensureOperator = async ({ email, name, companyName, description }) => {
   if (!operator) {
     operator = await Operator.create({
       user: user._id,
-      companyName,
-      description,
+      publicName: 'Overglow Experiences Maroc',
+      companyName: 'Overglow Soft Launch Catalog',
+      description: 'Catalogue soft-launch unifié — tours, séjours et extras Maroc.',
+      providerType: 'company',
       status: 'Active',
       isFormCompleted: true,
       isClaimed: true,
-      city: 'Agadir',
+      location: { city: 'Marrakech', country: 'Maroc' },
+      companyAddress: { city: 'Marrakech', country: 'Maroc' },
+      phone: '+212600000001',
+      metrics: { isVerified: true, isLocal: true },
+      authenticity: { isAuthenticLocal: true },
+      completedSteps: ['providerType', 'publicInfo', 'photos', 'address', 'experiences', 'privateInfo'],
     });
   } else {
     operator.status = 'Active';
-    operator.companyName = companyName;
+    operator.isFormCompleted = true;
+    operator.publicName = operator.publicName || 'Overglow Experiences Maroc';
+    operator.companyName = 'Overglow Soft Launch Catalog';
+    if (operator.metrics) operator.metrics.isVerified = true;
     await operator.save();
   }
   return operator;
@@ -126,13 +144,20 @@ const upsertProduct = async (operatorId, payload) => {
     price,
     duration,
     image,
+    images: payloadImages,
     tags = [],
     highlights = [],
+    included = [],
+    excluded = [],
     luxuryStay,
     serviceDetails,
   } = payload;
 
   const coords = GPS[city] || GPS.Agadir;
+  const imageList = Array.isArray(payloadImages) && payloadImages.length
+    ? payloadImages
+    : [image, IMG.medina2].filter(Boolean);
+  const primaryImage = imageList[0] || image;
   const doc = {
     operator: operatorId,
     title,
@@ -145,16 +170,18 @@ const upsertProduct = async (operatorId, payload) => {
     duration,
     price,
     location: { type: 'Point', coordinates: coords },
-    images: [image],
+    images: imageList,
     status: 'Published',
     tags,
+    included,
+    excluded,
     highlights,
     seo: {
       metaTitle: title.slice(0, 70),
       metaDescription: description.slice(0, 160),
       ogTitle: title.slice(0, 70),
       ogDescription: description.slice(0, 200),
-      ogImage: image,
+      ogImage: primaryImage,
     },
   };
   if (luxuryStay) doc.luxuryStay = luxuryStay;
@@ -421,12 +448,111 @@ const TOURS = [
     highlights: ['Remparts', 'Oasis', 'Déjeuner'],
     description: 'Culture et nature entre Taroudant et l’oasis de Tiout.',
   },
+  {
+    slug: 'e2e-tour-agafay-sunset',
+    title: 'Désert d’Agafay — coucher de soleil',
+    category: 'Outdoor Activities',
+    city: 'Marrakech',
+    price: 650,
+    duration: '5 hours',
+    image: IMG.desert,
+    images: [IMG.desert, IMG.desert2],
+    tags: ['annulation-gratuite', 'bestseller', 'confirmation-immediate'],
+    highlights: ['Dîner sous tente', 'Coucher de soleil', 'Transfert A/R'],
+    included: ['Transport', 'Guide', 'Thé'],
+    excluded: ['Boissons alcoolisées', 'Pourboires'],
+    description:
+      'Échappée dans le désert pierreux d’Agafay aux portes de Marrakech — ambiance magique au coucher du soleil.',
+  },
+  {
+    slug: 'e2e-tour-toubkal-trek',
+    title: 'Trek Toubkal — 2 jours',
+    category: 'Outdoor Activities',
+    city: 'Marrakech',
+    price: 1800,
+    duration: '2 days',
+    image: IMG.mountain,
+    images: [IMG.mountain, IMG.desert],
+    tags: ['annulation-gratuite'],
+    highlights: ['Refuge de montagne', 'Guide certifié', 'Repas inclus'],
+    included: ['Guide', 'Hébergement refuge', 'Repas'],
+    excluded: ['Équipement technique', 'Assurance'],
+    description: 'Ascension du plus haut sommet d’Afrique du Nord avec guide de montagne expérimenté.',
+  },
+  {
+    slug: 'e2e-tour-casablanca-hassan',
+    title: 'Casablanca — Hassan II & Corniche',
+    category: 'Tours',
+    city: 'Casablanca',
+    price: 340,
+    duration: '4 hours',
+    image: IMG.casablanca,
+    images: [IMG.casablanca, IMG.medina2],
+    tags: ['confirmation-immediate', 'annulation-gratuite'],
+    highlights: ['Mosquée Hassan II', 'Corniche', 'Guide francophone'],
+    included: ['Guide', 'Entrée mosquée'],
+    excluded: ['Repas', 'Pourboires'],
+    description: 'Visite iconique de Casablanca : mosquée Hassan II, architecture Art déco et Corniche Atlantique.',
+  },
+  {
+    slug: 'e2e-tour-chefchaouen',
+    title: 'Chefchaouen — perle bleue',
+    category: 'Tours',
+    city: 'Chefchaouen',
+    price: 420,
+    duration: '5 hours',
+    image: IMG.bluecity,
+    images: [IMG.bluecity, IMG.medina],
+    tags: ['annulation-gratuite', 'bestseller'],
+    highlights: ['Médina bleue', 'Photo spots', 'Guide local'],
+    included: ['Guide', 'Thé'],
+    excluded: ['Transport longue distance', 'Repas'],
+    description: 'Balade dans les ruelles bleues de Chefchaouen avec un guide local passionné.',
+  },
+  {
+    slug: 'e2e-food-tajine-fes',
+    title: 'Atelier cuisine — tajine à Fès',
+    category: 'Food & Drink',
+    city: 'Fès',
+    price: 390,
+    duration: '3 hours',
+    image: IMG.food,
+    tags: ['annulation-gratuite', 'confirmation-immediate'],
+    highlights: ['Marché + atelier', 'Tajine à emporter', 'Déjeuner inclus'],
+    included: ['Ingrédients', 'Guide', 'Déjeuner'],
+    excluded: ['Boissons', 'Pourboires'],
+    description: 'Apprenez le tajine fassi avec une cuisinière locale — du souk à la table.',
+  },
 ];
 
 const STAYS = [
   {
+    slug: 'e2e-stay-riad-marrakech',
+    title: 'Riad Dar Atlas — Marrakech',
+    city: 'Marrakech',
+    price: 2100,
+    propertyType: 'riad',
+    amenities: { pool: false, wifi: true, garden: false, jacuzzi: true },
+    standing: 3,
+    rooms: 5,
+    capacity: 10,
+    image: IMG.riad,
+  },
+  {
+    slug: 'e2e-stay-riad-essaouira',
+    title: 'Riad Essaouira — médina',
+    city: 'Essaouira',
+    price: 1550,
+    propertyType: 'riad',
+    amenities: { pool: false, wifi: true, garden: false, jacuzzi: false },
+    standing: 2,
+    rooms: 4,
+    capacity: 8,
+    image: IMG.riad,
+  },
+  {
     slug: 'e2e-stay-villa-taghazout',
-    title: 'Villa océan avec piscine — Taghazout',
+    title: 'Villa Océan — Taghazout Bay',
     city: 'Taghazout',
     price: 3200,
     propertyType: 'villa',
@@ -435,6 +561,18 @@ const STAYS = [
     rooms: 4,
     capacity: 8,
     image: IMG.villa,
+  },
+  {
+    slug: 'e2e-stay-apt-agadir',
+    title: 'Appartement Corniche — Agadir',
+    city: 'Agadir',
+    price: 1100,
+    propertyType: 'apartment',
+    amenities: { pool: true, wifi: true, garden: false, jacuzzi: false },
+    standing: 2,
+    rooms: 2,
+    capacity: 4,
+    image: IMG.suite,
   },
   {
     slug: 'e2e-stay-villa-agadir',
@@ -461,18 +599,6 @@ const STAYS = [
     image: IMG.villa,
   },
   {
-    slug: 'e2e-stay-riad-marrakech',
-    title: 'Riad luxe patio & hammam — Marrakech',
-    city: 'Marrakech',
-    price: 2100,
-    propertyType: 'riad',
-    amenities: { pool: false, wifi: true, garden: false, jacuzzi: true },
-    standing: 3,
-    rooms: 5,
-    capacity: 10,
-    image: IMG.riad,
-  },
-  {
     slug: 'e2e-stay-riad-taroudant',
     title: 'Riad remparts — Taroudant',
     city: 'Taroudant',
@@ -495,18 +621,6 @@ const STAYS = [
     rooms: 3,
     capacity: 6,
     image: IMG.riad,
-  },
-  {
-    slug: 'e2e-stay-apt-agadir',
-    title: 'Appartement vue océan — Agadir',
-    city: 'Agadir',
-    price: 1100,
-    propertyType: 'apartment',
-    amenities: { pool: true, wifi: true, garden: false, jacuzzi: false },
-    standing: 2,
-    rooms: 2,
-    capacity: 4,
-    image: IMG.suite,
   },
   {
     slug: 'e2e-stay-apt-taghazout',
@@ -572,6 +686,26 @@ const STAYS = [
 
 const EXTRAS = [
   {
+    slug: 'e2e-svc-guide-medina',
+    title: 'Guide privé — médina de Fès',
+    category: 'Guides',
+    city: 'Fès',
+    price: 600,
+    image: IMG.medina,
+    serviceDetails: { vehicleType: '', vehicleCount: 0, guideIncluded: true, languages: ['fr', 'en', 'ar', 'es'] },
+    description: 'Demi-journée avec guide certifié FR / EN / ES / AR.',
+  },
+  {
+    slug: 'e2e-svc-photo-couple',
+    title: 'Photographe pro — Marrakech',
+    category: 'Photographie',
+    city: 'Marrakech',
+    price: 1200,
+    image: IMG.photo,
+    serviceDetails: { vehicleType: '', vehicleCount: 0, guideIncluded: false, languages: ['fr', 'en'] },
+    description: '1 h de shooting + 20 photos retouchées sous 48 h.',
+  },
+  {
     slug: 'e2e-svc-airport-agadir',
     title: 'Transfert aéroport VIP Agadir',
     category: 'Mobilité',
@@ -583,7 +717,7 @@ const EXTRAS = [
   },
   {
     slug: 'e2e-svc-airport-marrakech',
-    title: 'Transfert aéroport VIP Marrakech',
+    title: 'Transfert aéroport Marrakech',
     category: 'Mobilité',
     city: 'Marrakech',
     price: 380,
@@ -593,7 +727,7 @@ const EXTRAS = [
   },
   {
     slug: 'e2e-svc-suv-chauffeur',
-    title: 'SUV avec chauffeur — journée',
+    title: 'Chauffeur privé — journée Agadir',
     category: 'Mobilité',
     city: 'Agadir',
     price: 1200,
@@ -622,16 +756,6 @@ const EXTRAS = [
     description: 'Accès privilégié aux meilleures tables de la côte.',
   },
   {
-    slug: 'e2e-svc-photo-couple',
-    title: 'Séance photo couple — médina',
-    category: 'Photographie',
-    city: 'Marrakech',
-    price: 1200,
-    image: IMG.photo,
-    serviceDetails: { vehicleType: '', vehicleCount: 0, guideIncluded: false, languages: ['fr', 'en'] },
-    description: '1 h de shooting + 20 photos retouchées sous 48 h.',
-  },
-  {
     slug: 'e2e-svc-photo-family',
     title: 'Séance photo famille — plage',
     category: 'Photographie',
@@ -640,16 +764,6 @@ const EXTRAS = [
     image: IMG.photo,
     serviceDetails: { vehicleType: '', vehicleCount: 0, guideIncluded: false, languages: ['fr', 'en'] },
     description: 'Session plage ou marina, livrables HD inclus.',
-  },
-  {
-    slug: 'e2e-svc-guide-medina',
-    title: 'Guide privé multilingue — médina',
-    category: 'Guides',
-    city: 'Fès',
-    price: 600,
-    image: IMG.medina,
-    serviceDetails: { vehicleType: '', vehicleCount: 0, guideIncluded: true, languages: ['fr', 'en', 'ar', 'es'] },
-    description: 'Demi-journée avec guide certifié FR / EN / ES / AR.',
   },
   {
     slug: 'e2e-svc-guide-day',
@@ -694,42 +808,26 @@ const EXTRAS = [
 ];
 
 const main = async () => {
-  console.log(DRY_RUN ? '=== DRY-RUN seed:stores ===' : '=== seed:stores ===');
+  console.log(DRY_RUN ? '=== DRY-RUN seed:stores ===' : '=== seed:stores (mono-opérateur) ===');
   if (!DRY_RUN) {
     await connectDB();
   }
 
-  let toursOp;
-  let staysOp;
-  let extrasOp;
-
+  let softOp = null;
   if (!DRY_RUN) {
-    toursOp = await ensureOperator({
-      email: 'e2e-tours@overglow.test',
-      name: 'E2E Tours Partner',
-      companyName: 'Overglow E2E Tours',
-      description: 'Opérateur démo Explorer',
-    });
-    staysOp = await ensureOperator({
-      email: 'e2e-stays@overglow.test',
-      name: 'E2E Stays Partner',
-      companyName: 'Overglow E2E Stays',
-      description: 'Opérateur démo Logements luxe',
-    });
-    extrasOp = await ensureOperator({
-      email: 'e2e-extras@overglow.test',
-      name: 'E2E Extras Partner',
-      companyName: 'Overglow E2E Extras',
-      description: 'Opérateur démo Services',
-    });
+    softOp = await ensureSoftLaunchOperator();
+    console.log('Soft-launch operator:', softOp._id.toString(), SOFTLAUNCH_EMAIL);
   }
 
   const counts = { tour: 0, luxury_stay: 0, service: 0, created: 0, updated: 0 };
+  const opId = softOp?._id;
 
   for (const t of TOURS) {
-    const r = await upsertProduct(toursOp?._id, {
+    const r = await upsertProduct(opId, {
       ...t,
       productType: 'tour',
+      included: t.included || ['Guide'],
+      excluded: t.excluded || ['Pourboires'],
     });
     counts.tour += 1;
     if (r.created) counts.created += 1;
@@ -737,7 +835,7 @@ const main = async () => {
   }
 
   for (const s of STAYS) {
-    const r = await upsertProduct(staysOp?._id, {
+    const r = await upsertProduct(opId, {
       slug: s.slug,
       title: s.title,
       description: `${s.title}. Hébergement de standing Overglow avec équipements premium.`,
@@ -747,8 +845,11 @@ const main = async () => {
       price: s.price,
       duration: '1 night',
       image: s.image,
+      images: [s.image, IMG.suite],
       tags: ['annulation-gratuite', 'confirmation-immediate'],
       highlights: ['Check-in flexible', 'Linge premium', 'Support conciergerie'],
+      included: ['Petit-déjeuner', 'Wifi'],
+      excluded: ['Transfert aéroport'],
       luxuryStay: {
         rooms: s.rooms,
         capacity: s.capacity,
@@ -763,7 +864,7 @@ const main = async () => {
   }
 
   for (const e of EXTRAS) {
-    const r = await upsertProduct(extrasOp?._id, {
+    const r = await upsertProduct(opId, {
       slug: e.slug,
       title: e.title,
       description: e.description,
@@ -773,8 +874,11 @@ const main = async () => {
       price: e.price,
       duration: '2 hours',
       image: e.image,
+      images: [e.image, IMG.car],
       tags: ['confirmation-immediate'],
       highlights: ['Réservation flexible', 'Support Overglow'],
+      included: ['Service'],
+      excluded: ['Pourboires'],
       serviceDetails: e.serviceDetails,
     });
     counts.service += 1;
@@ -783,8 +887,8 @@ const main = async () => {
   }
 
   console.log('Seed complete:', counts);
-  console.log('Logins: e2e-tours@overglow.test / e2e-stays@overglow.test / e2e-extras@overglow.test');
-  console.log('Password:', E2E_PASSWORD);
+  console.log('Login:', SOFTLAUNCH_EMAIL);
+  console.log('Password:', SOFTLAUNCH_PASSWORD);
   process.exit(0);
 };
 

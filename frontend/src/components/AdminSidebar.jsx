@@ -97,7 +97,7 @@ const getOperatorSections = (t, { formCompleted = false } = {}) => [
   {
     label: t('admin.nav.operator_section_account'),
     items: [
-      { to: '/profile', label: t('admin.nav.operator_profile'), icon: UserRound },
+      { to: '/operator/account', label: t('admin.nav.operator_profile', 'Profil'), icon: UserRound },
       {
         to: '/operator/wizard',
         label: formCompleted

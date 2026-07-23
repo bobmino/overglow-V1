@@ -5,6 +5,8 @@ import { MessageSquare, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import ChatWidget from '../components/ChatWidget';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm, askPrompt } from '../utils/notify.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -16,6 +18,7 @@ const getDateLocale = (language) => {
 
 const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const dateLocale = getDateLocale(i18n.language);
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,9 +35,10 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
     setLoading(true);
     try {
       await api.put(`/api/inquiries/${inquiry._id}/answer`, { answer });
+      toast.success(t('inquiries.answer_sent', 'Réponse envoyée'));
       onUpdate();
     } catch (_error) {
-      alert(t('inquiries.errors.send_answer'));
+      toast.error(t('inquiries.errors.send_answer'));
     } finally {
       setLoading(false);
     }
@@ -44,23 +48,25 @@ const InquiryCard = ({ inquiry, onUpdate, onOpenChat }) => {
     setLoading(true);
     try {
       await api.put(`/api/inquiries/${inquiry._id}/approve`);
+      toast.success(t('inquiries.approved', 'Demande approuvée'));
       onUpdate();
     } catch (_error) {
-      alert(t('inquiries.errors.approve'));
+      toast.error(t('inquiries.errors.approve'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleReject = async () => {
-    const reason = prompt(t('inquiries.reject_prompt'));
+    const reason = await askPrompt(t('inquiries.reject_prompt'));
     if (!reason) return;
     setLoading(true);
     try {
       await api.put(`/api/inquiries/${inquiry._id}/reject`, { reason });
+      toast.success(t('inquiries.rejected', 'Demande refusée'));
       onUpdate();
     } catch (_error) {
-      alert(t('inquiries.errors.reject'));
+      toast.error(t('inquiries.errors.reject'));
     } finally {
       setLoading(false);
     }
@@ -205,8 +211,18 @@ const InquiriesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('inquiries.title')}</h1>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {t('inquiries.title_operator', 'Messages clients (demandes)')}
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            {t(
+              'inquiries.subtitle_operator',
+              'Questions et validations liées à vos produits. Ouvrez le chat pour dialoguer avec le client. Le support Overglow se gère côté admin.'
+            )}
+          </p>
+        </div>
       </div>
 
       {!Array.isArray(inquiries) || inquiries.length === 0 ? (

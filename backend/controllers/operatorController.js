@@ -154,4 +154,132 @@ const getOperatorDashboardStats = asyncHandler(async (req, res) => {
   });
 });
 
-export { getOperatorBookings, getOperatorAnalytics, getOperatorDashboardStats };
+// @desc    Get operator account (sections profil)
+// @route   GET /api/operator/account
+// @access  Private/Operator
+const getOperatorAccount = asyncHandler(async (req, res) => {
+  const operator = await Operator.findOne({ user: req.user._id }).populate(
+    'user',
+    'name email phone bio location website'
+  );
+  if (!operator) {
+    res.status(404);
+    throw new Error('Operator profile not found');
+  }
+
+  res.json({
+    user: {
+      name: operator.user?.name || '',
+      email: operator.user?.email || '',
+      phone: operator.user?.phone || '',
+      bio: operator.user?.bio || '',
+      location: operator.user?.location || '',
+      website: operator.user?.website || '',
+    },
+    providerType: operator.providerType,
+    publicName: operator.publicName || operator.companyName || '',
+    description: operator.description || '',
+    location: operator.location || {},
+    companyAddress: operator.companyAddress || {},
+    companyInfo: operator.companyInfo || {},
+    individualWithStatusInfo: operator.individualWithStatusInfo || {},
+    individualWithoutStatusInfo: operator.individualWithoutStatusInfo || {},
+    phone: operator.phone || '',
+    contactEmail: operator.contactEmail || '',
+    website: operator.website || '',
+    socialLinks: operator.socialLinks || {},
+    banking: operator.banking || {},
+    status: operator.status,
+    isFormCompleted: operator.isFormCompleted,
+  });
+});
+
+// @desc    Update operator account by section
+// @route   PUT /api/operator/account
+// @access  Private/Operator
+const updateOperatorAccount = asyncHandler(async (req, res) => {
+  const User = (await import('../models/userModel.js')).default;
+  const operator = await Operator.findOne({ user: req.user._id });
+  if (!operator) {
+    res.status(404);
+    throw new Error('Operator profile not found');
+  }
+
+  const { section } = req.body;
+  if (!section) {
+    res.status(400);
+    throw new Error('section is required (personal|company|contact|banking)');
+  }
+
+  if (section === 'personal') {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+    if (req.body.name !== undefined) user.name = String(req.body.name).trim();
+    if (req.body.phone !== undefined) user.phone = String(req.body.phone).trim();
+    if (req.body.bio !== undefined) user.bio = String(req.body.bio).trim();
+    if (req.body.location !== undefined) user.location = String(req.body.location).trim();
+    if (req.body.website !== undefined) user.website = String(req.body.website).trim();
+    await user.save();
+  }
+
+  if (section === 'company') {
+    if (req.body.publicName !== undefined) operator.publicName = String(req.body.publicName).trim();
+    if (req.body.description !== undefined) operator.description = String(req.body.description).trim();
+    if (req.body.location && typeof req.body.location === 'object') {
+      operator.location = { ...(operator.location || {}), ...req.body.location };
+    }
+    if (req.body.companyAddress && typeof req.body.companyAddress === 'object') {
+      operator.companyAddress = { ...(operator.companyAddress || {}), ...req.body.companyAddress };
+    }
+    if (req.body.companyInfo && typeof req.body.companyInfo === 'object') {
+      operator.companyInfo = { ...(operator.companyInfo || {}), ...req.body.companyInfo };
+    }
+    if (req.body.individualWithStatusInfo && typeof req.body.individualWithStatusInfo === 'object') {
+      operator.individualWithStatusInfo = {
+        ...(operator.individualWithStatusInfo || {}),
+        ...req.body.individualWithStatusInfo,
+      };
+    }
+    if (req.body.individualWithoutStatusInfo && typeof req.body.individualWithoutStatusInfo === 'object') {
+      operator.individualWithoutStatusInfo = {
+        ...(operator.individualWithoutStatusInfo || {}),
+        ...req.body.individualWithoutStatusInfo,
+      };
+    }
+  }
+
+  if (section === 'contact') {
+    if (req.body.phone !== undefined) operator.phone = String(req.body.phone).trim();
+    if (req.body.contactEmail !== undefined) operator.contactEmail = String(req.body.contactEmail).trim();
+    if (req.body.website !== undefined) operator.website = String(req.body.website).trim();
+    if (req.body.socialLinks && typeof req.body.socialLinks === 'object') {
+      operator.socialLinks = { ...(operator.socialLinks || {}), ...req.body.socialLinks };
+    }
+  }
+
+  if (section === 'banking') {
+    const b = req.body.banking && typeof req.body.banking === 'object' ? req.body.banking : req.body;
+    operator.banking = {
+      ...(operator.banking || {}),
+      accountHolder: b.accountHolder !== undefined ? String(b.accountHolder).trim() : operator.banking?.accountHolder,
+      bankName: b.bankName !== undefined ? String(b.bankName).trim() : operator.banking?.bankName,
+      iban: b.iban !== undefined ? String(b.iban).trim() : operator.banking?.iban,
+      rib: b.rib !== undefined ? String(b.rib).trim() : operator.banking?.rib,
+      paypalEmail: b.paypalEmail !== undefined ? String(b.paypalEmail).trim() : operator.banking?.paypalEmail,
+    };
+  }
+
+  await operator.save();
+  res.json({ message: 'Account updated', section });
+});
+
+export {
+  getOperatorBookings,
+  getOperatorAnalytics,
+  getOperatorDashboardStats,
+  getOperatorAccount,
+  updateOperatorAccount,
+};

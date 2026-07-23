@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
@@ -8,21 +8,27 @@ import EmptyState from '../components/EmptyState';
 import BadgeRequestModal from '../components/BadgeRequestModal';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
+import { useToast } from '../context/ToastContext';
+import { askConfirm } from '../utils/notify';
 
 const OperatorProductsPage = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestingApproval, setRequestingApproval] = useState({});
   const [badgeRequestModal, setBadgeRequestModal] = useState({ isOpen: false, productId: null, productTitle: '' });
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   const fetchProducts = async () => {
     try {
       const { data } = await api.get('/api/products/my-products');
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (error) {
       logger.error('Failed to fetch products:', error);
+      toast.error(t('operator.products.load_error', 'Impossible de charger les produits'));
       setLoading(false);
     }
   };
@@ -30,6 +36,14 @@ const OperatorProductsPage = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  const filtered = useMemo(() => {
+    return products.filter((p) => {
+      if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+      if (typeFilter !== 'all' && (p.productType || 'tour') !== typeFilter) return false;
+      return true;
+    });
+  }, [products, statusFilter, typeFilter]);
 
   const getProductStatusLabel = (status) => {
     if (status === 'Published') return t('operator.products.status_published');
@@ -45,11 +59,11 @@ const OperatorProductsPage = () => {
         entityId: productId,
         message: t('operator.products.request_approval_message', 'Demande de validation produit'),
       });
-      alert(t('operator.products.request_approval_success', 'Demande envoyée'));
+      toast.success(t('operator.products.request_approval_success', 'Demande envoyée'));
       await fetchProducts();
     } catch (error) {
       logger.error('Failed to request product approval:', error);
-      alert(
+      toast.error(
         error.response?.data?.message ||
           t('operator.products.request_approval_error', 'Impossible d’envoyer la demande')
       );
@@ -59,13 +73,15 @@ const OperatorProductsPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm(t('operator.products.confirm_delete'))) return;
+    const ok = await askConfirm(t('operator.products.confirm_delete'));
+    if (!ok) return;
 
     try {
       await api.delete(`/api/products/${id}`);
+      toast.success(t('operator.products.delete_success', 'Produit supprimé'));
       fetchProducts();
     } catch (_error) {
-      alert(t('operator.products.delete_error'));
+      toast.error(t('operator.products.delete_error'));
     }
   };
 
@@ -76,6 +92,7 @@ const OperatorProductsPage = () => {
         title: product.title,
         description: product.description,
         category: product.category,
+        productType: product.productType,
         city: product.city,
         address: product.address,
         duration: product.duration,
@@ -83,10 +100,16 @@ const OperatorProductsPage = () => {
         images: product.images,
         highlights: product.highlights,
         included: product.included,
+        excluded: product.excluded,
         requirements: product.requirements,
         status: nextStatus,
       };
       await api.put(`/api/products/${product._id}`, payload);
+      toast.success(
+        nextStatus === 'Published'
+          ? t('operator.products.published_ok', 'Produit publié')
+          : t('operator.products.draft_ok', 'Remis en brouillon')
+      );
       fetchProducts();
     } catch (_error) {
       alert(t('operator.products.status_update_error'));
@@ -108,17 +131,42 @@ const OperatorProductsPage = () => {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('operator.products.title')}</h1>
-      </div>
-
-      <div className="flex justify-end mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{t('operator.products.title')}</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            {t('operator.products.subtitle', 'Créer, modifier, publier ou supprimer vos offres.')}
+          </p>
+        </div>
         <Link
           to="/operator/products/new"
-          className="flex items-center bg-primary-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-800 transition"
+          className="flex items-center justify-center bg-primary-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-800 transition"
         >
           <Plus size={20} className="me-2" />
           {t('operator.common.create_product')}
         </Link>
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+        >
+          <option value="all">{t('operator.products.filter_all_status', 'Tous les statuts')}</option>
+          <option value="Draft">Draft</option>
+          <option value="Pending Review">Pending Review</option>
+          <option value="Published">Published</option>
+        </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+        >
+          <option value="all">{t('operator.products.filter_all_types', 'Tous les types')}</option>
+          <option value="tour">Tour</option>
+          <option value="luxury_stay">Séjour</option>
+          <option value="service">Service</option>
+        </select>
       </div>
 
       {products.length === 0 ? (
@@ -131,9 +179,13 @@ const OperatorProductsPage = () => {
           ctaTo="/operator/products/new"
           ctaVariant="primary"
         />
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-gray-600 border border-dashed rounded-xl">
+          {t('operator.products.empty_filter', 'Aucun produit pour ces filtres.')}
+        </div>
       ) : (
         <div className="space-y-4">
-          {products.map((product) => (
+          {filtered.map((product) => (
             <div key={product._id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition">
               <div className="flex gap-6">
                 <img
