@@ -32,14 +32,18 @@ settingsSchema.statics.getDefaultSettings = () => ({
   minWithdrawalDays: 7,
   transferFeeMad: 0,
   minWithdrawalAmountMad: 100,
-  // Paiements
-  stripeEnabled: true,
+  // Paiements (soft-launch : virement/espèces ; Stripe/CMI off tant que non branchés)
+  stripeEnabled: false,
   stripeTestMode: true,
-  paypalEnabled: true,
+  paypalEnabled: false,
   paypalTestMode: true,
   cmiEnabled: false,
   bankTransferEnabled: true,
   showIban: true,
+  bankIban: 'MA640070012345678901234567',
+  bankSwift: 'BCMAMAMC',
+  bankName: 'Attijariwafa Bank',
+  bankAccountName: 'Overglow Trip SARL',
   // Notifications
   supportEmail: 'support@overglow.online',
   notifyNewUser: true,

@@ -34,13 +34,17 @@ const DEFAULTS = {
   minWithdrawalDays: 7,
   transferFeeMad: 0,
   minWithdrawalAmountMad: 100,
-  stripeEnabled: true,
+  stripeEnabled: false,
   stripeTestMode: true,
-  paypalEnabled: true,
+  paypalEnabled: false,
   paypalTestMode: true,
   cmiEnabled: false,
   bankTransferEnabled: true,
   showIban: true,
+  bankIban: 'MA640070012345678901234567',
+  bankSwift: 'BCMAMAMC',
+  bankName: 'Attijariwafa Bank',
+  bankAccountName: 'Overglow Trip SARL',
   supportEmail: '',
   notifyNewUser: true,
   notifyNewBooking: true,
@@ -524,6 +528,82 @@ const AdminSettingsPage = () => {
                     saving={savingKey === 'showIban'}
                     onChange={(v) => saveSetting('showIban', v, 'Show IBAN')}
                   />
+                  <FieldRow
+                    title="Titulaire du compte"
+                    help="Nom affiché aux clients pour le virement."
+                  >
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={settings.bankAccountName || ''}
+                      disabled={savingKey === 'bankAccountName'}
+                      onBlur={(e) =>
+                        saveSetting(
+                          'bankAccountName',
+                          e.target.value.trim(),
+                          'Bank account name'
+                        )
+                      }
+                      onChange={(e) =>
+                        setSettings((prev) => ({ ...prev, bankAccountName: e.target.value }))
+                      }
+                    />
+                  </FieldRow>
+                  <FieldRow title="Banque" help="Nom de l’établissement bancaire.">
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={settings.bankName || ''}
+                      disabled={savingKey === 'bankName'}
+                      onBlur={(e) =>
+                        saveSetting('bankName', e.target.value.trim(), 'Bank name')
+                      }
+                      onChange={(e) =>
+                        setSettings((prev) => ({ ...prev, bankName: e.target.value }))
+                      }
+                    />
+                  </FieldRow>
+                  <FieldRow
+                    title="IBAN"
+                    help="Exemple soft-launch fourni — remplacez par l’IBAN Overglow réel avant go-live."
+                  >
+                    <input
+                      type="text"
+                      className={`${inputClass} font-mono`}
+                      value={settings.bankIban || ''}
+                      disabled={savingKey === 'bankIban'}
+                      autoComplete="off"
+                      onBlur={(e) =>
+                        saveSetting(
+                          'bankIban',
+                          e.target.value.replace(/\s+/g, '').toUpperCase(),
+                          'Bank IBAN'
+                        )
+                      }
+                      onChange={(e) =>
+                        setSettings((prev) => ({ ...prev, bankIban: e.target.value }))
+                      }
+                    />
+                  </FieldRow>
+                  <FieldRow title="SWIFT / BIC" help="Code SWIFT du compte de réception.">
+                    <input
+                      type="text"
+                      className={`${inputClass} font-mono`}
+                      value={settings.bankSwift || ''}
+                      disabled={savingKey === 'bankSwift'}
+                      autoComplete="off"
+                      onBlur={(e) =>
+                        saveSetting(
+                          'bankSwift',
+                          e.target.value.replace(/\s+/g, '').toUpperCase(),
+                          'Bank SWIFT'
+                        )
+                      }
+                      onChange={(e) =>
+                        setSettings((prev) => ({ ...prev, bankSwift: e.target.value }))
+                      }
+                    />
+                  </FieldRow>
                 </div>
               </div>
             </>

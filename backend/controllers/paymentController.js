@@ -665,7 +665,7 @@ const getBankDetails = async (req, res) => {
 
   let credentials;
   try {
-    credentials = getBankCredentials();
+    credentials = await getBankCredentials();
   } catch (envErr) {
     // Ne jamais logger IBAN/SWIFT
     logger.error('Bank credentials not configured');
@@ -676,7 +676,7 @@ const getBankDetails = async (req, res) => {
     ? `OG-${bookingId.toString().slice(-8).toUpperCase()}`
     : `OG-${Date.now().toString(36).toUpperCase()}`;
 
-  // [TASK-3] IBAN/SWIFT depuis l'environnement uniquement
+  // Settings BO > env > défauts soft-launch
   const bankDetails = {
     bankName: credentials.bankName,
     accountName: credentials.accountName,
@@ -726,13 +726,13 @@ const createBankTransferPayment = async (req, res) => {
 
     let credentials;
     try {
-      credentials = getBankCredentials();
+      credentials = await getBankCredentials();
     } catch (envErr) {
       logger.error('Bank credentials not configured');
       return res.status(503).json({ message: envErr.message });
     }
 
-    // [TASK-3] IBAN/SWIFT depuis l'environnement — jamais hardcodés
+    // Settings BO > env > défauts soft-launch
     const bankDetails = {
       bankName: credentials.bankName,
       accountName: credentials.accountName,

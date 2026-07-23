@@ -33,7 +33,12 @@ const getStripePromise = () => {
   return _stripePromise;
 };
 
-const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
+const hasStripePublicKey = () => {
+  const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+  return Boolean(key && !key.includes('placeholder'));
+};
+
+const StripeForm = ({ amountMad, bookingId, bookingIds, onSuccess, onError }) => {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -53,8 +58,8 @@ const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
     try {
       // Create PaymentIntent — bookingId requis (montant serveur)
       const { data: { clientSecret } } = await api.post('/api/payments/create-stripe-intent', {
-        amount,
-        currency: 'eur',
+        amount: amountMad,
+        currency: 'mad',
         bookingId,
         bookingIds: bookingIds?.length ? bookingIds : undefined,
       });
@@ -97,7 +102,10 @@ const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
     setProcessing(false);
   };
 
-  const formattedAmount = amount.toFixed(2);
+  const payLabel =
+    amountMad != null && Number.isFinite(Number(amountMad))
+      ? `${Number(amountMad).toFixed(2)} MAD`
+      : '';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label={t('payment.pay_card')}>
@@ -124,11 +132,11 @@ const StripeForm = ({ amount, bookingId, bookingIds, onSuccess, onError }) => {
       </div>
       <button
         type="submit"
-        disabled={!stripe || processing}
+        disabled={!stripe || processing || !payLabel}
         className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 disabled:bg-gray-400 transition-all shadow-lg shadow-emerald-200"
-        aria-label={processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
+        aria-label={processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: payLabel })}
       >
-        {processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: `€${formattedAmount}` })}
+        {processing ? t('payment.pay_processing') : t('payment.pay_amount', { amount: payLabel })}
       </button>
     </form>
   );
@@ -144,7 +152,7 @@ const PaymentSelector = ({
 }) => {
   const { t } = useTranslation();
   const { convert } = useCurrency();
-  const [method, setMethod] = useState('stripe');
+  const [method, setMethod] = useState('cash_pickup');
   const [error, setError] = useState('');
   const [madAmount, setMadAmount] = useState(null);
   const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -152,6 +160,49 @@ const PaymentSelector = ({
   const [paymentReference, setPaymentReference] = useState('');
   const [copied, setCopied] = useState(false);
   const [loadingBankDetails, setLoadingBankDetails] = useState(false);
+  const [methodFlags, setMethodFlags] = useState({
+    stripeEnabled: false,
+    cmiEnabled: false,
+    paypalEnabled: false,
+    bankTransferEnabled: true,
+    showIban: true,
+  });
+
+  const selectMethod = (next) => {
+    setError('');
+    setMethod(next);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadFlags = async () => {
+      const keys = ['stripeEnabled', 'cmiEnabled', 'paypalEnabled', 'bankTransferEnabled', 'showIban'];
+      try {
+        const results = await Promise.all(
+          keys.map((key) =>
+            api.get(`/api/settings/${key}`).then((r) => [key, r.data?.value]).catch(() => [key, undefined])
+          )
+        );
+        if (cancelled) return;
+        const next = { ...methodFlags };
+        results.forEach(([key, value]) => {
+          if (value !== undefined) next[key] = Boolean(value);
+        });
+        // Soft-launch: hide Stripe UI if no public key (évite CardElement cassé / CSP)
+        if (!hasStripePublicKey() && !isPaymentSimEnabled) {
+          next.stripeEnabled = false;
+        }
+        setMethodFlags(next);
+      } catch (err) {
+        logger.warn('Failed to load payment method flags:', err?.message || err);
+      }
+    };
+    loadFlags();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount once
+  }, []);
 
   useEffect(() => {
     // Montants catalogue = MAD ; ne plus convertir en supposant EUR
@@ -319,8 +370,10 @@ const PaymentSelector = ({
 
       {/* Payment method selection grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" role="radiogroup" aria-label={t('payment.choose_method')}>
+        {(methodFlags.stripeEnabled || isPaymentSimEnabled) && (
         <button
-          onClick={() => setMethod('stripe')}
+          type="button"
+          onClick={() => selectMethod('stripe')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'stripe'
               ? 'border-primary-500 bg-primary-50 shadow-lg shadow-emerald-100'
@@ -334,10 +387,12 @@ const PaymentSelector = ({
           <span className="font-bold text-gray-800">{t('payment.card')}</span>
           <span className="text-xs text-gray-500 mt-1">{t('payment.card_hint')}</span>
         </button>
+        )}
 
-        {import.meta.env.VITE_PAYPAL_CLIENT_ID || isPaymentSimEnabled ? (
+        {(methodFlags.paypalEnabled || isPaymentSimEnabled) && (import.meta.env.VITE_PAYPAL_CLIENT_ID || isPaymentSimEnabled) ? (
         <button
-          onClick={() => setMethod('paypal')}
+          type="button"
+          onClick={() => selectMethod('paypal')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'paypal'
               ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
@@ -354,7 +409,8 @@ const PaymentSelector = ({
         ) : null}
 
         <button
-          onClick={() => setMethod('cmi')}
+          type="button"
+          onClick={() => selectMethod('cmi')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'cmi'
               ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-100'
@@ -370,7 +426,8 @@ const PaymentSelector = ({
         </button>
 
         <button
-          onClick={() => setMethod('cash_pickup')}
+          type="button"
+          onClick={() => selectMethod('cash_pickup')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'cash_pickup'
               ? 'border-primary-500 bg-primary-50 shadow-lg shadow-green-100'
@@ -386,7 +443,8 @@ const PaymentSelector = ({
         </button>
 
         <button
-          onClick={() => setMethod('cash_delivery')}
+          type="button"
+          onClick={() => selectMethod('cash_delivery')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'cash_delivery'
               ? 'border-purple-500 bg-purple-50 shadow-lg shadow-purple-100'
@@ -401,8 +459,10 @@ const PaymentSelector = ({
           <span className="text-xs text-gray-500 mt-1">{t('payment.delivery_hint')}</span>
         </button>
 
+        {methodFlags.bankTransferEnabled !== false && (
         <button
-          onClick={() => setMethod('bank')}
+          type="button"
+          onClick={() => selectMethod('bank')}
           className={`p-5 border-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 ${
             method === 'bank'
               ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100'
@@ -416,6 +476,7 @@ const PaymentSelector = ({
           <span className="font-bold text-gray-800">{t('payment.bank')}</span>
           <span className="text-xs text-gray-500 mt-1">{t('payment.bank_hint')}</span>
         </button>
+        )}
       </div>
 
       {error && (
@@ -429,16 +490,26 @@ const PaymentSelector = ({
       <div className="mt-8">
         {method === 'stripe' && (
           <div className="backdrop-blur-md bg-white/80 rounded-2xl p-8 shadow-xl border border-gray-200">
-            {/* FIX: on passe la Promise lazy pour éviter le crash TDZ au build */}
-            <Elements stripe={getStripePromise()}>
-              <StripeForm
-                amount={amount}
-                bookingId={bookingId}
-                bookingIds={bookingIds}
-                onSuccess={handleSuccess}
-                onError={handleError}
-              />
-            </Elements>
+            {hasStripePublicKey() || isPaymentSimEnabled ? (
+              <Elements stripe={getStripePromise()}>
+                <StripeForm
+                  amountMad={madAmount ?? amount}
+                  bookingId={bookingId}
+                  bookingIds={bookingIds}
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                />
+              </Elements>
+            ) : (
+              <div className="text-center space-y-3">
+                <AlertCircle size={40} className="mx-auto text-amber-600" />
+                <p className="font-bold text-gray-900">Paiement carte bientôt disponible</p>
+                <p className="text-sm text-gray-600">
+                  Stripe n’est pas encore branché. Utilisez <strong>Espèces</strong> ou{' '}
+                  <strong>Virement</strong> pour finaliser votre réservation.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -468,7 +539,9 @@ const PaymentSelector = ({
               <CreditCard size={48} className="mx-auto mb-4 text-orange-600" />
               <p className="text-gray-700 font-bold text-xl mb-2">{t('payment.cmi_title')}</p>
               <p className="text-sm text-gray-600 mb-4">
-                {t('payment.cmi_body')}
+                {methodFlags.cmiEnabled
+                  ? 'Vous serez redirigé vers la page sécurisée CMI pour saisir les détails de votre carte (Visa/Mastercard marocaines). Aucune saisie carte sur Overglow.'
+                  : 'CMI n’est pas encore activé (soft-launch). Les détails de carte se saisissent uniquement sur la page banque CMI — pas sur Overglow. Utilisez Espèces ou Virement pour réserver maintenant.'}
               </p>
               {madAmount && (
                 <div className="backdrop-blur-md bg-white/60 rounded-xl p-4 border border-orange-200 inline-block">
@@ -477,16 +550,38 @@ const PaymentSelector = ({
                 </div>
               )}
             </div>
-            <button
-              onClick={handleCMI}
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg shadow-orange-200"
-              aria-label={t('payment.pay_cmi_aria', { amount: cmiPayAmount })}
-            >
-              {t('payment.pay_cmi')}
-            </button>
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              {t('payment.cmi_accepts')}
-            </p>
+            {methodFlags.cmiEnabled ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCMI}
+                  className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-4 rounded-xl font-bold hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg shadow-orange-200"
+                  aria-label={t('payment.pay_cmi_aria', { amount: cmiPayAmount })}
+                >
+                  {t('payment.pay_cmi')}
+                </button>
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  {t('payment.cmi_accepts')}
+                </p>
+              </>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={() => selectMethod('cash_pickup')}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-bold"
+                >
+                  {t('payment.cash')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectMethod('bank')}
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 rounded-xl font-bold"
+                >
+                  {t('payment.bank')}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -612,9 +707,11 @@ const PaymentSelector = ({
                         <span className="text-sm text-gray-500">{t('payment.bank_iban')}</span>
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="font-mono font-semibold text-gray-800 text-sm break-all">
-                            {bankDetails?.iban || t('payment.bank_not_configured')}
+                            {methodFlags.showIban === false
+                              ? '•••• (masqué)'
+                              : bankDetails?.iban || t('payment.bank_not_configured')}
                           </span>
-                          {bankDetails?.iban ? (
+                          {methodFlags.showIban !== false && bankDetails?.iban ? (
                             <button
                               onClick={() => copyToClipboard(bankDetails.iban)}
                               className="p-2 rounded-lg hover:bg-indigo-100 transition-colors shrink-0 min-h-11 min-w-11 inline-flex items-center justify-center"
