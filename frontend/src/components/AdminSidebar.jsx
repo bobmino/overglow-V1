@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -26,6 +26,8 @@ import {
   BookOpen,
   ClipboardList,
 } from 'lucide-react';
+import api from '../config/axios';
+import { useAuth } from '../context/AuthContext';
 
 const SIDEBAR_WIDTH = 260;
 const SIDEBAR_COLLAPSED = 64;
@@ -80,7 +82,7 @@ const getAdminSections = (t) => [
   },
 ];
 
-const getOperatorSections = (t) => [
+const getOperatorSections = (t, { formCompleted = false } = {}) => [
   {
     label: t('admin.nav.operator_section_main'),
     items: [
@@ -96,7 +98,13 @@ const getOperatorSections = (t) => [
     label: t('admin.nav.operator_section_account'),
     items: [
       { to: '/profile', label: t('admin.nav.operator_profile'), icon: UserRound },
-      { to: '/operator/wizard', label: t('admin.nav.operator_onboarding', 'Onboarding'), icon: ClipboardList },
+      {
+        to: '/operator/wizard',
+        label: formCompleted
+          ? t('admin.nav.operator_fiche', 'Ma fiche')
+          : t('admin.nav.operator_onboarding', 'Onboarding'),
+        icon: ClipboardList,
+      },
       { to: '/operator/help', label: t('admin.nav.operator_help'), icon: BookOpen },
       { to: '/operator/resources', label: t('admin.nav.operator_resources'), icon: FileText },
     ],
@@ -120,8 +128,28 @@ const AdminSidebar = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [formCompleted, setFormCompleted] = useState(false);
+
+  useEffect(() => {
+    if (variant !== 'operator' || authLoading || !isAuthenticated) return undefined;
+    let cancelled = false;
+    api
+      .get('/api/operator/wizard/data')
+      .then(({ data }) => {
+        if (!cancelled) setFormCompleted(Boolean(data?.isFormCompleted));
+      })
+      .catch(() => {
+        if (!cancelled) setFormCompleted(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [variant, authLoading, isAuthenticated, location.pathname]);
+
   const sections = useMemo(() => {
-    const base = variant === 'operator' ? getOperatorSections(t) : getAdminSections(t);
+    const base =
+      variant === 'operator' ? getOperatorSections(t, { formCompleted }) : getAdminSections(t);
     return base.map((section) => ({
       ...section,
       items: section.items.map((item) => {
@@ -140,7 +168,7 @@ const AdminSidebar = ({
         return item;
       }),
     }));
-  }, [variant, messagesBadge, bookingsBadge, badgeRequestsBadge, reviewsBadge, t]);
+  }, [variant, messagesBadge, bookingsBadge, badgeRequestsBadge, reviewsBadge, t, formCompleted]);
 
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
   const drawerWidth = mobileOpen ? SIDEBAR_WIDTH : width;

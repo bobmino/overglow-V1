@@ -200,11 +200,17 @@ const createProduct = async (req, res) => {
       images,
       highlights,
       included,
+      excluded,
       requirements,
       requiresInquiry,
       inquiryType,
       timeSlots,
-      status
+      status,
+      productType,
+      luxuryStay,
+      serviceDetails,
+      skipTheLine,
+      paymentPreference,
     } = req.body;
 
     const normalizedPrice = normalizePrice(price);
@@ -254,6 +260,7 @@ const createProduct = async (req, res) => {
       title: sanitizeName(title),
       description: sanitizeHtml(description || ''),
       category,
+      productType: ['tour', 'luxury_stay', 'service'].includes(productType) ? productType : 'tour',
       city: sanitizeText(city || ''),
       address: sanitizeText(address || ''),
       duration,
@@ -262,6 +269,7 @@ const createProduct = async (req, res) => {
       images,
       highlights: Array.isArray(highlights) ? highlights.map((h) => sanitizeText(String(h))) : [],
       included: Array.isArray(included) ? included.map((h) => sanitizeText(String(h))) : [],
+      excluded: Array.isArray(excluded) ? excluded.map((h) => sanitizeText(String(h))) : [],
       requirements: Array.isArray(requirements) ? requirements.map((h) => sanitizeText(String(h))) : [],
       requiresInquiry: requiresInquiry || false,
       inquiryType: inquiryType || 'none',
@@ -270,6 +278,10 @@ const createProduct = async (req, res) => {
       user: req.user._id,
       cancellationPolicy: policy,
       tags: initialTags,
+      luxuryStay: luxuryStay || undefined,
+      serviceDetails: serviceDetails || undefined,
+      skipTheLine: skipTheLine || undefined,
+      paymentPreference: paymentPreference || undefined,
     });
 
     // Auto-generate catalogue i18n from FR source (lexicon-based)
@@ -337,11 +349,17 @@ const updateProduct = async (req, res) => {
       images,
       highlights,
       included,
+      excluded,
       requirements,
       requiresInquiry,
       inquiryType,
       timeSlots,
-      status
+      status,
+      productType,
+      luxuryStay,
+      serviceDetails,
+      skipTheLine,
+      paymentPreference,
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -423,11 +441,23 @@ const updateProduct = async (req, res) => {
           ? included.map((h) => sanitizeText(String(h)))
           : product.included;
       }
+      if (excluded !== undefined) {
+        product.excluded = Array.isArray(excluded)
+          ? excluded.map((h) => sanitizeText(String(h)))
+          : product.excluded;
+      }
       if (requirements !== undefined) {
         product.requirements = Array.isArray(requirements)
           ? requirements.map((h) => sanitizeText(String(h)))
           : product.requirements;
       }
+      if (productType !== undefined && ['tour', 'luxury_stay', 'service'].includes(productType)) {
+        product.productType = productType;
+      }
+      if (luxuryStay !== undefined) product.luxuryStay = luxuryStay;
+      if (serviceDetails !== undefined) product.serviceDetails = serviceDetails;
+      if (skipTheLine !== undefined) product.skipTheLine = skipTheLine;
+      if (paymentPreference !== undefined) product.paymentPreference = paymentPreference;
       if (requiresInquiry !== undefined) product.requiresInquiry = requiresInquiry;
       if (inquiryType !== undefined) product.inquiryType = inquiryType;
       if (timeSlots !== undefined) {
@@ -463,7 +493,7 @@ const updateProduct = async (req, res) => {
       }
 
       // Rebuild multilingual fields when core copy changes
-      if (title !== undefined || description !== undefined || highlights !== undefined || included !== undefined || requirements !== undefined) {
+      if (title !== undefined || description !== undefined || highlights !== undefined || included !== undefined || excluded !== undefined || requirements !== undefined) {
         product.i18n = buildProductI18n(product);
       }
 

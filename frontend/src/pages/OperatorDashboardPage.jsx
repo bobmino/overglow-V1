@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { Package, Calendar, Users, Plus } from 'lucide-react';
+import { Package, Calendar, Users, Plus, ClipboardList } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useToast } from '../context/ToastContext';
 import { motion as Motion } from 'framer-motion';
@@ -129,13 +129,22 @@ const OperatorDashboardPage = () => {
             </p>
           )}
         </div>
-        <Link
-          to="/operator/products/new"
-          className="inline-flex items-center justify-center gap-2 bg-primary-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-primary-800 transition"
-        >
-          <Plus size={18} />
-          {t('operator.dashboard.create_product')}
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            to="/operator/wizard"
+            className="inline-flex items-center justify-center gap-2 bg-white text-primary-800 border border-primary-200 px-4 py-2.5 rounded-lg font-bold hover:bg-primary-50 transition"
+          >
+            <ClipboardList size={18} />
+            {t('operator.dashboard.view_fiche', 'Voir / modifier ma fiche')}
+          </Link>
+          <Link
+            to="/operator/products/new"
+            className="inline-flex items-center justify-center gap-2 bg-primary-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-primary-800 transition"
+          >
+            <Plus size={18} />
+            {t('operator.dashboard.create_product')}
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}

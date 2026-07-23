@@ -88,6 +88,10 @@ const productSchema = mongoose.Schema({
     type: [String],
     default: [],
   },
+  excluded: {
+    type: [String],
+    default: [],
+  },
   requirements: {
     type: [String],
     default: [],

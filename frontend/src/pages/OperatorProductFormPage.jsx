@@ -1,12 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { formatImageUrl } from '../utils/formatImage';
-import { Save, Image as ImageIcon, X } from 'lucide-react';
+import { Save, Image as ImageIcon, X, Compass, Building2, Sparkles } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
 import { useAuth } from '../context/AuthContext';
+
+const PRODUCT_TYPE_DEFAULTS = {
+  tour: 'Tours',
+  luxury_stay: 'LuxuryStay',
+  service: 'Mobilité',
+};
+
+const CATEGORIES_BY_TYPE = {
+  tour: ['Tours', 'Activities', 'Day Trips', 'Food & Drink', 'Attractions', 'Outdoor Activities'],
+  luxury_stay: ['LuxuryStay', 'Hébergement'],
+  service: ['Mobilité', 'Guides', 'Photographie', 'Conciergerie', 'Services'],
+};
+
+const INCLUDED_PRESETS = [
+  'Guide',
+  'Transport',
+  'Petit-déjeuner',
+  'Équipement',
+  'Photos',
+  'Eau',
+  'Assurance',
+];
+
+const EXCLUDED_PRESETS = [
+  'Boissons',
+  'Pourboires',
+  'Transfert aéroport',
+  'Assurance',
+  'Repas',
+  'Entrées optionnelles',
+];
 
 const OperatorProductFormPage = () => {
   const { t } = useTranslation();
@@ -26,6 +57,8 @@ const OperatorProductFormPage = () => {
         return t('operator.product_form.field_highlights');
       case 'included':
         return t('operator.product_form.field_included');
+      case 'excluded':
+        return t('operator.product_form.field_excluded', 'Non inclus');
       case 'requirements':
         return t('operator.product_form.field_requirements');
       default:
@@ -39,6 +72,8 @@ const OperatorProductFormPage = () => {
         return t('operator.product_form.add_highlight');
       case 'included':
         return t('operator.product_form.add_included');
+      case 'excluded':
+        return t('operator.product_form.add_excluded', '+ Ajouter un élément non inclus');
       case 'requirements':
         return t('operator.product_form.add_requirement');
       default:
@@ -70,6 +105,7 @@ const OperatorProductFormPage = () => {
     images: [],
     highlights: [''],
     included: [''],
+    excluded: [''],
     requirements: [''],
     requiresInquiry: false,
     inquiryType: 'none',
@@ -93,6 +129,42 @@ const OperatorProductFormPage = () => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [customChip, setCustomChip] = useState({ included: '', excluded: '' });
+
+  const selectProductType = useCallback((type) => {
+    const defaultCategory = PRODUCT_TYPE_DEFAULTS[type] || 'Tours';
+    setFormData((prev) => {
+      const allowed = CATEGORIES_BY_TYPE[type] || [];
+      const nextCategory = allowed.includes(prev.category) ? prev.category : defaultCategory;
+      return {
+        ...prev,
+        productType: type,
+        category: nextCategory,
+        skipTheLine:
+          type === 'tour'
+            ? prev.skipTheLine
+            : { ...prev.skipTheLine, enabled: false },
+      };
+    });
+  }, []);
+
+  const toggleChip = useCallback((field, value) => {
+    setFormData((prev) => {
+      const list = Array.isArray(prev[field]) ? prev[field].filter((x) => x && x.trim()) : [];
+      const exists = list.some((x) => x.toLowerCase() === value.toLowerCase());
+      const next = exists
+        ? list.filter((x) => x.toLowerCase() !== value.toLowerCase())
+        : [...list, value];
+      return { ...prev, [field]: next.length ? next : [''] };
+    });
+  }, []);
+
+  const addCustomChip = useCallback((field) => {
+    const value = (customChip[field] || '').trim();
+    if (!value) return;
+    toggleChip(field, value);
+    setCustomChip((prev) => ({ ...prev, [field]: '' }));
+  }, [customChip, toggleChip]);
 
   const fetchProduct = async () => {
     try {
@@ -111,6 +183,7 @@ const OperatorProductFormPage = () => {
         images: Array.isArray(data.images) ? data.images : [],
         highlights: Array.isArray(data.highlights) && data.highlights.length ? data.highlights : [''],
         included: Array.isArray(data.included) && data.included.length ? data.included : [''],
+        excluded: Array.isArray(data.excluded) && data.excluded.length ? data.excluded : [''],
         requirements: Array.isArray(data.requirements) && data.requirements.length ? data.requirements : [''],
         requiresInquiry: data.requiresInquiry || false,
         inquiryType: data.inquiryType || 'none',
@@ -134,6 +207,8 @@ const OperatorProductFormPage = () => {
           refundPercentage: 50,
           description: '',
         },
+        skipTheLine: data.skipTheLine || prev.skipTheLine,
+        paymentPreference: data.paymentPreference || prev.paymentPreference,
       }));
 
       setError('');
@@ -146,7 +221,26 @@ const OperatorProductFormPage = () => {
   useEffect(() => {
     if (isEditMode) {
       fetchProduct();
+      return;
     }
+    // Préremplir ville / pays depuis la fiche opérateur à la création
+    let cancelled = false;
+    api.get('/api/operator/wizard/data')
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const city = data.location?.city || data.companyAddress?.city || '';
+        const address = data.location?.address || data.companyAddress?.street || '';
+        if (city || address) {
+          setFormData((prev) => ({
+            ...prev,
+            city: prev.city || city,
+            address: prev.address || address,
+          }));
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleChange = (e) => {
@@ -220,6 +314,7 @@ const OperatorProductFormPage = () => {
 
       const cleanHighlights = formData.highlights.filter(item => item.trim() !== '');
       const cleanIncluded = formData.included.filter(item => item.trim() !== '');
+      const cleanExcluded = (formData.excluded || []).filter(item => item.trim() !== '');
       const cleanRequirements = formData.requirements.filter(item => item.trim() !== '');
       const cleanLanguages = Array.isArray(formData.serviceDetails?.languages)
         ? formData.serviceDetails.languages.filter(lang => lang.trim() !== '')
@@ -231,6 +326,7 @@ const OperatorProductFormPage = () => {
         productType: formData.productType || 'tour',
         highlights: cleanHighlights.length > 0 ? cleanHighlights : [],
         included: cleanIncluded.length > 0 ? cleanIncluded : [],
+        excluded: cleanExcluded.length > 0 ? cleanExcluded : [],
         requirements: cleanRequirements.length > 0 ? cleanRequirements : [],
         timeSlots: Array.isArray(formData.timeSlots) && formData.timeSlots.length > 0
           ? formData.timeSlots.filter(slot =>
@@ -293,6 +389,56 @@ const OperatorProductFormPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+          {/* Type de produit — 3 cartes */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              {t('operator.product_form.product_type_label')}
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              {t('operator.product_form.type_hint', 'Choisissez le type : les champs et catégories s’adaptent automatiquement.')}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  id: 'tour',
+                  icon: Compass,
+                  title: t('operator.product_form.type_tour', 'Expérience / tour'),
+                  desc: t('operator.product_form.type_tour_desc', 'Visites, activités, day trips'),
+                },
+                {
+                  id: 'luxury_stay',
+                  icon: Building2,
+                  title: t('operator.product_form.type_luxury_stay', 'Séjour luxe'),
+                  desc: t('operator.product_form.type_luxury_stay_desc', 'Riad, villa, suite'),
+                },
+                {
+                  id: 'service',
+                  icon: Sparkles,
+                  title: t('operator.product_form.type_service', 'Service / extra'),
+                  desc: t('operator.product_form.type_service_desc', 'Chauffeur, guide, photo…'),
+                },
+              ].map(({ id, icon: Icon, title, desc }) => {
+                const selected = formData.productType === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => selectProductType(id)}
+                    className={`text-start p-4 rounded-xl border-2 transition ${
+                      selected
+                        ? 'border-primary-600 bg-primary-50 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <Icon size={22} className={selected ? 'text-primary-700 mb-2' : 'text-gray-400 mb-2'} />
+                    <div className="font-bold text-gray-900 text-sm">{title}</div>
+                    <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-2">
@@ -315,27 +461,19 @@ const OperatorProductFormPage = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               >
-                <option value="Tours">{t('operator.product_form.category_tours')}</option>
-                <option value="Activities">{t('operator.product_form.category_activities')}</option>
-                <option value="Tickets">{t('operator.product_form.category_tickets')}</option>
-                <option value="Rentals">{t('operator.product_form.category_rentals')}</option>
-                <option value="LuxuryStay">{t('operator.product_form.category_luxury_stay')}</option>
-                <option value="Services">{t('operator.product_form.category_services')}</option>
+                {(CATEGORIES_BY_TYPE[formData.productType] || CATEGORIES_BY_TYPE.tour).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === 'LuxuryStay'
+                      ? t('operator.product_form.category_luxury_stay', 'Séjour luxe')
+                      : cat === 'Hébergement'
+                      ? t('operator.product_form.category_hebergement', 'Hébergement')
+                      : cat}
+                  </option>
+                ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.product_type_label')}</label>
-              <select
-                name="productType"
-                value={formData.productType}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              >
-                <option value="tour">{t('operator.product_form.type_tour')}</option>
-                <option value="luxury_stay">{t('operator.product_form.type_luxury_stay')}</option>
-                <option value="service">{t('operator.product_form.type_service')}</option>
-              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {t('operator.product_form.category_hint', 'Catégorie catalogue (filtrée selon le type).')}
+              </p>
             </div>
 
             <div>
@@ -420,8 +558,16 @@ const OperatorProductFormPage = () => {
             </div>
 
           {/* Luxury Stay Fields */}
-          {formData.category === 'LuxuryStay' && (
+          {formData.productType === 'luxury_stay' && (
             <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="col-span-2">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {t('operator.product_form.luxury_section_title', 'Détails du séjour')}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('operator.product_form.luxury_section_hint', 'Chambres, capacité, standing et équipements du logement.')}
+                </p>
+              </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.luxury_rooms')}</label>
                 <input
@@ -508,8 +654,16 @@ const OperatorProductFormPage = () => {
           )}
 
           {/* Service Details Fields */}
-          {(formData.category === 'Services' || formData.productType === 'service') && (
+          {(formData.productType === 'service') && (
             <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="col-span-2">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {t('operator.product_form.service_section_title', 'Détails du service')}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('operator.product_form.service_section_hint', 'Pour un chauffeur : type de véhicule, langues… Pour un guide : langues parlées.')}
+                </p>
+              </div>
               <div className="col-span-2">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.service_details_title')}</h3>
               </div>
@@ -658,12 +812,60 @@ const OperatorProductFormPage = () => {
             </div>
           </div>
 
-          {/* Dynamic Lists */}
-          {['highlights', 'included', 'requirements'].map((field) => (
+          {/* Dynamic Lists + chips inclus/exclus */}
+          {['highlights', 'included', 'excluded', 'requirements'].map((field) => {
+            const presets = field === 'included' ? INCLUDED_PRESETS : field === 'excluded' ? EXCLUDED_PRESETS : null;
+            const selectedValues = (formData[field] || []).filter((x) => x && x.trim());
+            return (
             <div key={field}>
               <label className="block text-sm font-bold text-gray-700 mb-2">
                 {getFieldLabel(field)}
               </label>
+              {presets && (
+                <div className="mb-3">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {presets.map((preset) => {
+                      const active = selectedValues.some((x) => x.toLowerCase() === preset.toLowerCase());
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => toggleChip(field, preset)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                            active
+                              ? 'bg-primary-700 text-white border-primary-700'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-primary-400'
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customChip[field] || ''}
+                      onChange={(e) => setCustomChip((prev) => ({ ...prev, [field]: e.target.value }))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addCustomChip(field);
+                        }
+                      }}
+                      placeholder={t('operator.product_form.chip_custom_placeholder', 'Autre…')}
+                      className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addCustomChip(field)}
+                      className="text-sm font-semibold text-primary-700 px-3 py-1.5 border border-primary-200 rounded-lg hover:bg-primary-50"
+                    >
+                      {t('operator.common.add', 'Ajouter')}
+                    </button>
+                  </div>
+                </div>
+              )}
               {Array.isArray(formData[field]) && formData[field].map((item, index) => {
                 const inputId = `${field}-${index}`;
                 return (
@@ -696,7 +898,8 @@ const OperatorProductFormPage = () => {
                 {getAddFieldLabel(field)}
               </button>
             </div>
-          ))}
+            );
+          })}
 
           {/* Inquiry Settings */}
           <div className="border-t pt-6">
@@ -733,7 +936,8 @@ const OperatorProductFormPage = () => {
             </div>
           </div>
 
-          {/* Skip-the-Line */}
+          {/* Skip-the-Line — tours only */}
+          {formData.productType === 'tour' && (
           <div className="border-t pt-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">{t('operator.product_form.skip_the_line_title')}</h3>
             <div className="space-y-4">
@@ -817,6 +1021,7 @@ const OperatorProductFormPage = () => {
               )}
             </div>
           </div>
+          )}
 
           {/* Cancellation Policy */}
           <div className="border-t pt-6">

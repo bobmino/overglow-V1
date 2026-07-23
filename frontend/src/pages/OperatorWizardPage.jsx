@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
-import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
+import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle, Pencil, Save } from 'lucide-react';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
 
@@ -42,6 +42,8 @@ const OperatorWizardPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  /** view | edit | onboarding — view/edit seulement si fiche déjà validée */
+  const [mode, setMode] = useState('onboarding');
 
   // Form data
   const [formData, setFormData] = useState({
@@ -94,14 +96,20 @@ const OperatorWizardPage = () => {
             individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
           });
 
-          const completedSteps = data.completedSteps || [];
-          const firstIncomplete = WIZARD_STEPS.findIndex(
-            (step) => !step.backendIds.every((id) => completedSteps.includes(id))
-          );
-          if (firstIncomplete !== -1) {
-            setCurrentStep(firstIncomplete);
-          } else if (completedSteps.length > 0) {
-            setCurrentStep(WIZARD_STEPS.length - 1);
+          if (data.isFormCompleted) {
+            setMode('view');
+            setCurrentStep(0);
+          } else {
+            setMode('onboarding');
+            const completedSteps = data.completedSteps || [];
+            const firstIncomplete = WIZARD_STEPS.findIndex(
+              (step) => !step.backendIds.every((id) => completedSteps.includes(id))
+            );
+            if (firstIncomplete !== -1) {
+              setCurrentStep(firstIncomplete);
+            } else if (completedSteps.length > 0) {
+              setCurrentStep(WIZARD_STEPS.length - 1);
+            }
           }
         }
       } catch (fetchError) {
@@ -216,6 +224,46 @@ const OperatorWizardPage = () => {
     }
   };
 
+  /** Enregistre toutes les étapes sans re-soumettre (fiche déjà validée) */
+  const handleSaveAll = async () => {
+    setError('');
+    setSaving(true);
+    try {
+      for (const stepId of BACKEND_STEP_IDS) {
+        await saveBackendStep(stepId);
+      }
+      toast.success(t('operator.wizard.save_success', 'Fiche enregistrée'));
+      setMode('view');
+    } catch (err) {
+      setError(formatWizardError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setError('');
+    setMode('view');
+    // Recharger les données serveur pour annuler les edits non sauvés
+    api.get('/api/operator/wizard/data').then(({ data }) => {
+      if (!data) return;
+      setWizardData(data);
+      setFormData({
+        providerType: data.providerType,
+        publicName: data.publicName || '',
+        description: data.description || '',
+        location: data.location || { city: '', address: '', postalCode: '', country: 'Maroc' },
+        logo: data.photos?.logo || '',
+        gallery: data.photos?.gallery || [],
+        companyAddress: data.companyAddress || { street: '', city: '', postalCode: '', country: 'Maroc' },
+        experiences: data.experiences || '',
+        companyInfo: data.companyInfo || {},
+        individualWithStatusInfo: data.individualWithStatusInfo || {},
+        individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
+      });
+    }).catch(() => {});
+  };
+
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -224,14 +272,42 @@ const OperatorWizardPage = () => {
 
   const getProgress = () => {
     if (!wizardData) return 0;
+    if (wizardData.isFormCompleted) return 100;
     const completed = new Set(wizardData.completedSteps || []);
     const done = BACKEND_STEP_IDS.filter((id) => completed.has(id)).length;
     const total = BACKEND_STEP_IDS.length || 1;
     return Math.min(100, Math.round((done / total) * 100));
   };
 
+  const getStatusBanner = () => {
+    const status = wizardData?.status || 'Pending';
+    const map = {
+      Active: {
+        label: t('operator.wizard.status_active', 'Compte actif'),
+        className: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      },
+      'Under Review': {
+        label: t('operator.wizard.status_under_review', 'En cours de validation'),
+        className: 'bg-amber-50 border-amber-200 text-amber-800',
+      },
+      Pending: {
+        label: t('operator.wizard.status_pending', 'En attente'),
+        className: 'bg-slate-50 border-slate-200 text-slate-700',
+      },
+      Rejected: {
+        label: t('operator.wizard.status_rejected', 'Refusé'),
+        className: 'bg-red-50 border-red-200 text-red-800',
+      },
+    };
+    return map[status] || map.Pending;
+  };
+
+  const isReadOnly = mode === 'view';
+  const isFormCompleted = Boolean(wizardData?.isFormCompleted);
+
   const isStepCompleted = (step) => {
     if (!wizardData) return false;
+    if (wizardData.isFormCompleted) return true;
     return step.backendIds.every((id) => wizardData.completedSteps?.includes(id));
   };
 
@@ -724,7 +800,11 @@ const OperatorWizardPage = () => {
         {/* Stepper */}
         <div className="w-full lg:w-64 surface-card p-6 h-fit">
           <div className="mb-8">
-            <h3 className="text-sm font-bold text-gray-500 mb-2">{t('operator.wizard.progress', { percent: getProgress() })}</h3>
+            <h3 className="text-sm font-bold text-gray-500 mb-2">
+              {isFormCompleted
+                ? t('operator.wizard.fiche_title', 'Ma fiche partenaire')
+                : t('operator.wizard.progress', { percent: getProgress() })}
+            </h3>
             <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div 
                 className="bg-primary-600 h-2 rounded-full transition-all duration-300 max-w-full"
@@ -750,7 +830,7 @@ const OperatorWizardPage = () => {
                       : 'text-gray-400'
                   }`}
                   onClick={() => {
-                    if (isCompleted || isCurrent) {
+                    if (isFormCompleted || isCompleted || isCurrent) {
                       setCurrentStep(index);
                     }
                   }}
@@ -770,6 +850,37 @@ const OperatorWizardPage = () => {
 
         <div className="flex-1">
           <div className="max-w-3xl mx-auto">
+            {isFormCompleted && (
+              <div className={`mb-6 border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${getStatusBanner().className}`}>
+                <div>
+                  <p className="font-semibold text-sm">{getStatusBanner().label}</p>
+                  <p className="text-xs mt-0.5 opacity-80">
+                    {mode === 'view'
+                      ? t('operator.wizard.view_hint', 'Consultez votre fiche. Cliquez sur Modifier pour mettre à jour.')
+                      : t('operator.wizard.edit_hint', 'Modifiez vos informations puis enregistrez.')}
+                  </p>
+                </div>
+                {mode === 'view' ? (
+                  <button
+                    type="button"
+                    onClick={() => setMode('edit')}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/80 border border-current/20 font-semibold text-sm hover:bg-white transition"
+                  >
+                    <Pencil size={16} />
+                    {t('operator.wizard.edit', 'Modifier')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/80 border border-current/20 font-semibold text-sm hover:bg-white transition"
+                  >
+                    {t('operator.common.cancel', 'Annuler')}
+                  </button>
+                )}
+              </div>
+            )}
+
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
                 <AlertCircle size={20} className="text-red-600 me-3 mt-0.5 flex-shrink-0" />
@@ -779,15 +890,15 @@ const OperatorWizardPage = () => {
 
             <div className="surface-card p-6 md:p-8">
               {/* Inline (pas de sous-composant) pour garder le focus clavier mobile/desktop */}
-              <div className="space-y-10">
+              <fieldset disabled={isReadOnly} className="space-y-10 min-w-0 border-0 p-0 m-0 disabled:opacity-90">
                 {currentBackendIds.map((id) => (
                   <div key={id}>{renderBackendPanel(id)}</div>
                 ))}
-              </div>
+              </fieldset>
             </div>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-wrap justify-between gap-3 mt-8">
               <button
                 type="button"
                 onClick={handleBack}
@@ -798,26 +909,55 @@ const OperatorWizardPage = () => {
                 {t('operator.common.previous')}
               </button>
 
-              {currentStep < WIZARD_STEPS.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={saving}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t('operator.common.next')}
-                  <ChevronRight size={20} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? t('operator.wizard.submitting') : t('operator.wizard.validate_submit')}
-                </button>
-              )}
+              <div className="flex flex-wrap gap-3">
+                {mode === 'edit' && (
+                  <button
+                    type="button"
+                    onClick={handleSaveAll}
+                    disabled={saving}
+                    className="btn-primary inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Save size={18} />
+                    {saving
+                      ? t('operator.wizard.saving', 'Enregistrement…')
+                      : t('operator.wizard.save', 'Enregistrer')}
+                  </button>
+                )}
+
+                {mode === 'view' && currentStep < WIZARD_STEPS.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(currentStep + 1)}
+                    className="btn-primary inline-flex items-center gap-2"
+                  >
+                    {t('operator.common.next')}
+                    <ChevronRight size={20} />
+                  </button>
+                )}
+
+                {mode === 'onboarding' && (
+                  currentStep < WIZARD_STEPS.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={saving}
+                      className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {t('operator.common.next')}
+                      <ChevronRight size={20} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={saving}
+                      className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {saving ? t('operator.wizard.submitting') : t('operator.wizard.validate_submit')}
+                    </button>
+                  )
+                )}
+              </div>
             </div>
           </div>
         </div>

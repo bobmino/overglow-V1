@@ -66,7 +66,7 @@ const FALLBACK_TITLES = {
   '/operator/withdrawals': 'Mes revenus',
   '/operator/analytics': 'Statistiques',
   '/operator/onboarding': 'Intégration',
-  '/operator/wizard': 'Onboarding',
+  '/operator/wizard': 'Ma fiche',
 };
 
 const resolveTitleKey = (pathname) => {
