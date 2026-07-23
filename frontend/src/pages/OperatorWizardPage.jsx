@@ -1,10 +1,37 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle } from 'lucide-react';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
+
+/** Étapes stables (hors render) — évite remount / perte de focus des inputs */
+const WIZARD_STEPS = [
+  {
+    id: 'identity',
+    labelKey: 'operator.wizard.steps.identity',
+    labelFallback: 'Identité',
+    icon: Building2,
+    backendIds: ['providerType', 'publicInfo'],
+  },
+  {
+    id: 'presence',
+    labelKey: 'operator.wizard.steps.presence',
+    labelFallback: 'Présence',
+    icon: Camera,
+    backendIds: ['photos', 'address', 'experiences'],
+  },
+  {
+    id: 'legal',
+    labelKey: 'operator.wizard.steps.legal',
+    labelFallback: 'Légal',
+    icon: Home,
+    backendIds: ['privateInfo'],
+  },
+];
+
+const BACKEND_STEP_IDS = WIZARD_STEPS.flatMap((step) => step.backendIds);
 
 const OperatorWizardPage = () => {
   const { t } = useTranslation();
@@ -16,27 +43,6 @@ const OperatorWizardPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const STEPS = useMemo(() => [
-    {
-      id: 'identity',
-      label: t('operator.wizard.steps.identity', 'Identité'),
-      icon: Building2,
-      backendIds: ['providerType', 'publicInfo'],
-    },
-    {
-      id: 'presence',
-      label: t('operator.wizard.steps.presence', 'Présence'),
-      icon: Camera,
-      backendIds: ['photos', 'address', 'experiences'],
-    },
-    {
-      id: 'legal',
-      label: t('operator.wizard.steps.legal', 'Légal'),
-      icon: Home,
-      backendIds: ['privateInfo'],
-    },
-  ], [t]);
-  
   // Form data
   const [formData, setFormData] = useState({
     providerType: null,
@@ -52,15 +58,27 @@ const OperatorWizardPage = () => {
     individualWithoutStatusInfo: {},
   });
 
+  const setField = useCallback((key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const setNestedField = useCallback((parent, key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [parent]: { ...(prev[parent] || {}), [key]: value },
+    }));
+  }, []);
+
   useEffect(() => {
+    let cancelled = false;
     const fetchWizardData = async () => {
       try {
         setLoading(true);
         setError('');
         const { data } = await api.get('/api/operator/wizard/data');
+        if (cancelled) return;
         setWizardData(data);
-        
-        // Populate form with existing data
+
         if (data) {
           setFormData({
             providerType: data.providerType,
@@ -75,33 +93,37 @@ const OperatorWizardPage = () => {
             individualWithStatusInfo: data.individualWithStatusInfo || {},
             individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
           });
-          
-          // Set current step to first incomplete step
+
           const completedSteps = data.completedSteps || [];
-          const firstIncomplete = STEPS.findIndex(
-            (step) => !(step.backendIds || [step.id]).every((id) => completedSteps.includes(id))
+          const firstIncomplete = WIZARD_STEPS.findIndex(
+            (step) => !step.backendIds.every((id) => completedSteps.includes(id))
           );
           if (firstIncomplete !== -1) {
             setCurrentStep(firstIncomplete);
           } else if (completedSteps.length > 0) {
-            // Tout est coché côté backend → rester sur la dernière étape (soumission / revue)
-            setCurrentStep(STEPS.length - 1);
+            setCurrentStep(WIZARD_STEPS.length - 1);
           }
         }
-      } catch (error) {
-        logger.error('Failed to fetch wizard data:', error);
+      } catch (fetchError) {
+        if (cancelled) return;
+        logger.error('Failed to fetch wizard data:', fetchError);
         const msg =
-          error.response?.data?.message ||
+          fetchError.response?.data?.message ||
           t('operator.wizard.load_error', 'Impossible de charger l’onboarding. Réessayez.');
         setError(msg);
         toast.error(msg);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchWizardData();
-  }, [STEPS, t]);
+    return () => {
+      cancelled = true;
+    };
+    // Charge une seule fois — ne pas dépendre de t/STEPS (sinon reset form à chaque frappe / i18n)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const saveBackendStep = async (stepId) => {
     let response;
@@ -145,19 +167,27 @@ const OperatorWizardPage = () => {
         break;
     }
     if (response?.data?.operator) {
-      mergeWizardFromResponse(response.data.operator);
+      setWizardData(response.data.operator);
     }
+  };
+
+  const formatWizardError = (err) => {
+    const validation = err.response?.data?.errors;
+    if (Array.isArray(validation) && validation.length > 0) {
+      return validation.map((e) => e.msg || e.message).filter(Boolean).join(' · ');
+    }
+    return err.response?.data?.message || t('operator.wizard.save_step_error');
   };
 
   const handleNext = async () => {
     setError('');
     setSaving(true);
     try {
-      const backendIds = STEPS[currentStep].backendIds || [];
+      const backendIds = WIZARD_STEPS[currentStep].backendIds || [];
       for (const stepId of backendIds) {
         await saveBackendStep(stepId);
       }
-      if (currentStep < STEPS.length - 1) {
+      if (currentStep < WIZARD_STEPS.length - 1) {
         setCurrentStep(currentStep + 1);
       }
     } catch (err) {
@@ -172,7 +202,7 @@ const OperatorWizardPage = () => {
     setSaving(true);
 
     try {
-      const backendIds = STEPS[currentStep].backendIds || [];
+      const backendIds = WIZARD_STEPS[currentStep].backendIds || [];
       for (const stepId of backendIds) {
         await saveBackendStep(stepId);
       }
@@ -192,11 +222,6 @@ const OperatorWizardPage = () => {
     }
   };
 
-  const BACKEND_STEP_IDS = useMemo(
-    () => STEPS.flatMap((step) => step.backendIds || [step.id]),
-    [STEPS]
-  );
-
   const getProgress = () => {
     if (!wizardData) return 0;
     const completed = new Set(wizardData.completedSteps || []);
@@ -207,21 +232,7 @@ const OperatorWizardPage = () => {
 
   const isStepCompleted = (step) => {
     if (!wizardData) return false;
-    const ids = step?.backendIds || [step?.id];
-    return ids.every((id) => wizardData.completedSteps?.includes(id));
-  };
-
-  const mergeWizardFromResponse = (operator) => {
-    if (!operator) return;
-    setWizardData(operator);
-  };
-
-  const formatWizardError = (err) => {
-    const validation = err.response?.data?.errors;
-    if (Array.isArray(validation) && validation.length > 0) {
-      return validation.map((e) => e.msg || e.message).filter(Boolean).join(' · ');
-    }
-    return err.response?.data?.message || t('operator.wizard.save_step_error');
+    return step.backendIds.every((id) => wizardData.completedSteps?.includes(id));
   };
 
   if (loading) {
@@ -268,7 +279,7 @@ const OperatorWizardPage = () => {
                   name="providerType"
                   value="company"
                   checked={formData.providerType === 'company'}
-                  onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
+                  onChange={(e) => setField('providerType', e.target.value)}
                   className="mt-1 me-4"
                 />
                 <div>
@@ -287,7 +298,7 @@ const OperatorWizardPage = () => {
                   name="providerType"
                   value="individual_with_status"
                   checked={formData.providerType === 'individual_with_status'}
-                  onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
+                  onChange={(e) => setField('providerType', e.target.value)}
                   className="mt-1 me-4"
                 />
                 <div>
@@ -306,7 +317,7 @@ const OperatorWizardPage = () => {
                   name="providerType"
                   value="individual_without_status"
                   checked={formData.providerType === 'individual_without_status'}
-                  onChange={(e) => setFormData({ ...formData, providerType: e.target.value })}
+                  onChange={(e) => setField('providerType', e.target.value)}
                   className="mt-1 me-4"
                 />
                 <div>
@@ -335,7 +346,7 @@ const OperatorWizardPage = () => {
               <input
                 type="text"
                 value={formData.publicName}
-                onChange={(e) => setFormData({ ...formData, publicName: e.target.value })}
+                onChange={(e) => setField('publicName', e.target.value)}
                 placeholder={t('operator.wizard.public_name_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
@@ -349,7 +360,7 @@ const OperatorWizardPage = () => {
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => setField('description', e.target.value)}
                 placeholder={t('operator.wizard.description_placeholder')}
                 rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
@@ -371,10 +382,7 @@ const OperatorWizardPage = () => {
               <input
                 type="text"
                 value={formData.location.city}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  location: { ...formData.location, city: e.target.value }
-                })}
+                onChange={(e) => setNestedField('location', 'city', e.target.value)}
                 placeholder={t('operator.wizard.location_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
@@ -434,10 +442,7 @@ const OperatorWizardPage = () => {
               <input
                 type="text"
                 value={formData.companyAddress.street}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  companyAddress: { ...formData.companyAddress, street: e.target.value }
-                })}
+                onChange={(e) => setNestedField('companyAddress', 'street', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
               />
@@ -451,10 +456,7 @@ const OperatorWizardPage = () => {
                 <input
                   type="text"
                   value={formData.companyAddress.city}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
-                    companyAddress: { ...formData.companyAddress, city: e.target.value }
-                  })}
+                  onChange={(e) => setNestedField('companyAddress', 'city', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                   required
                 />
@@ -466,10 +468,7 @@ const OperatorWizardPage = () => {
                 <input
                   type="text"
                   value={formData.companyAddress.postalCode}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
-                    companyAddress: { ...formData.companyAddress, postalCode: e.target.value }
-                  })}
+                  onChange={(e) => setNestedField('companyAddress', 'postalCode', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                   required
                 />
@@ -490,7 +489,7 @@ const OperatorWizardPage = () => {
               </label>
               <textarea
                 value={formData.experiences}
-                onChange={(e) => setFormData({ ...formData, experiences: e.target.value })}
+                onChange={(e) => setField('experiences', e.target.value)}
                 rows={8}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 required
@@ -512,10 +511,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.companyName || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, companyName: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'companyName', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -525,10 +521,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.registrationNumber || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, registrationNumber: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'registrationNumber', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -538,10 +531,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.kbis || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, kbis: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'kbis', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -551,10 +541,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.siret || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, siret: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'siret', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -564,10 +551,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.vatNumber || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, vatNumber: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'vatNumber', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -575,10 +559,7 @@ const OperatorWizardPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.legal_form_label')}</label>
                   <select
                     value={formData.companyInfo.legalForm || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, legalForm: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'legalForm', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   >
@@ -596,16 +577,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="number"
                     value={formData.companyInfo.capital || ''}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      setFormData({
-                        ...formData,
-                        companyInfo: {
-                          ...formData.companyInfo,
-                          capital: raw === '' ? '' : parseFloat(raw),
-                        },
-                      });
-                    }}
+                    onChange={(e) => { const raw = e.target.value; setNestedField('companyInfo', 'capital', raw === '' ? '' : parseFloat(raw)); }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -614,10 +586,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.companyInfo.headquarters || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, headquarters: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('companyInfo', 'headquarters', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -632,10 +601,7 @@ const OperatorWizardPage = () => {
                     <input
                       type="text"
                       value={formData.individualWithStatusInfo.firstName || ''}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        individualWithStatusInfo: { ...formData.individualWithStatusInfo, firstName: e.target.value }
-                      })}
+                      onChange={(e) => setNestedField('individualWithStatusInfo', 'firstName', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
                     />
@@ -645,10 +611,7 @@ const OperatorWizardPage = () => {
                     <input
                       type="text"
                       value={formData.individualWithStatusInfo.lastName || ''}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        individualWithStatusInfo: { ...formData.individualWithStatusInfo, lastName: e.target.value }
-                      })}
+                      onChange={(e) => setNestedField('individualWithStatusInfo', 'lastName', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
                     />
@@ -658,10 +621,7 @@ const OperatorWizardPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.status_label')}</label>
                   <select
                     value={formData.individualWithStatusInfo.status || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      individualWithStatusInfo: { ...formData.individualWithStatusInfo, status: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'status', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   >
@@ -677,10 +637,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.siret || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      individualWithStatusInfo: { ...formData.individualWithStatusInfo, siret: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'siret', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -690,10 +647,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.apeCode || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      individualWithStatusInfo: { ...formData.individualWithStatusInfo, apeCode: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'apeCode', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -702,10 +656,7 @@ const OperatorWizardPage = () => {
                   <input
                     type="text"
                     value={formData.individualWithStatusInfo.taxStatus || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      individualWithStatusInfo: { ...formData.individualWithStatusInfo, taxStatus: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'taxStatus', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -722,10 +673,7 @@ const OperatorWizardPage = () => {
                       id="wizard-first-name"
                       name="wizard-first-name"
                       value={formData.individualWithoutStatusInfo.firstName || ''}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        individualWithoutStatusInfo: { ...formData.individualWithoutStatusInfo, firstName: e.target.value }
-                      })}
+                      onChange={(e) => setNestedField('individualWithoutStatusInfo', 'firstName', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
                       autoComplete="given-name"
@@ -738,10 +686,7 @@ const OperatorWizardPage = () => {
                       id="wizard-last-name"
                       name="wizard-last-name"
                       value={formData.individualWithoutStatusInfo.lastName || ''}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        individualWithoutStatusInfo: { ...formData.individualWithoutStatusInfo, lastName: e.target.value }
-                      })}
+                      onChange={(e) => setNestedField('individualWithoutStatusInfo', 'lastName', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       required
                       autoComplete="family-name"
@@ -755,10 +700,7 @@ const OperatorWizardPage = () => {
                     id="wizard-id-number"
                     name="wizard-id-number"
                     value={formData.individualWithoutStatusInfo.idNumber || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      individualWithoutStatusInfo: { ...formData.individualWithoutStatusInfo, idNumber: e.target.value }
-                    })}
+                    onChange={(e) => setNestedField('individualWithoutStatusInfo', 'idNumber', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
@@ -773,16 +715,8 @@ const OperatorWizardPage = () => {
     }
   };
 
-  const StepContent = () => {
-    const backendIds = STEPS[currentStep].backendIds || [STEPS[currentStep].id];
-    return (
-      <div className="space-y-10">
-        {backendIds.map((id) => (
-          <div key={id}>{renderBackendPanel(id)}</div>
-        ))}
-      </div>
-    );
-  };
+  const currentBackendIds =
+    WIZARD_STEPS[currentStep]?.backendIds || [WIZARD_STEPS[currentStep]?.id];
 
   return (
     <div className="page-shell py-6 px-4 md:px-6">
@@ -800,7 +734,7 @@ const OperatorWizardPage = () => {
           </div>
 
           <nav className="space-y-1">
-            {STEPS.map((step, index) => {
+            {WIZARD_STEPS.map((step, index) => {
               const Icon = step.icon;
               const isCompleted = isStepCompleted(step);
               const isCurrent = index === currentStep;
@@ -816,7 +750,6 @@ const OperatorWizardPage = () => {
                       : 'text-gray-400'
                   }`}
                   onClick={() => {
-                    // Allow navigation to completed steps or current step
                     if (isCompleted || isCurrent) {
                       setCurrentStep(index);
                     }
@@ -828,7 +761,7 @@ const OperatorWizardPage = () => {
                     <Circle size={20} />
                   )}
                   <Icon size={18} />
-                  <span className="text-sm">{step.label}</span>
+                  <span className="text-sm">{t(step.labelKey, step.labelFallback)}</span>
                 </div>
               );
             })}
@@ -845,12 +778,18 @@ const OperatorWizardPage = () => {
             )}
 
             <div className="surface-card p-6 md:p-8">
-              <StepContent />
+              {/* Inline (pas de sous-composant) pour garder le focus clavier mobile/desktop */}
+              <div className="space-y-10">
+                {currentBackendIds.map((id) => (
+                  <div key={id}>{renderBackendPanel(id)}</div>
+                ))}
+              </div>
             </div>
 
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8">
               <button
+                type="button"
                 onClick={handleBack}
                 disabled={currentStep === 0}
                 className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -859,8 +798,9 @@ const OperatorWizardPage = () => {
                 {t('operator.common.previous')}
               </button>
 
-              {currentStep < STEPS.length - 1 ? (
+              {currentStep < WIZARD_STEPS.length - 1 ? (
                 <button
+                  type="button"
                   onClick={handleNext}
                   disabled={saving}
                   className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
@@ -870,6 +810,7 @@ const OperatorWizardPage = () => {
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={handleSubmit}
                   disabled={saving}
                   className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
