@@ -39,8 +39,8 @@ const MENU_DATA = {
     mapping: {
       'Surf & Plage': {
         incontournables: [
-          { label: 'Surf à Taghazout — demi-journée', to: '/search?q=surf%20taghazout' },
-          { label: 'Essaouira — vent & médina', to: '/search?q=essaouira' },
+          { label: 'Surf à Taghazout — demi-journée', to: '/explore?q=surf%20taghazout' },
+          { label: 'Essaouira — vent & médina', to: '/explore?q=essaouira' },
           { label: 'Agadir & côte atlantique', to: '/explore?city=Agadir' },
         ],
         destinationsPhares: [
@@ -50,9 +50,9 @@ const MENU_DATA = {
       },
       'Aventure & Nature': {
         incontournables: [
-          { label: 'Désert d’Agafay — coucher de soleil', to: '/search?q=agafay' },
-          { label: 'Trek Toubkal — 2 jours', to: '/search?q=toubkal' },
-          { label: 'Désert Merzouga', to: '/search?q=merzouga' },
+          { label: 'Désert d’Agafay — coucher de soleil', to: '/explore?q=agafay' },
+          { label: 'Trek Toubkal — 2 jours', to: '/explore?q=toubkal' },
+          { label: 'Désert Merzouga', to: '/explore?q=merzouga' },
           { label: 'Parcours Atlas & oasis', to: '/explore?city=Marrakech' },
         ],
         destinationsPhares: [
@@ -62,10 +62,10 @@ const MENU_DATA = {
       },
       'Visites Guidées': {
         incontournables: [
-          { label: 'Médina de Marrakech — guide privé', to: '/search?q=medina%20marrakech' },
-          { label: 'Casablanca — Hassan II & Corniche', to: '/search?q=casablanca%20hassan' },
-          { label: 'Chefchaouen — perle bleue', to: '/search?q=chefchaouen' },
-          { label: 'Architecture riads Marrakech', to: '/search?q=riad' },
+          { label: 'Médina de Marrakech — guide privé', to: '/explore?q=medina%20marrakech' },
+          { label: 'Casablanca — Hassan II & Corniche', to: '/explore?q=casablanca%20hassan' },
+          { label: 'Chefchaouen — perle bleue', to: '/explore?q=chefchaouen' },
+          { label: 'Architecture riads Marrakech', to: '/explore?q=riad' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -75,9 +75,9 @@ const MENU_DATA = {
       },
       Gastronomie: {
         incontournables: [
-          { label: 'Atelier cuisine — tajine à Fès', to: '/search?q=tajine%20fes' },
-          { label: 'Cours de cuisine Marrakech', to: '/search?q=cuisine%20marocaine' },
-          { label: 'Street food médina Fès', to: '/search?q=street%20food' },
+          { label: 'Atelier cuisine — tajine à Fès', to: '/explore?q=tajine%20fes' },
+          { label: 'Cours de cuisine Marrakech', to: '/explore?q=cuisine%20marocaine' },
+          { label: 'Street food médina Fès', to: '/explore?q=street%20food' },
           { label: 'Découvrir Fès', to: '/explore?city=Fès' },
         ],
         destinationsPhares: [
@@ -126,8 +126,8 @@ const MENU_DATA = {
     mapping: {
       'Villas de Prestige': {
         incontournables: [
-          { label: 'Villa Océan — Taghazout Bay', to: '/search?q=villa%20ocean%20taghazout' },
-          { label: 'Villa prestige Marina Agadir', to: '/search?q=villa%20marina' },
+          { label: 'Villa Océan — Taghazout Bay', to: '/stays?propertyType=villa&city=Taghazout' },
+          { label: 'Villa prestige Marina Agadir', to: '/stays?propertyType=villa&city=Agadir' },
           { label: 'Séjours luxe Atlantique', to: '/stays?city=Taghazout' },
           { label: 'Voir tous les logements', to: '/stays' },
         ],
@@ -138,8 +138,8 @@ const MENU_DATA = {
       },
       'Appartements Vue Océan': {
         incontournables: [
-          { label: 'Appartement Corniche — Agadir', to: '/search?q=appartement%20corniche' },
-          { label: 'Duplex Taghazout', to: '/search?q=duplex%20taghazout' },
+          { label: 'Appartement Corniche — Agadir', to: '/stays?propertyType=apartment&city=Agadir' },
+          { label: 'Duplex Taghazout', to: '/stays?propertyType=apartment&city=Taghazout' },
           { label: 'Séjours à Agadir', to: '/stays?city=Agadir' },
           { label: 'Voir tous les logements', to: '/stays' },
         ],
@@ -150,9 +150,9 @@ const MENU_DATA = {
       },
       'Riads Insolites': {
         incontournables: [
-          { label: 'Riad Dar Atlas — Marrakech', to: '/search?q=riad%20dar%20atlas' },
-          { label: 'Riad Essaouira — médina', to: '/search?q=riad%20essaouira' },
-          { label: 'Riad médina Fès', to: '/search?q=riad%20fes' },
+          { label: 'Riad Dar Atlas — Marrakech', to: '/stays?propertyType=riad&city=Marrakech' },
+          { label: 'Riad Essaouira — médina', to: '/stays?propertyType=riad&city=Essaouira' },
+          { label: 'Riad médina Fès', to: '/stays?propertyType=riad&city=Fès' },
           { label: 'Séjours à Marrakech', to: '/stays?city=Marrakech' },
         ],
         destinationsPhares: [
@@ -173,9 +173,9 @@ const MENU_DATA = {
     mapping: {
       'Mobilité & Chauffeurs': {
         incontournables: [
-          { label: 'Transfert aéroport Marrakech', to: '/search?q=transfert%20aeroport%20marrakech' },
-          { label: 'Chauffeur privé — journée Agadir', to: '/search?q=chauffeur%20prive' },
-          { label: 'Transfert aéroport Agadir', to: '/search?q=transfert%20aeroport%20agadir' },
+          { label: 'Transfert aéroport Marrakech', to: '/extras?q=transfert%20aeroport%20marrakech' },
+          { label: 'Chauffeur privé — journée Agadir', to: '/extras?q=chauffeur%20prive' },
+          { label: 'Transfert aéroport Agadir', to: '/extras?q=transfert%20aeroport%20agadir' },
           { label: 'Tous les extras mobilité', to: '/extras' },
         ],
         destinationsPhares: [
@@ -185,9 +185,9 @@ const MENU_DATA = {
       },
       'Services À la Carte': {
         incontournables: [
-          { label: 'Guide privé — médina de Fès', to: '/search?q=guide%20prive%20fes' },
-          { label: 'Photographe pro — Marrakech', to: '/search?q=photographe' },
-          { label: 'Conciergerie 24/7', to: '/search?q=conciergerie' },
+          { label: 'Guide privé — médina de Fès', to: '/extras?q=guide%20prive%20fes' },
+          { label: 'Photographe pro — Marrakech', to: '/extras?q=photographe' },
+          { label: 'Conciergerie 24/7', to: '/extras?q=conciergerie' },
           { label: 'Tous les extras', to: '/extras' },
         ],
         destinationsPhares: [
@@ -197,9 +197,9 @@ const MENU_DATA = {
       },
       'Bien-être & Premium': {
         incontournables: [
-          { label: 'Hammam & spa privé', to: '/search?q=hammam' },
-          { label: 'Coaching surf privé', to: '/search?q=coaching%20surf' },
-          { label: 'Sortie yacht Marina', to: '/search?q=yacht' },
+          { label: 'Hammam & spa privé', to: '/extras?q=hammam' },
+          { label: 'Coaching surf privé', to: '/extras?q=coaching%20surf' },
+          { label: 'Sortie yacht Marina', to: '/extras?q=yacht' },
           { label: 'Tous les extras', to: '/extras' },
         ],
         destinationsPhares: [

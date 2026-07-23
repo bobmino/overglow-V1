@@ -31,8 +31,23 @@ const FilterSidebar = ({
   setSelectedCity,
   onReset,
   storeMode = null,
+  filterProfile = null,
 }) => {
   const { t } = useTranslation();
+  const profile =
+    filterProfile ||
+    (storeMode === 'stays'
+      ? 'stay'
+      : storeMode === 'extras'
+        ? 'service'
+        : storeMode === 'explore'
+          ? 'tour'
+          : null);
+  const isStay = profile === 'stay';
+  const showTaxonomyFilters = profile === 'tour' || profile === 'service';
+  const showReassuranceTags = profile !== 'stay';
+  const showCancellation = profile !== 'stay';
+
   const [localQuery, setLocalQuery] = useState(searchQuery || '');
   const [localMinPrice, setLocalMinPrice] = useState(filters.minPrice || '');
   const [localMaxPrice, setLocalMaxPrice] = useState(filters.maxPrice || '');
@@ -89,7 +104,7 @@ const FilterSidebar = ({
     setFilters((prev) => ({ ...prev, tags: newTags }));
   };
 
-  const hasTaxonomy = Array.isArray(taxonomyOptions) && taxonomyOptions.length > 0;
+  const hasTaxonomy = showTaxonomyFilters && Array.isArray(taxonomyOptions) && taxonomyOptions.length > 0;
 
   const activeFiltersCount =
     (selectedCategories?.length || 0) +
@@ -98,6 +113,8 @@ const FilterSidebar = ({
     (filters.minRating ? 1 : 0) +
     (filters.tags?.length || 0) +
     (filters.cancellationType ? 1 : 0) +
+    (filters.propertyType ? 1 : 0) +
+    (filters.pool || filters.garden || filters.wifi || filters.jacuzzi ? 1 : 0) +
     (selectedCity ? 1 : 0) +
     (searchQuery ? 1 : 0);
 
@@ -163,10 +180,10 @@ const FilterSidebar = ({
           </div>
         )}
 
-        {hasTaxonomy && storeMode !== 'stays' && (
+        {hasTaxonomy && (
           <div className="pt-6">
             <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
-              {storeMode === 'extras'
+              {profile === 'service'
                 ? t('stores.extras.service_type')
                 : t('catalog.category')}
             </h3>
@@ -205,10 +222,10 @@ const FilterSidebar = ({
           </div>
         )}
 
-        {!hasTaxonomy && (storeMode !== 'stays' && Array.isArray(categories) && categories.length > 0) && (
+        {!hasTaxonomy && showTaxonomyFilters && Array.isArray(categories) && categories.length > 0 && (
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
-            {storeMode === 'extras'
+            {profile === 'service'
               ? t('stores.extras.service_type')
               : t('catalog.category')}
           </h3>
@@ -244,6 +261,7 @@ const FilterSidebar = ({
         </div>
         )}
 
+        {showReassuranceTags && (
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
             {t('catalog.popular')}
@@ -276,7 +294,9 @@ const FilterSidebar = ({
             })}
           </div>
         </div>
+        )}
 
+        {showCancellation && (
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
             {t('filters.cancellation_policy')}
@@ -311,6 +331,7 @@ const FilterSidebar = ({
             })}
           </div>
         </div>
+        )}
 
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
@@ -379,7 +400,7 @@ const FilterSidebar = ({
           </div>
         </div>
 
-        {storeMode === 'stays' && (
+        {isStay && (
           <div className="pt-6">
             <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
               {t('stores.stays.property_type')}

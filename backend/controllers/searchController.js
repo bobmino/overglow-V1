@@ -183,7 +183,7 @@ export const advancedSearch = async (req, res) => {
       if (!needsInMemoryFilter) {
         totalCount = await Product.countDocuments(mongoQuery);
         products = await Product.find(mongoQuery)
-          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup')
+          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup taxonomyIds luxuryStay')
           .populate('operator', 'companyName status isClaimed')
           .populate('badges.badgeId', 'name icon color')
           .sort(hasGeo ? undefined : sort)
@@ -192,7 +192,7 @@ export const advancedSearch = async (req, res) => {
           .lean();
       } else {
         products = await Product.find(mongoQuery)
-          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup')
+          .select('title images city category price duration operator badges skipTheLine metrics tags createdAt authenticity cancellationPolicy productType categoryGroup taxonomyIds luxuryStay')
           .populate('operator', 'companyName status isClaimed')
           .populate('badges.badgeId', 'name icon color')
           .sort(hasGeo ? undefined : sort)

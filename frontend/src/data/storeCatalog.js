@@ -107,20 +107,48 @@ export const STORE_CONFIG = {
     titleKey: 'stores.explore.title',
     subtitleKey: 'stores.explore.subtitle',
     path: '/explore',
+    browseMode: 'byTaxonomyParent',
+    filterProfile: 'tour',
   },
   stays: {
     productType: 'luxury_stay',
     titleKey: 'stores.stays.title',
     subtitleKey: 'stores.stays.subtitle',
     path: '/stays',
+    browseMode: 'byPropertyType',
+    filterProfile: 'stay',
   },
   extras: {
     productType: 'service',
     titleKey: 'stores.extras.title',
     subtitleKey: 'stores.extras.subtitle',
     path: '/extras',
+    browseMode: 'byTaxonomyParent',
+    filterProfile: 'service',
   },
 };
+
+/**
+ * Filtres métier actifs (ignore productType / sortBy / page — lock store).
+ */
+export const hasActiveStoreFilters = (filters = {}) => {
+  if (filters.q) return true;
+  if (filters.city) return true;
+  if (Array.isArray(filters.categories) && filters.categories.length) return true;
+  if (Array.isArray(filters.taxonomy) && filters.taxonomy.length) return true;
+  if (filters.categoryGroup) return true;
+  if (filters.propertyType) return true;
+  if (filters.pool || filters.garden || filters.wifi || filters.jacuzzi) return true;
+  if (filters.minPrice != null || filters.maxPrice != null) return true;
+  if (filters.minRating != null) return true;
+  if (filters.skipTheLine) return true;
+  if (Array.isArray(filters.tags) && filters.tags.length) return true;
+  if (filters.cancellationType) return true;
+  return false;
+};
+
+export const PROPERTY_TYPE_ORDER = ['riad', 'villa', 'apartment', 'suite', 'other'];
+
 
 export const CITY_ALIASES = {
   'Taghazout Bay': 'Taghazout',

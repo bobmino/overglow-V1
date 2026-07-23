@@ -17,8 +17,10 @@ import {
   STORE_CONFIG,
   EXPLORE_CATEGORY_WHITELIST,
   EXTRAS_CATEGORY_VALUES,
+  hasActiveStoreFilters,
 } from '../data/storeCatalog';
 import { normalizeCategory } from '../utils/categoryMapping';
+import StoreBrowseLayout from '../components/store/StoreBrowseLayout';
 
 import { stripLangPrefix } from '../utils/i18nRouting';
 
@@ -43,6 +45,8 @@ const SearchPage = () => {
   const storeKey = pathToStore(location.pathname);
   const store = storeKey ? STORE_CONFIG[storeKey] : null;
   const lockedProductType = store?.productType || '';
+  const filterProfile = store?.filterProfile || null;
+  const browseMode = store?.browseMode || null;
 
   // Lock productType on store landings
   useEffect(() => {
@@ -123,14 +127,14 @@ const SearchPage = () => {
   const cities = (facetsData?.cities || []).map((c) => c.name).filter(Boolean);
 
   const taxonomyOptions = useMemo(() => {
-    if (storeKey === 'stays') return [];
+    if (filterProfile === 'stay') return [];
     return Array.isArray(facetsData?.taxonomy) ? facetsData.taxonomy : [];
-  }, [facetsData, storeKey]);
+  }, [facetsData, filterProfile]);
 
   const categories = useMemo(() => {
     const fromFacets = (facetsData?.categories || []).map((c) => c.name).filter(Boolean);
 
-    if (storeKey === 'stays') return [];
+    if (filterProfile === 'stay') return [];
 
     if (storeKey === 'extras') {
       if (fromFacets.length === 0) return EXTRAS_CATEGORY_VALUES;
@@ -156,15 +160,17 @@ const SearchPage = () => {
       const lower = String(name).toLowerCase();
       return !['luxurystay', 'luxury stay', 'services'].includes(lower);
     });
-  }, [facetsData, storeKey]);
+  }, [facetsData, storeKey, filterProfile]);
+
+  const isBrowseDefault = Boolean(storeKey && browseMode && !hasActiveStoreFilters(filtersFromUrl));
 
   // Drop out-of-mode filter params when entering a store
   useEffect(() => {
     if (!storeKey) return;
     const patch = {};
-    if (storeKey === 'stays') {
+    if (filterProfile === 'stay') {
       if (searchParams.get('category')) patch.category = null;
-      // keep property/amenities
+      if (searchParams.get('taxonomy')) patch.taxonomy = null;
     } else {
       if (searchParams.get('propertyType')) patch.propertyType = null;
       if (searchParams.get('pool')) patch.pool = null;
@@ -203,10 +209,10 @@ const SearchPage = () => {
       params.set('cancellationType', filtersFromUrl.cancellationType);
     }
     params.set('sortBy', filtersFromUrl.sortBy);
-    params.set('page', String(filtersFromUrl.page));
-    params.set('limit', '20');
+    params.set('page', String(isBrowseDefault ? 1 : filtersFromUrl.page));
+    params.set('limit', isBrowseDefault ? '60' : '20');
     return params.toString();
-  }, [filtersFromUrl]);
+  }, [filtersFromUrl, isBrowseDefault]);
 
   const {
     data: searchResults,
@@ -394,8 +400,18 @@ const SearchPage = () => {
     }
   };
 
-  const showCuratedExtras = storeKey === 'extras' && !isLoading && !isError && products.length === 0;
-  const showCuratedStays = storeKey === 'stays' && !isLoading && !isError && products.length === 0;
+  const showCuratedExtras =
+    storeKey === 'extras' && isBrowseDefault && !isLoading && !isError && products.length === 0;
+  const showCuratedStays =
+    storeKey === 'stays' && isBrowseDefault && !isLoading && !isError && products.length === 0;
+
+  const handleSeeAllSection = useCallback(
+    (payload) => {
+      if (!payload) return;
+      updateParams(payload);
+    },
+    [updateParams]
+  );
 
   const filterSidebarProps = {
     searchQuery: filtersFromUrl.q,
@@ -413,6 +429,7 @@ const SearchPage = () => {
     setSelectedCity: (city) => updateParams({ city }),
     onReset: handleResetFilters,
     storeMode: storeKey,
+    filterProfile,
   };
 
   return (
@@ -450,9 +467,11 @@ const SearchPage = () => {
                   </h1>
                 )}
                 <p className="text-slate-600 mt-1">
-                  {total === 1
-                    ? `1 ${t('catalog.result_found')}`
-                    : `${total} ${t('catalog.results_found')}`}
+                  {isBrowseDefault
+                    ? t('stores.browse_hint', 'Parcourir par catégorie')
+                    : total === 1
+                      ? `1 ${t('catalog.result_found')}`
+                      : `${total} ${t('catalog.results_found')}`}
                 </p>
               </div>
 
@@ -607,6 +626,13 @@ const SearchPage = () => {
                   </div>
                 )}
               </div>
+            ) : isBrowseDefault ? (
+              <StoreBrowseLayout
+                products={products}
+                browseMode={browseMode}
+                taxonomyOptions={taxonomyOptions}
+                onSeeAllSection={handleSeeAllSection}
+              />
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">

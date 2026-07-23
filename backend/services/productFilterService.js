@@ -187,7 +187,7 @@ export const parseFilterParams = (query = {}) => {
     cancellationType,
     sortBy: typeof query.sortBy === 'string' ? query.sortBy : 'recommended',
     page: Math.max(1, parseInt(query.page, 10) || 1),
-    limit: Math.min(50, Math.max(1, parseInt(query.limit, 10) || 20)),
+    limit: Math.min(60, Math.max(1, parseInt(query.limit, 10) || 20)),
   };
 };
 

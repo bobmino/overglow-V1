@@ -25,9 +25,9 @@ const DynamicCarousel = ({ title, items = [], categoryId, searchTag, seeMoreTo, 
     if (seeMoreTo) {
       localizedNavigate(seeMoreTo);
     } else if (searchTag) {
-      localizedNavigate(`/search?q=${encodeURIComponent(searchTag)}`);
+      localizedNavigate(`/explore?q=${encodeURIComponent(searchTag)}`);
     } else if (categoryId) {
-      localizedNavigate(`/search?categoryGroup=${categoryId}`);
+      localizedNavigate(`/explore?categoryGroup=${categoryId}`);
     } else {
       localizedNavigate('/explore');
     }

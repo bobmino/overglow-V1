@@ -7,18 +7,7 @@ import FilterSidebar from './FilterSidebar';
 const FilterDrawer = ({
   isOpen,
   onClose,
-  searchQuery,
-  setSearchQuery,
-  filters,
-  setFilters,
-  categories,
-  selectedCategories,
-  setSelectedCategories,
-  cities,
-  selectedCity,
-  setSelectedCity,
-  onReset,
-  storeMode = null,
+  ...sidebarProps
 }) => {
   const { t } = useTranslation();
 
@@ -65,20 +54,7 @@ const FilterDrawer = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              <FilterSidebar
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                filters={filters}
-                setFilters={setFilters}
-                categories={categories}
-                selectedCategories={selectedCategories}
-                setSelectedCategories={setSelectedCategories}
-                cities={cities}
-                selectedCity={selectedCity}
-                setSelectedCity={setSelectedCity}
-                onReset={onReset}
-                storeMode={storeMode}
-              />
+              <FilterSidebar {...sidebarProps} />
             </div>
 
             <div className="p-4 border-t border-slate-100 bg-white">
