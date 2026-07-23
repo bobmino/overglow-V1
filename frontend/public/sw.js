@@ -1,101 +1,75 @@
-// Service Worker for Overglow PWA
-const CACHE_NAME = 'overglow-v1.1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-];
+// Service Worker Overglow — soft-launch
+// Network-first pour HTML/JS/CSS/API afin d'éviter les bundles et layouts périmés.
+const CACHE_NAME = 'overglow-v1.2';
+const PRECACHE = ['/manifest.json', '/favicon.svg'];
 
-// Install prompt handling
-let _deferredPrompt;
-self.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  _deferredPrompt = e;
-  // Dispatch event to window
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'CAN_INSTALL',
-        prompt: true
-      });
-    });
-  });
-});
-
-// Install event - cache resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.error('Cache install failed:', error);
-      })
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE))
+      .catch((error) => console.error('Cache install failed:', error))
   );
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      )
+    )
   );
   return self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+const isApiRequest = (url) => url.pathname.startsWith('/api/');
+const isHtmlNavigation = (request, url) =>
+  request.mode === 'navigate' ||
+  url.pathname === '/' ||
+  url.pathname.endsWith('.html') ||
+  url.pathname.match(/^\/(fr|en|es|ar)(\/|$)/);
+
+const isVersionedAsset = (url) =>
+  url.pathname.startsWith('/assets/') ||
+  url.pathname.endsWith('.js') ||
+  url.pathname.endsWith('.css');
+
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests
-  if (event.request.method !== 'GET') {
+  if (event.request.method !== 'GET') return;
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
+  const url = new URL(event.request.url);
+
+  // API + HTML + bundles versionnés : toujours réseau d'abord (pas de layout/JS fantôme)
+  if (isApiRequest(url) || isHtmlNavigation(event.request, url) || isVersionedAsset(url)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => response)
+        .catch(() => caches.match(event.request).then((r) => r || caches.match('/index.html')))
+    );
     return;
   }
 
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
+  // Images / static : cache-first
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request).then((response) => {
-          // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
-        });
-      })
-      .catch(() => {
-        // If both cache and network fail, return offline page if available
-        return caches.match('/index.html');
-      })
+        }
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      });
+    })
   );
 });
 
-// Push notification event
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'Overglow';
@@ -107,31 +81,20 @@ self.addEventListener('push', (event) => {
     requireInteraction: false,
     data: data.relatedEntity || {},
   };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Notification click event
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
   const data = event.notification.data;
   let url = '/';
-
-  // Navigate based on notification type
   if (data && data.type) {
     switch (data.type) {
       case 'Booking':
-        url = '/dashboard';
-        break;
-      case 'Product':
-        url = data.id ? `/products/${data.id}` : '/search';
-        break;
       case 'Inquiry':
         url = '/dashboard';
         break;
+      case 'Product':
       case 'Review':
         url = data.id ? `/products/${data.id}` : '/search';
         break;
@@ -139,9 +102,5 @@ self.addEventListener('notificationclick', (event) => {
         url = '/dashboard';
     }
   }
-
-  event.waitUntil(
-    clients.openWindow(url)
-  );
+  event.waitUntil(clients.openWindow(url));
 });
-
