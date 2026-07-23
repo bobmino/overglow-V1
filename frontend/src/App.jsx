@@ -40,6 +40,7 @@ const OperatorProductFormPage = lazy(() => import('./pages/OperatorProductFormPa
 const OperatorWizardPage = lazy(() => import('./pages/OperatorWizardPage'));
 const OperatorOnboardingPage = lazy(() => import('./pages/OperatorOnboardingPage'));
 const OperatorAccountPage = lazy(() => import('./pages/OperatorAccountPage'));
+const OperatorSupportPage = lazy(() => import('./pages/OperatorSupportPage'));
 const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const HelpPage = lazy(() => import('./pages/HelpPage'));
@@ -188,6 +189,11 @@ function App() {
           <Route path="inquiries" element={
             <Suspense fallback={<LoadingFallback />}>
               <InquiriesPage />
+            </Suspense>
+          } />
+          <Route path="support" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <OperatorSupportPage />
             </Suspense>
           } />
           <Route path="withdrawals" element={

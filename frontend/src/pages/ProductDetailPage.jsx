@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { LocalizedLink } from '../components/LocalizedLink';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import api from '../config/axios';
 import { useCurrency } from '../context/CurrencyContext';
@@ -31,7 +32,7 @@ import { useTranslation } from 'react-i18next';
 const ProductDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -279,15 +280,22 @@ const ProductDetailPage = () => {
       }],
     });
     
-    navigate('/booking', {
-      state: {
-        product,
-        date: selectedDate,
-        timeSlot: selectedTimeSlot,
-        tickets: numberOfTickets,
-        skipTheLine: product?.skipTheLine || null
-      }
-    });
+    const bookingState = {
+      product,
+      date: selectedDate,
+      timeSlot: selectedTimeSlot,
+      tickets: numberOfTickets,
+      skipTheLine: Boolean(product?.skipTheLine?.enabled),
+    };
+    try {
+      sessionStorage.setItem(
+        'overglow_checkout_draft_v1',
+        JSON.stringify({ ...bookingState, savedAt: Date.now() })
+      );
+    } catch {
+      /* ignore */
+    }
+    navigate('/booking', { state: bookingState });
   };
 
   const handleAddToCart = () => {

@@ -11,6 +11,11 @@ import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
+import {
+  saveCheckoutDraft,
+  loadCheckoutDraft,
+  clearCheckoutDraft,
+} from '../utils/checkoutDraft.js';
 
 const dateLocaleMap = { fr: 'fr-FR', en: 'en-GB', es: 'es-ES', ar: 'ar-MA' };
 
@@ -33,7 +38,7 @@ const buildBookingPayload = (item, paymentMethod = 'stripe') => {
       date: item.schedule.date,
       time: item.schedule.time,
       endTime: item.schedule.endTime || '',
-      price: item.product.price || 0,
+      price: item.schedule.price || item.product.price || 0,
       capacity: 100,
       currency: 'MAD',
     };
@@ -59,9 +64,16 @@ const CheckoutPage = () => {
   /** Empêche navigate('/') quand clearCart vide le panier juste avant booking-success */
   const completingRef = useRef(false);
 
-  const { product, schedule, numberOfTickets, skipTheLine } = location.state || {};
+  const { product, schedule, numberOfTickets, skipTheLine } = (() => {
+    const fromState = location.state || {};
+    if (fromState.product && fromState.schedule) return fromState;
+    const draft = loadCheckoutDraft();
+    if (draft?.product && draft?.schedule) return draft;
+    return fromState;
+  })();
   const lang = (i18n.language || 'fr').slice(0, 2);
   const dateLocale = dateLocaleMap[lang] || 'fr-FR';
+  const [missingContext, setMissingContext] = useState(false);
 
   const checkoutItems = useMemo(() => {
     if (product && schedule) {
@@ -101,11 +113,23 @@ const CheckoutPage = () => {
       return;
     }
     if (checkoutItems.length === 0) {
-      if (!completingRef.current) {
-        navigate('/');
+      if (completingRef.current) return;
+      // Restaurer depuis le draft si possible
+      const draft = loadCheckoutDraft();
+      if (draft?.product && draft?.schedule) {
+        navigate('/checkout', { state: draft, replace: true });
+        return;
       }
+      setMissingContext(true);
       return;
     }
+    setMissingContext(false);
+    saveCheckoutDraft({
+      product: checkoutItems[0]?.product,
+      schedule: checkoutItems[0]?.schedule,
+      numberOfTickets: checkoutItems[0]?.numberOfTickets,
+      skipTheLine: checkoutItems[0]?.skipTheLine,
+    });
 
     trackBeginCheckout({
       totalAmount: totalPrice,
@@ -177,6 +201,7 @@ const CheckoutPage = () => {
             : { booking: pendingBookings[0], paymentDetails };
         navigate('/booking-success', { state: successState });
         clearCart();
+        clearCheckoutDraft();
         return;
       }
 
@@ -210,6 +235,7 @@ const CheckoutPage = () => {
             : { booking: createdBookings[0] },
       });
       clearCart();
+      clearCheckoutDraft();
     } catch (err) {
       completingRef.current = false;
       logger.error('Checkout payment complete failed', err);
@@ -225,6 +251,31 @@ const CheckoutPage = () => {
   const multi = checkoutItems.length > 1;
 
   if (!isAuthenticated) return null;
+
+  if (missingContext || checkoutItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-24 pb-10">
+        <div className="container mx-auto px-4 max-w-lg text-center">
+          <h1 className="text-2xl font-bold text-slate-900 mb-3">
+            {t('checkout.missing_title', 'Réservation interrompue')}
+          </h1>
+          <p className="text-slate-600 mb-6">
+            {t(
+              'checkout.missing_body',
+              'Le contexte de réservation a été perdu (rafraîchissement ou session). Resélectionnez une date sur l’expérience.'
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="btn-primary"
+          >
+            {t('checkout.missing_back', 'Retour')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pt-24 pb-10">

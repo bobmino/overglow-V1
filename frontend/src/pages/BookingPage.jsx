@@ -4,9 +4,11 @@ import { Calendar, Clock, Users, ChevronRight, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import { trackBookingPageView } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
+import { saveCheckoutDraft, loadCheckoutDraft, resolveSlotTime } from '../utils/checkoutDraft.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -20,9 +22,11 @@ const BookingPage = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const localizedNavigate = useLocalizedNavigate();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
-  const { product, date, timeSlot, tickets } = location.state || {};
+  const draft = !location.state?.product ? loadCheckoutDraft() : null;
+  const { product, date, timeSlot, tickets } = location.state || draft || {};
 
   const dateLocale = getDateLocale(i18n.language);
   
@@ -61,40 +65,61 @@ const BookingPage = () => {
 
   useEffect(() => {
     if (!product || !date || !timeSlot) {
-      navigate('/');
+      // Missing booking context (refresh, deep-link, or lost location.state).
+      if (product?._id) {
+        localizedNavigate(`/products/${product._id}`, { replace: true });
+      } else {
+        // Ne pas jeter sur l’accueil sans message — tenter le draft une fois
+        const recovered = loadCheckoutDraft();
+        if (recovered?.product && recovered?.date && recovered?.timeSlot) {
+          navigate('/booking', { state: recovered, replace: true });
+          return;
+        }
+        localizedNavigate('/', { replace: true });
+      }
       return;
     }
 
+    // Persist for checkout / login round-trip
+    saveCheckoutDraft({
+      product,
+      date,
+      timeSlot,
+      tickets,
+      skipTheLine: location.state?.skipTheLine || product?.skipTheLine || null,
+    });
+
     const fetchSchedules = async () => {
       try {
-        // Create or find schedule for the selected date and time slot
         const selectedDate = new Date(date);
         selectedDate.setHours(0, 0, 0, 0);
+        const wantedTime = resolveSlotTime(timeSlot);
 
-        // Filter existing schedules or create a virtual one
-        const relevantSchedules = product.schedules?.filter(s => {
+        const relevantSchedules = product.schedules?.filter((s) => {
           const scheduleDate = new Date(s.date);
           scheduleDate.setHours(0, 0, 0, 0);
-          return scheduleDate.getTime() === selectedDate.getTime() && 
-                 s.time === timeSlot.startTime;
+          return (
+            scheduleDate.getTime() === selectedDate.getTime() &&
+            s.time === wantedTime
+          );
         }) || [];
 
-        // If no schedule exists, create a virtual one for display
         if (relevantSchedules.length === 0) {
           const virtualSchedule = {
             _id: 'virtual_' + Date.now(),
             date: selectedDate,
-            time: timeSlot.startTime,
-            endTime: timeSlot.endTime,
+            time: wantedTime,
+            endTime: timeSlot.endTime || timeSlot.end || '',
             price: product.price || 0,
             capacity: 100,
-            bookings: []
+            bookings: [],
           };
           setAvailableSlots([virtualSchedule]);
           setSelectedSlot(virtualSchedule);
         } else {
           setAvailableSlots(relevantSchedules);
-          const matchingSlot = relevantSchedules.find(s => s.time === timeSlot.startTime) || relevantSchedules[0];
+          const matchingSlot =
+            relevantSchedules.find((s) => s.time === wantedTime) || relevantSchedules[0];
           setSelectedSlot(matchingSlot);
         }
         setLoading(false);
@@ -105,7 +130,7 @@ const BookingPage = () => {
     };
 
     fetchSchedules();
-  }, [product, date, timeSlot, navigate]);
+  }, [product, date, timeSlot, tickets, localizedNavigate, navigate, location.state?.skipTheLine]);
 
   // Track booking page view
   useEffect(() => {
@@ -124,18 +149,18 @@ const BookingPage = () => {
 
   const handleContinue = async () => {
     if (!selectedSlot) return;
-    
-    navigate('/checkout', {
-      state: {
-        product,
-        schedule: selectedSlot,
-        numberOfTickets: tickets,
-        travelerDetails,
-        date,
-        timeSlot,
-        skipTheLine: product?.skipTheLine || null
-      }
-    });
+
+    const payload = {
+      product,
+      schedule: selectedSlot,
+      numberOfTickets: tickets,
+      travelerDetails,
+      date,
+      timeSlot,
+      skipTheLine: Boolean(product?.skipTheLine?.enabled),
+    };
+    saveCheckoutDraft(payload);
+    navigate('/checkout', { state: payload });
   };
 
   if (!product) return null;

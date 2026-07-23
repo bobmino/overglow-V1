@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { MessageSquare, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
@@ -219,9 +220,15 @@ const InquiriesPage = () => {
           <p className="text-sm text-gray-600 mt-1">
             {t(
               'inquiries.subtitle_operator',
-              'Questions et validations liées à vos produits. Ouvrez le chat pour dialoguer avec le client. Le support Overglow se gère côté admin.'
+              'Questions et validations liées à vos produits. Ouvrez le chat pour dialoguer avec le client.'
             )}
           </p>
+          <Link
+            to="/operator/support"
+            className="inline-flex mt-3 text-sm font-semibold text-primary-700 hover:underline"
+          >
+            {t('inquiries.to_support', 'Besoin d’aide Overglow ? → Support')}
+          </Link>
         </div>
       </div>
 

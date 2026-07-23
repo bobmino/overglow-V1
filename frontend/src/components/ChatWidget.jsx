@@ -260,6 +260,7 @@ const ChatWidget = ({ inquiryId, chatId, onClose, embedded = false }) => {
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
             aria-label={t('chat.close')}
+            style={{ display: typeof onClose === 'function' ? undefined : 'none' }}
           >
             <X size={20} />
           </button>
@@ -290,14 +291,16 @@ const ChatWidget = ({ inquiryId, chatId, onClose, embedded = false }) => {
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-white transition hover:text-gray-200"
-            aria-label={t('chat.close')}
-          >
-            <X size={20} />
-          </button>
+          {typeof onClose === 'function' && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-white transition hover:text-gray-200"
+              aria-label={t('chat.close')}
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         <div

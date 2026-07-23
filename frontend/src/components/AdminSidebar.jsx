@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   BookOpen,
   ClipboardList,
+  Headphones,
 } from 'lucide-react';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
@@ -89,7 +90,18 @@ const getOperatorSections = (t, { formCompleted = false } = {}) => [
       { to: '/operator/dashboard', label: t('admin.nav.operator_dashboard'), icon: LayoutDashboard },
       { to: '/operator/products', label: t('admin.nav.operator_products'), icon: Package },
       { to: '/operator/bookings', label: t('admin.nav.operator_bookings'), icon: CalendarDays, badge: 0 },
-      { to: '/operator/inquiries', label: t('admin.nav.operator_messages'), icon: MessageSquare, badge: 0 },
+      {
+        to: '/operator/inquiries',
+        label: t('admin.nav.operator_messages_clients', 'Messages clients'),
+        icon: MessageSquare,
+        badge: 0,
+      },
+      {
+        to: '/operator/support',
+        label: t('admin.nav.operator_support', 'Support Overglow'),
+        icon: Headphones,
+        badge: 0,
+      },
       { to: '/operator/analytics', label: t('admin.nav.operator_analytics'), icon: TrendingUp },
       { to: '/operator/withdrawals', label: t('admin.nav.operator_revenue'), icon: Banknote },
     ],
@@ -155,6 +167,10 @@ const AdminSidebar = ({
       items: section.items.map((item) => {
         if (item.to === '/operator/inquiries' || item.to === '/admin/chat') {
           return { ...item, badge: messagesBadge };
+        }
+        // Support Overglow : badge séparé plus tard ; pour l’instant pas le compteur inquiries
+        if (item.to === '/operator/support') {
+          return { ...item, badge: 0 };
         }
         if (item.to === '/operator/bookings' || item.to === '/admin/bookings') {
           return { ...item, badge: bookingsBadge };
