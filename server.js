@@ -48,6 +48,7 @@ import sitemapRoutes from './backend/routes/sitemapRoutes.js';
 import orderRoutes from './backend/routes/orderRoutes.js';
 import homepageRoutes from './backend/routes/homepageRoutes.js';
 import contentRoutes from './backend/routes/contentRoutes.js';
+import taxonomyRoutes from './backend/routes/taxonomyRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -160,6 +161,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/homepage', homepageRoutes);
 app.use('/api/content', contentRoutes);
+app.use('/api/taxonomy', taxonomyRoutes);
 app.use('/api', sitemapRoutes);
 
 // ─── SPA fallback (production locale uniquement, hors Vercel serverless) ─────

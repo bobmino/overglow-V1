@@ -16,13 +16,20 @@ import {
   buildPublishedProductQuery,
   buildSortOption,
   matchesDurationFilter,
+  enrichTaxonomyFilters,
 } from '../services/productFilterService.js';
 import { localizeProducts, localizeProduct, resolveRequestLang } from '../utils/contentI18n.js';
 import { buildProductI18n } from '../utils/catalogLexicon.js';
 import { sanitizeHtml, sanitizeText, sanitizeName } from '../utils/sanitizer.js';
 import connectDB from '../../config/db.js';
+import { resolveTaxonomyLabels } from './taxonomyController.js';
 
 const CANCELLATION_TYPES = ['free', 'moderate', 'strict', 'non_refundable'];
+
+const normalizeTaxonomyIds = (raw) => {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((id) => String(id || '').trim()).filter(Boolean);
+};
 
 /** Normalize + validate cancellationPolicy from request body (DB source of truth). */
 const normalizeCancellationPolicy = (raw) => {
@@ -211,7 +218,18 @@ const createProduct = async (req, res) => {
       serviceDetails,
       skipTheLine,
       paymentPreference,
+      taxonomyIds: rawTaxonomyIds,
     } = req.body;
+
+    const taxonomyIds = normalizeTaxonomyIds(rawTaxonomyIds);
+    let resolvedCategory = category;
+    if (taxonomyIds.length) {
+      const labels = await resolveTaxonomyLabels(taxonomyIds);
+      if (labels[0]) resolvedCategory = labels[0];
+    }
+    if (!resolvedCategory) {
+      return res.status(400).json({ message: 'Category or taxonomyIds required' });
+    }
 
     const normalizedPrice = normalizePrice(price);
     let finalStatus = status || 'Draft';
@@ -259,7 +277,8 @@ const createProduct = async (req, res) => {
       operator: operator._id,
       title: sanitizeName(title),
       description: sanitizeHtml(description || ''),
-      category,
+      category: resolvedCategory,
+      taxonomyIds,
       productType: ['tour', 'luxury_stay', 'service'].includes(productType) ? productType : 'tour',
       city: sanitizeText(city || ''),
       address: sanitizeText(address || ''),
@@ -360,6 +379,7 @@ const updateProduct = async (req, res) => {
       serviceDetails,
       skipTheLine,
       paymentPreference,
+      taxonomyIds: rawTaxonomyIds,
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -424,7 +444,18 @@ const updateProduct = async (req, res) => {
       // Update fields only if provided, otherwise keep existing values
       if (title !== undefined) product.title = sanitizeName(title);
       if (description !== undefined) product.description = sanitizeHtml(description || '');
-      if (category !== undefined) product.category = category;
+      if (rawTaxonomyIds !== undefined) {
+        const taxonomyIds = normalizeTaxonomyIds(rawTaxonomyIds);
+        product.taxonomyIds = taxonomyIds;
+        if (taxonomyIds.length) {
+          const labels = await resolveTaxonomyLabels(taxonomyIds);
+          if (labels[0]) product.category = labels[0];
+        } else if (category !== undefined) {
+          product.category = category;
+        }
+      } else if (category !== undefined) {
+        product.category = category;
+      }
       if (city !== undefined) product.city = sanitizeText(city || '');
       if (address !== undefined) product.address = sanitizeText(address || '');
       if (duration !== undefined) product.duration = duration;
@@ -567,7 +598,7 @@ const getPublishedProducts = async (req, res) => {
   try {
     await ensureDbConnected();
 
-    const filters = parseFilterParams(req.query);
+    const filters = await enrichTaxonomyFilters(parseFilterParams(req.query));
     const mongoQuery = buildPublishedProductQuery(filters);
     const sort = buildSortOption(filters.sortBy);
     const skip = (filters.page - 1) * filters.limit;

@@ -52,6 +52,18 @@ const operatorSchema = mongoose.Schema({
   experiences: {
     type: String, // Description détaillée des expériences
   },
+
+  /** Spécialités taxonomie (feuilles) — onboarding Viator-like */
+  specialties: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Taxonomy' }],
+    default: [],
+  },
+
+  /** Langues proposées (codes ISO : fr, en, es, ar, …) */
+  languages: {
+    type: [String],
+    default: [],
+  },
   
   // Étape 5: Informations privées (selon le type)
   // Pour personne morale (company)

@@ -10,8 +10,10 @@ import {
   parseFilterParams,
   buildPublishedProductQuery,
   buildSortOption,
+  enrichTaxonomyFilters,
 } from '../services/productFilterService.js';
 import { localizeProducts, resolveRequestLang } from '../utils/contentI18n.js';
+import Taxonomy from '../models/taxonomyModel.js';
 
 // @desc    Get autocomplete suggestions
 // @route   GET /api/search/autocomplete?q=query
@@ -169,7 +171,7 @@ const getProductRating = async (productId) => {
 // @access  Public
 export const advancedSearch = async (req, res) => {
   try {
-    const filters = parseFilterParams(req.query);
+    const filters = await enrichTaxonomyFilters(parseFilterParams(req.query));
     const mongoQuery = buildPublishedProductQuery(filters);
     const sort = buildSortOption(filters.sortBy);
 
@@ -360,7 +362,7 @@ export const getSearchFacets = async (req, res) => {
       match.productType = rawType;
     }
 
-    const [cities, categories, tags, priceStats] = await Promise.all([
+    const [cities, categories, tags, priceStats, taxonomyCounts] = await Promise.all([
       Product.aggregate([
         { $match: match },
         { $group: { _id: '$city', count: { $sum: 1 } } },
@@ -391,11 +393,37 @@ export const getSearchFacets = async (req, res) => {
           },
         },
       ]),
+      Product.aggregate([
+        { $match: match },
+        { $unwind: { path: '$taxonomyIds', preserveNullAndEmptyArrays: false } },
+        { $group: { _id: '$taxonomyIds', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
     ]);
+
+    const taxFilter = { isActive: true, kind: 'leaf' };
+    if (['tour', 'luxury_stay', 'service'].includes(rawType)) {
+      taxFilter.productTypes = rawType;
+    }
+    const taxonomyNodes = await Taxonomy.find(taxFilter)
+      .populate('parent', 'slug label')
+      .sort({ order: 1 })
+      .lean();
+    const countById = new Map(
+      taxonomyCounts.map((row) => [String(row._id), row.count])
+    );
+    const taxonomy = taxonomyNodes.map((node) => ({
+      id: String(node._id),
+      slug: node.slug,
+      label: node.label?.fr || node.slug,
+      parentLabel: node.parent?.label?.fr || node.parent?.slug || null,
+      count: countById.get(String(node._id)) || 0,
+    }));
 
     res.json({
       cities: cities.map((c) => ({ name: c._id, count: c.count })),
       categories: categories.map((c) => ({ name: c._id, count: c.count })),
+      taxonomy,
       tags: tags.map((t) => ({ name: t._id, count: t.count })),
       priceRange: {
         min: priceStats[0]?.min ?? 0,
@@ -408,6 +436,7 @@ export const getSearchFacets = async (req, res) => {
     res.json({
       cities: [],
       categories: [],
+      taxonomy: [],
       tags: [],
       priceRange: { min: 0, max: 0 },
       productType: null,

@@ -7,17 +7,12 @@ import { Save, Image as ImageIcon, X, Compass, Building2, Sparkles } from 'lucid
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { logger } from '../utils/logger.js';
 import { useAuth } from '../context/AuthContext';
+import TaxonomyMultiSelect from '../components/TaxonomyMultiSelect';
 
 const PRODUCT_TYPE_DEFAULTS = {
   tour: 'Tours',
   luxury_stay: 'LuxuryStay',
   service: 'Mobilité',
-};
-
-const CATEGORIES_BY_TYPE = {
-  tour: ['Tours', 'Activities', 'Day Trips', 'Food & Drink', 'Attractions', 'Outdoor Activities'],
-  luxury_stay: ['LuxuryStay', 'Hébergement'],
-  service: ['Mobilité', 'Guides', 'Photographie', 'Conciergerie', 'Services'],
 };
 
 const INCLUDED_PRESETS = [
@@ -85,6 +80,7 @@ const OperatorProductFormPage = () => {
     title: '',
     description: '',
     category: 'Tours',
+    taxonomyIds: [],
     productType: 'tour',
     city: '',
     address: '',
@@ -133,19 +129,16 @@ const OperatorProductFormPage = () => {
 
   const selectProductType = useCallback((type) => {
     const defaultCategory = PRODUCT_TYPE_DEFAULTS[type] || 'Tours';
-    setFormData((prev) => {
-      const allowed = CATEGORIES_BY_TYPE[type] || [];
-      const nextCategory = allowed.includes(prev.category) ? prev.category : defaultCategory;
-      return {
-        ...prev,
-        productType: type,
-        category: nextCategory,
-        skipTheLine:
-          type === 'tour'
-            ? prev.skipTheLine
-            : { ...prev.skipTheLine, enabled: false },
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      productType: type,
+      category: defaultCategory,
+      taxonomyIds: [],
+      skipTheLine:
+        type === 'tour'
+          ? prev.skipTheLine
+          : { ...prev.skipTheLine, enabled: false },
+    }));
   }, []);
 
   const toggleChip = useCallback((field, value) => {
@@ -175,6 +168,9 @@ const OperatorProductFormPage = () => {
         title: data.title || '',
         description: data.description || '',
         category: data.category || 'Tours',
+        taxonomyIds: Array.isArray(data.taxonomyIds)
+          ? data.taxonomyIds.map((id) => String(id?._id || id))
+          : [],
         productType: data.productType || 'tour',
         city: data.city || '',
         address: data.address || '',
@@ -302,6 +298,12 @@ const OperatorProductFormPage = () => {
 
       if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
         setError(t('operator.product_form.price_positive_error'));
+        setLoading(false);
+        return;
+      }
+
+      if (!Array.isArray(formData.taxonomyIds) || formData.taxonomyIds.length === 0) {
+        setError(t('operator.product_form.taxonomy_required', 'Sélectionnez au moins une sous-catégorie.'));
         setLoading(false);
         return;
       }
@@ -453,27 +455,24 @@ const OperatorProductFormPage = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">{t('operator.product_form.category_label')}</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              >
-                {(CATEGORIES_BY_TYPE[formData.productType] || CATEGORIES_BY_TYPE.tour).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat === 'LuxuryStay'
-                      ? t('operator.product_form.category_luxury_stay', 'Séjour luxe')
-                      : cat === 'Hébergement'
-                      ? t('operator.product_form.category_hebergement', 'Hébergement')
-                      : cat}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                {t('operator.product_form.category_hint', 'Catégorie catalogue (filtrée selon le type).')}
-              </p>
+            <div className="col-span-2">
+              <TaxonomyMultiSelect
+                productType={formData.productType}
+                value={formData.taxonomyIds}
+                onChange={(ids) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    taxonomyIds: ids,
+                    category: ids.length ? prev.category : PRODUCT_TYPE_DEFAULTS[prev.productType] || 'Tours',
+                  }))
+                }
+                label={t('operator.product_form.category_label')}
+                hint={t(
+                  'operator.product_form.taxonomy_hint',
+                  'Choisissez une ou plusieurs sous-catégories (la première définit la catégorie catalogue).'
+                )}
+                required
+              />
             </div>
 
             <div>

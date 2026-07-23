@@ -7,7 +7,7 @@ const WIZARD_PROVIDER_FIELDS = ['providerType'];
 const WIZARD_PUBLIC_FIELDS = ['publicName', 'description', 'location'];
 const WIZARD_PHOTO_FIELDS = ['logo', 'gallery'];
 const WIZARD_ADDRESS_FIELDS = ['companyAddress'];
-const WIZARD_EXPERIENCE_FIELDS = ['experiences'];
+const WIZARD_EXPERIENCE_FIELDS = ['experiences', 'specialties', 'languages'];
 const WIZARD_PRIVATE_FIELDS = [
   'companyInfo',
   'individualWithStatusInfo',
@@ -194,21 +194,37 @@ const saveAddress = async (req, res) => {
 // @access  Private/Operator
 const saveExperiences = async (req, res) => {
   try {
-    const { experiences } = sanitizeBody(req.body, WIZARD_EXPERIENCE_FIELDS);
+    const { experiences, specialties, languages } = sanitizeBody(req.body, WIZARD_EXPERIENCE_FIELDS);
 
     const operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
       return res.status(404).json({ message: 'Operator profile not found' });
     }
 
-    operator.experiences = experiences;
+    if (experiences !== undefined) {
+      operator.experiences = experiences;
+    }
+
+    if (Array.isArray(specialties)) {
+      operator.specialties = specialties.filter(Boolean);
+    }
+
+    if (Array.isArray(languages)) {
+      operator.languages = languages
+        .map((l) => String(l || '').trim().toLowerCase())
+        .filter(Boolean);
+    }
 
     if (!operator.completedSteps.includes('experiences')) {
       operator.completedSteps.push('experiences');
     }
 
     await operator.save();
-    res.json({ message: 'Experiences saved', operator });
+    const populated = await Operator.findById(operator._id).populate(
+      'specialties',
+      'slug label kind productTypes'
+    );
+    res.json({ message: 'Experiences saved', operator: populated });
   } catch (error) {
     logger.error('Save experiences error:', error);
     res.status(500).json({ message: 'Failed to save experiences' });

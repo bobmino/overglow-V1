@@ -5,6 +5,8 @@ import api from '../config/axios';
 import { CheckCircle, Circle, ChevronRight, ChevronLeft, Upload, MapPin, Building2, User, FileText, Camera, Home, AlertCircle, Pencil, Save } from 'lucide-react';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
+import TaxonomyMultiSelect from '../components/TaxonomyMultiSelect';
+import LanguagesMultiSelect from '../components/LanguagesMultiSelect';
 
 /** Étapes stables (hors render) — évite remount / perte de focus des inputs */
 const WIZARD_STEPS = [
@@ -55,6 +57,8 @@ const OperatorWizardPage = () => {
     gallery: [],
     companyAddress: { street: '', city: '', postalCode: '', country: 'Maroc' },
     experiences: '',
+    specialties: [],
+    languages: [],
     companyInfo: {},
     individualWithStatusInfo: {},
     individualWithoutStatusInfo: {},
@@ -91,6 +95,10 @@ const OperatorWizardPage = () => {
             gallery: data.photos?.gallery || [],
             companyAddress: data.companyAddress || { street: '', city: '', postalCode: '', country: 'Maroc' },
             experiences: data.experiences || '',
+            specialties: Array.isArray(data.specialties)
+              ? data.specialties.map((id) => String(id?._id || id))
+              : [],
+            languages: Array.isArray(data.languages) ? data.languages.map(String) : [],
             companyInfo: data.companyInfo || {},
             individualWithStatusInfo: data.individualWithStatusInfo || {},
             individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
@@ -162,6 +170,8 @@ const OperatorWizardPage = () => {
         case 'experiences':
           response = await api.put('/api/operator/wizard/experiences', {
             experiences: formData.experiences,
+            specialties: formData.specialties || [],
+            languages: formData.languages || [],
           });
           break;
         case 'privateInfo':
@@ -257,6 +267,10 @@ const OperatorWizardPage = () => {
         gallery: data.photos?.gallery || [],
         companyAddress: data.companyAddress || { street: '', city: '', postalCode: '', country: 'Maroc' },
         experiences: data.experiences || '',
+        specialties: Array.isArray(data.specialties)
+          ? data.specialties.map((id) => String(id?._id || id))
+          : [],
+        languages: Array.isArray(data.languages) ? data.languages.map(String) : [],
         companyInfo: data.companyInfo || {},
         individualWithStatusInfo: data.individualWithStatusInfo || {},
         individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
@@ -558,6 +572,23 @@ const OperatorWizardPage = () => {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">{t('operator.wizard.experiences_title')}</h2>
             <p className="text-gray-600">{t('operator.wizard.experiences_subtitle')}</p>
+
+            <TaxonomyMultiSelect
+              value={formData.specialties}
+              onChange={(ids) => setField('specialties', ids)}
+              label={t('taxonomy.specialties_label', 'Types d’expériences')}
+              hint={t(
+                'taxonomy.specialties_hint',
+                'Sélectionnez vos spécialités (circuits, activités, transport…). Recherchez pour affiner.'
+              )}
+              required
+            />
+
+            <LanguagesMultiSelect
+              value={formData.languages}
+              onChange={(codes) => setField('languages', codes)}
+              label={t('taxonomy.languages_label', 'Langues parlées')}
+            />
             
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">

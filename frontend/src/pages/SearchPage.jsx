@@ -59,12 +59,14 @@ const SearchPage = () => {
     const tagsParam = searchParams.get('tags');
     const categoryParam = searchParams.get('category') || '';
     const categoryGroupParam = searchParams.get('categoryGroup') || '';
+    const taxonomyParam = searchParams.get('taxonomy') || '';
     const productTypeParam = lockedProductType || searchParams.get('productType') || '';
     return {
       q: searchParams.get('q') || '',
       city: searchParams.get('city') || '',
       category: categoryParam,
       categories: categoryParam ? categoryParam.split(',').filter(Boolean) : [],
+      taxonomy: taxonomyParam ? taxonomyParam.split(',').filter(Boolean) : [],
       productType: productTypeParam,
       categoryGroup: categoryGroupParam,
       propertyType: searchParams.get('propertyType') || '',
@@ -119,6 +121,11 @@ const SearchPage = () => {
   });
 
   const cities = (facetsData?.cities || []).map((c) => c.name).filter(Boolean);
+
+  const taxonomyOptions = useMemo(() => {
+    if (storeKey === 'stays') return [];
+    return Array.isArray(facetsData?.taxonomy) ? facetsData.taxonomy : [];
+  }, [facetsData, storeKey]);
 
   const categories = useMemo(() => {
     const fromFacets = (facetsData?.categories || []).map((c) => c.name).filter(Boolean);
@@ -176,6 +183,9 @@ const SearchPage = () => {
     if (filtersFromUrl.categories.length) {
       params.set('categories', filtersFromUrl.categories.join(','));
       params.set('category', filtersFromUrl.categories[0]);
+    }
+    if (filtersFromUrl.taxonomy.length) {
+      params.set('taxonomy', filtersFromUrl.taxonomy.join(','));
     }
     if (filtersFromUrl.productType) params.set('productType', filtersFromUrl.productType);
     if (filtersFromUrl.categoryGroup) params.set('categoryGroup', filtersFromUrl.categoryGroup);
@@ -267,6 +277,11 @@ const SearchPage = () => {
       typeof updater === 'function' ? updater(filtersFromUrl.categories) : updater;
     updateParams({ category: next });
   };
+  const setSelectedTaxonomy = (updater) => {
+    const next =
+      typeof updater === 'function' ? updater(filtersFromUrl.taxonomy) : updater;
+    updateParams({ taxonomy: next });
+  };
   const setAdvancedFilters = (updater) => {
     const next = typeof updater === 'function' ? updater(advancedFilters) : updater;
     updateParams({
@@ -312,6 +327,14 @@ const SearchPage = () => {
   filtersFromUrl.categories.forEach((c) =>
     activeChips.push({ key: `cat-${c}`, label: c, category: c })
   );
+  filtersFromUrl.taxonomy.forEach((slug) => {
+    const opt = taxonomyOptions.find((o) => o.slug === slug);
+    activeChips.push({
+      key: `tax-${slug}`,
+      label: opt?.label || slug,
+      taxonomy: slug,
+    });
+  });
   filtersFromUrl.tags.forEach((tag) => {
     const tagKeyMap = {
       'annulation-gratuite': 'filters.tag_free_cancel',
@@ -355,6 +378,8 @@ const SearchPage = () => {
       updateParams({ [chip.key]: null });
     } else if (chip.category) {
       setSelectedCategories((prev) => prev.filter((c) => c !== chip.category));
+    } else if (chip.taxonomy) {
+      setSelectedTaxonomy((prev) => prev.filter((s) => s !== chip.taxonomy));
     } else if (chip.tag) {
       setAdvancedFilters((prev) => ({
         ...prev,
@@ -380,6 +405,9 @@ const SearchPage = () => {
     categories,
     selectedCategories: filtersFromUrl.categories,
     setSelectedCategories,
+    taxonomyOptions,
+    selectedTaxonomy: filtersFromUrl.taxonomy,
+    setSelectedTaxonomy,
     cities,
     selectedCity: filtersFromUrl.city,
     setSelectedCity: (city) => updateParams({ city }),

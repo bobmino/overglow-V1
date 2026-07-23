@@ -108,6 +108,29 @@ export const parseFilterParams = (query = {}) => {
       : null;
 
   const OBJECT_ID_RE = /^[a-f\d]{24}$/i;
+
+  const taxonomyIdsRaw = query.taxonomyIds;
+  let taxonomyIds = [];
+  if (Array.isArray(taxonomyIdsRaw)) {
+    taxonomyIds = taxonomyIdsRaw.filter((id) => OBJECT_ID_RE.test(String(id)));
+  } else if (typeof taxonomyIdsRaw === 'string' && taxonomyIdsRaw.trim()) {
+    taxonomyIds = taxonomyIdsRaw
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => OBJECT_ID_RE.test(id));
+  }
+
+  const taxonomySlugsRaw = query.taxonomy || query.taxonomies;
+  let taxonomySlugs = [];
+  if (Array.isArray(taxonomySlugsRaw)) {
+    taxonomySlugs = taxonomySlugsRaw.map((s) => String(s).trim()).filter(Boolean);
+  } else if (typeof taxonomySlugsRaw === 'string' && taxonomySlugsRaw.trim()) {
+    taxonomySlugs = taxonomySlugsRaw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
   let categoryGroup =
     typeof query.categoryGroup === 'string' && OBJECT_ID_RE.test(query.categoryGroup.trim())
       ? query.categoryGroup.trim()
@@ -148,6 +171,9 @@ export const parseFilterParams = (query = {}) => {
     propertyType,
     amenities: amenityFlags,
     categoryGroup,
+    taxonomyIds,
+    taxonomySlugs,
+    taxonomyLabels: [],
     minPrice: query.minPrice != null && query.minPrice !== '' ? Number(query.minPrice) : null,
     maxPrice: query.maxPrice != null && query.maxPrice !== '' ? Number(query.maxPrice) : null,
     minRating: query.minRating != null && query.minRating !== '' ? Number(query.minRating) : null,
@@ -199,6 +225,16 @@ export const buildPublishedProductQuery = (filters) => {
     and.push({
       $or: categoryRegexes.map((rx) => ({ category: { $regex: rx } })),
     });
+  }
+
+  if (filters.taxonomyIds?.length) {
+    const taxonomyOr = [{ taxonomyIds: { $in: filters.taxonomyIds } }];
+    if (filters.taxonomyLabels?.length) {
+      filters.taxonomyLabels.forEach((label) => {
+        taxonomyOr.push({ category: new RegExp(`^${escapeRegex(label)}$`, 'i') });
+      });
+    }
+    and.push({ $or: taxonomyOr });
   }
 
   if (filters.productType) {
@@ -332,6 +368,29 @@ export const buildSortOption = (sortBy) => {
   }
 };
 
+/**
+ * Résout slugs taxonomie → IDs + labels FR (compat produits sans taxonomyIds).
+ */
+export const enrichTaxonomyFilters = async (filters) => {
+  const next = { ...filters };
+  const hasSlugs = Array.isArray(next.taxonomySlugs) && next.taxonomySlugs.length > 0;
+  const hasIds = Array.isArray(next.taxonomyIds) && next.taxonomyIds.length > 0;
+  if (!hasSlugs && !hasIds) return next;
+
+  const Taxonomy = (await import('../models/taxonomyModel.js')).default;
+  const or = [];
+  if (hasIds) or.push({ _id: { $in: next.taxonomyIds } });
+  if (hasSlugs) or.push({ slug: { $in: next.taxonomySlugs } });
+
+  const nodes = await Taxonomy.find({ isActive: true, $or: or }).lean();
+  next.taxonomyIds = [...new Set(nodes.map((n) => String(n._id)))];
+  next.taxonomyLabels = nodes
+    .map((n) => n.label?.fr || n.slug)
+    .filter(Boolean);
+
+  return next;
+};
+
 export default {
   escapeRegex,
   normalizeCategory,
@@ -339,4 +398,5 @@ export default {
   parseFilterParams,
   buildPublishedProductQuery,
   buildSortOption,
+  enrichTaxonomyFilters,
 };

@@ -23,6 +23,9 @@ const FilterSidebar = ({
   categories,
   selectedCategories,
   setSelectedCategories,
+  taxonomyOptions = [],
+  selectedTaxonomy = [],
+  setSelectedTaxonomy,
   cities = [],
   selectedCity = '',
   setSelectedCity,
@@ -71,6 +74,13 @@ const FilterSidebar = ({
     );
   };
 
+  const handleTaxonomyToggle = (slug) => {
+    if (typeof setSelectedTaxonomy !== 'function') return;
+    setSelectedTaxonomy((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+    );
+  };
+
   const handleTagToggle = (tagId) => {
     const currentTags = filters.tags || [];
     const newTags = currentTags.includes(tagId)
@@ -79,8 +89,11 @@ const FilterSidebar = ({
     setFilters((prev) => ({ ...prev, tags: newTags }));
   };
 
+  const hasTaxonomy = Array.isArray(taxonomyOptions) && taxonomyOptions.length > 0;
+
   const activeFiltersCount =
     (selectedCategories?.length || 0) +
+    (selectedTaxonomy?.length || 0) +
     (filters.minPrice || filters.maxPrice ? 1 : 0) +
     (filters.minRating ? 1 : 0) +
     (filters.tags?.length || 0) +
@@ -150,7 +163,49 @@ const FilterSidebar = ({
           </div>
         )}
 
-        {(storeMode !== 'stays' && Array.isArray(categories) && categories.length > 0) && (
+        {hasTaxonomy && storeMode !== 'stays' && (
+          <div className="pt-6">
+            <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
+              {storeMode === 'extras'
+                ? t('stores.extras.service_type')
+                : t('catalog.category')}
+            </h3>
+            <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
+              {taxonomyOptions.map((opt) => {
+                const isActive =
+                  Array.isArray(selectedTaxonomy) && selectedTaxonomy.includes(opt.slug);
+                return (
+                  <label key={opt.slug} className="flex items-center space-x-3 cursor-pointer group">
+                    <div
+                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                        isActive
+                          ? 'bg-primary-600 border-primary-600'
+                          : 'border-slate-300 bg-white group-hover:border-primary-500'
+                      } transition-colors`}
+                    >
+                      {isActive && <Check size={14} className="text-white" />}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() => handleTaxonomyToggle(opt.slug)}
+                      className="hidden"
+                    />
+                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors flex-1">
+                      {opt.parentLabel ? `${opt.parentLabel} · ` : ''}
+                      {opt.label}
+                    </span>
+                    {typeof opt.count === 'number' && opt.count > 0 && (
+                      <span className="text-xs text-slate-400">{opt.count}</span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!hasTaxonomy && (storeMode !== 'stays' && Array.isArray(categories) && categories.length > 0) && (
         <div className="pt-6">
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
             {storeMode === 'extras'

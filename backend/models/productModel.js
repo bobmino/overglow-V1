@@ -32,6 +32,12 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  /** Feuilles taxonomie Viator-like (1+). category string reste dérivée pour compat. */
+  taxonomyIds: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Taxonomy' }],
+    default: [],
+    index: true,
+  },
   categoryGroup: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'CategoryGroup',
