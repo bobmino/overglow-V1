@@ -61,7 +61,7 @@ const ProductCard = ({ product }) => {
             e.target.src = fallbackImage;
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent md:from-black/25" />
 
         <div className="absolute top-4 end-4 flex items-center gap-2">
           {rating && (

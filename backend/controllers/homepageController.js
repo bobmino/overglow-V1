@@ -79,7 +79,9 @@ export const getHomepageLayout = async (req, res) => {
       activeCategoryGroups,
       taggedProducts,
       allBadges,
-      storeShelfProducts,
+      exploreShelf,
+      staysShelf,
+      extrasShelf,
     ] = await Promise.all([
       // ── 1. Top Destinations (from confirmed bookings) ──
       Booking.aggregate([
@@ -176,16 +178,35 @@ export const getHomepageLayout = async (req, res) => {
       // ── 5. All badges in one shot (tiny collection) ──
       Badge.find({}).lean(),
 
-      // ── 6. Store shelves by productType (explore / stays / extras) ──
+      // ── 6. Store shelves by productType (queries séparées — évite limit(36) tours-only) ──
       Product.find({
         status: { $regex: /^published$/i },
-        productType: { $in: ['tour', 'luxury_stay', 'service'] },
+        productType: 'tour',
       })
         .select(CARD_PROJECTION)
         .sort({ 'metrics.averageRating': -1, 'metrics.bookingCount': -1 })
-        .limit(36)
+        .limit(8)
+        .lean(),
+      Product.find({
+        status: { $regex: /^published$/i },
+        productType: 'luxury_stay',
+      })
+        .select(CARD_PROJECTION)
+        .sort({ 'metrics.averageRating': -1, 'metrics.bookingCount': -1 })
+        .limit(8)
+        .lean(),
+      Product.find({
+        status: { $regex: /^published$/i },
+        productType: 'service',
+      })
+        .select(CARD_PROJECTION)
+        .sort({ 'metrics.averageRating': -1, 'metrics.bookingCount': -1 })
+        .limit(8)
         .lean(),
     ]);
+
+    // Unpack shelf queries (indexes after previous Promise.all slots)
+    // Note: storeShelfProducts was one array — now three. Remap below.
 
     // ═══════════════════════════════════════════════════════════════════
     // IN-MEMORY post-processing (fast — no I/O)
@@ -259,20 +280,21 @@ export const getHomepageLayout = async (req, res) => {
       }
     }
 
-    // Store shelves by productType
-    const exploreTours = [];
-    const luxuryStays = [];
-    const premiumServices = [];
-    for (const p of storeShelfProducts || []) {
-      if (p.productType === 'tour' && exploreTours.length < 8) exploreTours.push(p);
-      else if (p.productType === 'luxury_stay' && luxuryStays.length < 8) luxuryStays.push(p);
-      else if (p.productType === 'service' && premiumServices.length < 8) premiumServices.push(p);
-    }
+    // Store shelves by productType (already filtered by query)
+    let exploreTours = [...(exploreShelf || [])];
+    let luxuryStays = [...(staysShelf || [])];
+    let premiumServices = [...(extrasShelf || [])];
     // Fallback: if no typed tours, use top circuits / untyped popular from tagged
     if (exploreTours.length === 0) {
       for (const p of taggedProducts) {
         if (exploreTours.length >= 8) break;
         if (!p.productType || p.productType === 'tour') exploreTours.push(p);
+      }
+    }
+    if (premiumServices.length === 0) {
+      for (const p of topServices) {
+        if (premiumServices.length >= 8) break;
+        premiumServices.push(p);
       }
     }
 

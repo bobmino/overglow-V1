@@ -6,6 +6,7 @@ import { Calendar, Clock, Users, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import PaymentSelector from '../components/PaymentSelector';
 import { trackBeginCheckout } from '../utils/analytics';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
@@ -48,10 +49,12 @@ const CheckoutPage = () => {
   const { isAuthenticated } = useAuth();
   const { formatPrice } = useCurrency();
   const { cartItems, clearCart } = useCart();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [preparing, setPreparing] = useState(true);
   const [error, setError] = useState('');
   const [pendingBookings, setPendingBookings] = useState([]);
+  const [prepareAttempt, setPrepareAttempt] = useState(0);
   const preparedRef = useRef(false);
   /** Empêche navigate('/') quand clearCart vide le panier juste avant booking-success */
   const completingRef = useRef(false);
@@ -144,9 +147,10 @@ const CheckoutPage = () => {
       } catch (err) {
         logger.error('Checkout prepare bookings failed', err);
         if (!cancelled) {
-          setError(
-            err.response?.data?.message || err.message || t('checkout.err_booking_failed')
-          );
+          const msg =
+            err.response?.data?.message || err.message || t('checkout.err_booking_failed');
+          setError(msg);
+          toast.error(msg);
         }
       } finally {
         if (!cancelled) setPreparing(false);
@@ -157,7 +161,7 @@ const CheckoutPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, checkoutItems, t]);
+  }, [isAuthenticated, checkoutItems, t, prepareAttempt, toast]);
 
   const handlePaymentComplete = async (paymentDetails) => {
     setLoading(true);
@@ -209,9 +213,10 @@ const CheckoutPage = () => {
     } catch (err) {
       completingRef.current = false;
       logger.error('Checkout payment complete failed', err);
-      setError(
-        err.response?.data?.message || err.message || t('checkout.err_booking_failed')
-      );
+      const msg =
+        err.response?.data?.message || err.message || t('checkout.err_booking_failed');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -228,8 +233,24 @@ const CheckoutPage = () => {
           {t('checkout.title')}
         </h1>
 
+        {error && (
+          <div
+            className="sticky top-20 z-40 mb-6 bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 shadow-sm"
+            role="alert"
+            aria-live="assertive"
+          >
+            <p className="font-semibold">{error}</p>
+            <p className="text-sm text-red-600 mt-1">
+              {t(
+                'checkout.err_retry_hint',
+                'Réessayez ou revenez à l’expérience pour resélectionner une date.'
+              )}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-none">
             <section
               className="bg-white rounded-xl border border-gray-200 p-6"
               aria-labelledby="booking-details-heading"
@@ -289,9 +310,8 @@ const CheckoutPage = () => {
 
               {error && (
                 <div
-                  className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+                  className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 lg:block hidden"
                   role="alert"
-                  aria-live="assertive"
                 >
                   {error}
                 </div>
@@ -311,12 +331,26 @@ const CheckoutPage = () => {
                   disabled={loading}
                 />
               ) : (
-                <p className="text-slate-600">{t('checkout.err_booking_failed')}</p>
+                <div className="space-y-3">
+                  <p className="text-slate-600">{t('checkout.err_booking_failed')}</p>
+                  <button
+                    type="button"
+                    className="text-sm font-semibold text-primary-700 underline"
+                    onClick={() => {
+                      preparedRef.current = false;
+                      setPendingBookings([]);
+                      setError('');
+                      setPrepareAttempt((n) => n + 1);
+                    }}
+                  >
+                    {t('common.retry', 'Réessayer')}
+                  </button>
+                </div>
               )}
             </section>
           </div>
 
-          <aside className="lg:col-span-1 order-first lg:order-none" aria-labelledby="price-summary-heading">
+          <aside className="lg:col-span-1 order-1 lg:order-none" aria-labelledby="price-summary-heading">
             <div className="bg-white rounded-xl border border-gray-200 p-6 lg:sticky lg:top-24">
               <h2 id="price-summary-heading" className="text-xl font-bold mb-4">
                 {t('checkout.price_summary')}

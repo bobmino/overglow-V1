@@ -39,7 +39,7 @@ const HeroSection = () => {
           className="w-full h-full object-cover object-center"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/15 to-black/50 md:from-black/25 md:via-black/10 md:to-black/35 md:mix-blend-normal mix-blend-multiply" />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center mt-[-6vh]">

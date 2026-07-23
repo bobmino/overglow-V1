@@ -55,6 +55,8 @@ const OperatorWizardPage = () => {
   useEffect(() => {
     const fetchWizardData = async () => {
       try {
+        setLoading(true);
+        setError('');
         const { data } = await api.get('/api/operator/wizard/data');
         setWizardData(data);
         
@@ -85,13 +87,18 @@ const OperatorWizardPage = () => {
         }
       } catch (error) {
         logger.error('Failed to fetch wizard data:', error);
+        const msg =
+          error.response?.data?.message ||
+          t('operator.wizard.load_error', 'Impossible de charger l’onboarding. Réessayez.');
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
     };
 
     fetchWizardData();
-  }, []);
+  }, [STEPS, t, toast]);
 
   const saveBackendStep = async (stepId) => {
     switch (stepId) {
@@ -194,6 +201,27 @@ const OperatorWizardPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-700"></div>
+      </div>
+    );
+  }
+
+  if (!wizardData && error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white border border-red-100 rounded-2xl p-8 text-center shadow-sm">
+          <AlertCircle className="mx-auto text-red-500 mb-4" size={40} />
+          <h1 className="text-xl font-bold text-slate-900 mb-2">
+            {t('operator.wizard.load_title', 'Chargement impossible')}
+          </h1>
+          <p className="text-slate-600 mb-6">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="px-5 py-3 rounded-xl bg-primary-700 text-white font-semibold hover:bg-primary-800"
+          >
+            {t('common.retry', 'Réessayer')}
+          </button>
+        </div>
       </div>
     );
   }
@@ -538,10 +566,16 @@ const OperatorWizardPage = () => {
                   <input
                     type="number"
                     value={formData.companyInfo.capital || ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      companyInfo: { ...formData.companyInfo, capital: parseFloat(e.target.value) }
-                    })}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setFormData({
+                        ...formData,
+                        companyInfo: {
+                          ...formData.companyInfo,
+                          capital: raw === '' ? '' : parseFloat(raw),
+                        },
+                      });
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>

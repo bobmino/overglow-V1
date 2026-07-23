@@ -49,9 +49,16 @@ const saveProviderType = async (req, res) => {
 
     const { providerType } = sanitizeBody(req.body, WIZARD_PROVIDER_FIELDS);
 
-    const operator = await Operator.findOne({ user: req.user._id });
+    let operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
-      return res.status(404).json({ message: 'Operator profile not found' });
+      operator = await Operator.create({
+        user: req.user._id,
+        publicName: req.user.name || 'Mon activité',
+        status: 'Pending',
+        isFormCompleted: false,
+        completedSteps: [],
+        location: { country: 'Maroc' },
+      });
     }
 
     operator.providerType = providerType;
@@ -87,12 +94,16 @@ const savePublicInfo = async (req, res) => {
     operator.publicName = publicName;
     operator.description = description;
     if (location) {
+      const coords = location.coordinates || {};
       operator.location = {
         city: location.city,
         address: location.address,
         postalCode: location.postalCode,
-        country: location.country || 'France',
-        coordinates: location.coordinates || {},
+        country: location.country || 'Maroc',
+        coordinates: {
+          ...(Number.isFinite(Number(coords.lat)) ? { lat: Number(coords.lat) } : {}),
+          ...(Number.isFinite(Number(coords.lng)) ? { lng: Number(coords.lng) } : {}),
+        },
       };
     }
 
@@ -120,8 +131,11 @@ const savePhotos = async (req, res) => {
       return res.status(404).json({ message: 'Operator profile not found' });
     }
 
+    if (!operator.photos) {
+      operator.photos = { logo: undefined, gallery: [] };
+    }
     if (logo) operator.photos.logo = logo;
-    if (gallery && Array.isArray(gallery)) {
+    if (Array.isArray(gallery)) {
       operator.photos.gallery = gallery;
     }
 
@@ -150,12 +164,16 @@ const saveAddress = async (req, res) => {
     }
 
     if (companyAddress) {
+      const coords = companyAddress.coordinates || {};
       operator.companyAddress = {
         street: companyAddress.street,
         city: companyAddress.city,
         postalCode: companyAddress.postalCode,
-        country: companyAddress.country || 'France',
-        coordinates: companyAddress.coordinates || {},
+        country: companyAddress.country || 'Maroc',
+        coordinates: {
+          ...(Number.isFinite(Number(coords.lat)) ? { lat: Number(coords.lat) } : {}),
+          ...(Number.isFinite(Number(coords.lng)) ? { lng: Number(coords.lng) } : {}),
+        },
       };
     }
 
@@ -219,14 +237,19 @@ const savePrivateInfo = async (req, res) => {
 
     // Sauvegarder selon le type de prestataire
     if (operator.providerType === 'company' && companyInfo) {
+      const capitalRaw = companyInfo.capital;
+      const capitalNum =
+        capitalRaw === '' || capitalRaw === null || capitalRaw === undefined
+          ? undefined
+          : Number(capitalRaw);
       operator.companyInfo = {
         companyName: companyInfo.companyName,
-        registrationNumber: companyInfo.registrationNumber, // RC
+        registrationNumber: companyInfo.registrationNumber,
         kbis: companyInfo.kbis,
         siret: companyInfo.siret,
         vatNumber: companyInfo.vatNumber,
         legalForm: companyInfo.legalForm,
-        capital: companyInfo.capital,
+        capital: Number.isFinite(capitalNum) ? capitalNum : undefined,
         headquarters: companyInfo.headquarters,
       };
     } else if (operator.providerType === 'individual_with_status' && individualWithStatusInfo) {
@@ -299,9 +322,19 @@ const submitWizard = async (req, res) => {
 // @access  Private/Operator
 const getWizardData = async (req, res) => {
   try {
-    const operator = await Operator.findOne({ user: req.user._id });
+    let operator = await Operator.findOne({ user: req.user._id });
     if (!operator) {
-      return res.status(404).json({ message: 'Operator profile not found' });
+      // Profil manquant (inscription partielle / upgrade) — créer pour débloquer le wizard
+      operator = await Operator.create({
+        user: req.user._id,
+        publicName: req.user.name || 'Mon activité',
+        description: '',
+        status: 'Pending',
+        isFormCompleted: false,
+        completedSteps: [],
+        location: { country: 'Maroc' },
+      });
+      logger.info('Auto-created operator profile for wizard', { userId: req.user._id });
     }
 
     res.json(operator);

@@ -179,6 +179,220 @@ const PRODUCTS = [
   },
 ];
 
+/** Séjours luxe — productType: luxury_stay */
+const LUXURY_STAYS = [
+  {
+    slug: 'riad-dar-atlas-marrakech',
+    title: 'Riad Dar Atlas — suite patio',
+    description:
+      'Riad de standing dans la médina : suite avec patio, petit-déjeuner marocain, hammam sur réservation. Accueil 24h.',
+    category: 'Hébergement',
+    city: 'Marrakech',
+    address: 'Médina, Marrakech',
+    duration: '1 nuit',
+    price: 1200,
+    productType: 'luxury_stay',
+    luxuryStay: {
+      rooms: 1,
+      capacity: 2,
+      amenities: { pool: false, wifi: true, jacuzzi: false, garden: true },
+      propertyType: 'riad',
+      standing: 3,
+    },
+    location: { type: 'Point', coordinates: [-7.9891, 31.6295] },
+    images: [
+      '/images/cities/marrakech-hero.webp',
+      '/images/cities/marrakech-card.webp',
+      '/images/cities/fes-g2.webp',
+    ],
+  },
+  {
+    slug: 'villa-ocean-taghazout',
+    title: 'Villa Océan — Taghazout Bay',
+    description:
+      'Villa avec piscine privée face à l’Atlantique, 3 chambres, cuisine équipée, conciergerie locale. Idéal familles.',
+    category: 'Hébergement',
+    city: 'Taghazout',
+    address: 'Taghazout Bay',
+    duration: '1 nuit',
+    price: 2500,
+    productType: 'luxury_stay',
+    luxuryStay: {
+      rooms: 3,
+      capacity: 6,
+      amenities: { pool: true, wifi: true, jacuzzi: true, garden: true },
+      propertyType: 'villa',
+      standing: 3,
+    },
+    location: { type: 'Point', coordinates: [-9.711, 30.545] },
+    images: [
+      '/images/cities/taghazout-hero.webp',
+      '/images/cities/taghazout-card.webp',
+      '/images/cities/agadir-hero.webp',
+    ],
+  },
+  {
+    slug: 'appartement-corniche-agadir',
+    title: 'Appartement Corniche — vue océan',
+    description:
+      'Appartement haut standing face à la baie d’Agadir : 2 chambres, terrasse, parking, ménage quotidien optionnel.',
+    category: 'Hébergement',
+    city: 'Agadir',
+    address: 'Boulevard de la Corniche, Agadir',
+    duration: '1 nuit',
+    price: 900,
+    productType: 'luxury_stay',
+    luxuryStay: {
+      rooms: 2,
+      capacity: 4,
+      amenities: { pool: false, wifi: true, jacuzzi: false, garden: false },
+      propertyType: 'apartment',
+      standing: 2,
+    },
+    location: { type: 'Point', coordinates: [-9.5981, 30.4278] },
+    images: [
+      '/images/cities/agadir-hero.webp',
+      '/images/cities/agadir-card.webp',
+      '/images/cities/agadir-g1.webp',
+    ],
+  },
+  {
+    slug: 'riad-essaouira-medina',
+    title: 'Riad Essaouira — chambre d’hôtes',
+    description:
+      'Riad intimiste dans la médina d’Essaouira : chambre avec vue patio, petit-déjeuner, conseils locaux inclus.',
+    category: 'Hébergement',
+    city: 'Essaouira',
+    address: 'Médina, Essaouira',
+    duration: '1 nuit',
+    price: 750,
+    productType: 'luxury_stay',
+    luxuryStay: {
+      rooms: 1,
+      capacity: 2,
+      amenities: { pool: false, wifi: true, jacuzzi: false, garden: true },
+      propertyType: 'riad',
+      standing: 2,
+    },
+    location: { type: 'Point', coordinates: [-9.77, 31.5085] },
+    images: [
+      '/images/cities/essaouira-hero.webp',
+      '/images/cities/essaouira-card.webp',
+      '/images/cities/essaouira-g1.webp',
+    ],
+  },
+];
+
+/** Extras / services — productType: service */
+const PREMIUM_SERVICES = [
+  {
+    slug: 'transfert-aeroport-marrakech-prive',
+    title: 'Transfert aéroport Marrakech — privé',
+    description:
+      'Prise en charge RAK aéroport ↔ médina ou hôtel. Véhicule climatisé, chauffeur francophone, suivi vol.',
+    category: 'Transport',
+    city: 'Marrakech',
+    address: 'Aéroport Marrakech Menara',
+    duration: '1 heure',
+    price: 250,
+    productType: 'service',
+    serviceDetails: {
+      vehicleType: 'Berline',
+      vehicleCount: 1,
+      guideIncluded: false,
+      languages: ['fr', 'en', 'ar'],
+    },
+    tags: ['Top Service'],
+    location: { type: 'Point', coordinates: [-8.0363, 31.6069] },
+    images: [
+      '/images/cities/marrakech-card.webp',
+      '/images/cities/marrakech-hero.webp',
+      '/images/cities/casablanca-card.webp',
+    ],
+  },
+  {
+    slug: 'chauffeur-prive-journee-agadir',
+    title: 'Chauffeur privé — journée Agadir',
+    description:
+      'Mise à disposition 8h : SUV climatisé, chauffeur local, parcours personnalisé (ville, Taghazout, Paradise Valley).',
+    category: 'Transport',
+    city: 'Agadir',
+    address: 'Agadir centre',
+    duration: '8 heures',
+    price: 800,
+    productType: 'service',
+    serviceDetails: {
+      vehicleType: 'SUV',
+      vehicleCount: 1,
+      guideIncluded: false,
+      languages: ['fr', 'en'],
+    },
+    tags: ['Top Service'],
+    location: { type: 'Point', coordinates: [-9.5981, 30.4278] },
+    images: [
+      '/images/cities/agadir-hero.webp',
+      '/images/cities/taghazout-card.webp',
+      '/images/cities/agadir-g2.webp',
+    ],
+  },
+  {
+    slug: 'guide-prive-medina-fes',
+    title: 'Guide privé — médina de Fès',
+    description:
+      'Guide certifié multilingue pour immersion dans la médina : tanneries, artisans, histoire. Groupes jusqu’à 6.',
+    category: 'Guide',
+    city: 'Fès',
+    address: 'Bab Boujloud, Fès',
+    duration: '4 heures',
+    price: 450,
+    productType: 'service',
+    serviceDetails: {
+      vehicleType: '',
+      vehicleCount: 0,
+      guideIncluded: true,
+      languages: ['fr', 'en', 'es', 'ar'],
+    },
+    tags: ['Top Service'],
+    location: { type: 'Point', coordinates: [-4.9998, 34.0331] },
+    images: [
+      '/images/cities/fes-hero.webp',
+      '/images/cities/fes-card.webp',
+      '/images/cities/fes-g1.webp',
+    ],
+  },
+  {
+    slug: 'photographe-pro-session-marrakech',
+    title: 'Photographe pro — session Marrakech',
+    description:
+      'Session photo 2h (médina ou désert Agafay) : 40 clichés retouchés livrés sous 48h. Idéal couple ou famille.',
+    category: 'Photo',
+    city: 'Marrakech',
+    address: 'Jemaa el-Fna / Agafay',
+    duration: '2 heures',
+    price: 950,
+    productType: 'service',
+    serviceDetails: {
+      vehicleType: '',
+      vehicleCount: 0,
+      guideIncluded: false,
+      languages: ['fr', 'en'],
+    },
+    tags: ['Top Service'],
+    location: { type: 'Point', coordinates: [-7.9811, 31.6258] },
+    images: [
+      '/images/cities/marrakech-g2.webp',
+      '/images/cities/marrakech-hero.webp',
+      '/images/cities/taroudant-card.webp',
+    ],
+  },
+];
+
+const ALL_CATALOG = [
+  ...PRODUCTS.map((p) => ({ ...p, productType: p.productType || 'tour' })),
+  ...LUXURY_STAYS,
+  ...PREMIUM_SERVICES,
+];
+
 const ensureOperator = async () => {
   let user = await User.findOne({ email: OPERATOR_EMAIL });
   if (!user) {
@@ -238,19 +452,23 @@ const run = async () => {
   let created = 0;
   let skipped = 0;
 
-  for (const p of PRODUCTS) {
+  for (const p of ALL_CATALOG) {
     const existing = await Product.findOne({ slug: p.slug });
     if (existing) {
       skipped += 1;
       continue;
     }
+    const { productType, luxuryStay, serviceDetails, tags, ...rest } = p;
     const product = await Product.create({
-      ...p,
+      ...rest,
       operator: operator._id,
       status: 'Published',
-      productType: 'tour',
+      productType: productType || 'tour',
+      ...(luxuryStay ? { luxuryStay } : {}),
+      ...(serviceDetails ? { serviceDetails } : {}),
+      ...(tags ? { tags } : {}),
       cancellationPolicy: { type: 'moderate', refundPercentage: 50, hoursBeforeStart: 48 },
-      paymentMethod: 'Paiement sur place',
+      paymentPreference: 'Paiement sur place',
     });
     await Schedule.insertMany(buildSchedules({ productId: product._id, price: p.price }));
     created += 1;
@@ -261,7 +479,16 @@ const run = async () => {
       {
         operatorEmail: OPERATOR_EMAIL,
         operatorPasswordHint: 'see SEED_OPERATOR_PASSWORD or default in script',
-        products: { created, skipped, total: PRODUCTS.length },
+        products: {
+          created,
+          skipped,
+          total: ALL_CATALOG.length,
+          byType: {
+            tour: PRODUCTS.length,
+            luxury_stay: LUXURY_STAYS.length,
+            service: PREMIUM_SERVICES.length,
+          },
+        },
       },
       null,
       2
