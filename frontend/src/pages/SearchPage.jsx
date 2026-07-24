@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import LocalizedLink from '../components/LocalizedLink';
 import { useTranslation } from 'react-i18next';
-import { X, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import api from '../config/axios';
 import ProductCard from '../components/ProductCard';
-import FilterSidebar from '../components/FilterSidebar';
-import FilterDrawer from '../components/FilterDrawer';
 import EmptyState from '../components/EmptyState';
 import SEOHead from '../components/SEOHead';
+import CatalogFilterBar from '../components/catalog/CatalogFilterBar';
+import FilterModal from '../components/catalog/FilterModal';
 import { trackSearch } from '../utils/analytics';
 import {
   CURATED_EXTRAS,
@@ -18,6 +18,7 @@ import {
   EXPLORE_CATEGORY_WHITELIST,
   EXTRAS_CATEGORY_VALUES,
   hasActiveStoreFilters,
+  PROPERTY_TYPE_ORDER,
 } from '../data/storeCatalog';
 import { normalizeCategory } from '../utils/categoryMapping';
 import StoreBrowseLayout from '../components/store/StoreBrowseLayout';
@@ -40,7 +41,7 @@ const SearchPage = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = React.useState(false);
 
   const storeKey = pathToStore(location.pathname);
   const store = storeKey ? STORE_CONFIG[storeKey] : null;
@@ -413,6 +414,115 @@ const SearchPage = () => {
     [updateParams]
   );
 
+  const filterPills = useMemo(() => {
+    if (filterProfile === 'stay') {
+      return PROPERTY_TYPE_ORDER.filter((id) => id !== 'other').map((id) => ({
+        key: `prop-${id}`,
+        kind: 'propertyType',
+        value: id,
+        label: t(`stores.stays.type_${id}`, id),
+      }));
+    }
+
+    const parentLabels = [];
+    const seen = new Set();
+    (taxonomyOptions || []).forEach((opt) => {
+      const parent = opt.parentLabel || opt.label;
+      if (!parent || seen.has(parent)) return;
+      seen.add(parent);
+      const slugs = (taxonomyOptions || [])
+        .filter((o) => (o.parentLabel || o.label) === parent)
+        .map((o) => o.slug)
+        .filter(Boolean);
+      parentLabels.push({
+        key: `tax-parent-${parent}`,
+        kind: 'taxonomyParent',
+        value: slugs,
+        label: parent,
+      });
+    });
+
+    if (parentLabels.length) {
+      return [
+        {
+          key: 'tag-free-cancel',
+          kind: 'tag',
+          value: 'annulation-gratuite',
+          label: t('filters.tag_free_cancel'),
+        },
+        ...parentLabels.slice(0, 10),
+      ];
+    }
+
+    return (categories || []).slice(0, 10).map((name) => ({
+      key: `cat-${name}`,
+      kind: 'category',
+      value: name,
+      label: name,
+    }));
+  }, [filterProfile, taxonomyOptions, categories, t]);
+
+  const activePillKeys = useMemo(() => {
+    const keys = [];
+    if (filtersFromUrl.tags.includes('annulation-gratuite')) keys.push('tag-free-cancel');
+    if (filtersFromUrl.propertyType) keys.push(`prop-${filtersFromUrl.propertyType}`);
+    filtersFromUrl.categories.forEach((c) => keys.push(`cat-${c}`));
+    filterPills.forEach((pill) => {
+      if (pill.kind === 'taxonomyParent' && Array.isArray(pill.value)) {
+        const allSelected =
+          pill.value.length > 0
+          && pill.value.every((slug) => filtersFromUrl.taxonomy.includes(slug));
+        if (allSelected) keys.push(pill.key);
+      }
+    });
+    return keys;
+  }, [filtersFromUrl, filterPills]);
+
+  const handlePillToggle = useCallback(
+    (pill) => {
+      if (!pill) return;
+      if (pill.kind === 'tag') {
+        const has = filtersFromUrl.tags.includes(pill.value);
+        updateParams({
+          tags: has
+            ? filtersFromUrl.tags.filter((x) => x !== pill.value)
+            : [...filtersFromUrl.tags, pill.value],
+        });
+        return;
+      }
+      if (pill.kind === 'propertyType') {
+        updateParams({
+          propertyType: filtersFromUrl.propertyType === pill.value ? null : pill.value,
+        });
+        return;
+      }
+      if (pill.kind === 'category') {
+        const has = filtersFromUrl.categories.includes(pill.value);
+        updateParams({
+          category: has
+            ? filtersFromUrl.categories.filter((c) => c !== pill.value)
+            : [...filtersFromUrl.categories, pill.value],
+        });
+        return;
+      }
+      if (pill.kind === 'taxonomyParent' && Array.isArray(pill.value)) {
+        const allSelected =
+          pill.value.length > 0
+          && pill.value.every((slug) => filtersFromUrl.taxonomy.includes(slug));
+        if (allSelected) {
+          updateParams({
+            taxonomy: filtersFromUrl.taxonomy.filter((s) => !pill.value.includes(s)),
+          });
+        } else {
+          updateParams({
+            taxonomy: [...new Set([...filtersFromUrl.taxonomy, ...pill.value])],
+          });
+        }
+      }
+    },
+    [filtersFromUrl, updateParams]
+  );
+
   const filterSidebarProps = {
     searchQuery: filtersFromUrl.q,
     setSearchQuery,
@@ -432,6 +542,12 @@ const SearchPage = () => {
     filterProfile,
   };
 
+  const resultLabel = isBrowseDefault
+    ? t('stores.browse_hint', 'Parcourir par catégorie')
+    : total === 1
+      ? `1 ${t('catalog.result_found')}`
+      : `${total} ${t('catalog.results_found')}`;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <SEOHead
@@ -442,66 +558,37 @@ const SearchPage = () => {
 
       <div className="container mx-auto px-4 pt-24 pb-8">
         {store && (
-          <div className="mb-8 rounded-2xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white p-6 md:p-10">
-            <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-2">
+          <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white px-5 py-6 md:px-8 md:py-8">
+            <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-1.5">
               Overglow Trip
             </p>
-            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{pageTitle}</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold mb-1">{pageTitle}</h1>
             {pageSubtitle && (
-              <p className="text-primary-50/90 max-w-2xl text-base md:text-lg">{pageSubtitle}</p>
+              <p className="text-primary-50/90 max-w-2xl text-sm md:text-base">{pageSubtitle}</p>
             )}
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto">
-            <FilterSidebar {...filterSidebarProps} />
-          </aside>
+        {!store && (
+          <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-2">
+            {pageTitle}
+          </h1>
+        )}
 
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div>
-                {!store && (
-                  <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900">
-                    {pageTitle}
-                  </h1>
-                )}
-                <p className="text-slate-600 mt-1">
-                  {isBrowseDefault
-                    ? t('stores.browse_hint', 'Parcourir par catégorie')
-                    : total === 1
-                      ? `1 ${t('catalog.result_found')}`
-                      : `${total} ${t('catalog.results_found')}`}
-                </p>
-              </div>
+        <CatalogFilterBar
+          resultLabel={resultLabel}
+          onOpenFilters={() => setIsFilterModalOpen(true)}
+          pills={filterPills}
+          activePillKeys={activePillKeys}
+          onPillToggle={handlePillToggle}
+          cities={cities}
+          selectedCity={filtersFromUrl.city}
+          onCityChange={(city) => updateParams({ city })}
+          sortBy={filtersFromUrl.sortBy}
+          onSortChange={(sortBy) => updateParams({ sortBy })}
+        />
 
-              <div className="flex flex-col gap-3 w-full sm:flex-row sm:items-center sm:w-auto">
-                <button
-                  type="button"
-                  className="lg:hidden inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium"
-                  onClick={() => setIsMobileDrawerOpen(true)}
-                >
-                  <SlidersHorizontal size={18} />
-                  {t('catalog.open_filters')}
-                </button>
-
-                <label className="text-sm text-slate-600 flex items-center gap-2 w-full sm:w-auto">
-                  <span className="hidden sm:inline shrink-0">{t('catalog.sort_by')}</span>
-                  <select
-                    value={filtersFromUrl.sortBy}
-                    onChange={(e) => updateParams({ sortBy: e.target.value })}
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm w-full sm:w-auto min-h-11"
-                  >
-                    <option value="recommended">{t('catalog.sort_recommended')}</option>
-                    <option value="price-low">{t('catalog.sort_price_low')}</option>
-                    <option value="price-high">{t('catalog.sort_price_high')}</option>
-                    <option value="rating">{t('catalog.sort_rating')}</option>
-                    <option value="popularity">{t('catalog.sort_popularity')}</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-
+        <div className="min-w-0">
             {activeChips.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 <span className="text-xs uppercase tracking-wider text-slate-500 self-center me-1">
@@ -529,7 +616,19 @@ const SearchPage = () => {
             )}
 
             {isLoading ? (
-              <div className="py-20 text-center text-slate-500">{t('common.loading')}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl overflow-hidden border border-slate-100 bg-white animate-pulse">
+                    <div className="aspect-[3/4] bg-slate-200" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-3 w-1/3 bg-slate-200 rounded" />
+                      <div className="h-5 w-4/5 bg-slate-200 rounded" />
+                      <div className="h-3 w-1/2 bg-slate-100 rounded" />
+                      <div className="h-8 w-1/3 bg-slate-200 rounded mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : isError ? (
               <div className="py-20 text-center">
                 <p className="text-slate-700 mb-4">{t('catalog.load_error')}</p>
@@ -631,6 +730,7 @@ const SearchPage = () => {
                 products={products}
                 browseMode={browseMode}
                 taxonomyOptions={taxonomyOptions}
+                storeKey={storeKey}
                 onSeeAllSection={handleSeeAllSection}
               />
             ) : (
@@ -689,13 +789,15 @@ const SearchPage = () => {
                 )}
               </>
             )}
-          </div>
         </div>
       </div>
 
-      <FilterDrawer
-        isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={() => setIsFilterModalOpen(false)}
+        onReset={handleResetFilters}
+        resultCount={total}
         {...filterSidebarProps}
       />
     </div>

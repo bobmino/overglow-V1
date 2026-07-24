@@ -32,6 +32,7 @@ const FilterSidebar = ({
   onReset,
   storeMode = null,
   filterProfile = null,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const profile =
@@ -119,7 +120,14 @@ const FilterSidebar = ({
     (searchQuery ? 1 : 0);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <div
+      className={
+        compact
+          ? 'bg-transparent p-2'
+          : 'bg-white rounded-2xl border border-slate-200 p-6 shadow-sm'
+      }
+    >
+      {!compact && (
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-heading font-bold text-xl text-slate-900 flex items-center">
           <FilterIcon size={22} className="me-2" />
@@ -145,6 +153,7 @@ const FilterSidebar = ({
           </button>
         )}
       </div>
+      )}
 
       <div className="space-y-6 divide-y divide-slate-100">
         <div className="pt-2">

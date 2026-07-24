@@ -39,9 +39,9 @@ const MENU_DATA = {
     mapping: {
       'Surf & Plage': {
         incontournables: [
-          { label: 'Surf à Taghazout — demi-journée', to: '/explore?q=surf%20taghazout' },
-          { label: 'Essaouira — vent & médina', to: '/explore?q=essaouira' },
-          { label: 'Agadir & côte atlantique', to: '/explore?city=Agadir' },
+          { labelKey: 'mega_menu.link_surf_taghazout', label: 'Surf à Taghazout', to: '/explore?city=Taghazout&taxonomy=activites-aquatiques' },
+          { labelKey: 'mega_menu.link_essaouira', label: 'Essaouira — vent & médina', to: '/explore?city=Essaouira' },
+          { labelKey: 'mega_menu.link_agadir_coast', label: 'Agadir & côte atlantique', to: '/explore?city=Agadir' },
         ],
         destinationsPhares: [
           { name: 'Taghazout', image: cityImg('Taghazout') },
@@ -50,10 +50,10 @@ const MENU_DATA = {
       },
       'Aventure & Nature': {
         incontournables: [
-          { label: 'Désert d’Agafay — coucher de soleil', to: '/explore?q=agafay' },
-          { label: 'Trek Toubkal — 2 jours', to: '/explore?q=toubkal' },
-          { label: 'Désert Merzouga', to: '/explore?q=merzouga' },
-          { label: 'Parcours Atlas & oasis', to: '/explore?city=Marrakech' },
+          { labelKey: 'mega_menu.link_agafay', label: 'Désert d’Agafay', to: '/explore?q=agafay&taxonomy=circuits-desert' },
+          { labelKey: 'mega_menu.link_toubkal', label: 'Trek Toubkal', to: '/explore?q=toubkal&taxonomy=activites-terrestres' },
+          { labelKey: 'mega_menu.link_merzouga', label: 'Désert Merzouga', to: '/explore?city=Merzouga&taxonomy=circuits-desert' },
+          { labelKey: 'mega_menu.link_atlas', label: 'Parcours Atlas & oasis', to: '/explore?city=Marrakech' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -62,10 +62,10 @@ const MENU_DATA = {
       },
       'Visites Guidées': {
         incontournables: [
-          { label: 'Médina de Marrakech — guide privé', to: '/explore?q=medina%20marrakech' },
-          { label: 'Casablanca — Hassan II & Corniche', to: '/explore?q=casablanca%20hassan' },
-          { label: 'Chefchaouen — perle bleue', to: '/explore?q=chefchaouen' },
-          { label: 'Architecture riads Marrakech', to: '/explore?q=riad' },
+          { labelKey: 'mega_menu.link_medina_marrakech', label: 'Médina de Marrakech — guide privé', to: '/explore?city=Marrakech&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_casablanca', label: 'Casablanca — Hassan II & Corniche', to: '/explore?city=Casablanca&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_chefchaouen', label: 'Chefchaouen — perle bleue', to: '/explore?city=Chefchaouen&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_riads_archi', label: 'Architecture riads Marrakech', to: '/explore?city=Marrakech&taxonomy=attractions' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -75,10 +75,10 @@ const MENU_DATA = {
       },
       Gastronomie: {
         incontournables: [
-          { label: 'Atelier cuisine — tajine à Fès', to: '/explore?q=tajine%20fes' },
-          { label: 'Cours de cuisine Marrakech', to: '/explore?q=cuisine%20marocaine' },
-          { label: 'Street food médina Fès', to: '/explore?q=street%20food' },
-          { label: 'Découvrir Fès', to: '/explore?city=Fès' },
+          { labelKey: 'mega_menu.link_tajine_fes', label: 'Atelier cuisine — Fès', to: '/explore?city=Fès&taxonomy=gastronomie' },
+          { labelKey: 'mega_menu.link_cuisine_marrakech', label: 'Cours de cuisine Marrakech', to: '/explore?city=Marrakech&taxonomy=gastronomie' },
+          { labelKey: 'mega_menu.link_street_food', label: 'Street food médina', to: '/explore?taxonomy=gastronomie' },
+          { labelKey: 'mega_menu.link_discover_fes', label: 'Découvrir Fès', to: '/explore?city=Fès' },
         ],
         destinationsPhares: [
           { name: 'Fès', image: cityImg('Fès') },
@@ -87,10 +87,10 @@ const MENU_DATA = {
       },
       'Culture & Médina': {
         incontournables: [
-          { label: 'Médina de Marrakech', to: '/explore?city=Marrakech' },
-          { label: 'Médina de Fès', to: '/explore?city=Fès' },
-          { label: 'Essaouira — patrimoine', to: '/explore?city=Essaouira' },
-          { label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
+          { labelKey: 'mega_menu.link_medina_marrakech_city', label: 'Médina de Marrakech', to: '/explore?city=Marrakech&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_medina_fes', label: 'Médina de Fès', to: '/explore?city=Fès&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_essaouira_heritage', label: 'Essaouira — patrimoine', to: '/explore?city=Essaouira&taxonomy=circuits-culturels' },
+          { labelKey: 'mega_menu.link_chefchaouen_city', label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
         ],
         destinationsPhares: [
           { name: 'Fès', image: cityImg('Fès') },
@@ -100,12 +100,12 @@ const MENU_DATA = {
       },
       'Villes phares': {
         incontournables: [
-          { label: 'Marrakech', to: '/explore?city=Marrakech' },
-          { label: 'Fès', to: '/explore?city=Fès' },
-          { label: 'Essaouira', to: '/explore?city=Essaouira' },
-          { label: 'Agadir / Taghazout', to: '/explore?city=Agadir' },
-          { label: 'Casablanca', to: '/explore?city=Casablanca' },
-          { label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
+          { labelKey: 'mega_menu.link_city_marrakech', label: 'Marrakech', to: '/explore?city=Marrakech' },
+          { labelKey: 'mega_menu.link_city_fes', label: 'Fès', to: '/explore?city=Fès' },
+          { labelKey: 'mega_menu.link_city_essaouira', label: 'Essaouira', to: '/explore?city=Essaouira' },
+          { labelKey: 'mega_menu.link_city_agadir', label: 'Agadir / Taghazout', to: '/explore?city=Agadir' },
+          { labelKey: 'mega_menu.link_city_casablanca', label: 'Casablanca', to: '/explore?city=Casablanca' },
+          { labelKey: 'mega_menu.link_city_chefchaouen', label: 'Chefchaouen', to: '/explore?city=Chefchaouen' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -126,10 +126,10 @@ const MENU_DATA = {
     mapping: {
       'Villas de Prestige': {
         incontournables: [
-          { label: 'Villa Océan — Taghazout Bay', to: '/stays?propertyType=villa&city=Taghazout' },
-          { label: 'Villa prestige Marina Agadir', to: '/stays?propertyType=villa&city=Agadir' },
-          { label: 'Séjours luxe Atlantique', to: '/stays?city=Taghazout' },
-          { label: 'Voir tous les logements', to: '/stays' },
+          { labelKey: 'mega_menu.link_villa_taghazout', label: 'Villa Océan — Taghazout Bay', to: '/stays?propertyType=villa&city=Taghazout' },
+          { labelKey: 'mega_menu.link_villa_agadir', label: 'Villa prestige Marina Agadir', to: '/stays?propertyType=villa&city=Agadir' },
+          { labelKey: 'mega_menu.link_stays_atlantique', label: 'Séjours luxe Atlantique', to: '/stays?city=Taghazout' },
+          { labelKey: 'mega_menu.link_all_stays', label: 'Voir tous les logements', to: '/stays' },
         ],
         destinationsPhares: [
           { name: 'Taghazout', image: cityImg('Taghazout') },
@@ -138,10 +138,10 @@ const MENU_DATA = {
       },
       'Appartements Vue Océan': {
         incontournables: [
-          { label: 'Appartement Corniche — Agadir', to: '/stays?propertyType=apartment&city=Agadir' },
-          { label: 'Duplex Taghazout', to: '/stays?propertyType=apartment&city=Taghazout' },
-          { label: 'Séjours à Agadir', to: '/stays?city=Agadir' },
-          { label: 'Voir tous les logements', to: '/stays' },
+          { labelKey: 'mega_menu.link_apt_agadir', label: 'Appartement Corniche — Agadir', to: '/stays?propertyType=apartment&city=Agadir' },
+          { labelKey: 'mega_menu.link_apt_taghazout', label: 'Duplex Taghazout', to: '/stays?propertyType=apartment&city=Taghazout' },
+          { labelKey: 'mega_menu.link_stays_agadir', label: 'Séjours à Agadir', to: '/stays?city=Agadir' },
+          { labelKey: 'mega_menu.link_all_stays', label: 'Voir tous les logements', to: '/stays' },
         ],
         destinationsPhares: [
           { name: 'Agadir', image: cityImg('Agadir') },
@@ -150,10 +150,10 @@ const MENU_DATA = {
       },
       'Riads Insolites': {
         incontournables: [
-          { label: 'Riad Dar Atlas — Marrakech', to: '/stays?propertyType=riad&city=Marrakech' },
-          { label: 'Riad Essaouira — médina', to: '/stays?propertyType=riad&city=Essaouira' },
-          { label: 'Riad médina Fès', to: '/stays?propertyType=riad&city=Fès' },
-          { label: 'Séjours à Marrakech', to: '/stays?city=Marrakech' },
+          { labelKey: 'mega_menu.link_riad_marrakech', label: 'Riad Dar Atlas — Marrakech', to: '/stays?propertyType=riad&city=Marrakech' },
+          { labelKey: 'mega_menu.link_riad_essaouira', label: 'Riad Essaouira — médina', to: '/stays?propertyType=riad&city=Essaouira' },
+          { labelKey: 'mega_menu.link_riad_fes', label: 'Riad médina Fès', to: '/stays?propertyType=riad&city=Fès' },
+          { labelKey: 'mega_menu.link_stays_marrakech', label: 'Séjours à Marrakech', to: '/stays?city=Marrakech' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -173,10 +173,10 @@ const MENU_DATA = {
     mapping: {
       'Mobilité & Chauffeurs': {
         incontournables: [
-          { label: 'Transfert aéroport Marrakech', to: '/extras?q=transfert%20aeroport%20marrakech' },
-          { label: 'Chauffeur privé — journée Agadir', to: '/extras?q=chauffeur%20prive' },
-          { label: 'Transfert aéroport Agadir', to: '/extras?q=transfert%20aeroport%20agadir' },
-          { label: 'Tous les extras mobilité', to: '/extras' },
+          { labelKey: 'mega_menu.link_transfer_marrakech', label: 'Transfert aéroport Marrakech', to: '/extras?city=Marrakech&taxonomy=transferts-aeroport' },
+          { labelKey: 'mega_menu.link_driver_agadir', label: 'Chauffeur privé — journée Agadir', to: '/extras?city=Agadir&taxonomy=chauffeur-prive' },
+          { labelKey: 'mega_menu.link_transfer_agadir', label: 'Transfert aéroport Agadir', to: '/extras?city=Agadir&taxonomy=transferts-aeroport' },
+          { labelKey: 'mega_menu.link_all_mobility', label: 'Tous les extras mobilité', to: '/extras?taxonomy=transferts-aeroport' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -185,10 +185,10 @@ const MENU_DATA = {
       },
       'Services À la Carte': {
         incontournables: [
-          { label: 'Guide privé — médina de Fès', to: '/extras?q=guide%20prive%20fes' },
-          { label: 'Photographe pro — Marrakech', to: '/extras?q=photographe' },
-          { label: 'Conciergerie 24/7', to: '/extras?q=conciergerie' },
-          { label: 'Tous les extras', to: '/extras' },
+          { labelKey: 'mega_menu.link_guide_fes', label: 'Guide privé — médina de Fès', to: '/extras?city=Fès&taxonomy=guide-medina' },
+          { labelKey: 'mega_menu.link_photo_marrakech', label: 'Photographe pro — Marrakech', to: '/extras?city=Marrakech&taxonomy=photographie' },
+          { labelKey: 'mega_menu.link_concierge', label: 'Conciergerie 24/7', to: '/extras?taxonomy=conciergerie' },
+          { labelKey: 'mega_menu.link_all_extras', label: 'Tous les extras', to: '/extras' },
         ],
         destinationsPhares: [
           { name: 'Fès', image: cityImg('Fès') },
@@ -197,10 +197,10 @@ const MENU_DATA = {
       },
       'Bien-être & Premium': {
         incontournables: [
-          { label: 'Hammam & spa privé', to: '/extras?q=hammam' },
-          { label: 'Coaching surf privé', to: '/extras?q=coaching%20surf' },
-          { label: 'Sortie yacht Marina', to: '/extras?q=yacht' },
-          { label: 'Tous les extras', to: '/extras' },
+          { labelKey: 'mega_menu.link_hammam', label: 'Hammam & spa privé', to: '/extras?q=hammam' },
+          { labelKey: 'mega_menu.link_surf_coaching', label: 'Coaching surf privé', to: '/extras?q=surf' },
+          { labelKey: 'mega_menu.link_yacht', label: 'Sortie yacht Marina', to: '/extras?q=yacht' },
+          { labelKey: 'mega_menu.link_all_extras', label: 'Tous les extras', to: '/extras' },
         ],
         destinationsPhares: [
           { name: 'Marrakech', image: cityImg('Marrakech') },
@@ -253,6 +253,7 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
     'Riads Insolites': 'riads_insolites',
     'Mobilité & Chauffeurs': 'mobilite_chauffeurs',
     'Services À la Carte': 'services_carte',
+    'Bien-être & Premium': 'bien_etre_premium',
   };
 
   return (
@@ -310,7 +311,10 @@ const DiscoverMenu = ({ isOpen, onClose, menuType = 'discover' }) => {
             </h3>
             <div className="space-y-3">
               {currentMapping.incontournables.map((activity, index) => {
-                const label = typeof activity === 'string' ? activity : activity.label;
+                const fallback = typeof activity === 'string' ? activity : activity.label;
+                const label = typeof activity === 'string'
+                  ? activity
+                  : t(activity.labelKey || fallback, { defaultValue: fallback });
                 const to = typeof activity === 'string' ? storePath : activity.to || storePath;
                 return (
                   <LocalizedLink

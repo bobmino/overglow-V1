@@ -2,17 +2,20 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
 import ProductCard from '../ProductCard';
+import ImmersiveCollectionCarousel from '../catalog/ImmersiveCollectionCarousel';
+import TripStackBanner from '../catalog/TripStackBanner';
 import { PROPERTY_TYPE_ORDER } from '../../data/storeCatalog';
 
 const SECTION_PREVIEW = 6;
 
 /**
- * Browse landing d’un store : sections par parent taxonomie ou propertyType.
+ * Browse landing d’un store : immersif + sections par parent taxonomie ou propertyType.
  */
 const StoreBrowseLayout = ({
   products = [],
   browseMode = 'byTaxonomyParent',
   taxonomyOptions = [],
+  storeKey = null,
   onSeeAllSection,
 }) => {
   const { t } = useTranslation();
@@ -39,9 +42,8 @@ const StoreBrowseLayout = ({
       }));
     }
 
-    // byTaxonomyParent — map leaf id → parent label + child slugs
     const leafMeta = new Map();
-    const parentSlugs = new Map(); // parentLabel → Set of leaf slugs
+    const parentSlugs = new Map();
     (taxonomyOptions || []).forEach((opt) => {
       const parentLabel = opt.parentLabel || t('catalog.category');
       leafMeta.set(String(opt.id), {
@@ -97,6 +99,13 @@ const StoreBrowseLayout = ({
 
   return (
     <div className="space-y-12">
+      <ImmersiveCollectionCarousel
+        products={products}
+        browseMode={browseMode}
+        storeKey={storeKey}
+        onSelect={onSeeAllSection}
+      />
+
       {sections.map((section) => {
         const preview = section.products.slice(0, SECTION_PREVIEW);
         const hasMore = section.products.length > SECTION_PREVIEW;
@@ -132,6 +141,10 @@ const StoreBrowseLayout = ({
           </section>
         );
       })}
+
+      {(storeKey === 'stays' || storeKey === 'extras' || storeKey === 'explore') && (
+        <TripStackBanner currentStore={storeKey} />
+      )}
     </div>
   );
 };

@@ -77,7 +77,7 @@ const ProductDetailPage = () => {
     if (!isValidProductId) {
       setError('Produit introuvable');
       setLoading(false);
-      navigate('/search', { replace: true });
+      navigate('/explore', { replace: true });
       return;
     }
 
@@ -421,13 +421,52 @@ const ProductDetailPage = () => {
             </LocalizedLink>
           </div>
         )}
-        {/* Breadcrumb */}
+        {/* Breadcrumb — store-aware */}
         <nav className="text-sm text-slate-600 mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
           <LocalizedLink to="/" className="hover:text-primary-600">{t('common.home')}</LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60" />
-          <LocalizedLink to={`/search?city=${product.city}`} className="hover:text-primary-600">{product.city}</LocalizedLink>
+          <LocalizedLink
+            to={
+              product.productType === 'luxury_stay'
+                ? '/stays'
+                : product.productType === 'service'
+                  ? '/extras'
+                  : '/explore'
+            }
+            className="hover:text-primary-600"
+          >
+            {product.productType === 'luxury_stay'
+              ? t('stores.stays.title')
+              : product.productType === 'service'
+                ? t('stores.extras.title')
+                : t('stores.explore.title')}
+          </LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60" />
-          <LocalizedLink to={`/search?category=${product.category}`} className="hover:text-primary-600 truncate max-w-[40vw] sm:max-w-none">{product.category}</LocalizedLink>
+          <LocalizedLink
+            to={
+              product.productType === 'luxury_stay'
+                ? `/stays?city=${encodeURIComponent(product.city || '')}`
+                : product.productType === 'service'
+                  ? `/extras?city=${encodeURIComponent(product.city || '')}`
+                  : `/explore?city=${encodeURIComponent(product.city || '')}`
+            }
+            className="hover:text-primary-600"
+          >
+            {product.city}
+          </LocalizedLink>
+          <ChevronRight size={14} className="shrink-0 opacity-60" />
+          <LocalizedLink
+            to={
+              product.productType === 'luxury_stay'
+                ? `/stays?city=${encodeURIComponent(product.city || '')}`
+                : product.productType === 'service'
+                  ? `/extras?category=${encodeURIComponent(product.category || '')}`
+                  : `/explore?category=${encodeURIComponent(product.category || '')}`
+            }
+            className="hover:text-primary-600 truncate max-w-[40vw] sm:max-w-none"
+          >
+            {product.category}
+          </LocalizedLink>
           <ChevronRight size={14} className="shrink-0 opacity-60 hidden sm:inline" />
           <span className="text-slate-900 font-medium truncate max-w-full hidden sm:inline">{product.title}</span>
         </nav>

@@ -9,6 +9,8 @@ import FlexibilityBanner from '../components/FlexibilityBanner';
 import AuthCTA from '../components/AuthCTA';
 import SEOHead from '../components/SEOHead';
 import LocalizedLink from '../components/LocalizedLink';
+import TravelerReviewsCarousel from '../components/TravelerReviewsCarousel';
+import TripStackBanner from '../components/catalog/TripStackBanner';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
 import { CURATED_EXTRAS } from '../data/storeCatalog';
@@ -254,6 +256,12 @@ const Home = () => {
                 </div>
               )
           )}
+
+          <TravelerReviewsCarousel />
+
+          <div className="px-4 md:px-8">
+            <TripStackBanner />
+          </div>
 
           {/* Cross-sell CTAs */}
           <section className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-4">

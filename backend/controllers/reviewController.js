@@ -520,6 +520,50 @@ const reportReview = async (req, res) => {
   }
 };
 
+// @desc    Featured approved reviews for home carousel (DB-only, no fakes)
+// @route   GET /api/reviews/featured
+// @access  Public
+const getFeaturedReviews = async (req, res) => {
+  try {
+    const limit = Math.min(12, Math.max(1, parseInt(req.query.limit, 10) || 8));
+    const reviews = await Review.find({ status: 'Approved' })
+      .sort({ helpfulVotes: -1, createdAt: -1 })
+      .limit(limit * 3)
+      .populate('user', 'name')
+      .populate({
+        path: 'product',
+        select: 'title images city price status productType',
+        match: { status: { $regex: /^published$/i } },
+      })
+      .lean();
+
+    const featured = reviews
+      .filter((r) => r.product && r.product._id)
+      .slice(0, limit)
+      .map((r) => ({
+        _id: r._id,
+        rating: r.rating,
+        comment: r.comment,
+        isVerified: r.isVerified,
+        createdAt: r.createdAt,
+        userName: r.user?.name || 'Voyageur',
+        product: {
+          _id: r.product._id,
+          title: r.product.title,
+          images: r.product.images || [],
+          city: r.product.city,
+          price: r.product.price,
+          productType: r.product.productType,
+        },
+      }));
+
+    res.json({ reviews: featured });
+  } catch (error) {
+    logger.error('Get featured reviews error:', error);
+    res.json({ reviews: [] });
+  }
+};
+
 export { 
   createReview, 
   getProductReviews, 
@@ -530,4 +574,5 @@ export {
   reportReview,
   getAdminReviews,
   updateAdminReviewStatus,
+  getFeaturedReviews,
 };
