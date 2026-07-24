@@ -2,27 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter as FilterIcon, Check, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/** Ligne filtre : checkbox + label toujours alignés (desktop / tablette / mobile). */
 const FilterCheckRow = ({ checked, onChange, children }) => (
-  <label className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-x-3 w-full cursor-pointer group py-0.5">
-    <span className="relative col-start-1 row-start-1 flex items-center justify-center w-5 h-5">
+  <label className="flex items-center gap-3 w-full cursor-pointer group py-1.5 min-h-[2.75rem]">
+    <span className="relative flex shrink-0 items-center justify-center w-5 h-5">
       <span
-        className={`flex items-center justify-center w-5 h-5 rounded border transition-colors pointer-events-none ${
+        className={`flex items-center justify-center w-5 h-5 rounded border-2 transition-colors pointer-events-none ${
           checked
             ? 'bg-primary-600 border-primary-600'
             : 'border-slate-300 bg-white group-hover:border-primary-500'
         }`}
         aria-hidden
       >
-        {checked && <Check size={14} className="text-white" />}
+        {checked && <Check size={13} className="text-white" strokeWidth={3} />}
       </span>
       <input
         type="checkbox"
         checked={!!checked}
         onChange={onChange}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer m-0"
       />
     </span>
-    <span className="col-start-2 row-start-1 text-sm text-slate-700 group-hover:text-slate-900 min-w-0">
+    <span className="flex-1 min-w-0 flex items-center text-sm text-slate-800 group-hover:text-slate-950 leading-snug">
       {children}
     </span>
   </label>
@@ -32,23 +33,23 @@ const FilterRadioRow = ({ checked, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
-    className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-x-3 w-full text-start cursor-pointer group py-0.5"
+    className="flex items-center gap-3 w-full text-start cursor-pointer group py-1.5 min-h-[2.75rem]"
   >
     <span
-      className={`col-start-1 row-start-1 flex items-center justify-center w-5 h-5 rounded-full border transition-colors ${
-        checked ? 'border-4 border-primary-600' : 'border-slate-300 group-hover:border-primary-500'
+      className={`flex shrink-0 items-center justify-center w-5 h-5 rounded-full border-2 transition-colors ${
+        checked ? 'border-primary-600 border-[5px]' : 'border-slate-300 group-hover:border-primary-500'
       }`}
       aria-hidden
     />
-    <span className="col-start-2 row-start-1 text-sm text-slate-700 group-hover:text-slate-900 min-w-0">
+    <span className="flex-1 min-w-0 flex items-center text-sm text-slate-800 group-hover:text-slate-950 leading-snug">
       {children}
     </span>
   </button>
 );
 
 const REASSURANCE_TAG_IDS = [
-  { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-primary-100 text-primary-700' },
-  { id: 'confirmation-immediate', labelKey: 'filters.tag_instant', color: 'bg-blue-100 text-blue-700' },
+  { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-primary-100 text-primary-800' },
+  { id: 'confirmation-immediate', labelKey: 'filters.tag_instant', color: 'bg-amber-100 text-amber-900' },
 ];
 
 const CANCELLATION_TYPES = [
@@ -305,7 +306,9 @@ const FilterSidebar = ({
                   checked={isActive}
                   onChange={() => handleTagToggle(tag.id)}
                 >
-                  <span className={`inline-flex font-medium px-2 py-0.5 rounded-md ${tag.color}`}>
+                  <span
+                    className={`inline-flex items-center font-semibold text-xs sm:text-sm px-2.5 py-1 rounded-md leading-none ${tag.color}`}
+                  >
                     {t(tag.labelKey)}
                   </span>
                 </FilterCheckRow>

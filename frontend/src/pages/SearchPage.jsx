@@ -10,6 +10,7 @@ import EmptyState from '../components/EmptyState';
 import SEOHead from '../components/SEOHead';
 import CatalogFilterBar from '../components/catalog/CatalogFilterBar';
 import FilterModal from '../components/catalog/FilterModal';
+import StoreCatalogHero from '../components/catalog/StoreCatalogHero';
 import { trackSearch } from '../utils/analytics';
 import {
   CURATED_EXTRAS,
@@ -556,19 +557,16 @@ const SearchPage = () => {
         pathname={location.pathname}
       />
 
-      <div className="container mx-auto px-4 pt-24 pb-8">
-        {store && (
-          <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white px-5 py-6 md:px-8 md:py-8">
-            <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-1.5">
-              Overglow
-            </p>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold mb-1">{pageTitle}</h1>
-            {pageSubtitle && (
-              <p className="text-primary-50/90 max-w-2xl text-sm md:text-base">{pageSubtitle}</p>
-            )}
-          </div>
-        )}
+      {store && (
+        <StoreCatalogHero
+          storeKey={storeKey}
+          title={pageTitle}
+          subtitle={pageSubtitle}
+          onOpenFilters={() => setIsFilterModalOpen(true)}
+        />
+      )}
 
+      <div className={`container mx-auto px-4 pb-8 ${store ? 'pt-4 md:pt-6' : 'pt-24'}`}>
         {!store && (
           <h1 className="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-2">
             {pageTitle}

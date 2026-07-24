@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import FilterSidebar from '../FilterSidebar';
 
 /**
- * Modal filtres plein écran (desktop + mobile) — Apply avec compteur.
+ * Modal filtres centrée en haut (desktop / tablette / mobile) —
+ * masque le hero / haut de page, pas un tiroir latéral.
  */
 const FilterModal = ({
   isOpen,
@@ -54,38 +55,38 @@ const FilterModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/55 z-[75] backdrop-blur-sm"
+            className="fixed inset-0 bg-primary-950/55 z-[75] backdrop-blur-[2px]"
           />
 
           <Motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-            className="fixed inset-x-0 bottom-0 sm:inset-x-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:bottom-auto z-[80] w-full sm:w-[min(640px,94vw)] max-h-[90vh] sm:max-h-[85vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col pb-[env(safe-area-inset-bottom)] overflow-hidden"
+            initial={{ opacity: 0, y: -16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+            className="fixed z-[80] left-1/2 -translate-x-1/2 top-[4.75rem] sm:top-[5.25rem] w-[min(100%-1.5rem,36rem)] max-h-[min(78dvh,calc(100dvh-6.5rem))] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/80 flex flex-col overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="filter-modal-title"
           >
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 shrink-0">
-              <h2 id="filter-modal-title" className="font-heading font-bold text-xl text-slate-900">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-100 shrink-0 bg-white">
+              <h2 id="filter-modal-title" className="font-heading font-bold text-lg sm:text-xl text-slate-900">
                 {t('catalog.filters')}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200"
+                className="p-2.5 min-h-11 min-w-11 inline-flex items-center justify-center bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200"
                 aria-label={t('common.close')}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-6 py-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 sm:px-6 py-4 custom-scrollbar overscroll-contain">
               <FilterSidebar {...sidebarProps} onReset={onReset} compact />
             </div>
 
-            <div className="flex gap-3 p-4 border-t border-slate-100 bg-white">
+            <div className="flex gap-3 p-4 border-t border-slate-100 bg-white shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <button
                 type="button"
                 onClick={() => {

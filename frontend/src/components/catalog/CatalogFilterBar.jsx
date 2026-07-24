@@ -32,7 +32,7 @@ const CatalogFilterBar = ({
   );
 
   return (
-    <div className="sticky top-16 md:top-[72px] z-30 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b border-slate-200/80 mb-6 supports-[backdrop-filter]:bg-slate-50/90">
+    <div className="sticky top-16 md:top-20 z-30 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b border-slate-200/80 mb-6 supports-[backdrop-filter]:bg-slate-50/90">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <p className="text-sm font-medium text-slate-700">{resultLabel}</p>
         <label className="text-sm text-slate-600 flex items-center gap-2">
