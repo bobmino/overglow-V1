@@ -6,6 +6,7 @@ import ScrollToTopButton from '../components/ScrollToTopButton';
 import AdvancedFilters from '../components/AdvancedFilters';
 import DataTable from '../components/DataTable';
 import EmptyState from '../components/EmptyState';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
 import { askConfirm } from '../utils/notify.js';
@@ -57,9 +58,9 @@ const AdminUsersPage = () => {
 
   const getRoleBadge = (role) => {
     const badges = {
-      Admin: { color: 'bg-purple-100 text-purple-800', icon: Shield },
-      'Opérateur': { color: 'bg-blue-100 text-blue-800', icon: Users },
-      Client: { color: 'bg-gray-100 text-gray-800', icon: Users },
+      Admin: { color: 'bg-primary-100 text-primary-800', icon: Shield },
+      'Opérateur': { color: 'bg-amber-100 text-amber-900', icon: Users },
+      Client: { color: 'bg-slate-100 text-slate-800', icon: Users },
     };
     const badge = badges[role] || badges.Client;
     const Icon = badge.icon;
@@ -86,21 +87,21 @@ const AdminUsersPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="h-32 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 bg-primary-100/50 rounded-3xl" />
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="h-24 bg-slate-200/80 rounded-xl" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('admin.users.title')}</h1>
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        title={t('admin.users.title')}
+        subtitle="Comptes Admin, opérateurs et voyageurs — rôles et accès plateforme."
+      />
 
       <AdvancedFilters
         persistUrl={false}

@@ -6,14 +6,18 @@ import { Plus, Edit, Trash2, Eye, Rocket, PauseCircle, AlertCircle, Award } from
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import BadgeRequestModal from '../components/BadgeRequestModal';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { formatImageUrlWithFallback } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
 import { askConfirm } from '../utils/notify';
+import { usePlatformSettings } from '../context/PlatformSettingsContext';
 
 const OperatorProductsPage = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { settings } = usePlatformSettings();
+  const commission = Number(settings.platformCommissionPercent ?? 15);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestingApproval, setRequestingApproval] = useState({});
@@ -118,39 +122,45 @@ const OperatorProductsPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="h-32 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 bg-primary-100/50 rounded-3xl" />
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="h-32 bg-slate-200/80 rounded-xl" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('operator.products.title')}</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            {t('operator.products.subtitle', 'Créer, modifier, publier ou supprimer vos offres.')}
-          </p>
-        </div>
-        <Link
-          to="/operator/products/new"
-          className="flex items-center justify-center bg-primary-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-800 transition"
-        >
-          <Plus size={20} className="me-2" />
-          {t('operator.common.create_product')}
-        </Link>
+    <div className="space-y-6">
+      <CockpitPageHero
+        eyebrow="Overglow Host"
+        variant="operator"
+        title={t('operator.products.title')}
+        subtitle={t(
+          'operator.products.subtitle',
+          'Créer, modifier, publier ou supprimer vos offres.'
+        )}
+        actions={(
+          <Link
+            to="/operator/products/new"
+            className="inline-flex items-center justify-center gap-2 bg-white text-primary-900 px-5 py-2.5 rounded-xl font-bold hover:bg-primary-50 transition"
+          >
+            <Plus size={18} />
+            {t('operator.common.create_product')}
+          </Link>
+        )}
+      />
+
+      <div className="rounded-2xl border border-primary-200 bg-primary-50/60 px-4 py-3 text-sm text-primary-900">
+        Commission plateforme actuelle : <strong>{commission} %</strong> — appliquée sur vos ventes confirmées (réglage Admin → Paramètres → Finances).
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-3">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
         >
           <option value="all">{t('operator.products.filter_all_status', 'Tous les statuts')}</option>
           <option value="Draft">Draft</option>
@@ -160,7 +170,7 @@ const OperatorProductsPage = () => {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
         >
           <option value="all">{t('operator.products.filter_all_types', 'Tous les types')}</option>
           <option value="tour">Tour</option>
@@ -172,7 +182,7 @@ const OperatorProductsPage = () => {
       {products.length === 0 ? (
         <EmptyState
           variant="products"
-          className="bg-gray-50 rounded-xl"
+          className="bg-slate-50 rounded-xl"
           title={t('operator.products.empty_title')}
           subtitle={t('operator.products.empty_desc')}
           ctaLabel={t('operator.common.create_product')}
@@ -203,8 +213,8 @@ const OperatorProductsPage = () => {
                       product.status === 'Published' 
                         ? 'bg-primary-100 text-primary-800' 
                         : product.status === 'Pending Review'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-amber-100 text-amber-900'
+                        : 'bg-slate-100 text-slate-800'
                     }`}>
                       {getProductStatusLabel(product.status)}
                     </span>
@@ -220,7 +230,7 @@ const OperatorProductsPage = () => {
                     </Link>
                     <Link
                       to={`/operator/products/${product._id}/edit`}
-                      className="flex items-center text-blue-600 hover:text-blue-700 transition"
+                      className="flex items-center text-primary-700 hover:text-primary-800 transition"
                     >
                       <Edit size={16} className="me-1" />
                       {t('operator.common.edit')}
@@ -229,7 +239,7 @@ const OperatorProductsPage = () => {
                       <button
                         onClick={() => handleRequestApproval(product._id)}
                         disabled={requestingApproval[product._id]}
-                        className="flex items-center text-orange-600 hover:text-orange-700 transition disabled:opacity-50"
+                        className="flex items-center text-secondary-600 hover:text-amber-700 transition disabled:opacity-50"
                       >
                         <AlertCircle size={16} className="me-1" />
                         {requestingApproval[product._id] ? t('operator.products.request_approval_sending') : t('operator.products.request_approval')}
@@ -239,7 +249,7 @@ const OperatorProductsPage = () => {
                       <button
                         onClick={() => handleTogglePublish(product)}
                         className={`flex items-center ${
-                          product.status === 'Published' ? 'text-amber-600 hover:text-amber-700' : 'text-primary-600 hover:text-primary-700'
+                          product.status === 'Published' ? 'text-amber-700 hover:text-amber-800' : 'text-primary-600 hover:text-primary-700'
                         } transition`}
                       >
                         {product.status === 'Published' ? (
@@ -257,7 +267,7 @@ const OperatorProductsPage = () => {
                     )}
                     <button
                       onClick={() => setBadgeRequestModal({ isOpen: true, productId: product._id, productTitle: product.title })}
-                      className="flex items-center text-purple-600 hover:text-purple-700 transition"
+                      className="flex items-center text-slate-700 hover:text-primary-700 transition"
                       title={t('operator.products.request_badge_title')}
                     >
                       <Award size={16} className="me-1" />

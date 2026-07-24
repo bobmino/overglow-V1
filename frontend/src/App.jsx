@@ -3,12 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { MobileMenuProvider } from './context/MobileMenuContext';
+import { PlatformSettingsProvider } from './context/PlatformSettingsContext';
 import Layout from './components/Layout';
 import CartDrawer from './components/CartDrawer';
 import RtlDocumentSync from './components/RtlDocumentSync';
 import ScrollToTopOnNavigate from './components/ScrollToTopOnNavigate';
 import LanguageRoot from './components/LanguageRoot';
 import { RootLangRedirect, LegacyPublicRedirect } from './components/LangRedirects';
+import MaintenanceBanner from './components/MaintenanceBanner';
 
 // Critical components (loaded immediately)
 import Home from './pages/Home';
@@ -117,11 +119,13 @@ function App() {
 
   return (
     <AuthProvider>
+      <PlatformSettingsProvider>
       <ToastProvider>
       <MobileMenuProvider>
       <Router>
         <ScrollToTopOnNavigate />
         <RtlDocumentSync />
+        <MaintenanceBanner />
         <CartDrawer />
       <Routes>
         {/* Auth routes without layout, without lang prefix */}
@@ -585,6 +589,7 @@ function App() {
     </Router>
       </MobileMenuProvider>
       </ToastProvider>
+      </PlatformSettingsProvider>
     </AuthProvider>
   );
 }

@@ -2,9 +2,16 @@ import Withdrawal from '../models/withdrawalModel.js';
 import Booking from '../models/bookingModel.js';
 import Operator from '../models/operatorModel.js';
 import User from '../models/userModel.js';
+import Settings from '../models/settingsModel.js';
 import { validationResult } from 'express-validator';
 import { notifyWithdrawalRequest, notifyWithdrawalApproved, notifyWithdrawalRejected, notifyRefundProcessed } from '../utils/notificationService.js';
 import { logger } from '../utils/logger.js';
+
+const getSettingValue = async (key) => {
+  const row = await Settings.findOne({ key });
+  const defaults = Settings.getDefaultSettings();
+  return row ? row.value : defaults[key];
+};
 
 // @desc    Calculate available balance for operator
 // @route   GET /api/withdrawals/balance
@@ -64,6 +71,14 @@ const createWithdrawal = async (req, res) => {
 
     const { amount, type, paymentMethod, paymentDetails, reason, relatedBookings } = req.body;
 
+    const minAmount = Number(await getSettingValue('minWithdrawalAmountMad')) || 100;
+    if (Number(amount) < minAmount) {
+      return res.status(400).json({
+        message: `Montant minimum de retrait : ${minAmount} MAD`,
+        minWithdrawalAmountMad: minAmount,
+      });
+    }
+
     // For operator withdrawals
     if (type === 'operator_payout') {
       const operator = await Operator.findOne({ user: req.user._id });
@@ -94,7 +109,7 @@ const createWithdrawal = async (req, res) => {
         operator: operator._id,
         type: 'operator_payout',
         amount,
-        currency: 'EUR',
+        currency: 'MAD',
         status: 'Pending',
         paymentMethod,
         paymentDetails,
@@ -118,7 +133,7 @@ const createWithdrawal = async (req, res) => {
         user: req.user._id,
         type: 'client_refund',
         amount,
-        currency: 'EUR',
+        currency: 'MAD',
         status: 'Pending',
         paymentMethod,
         paymentDetails,

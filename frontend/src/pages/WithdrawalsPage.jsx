@@ -5,7 +5,9 @@ import { DollarSign, Plus, Clock, CheckCircle, XCircle, CheckCheck } from 'lucid
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import DashboardNavBar from '../components/DashboardNavBar';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { logger } from '../utils/logger.js';
+import { usePlatformSettings } from '../context/PlatformSettingsContext';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -18,6 +20,10 @@ const getDateLocale = (language) => {
 const WithdrawalsPage = () => {
   const { t, i18n } = useTranslation();
   const dateLocale = getDateLocale(i18n.language);
+  const { settings } = usePlatformSettings();
+  const minWithdrawal = Number(settings.minWithdrawalAmountMad ?? 100);
+  const commission = Number(settings.platformCommissionPercent ?? 15);
+  const transferFee = Number(settings.transferFeeMad ?? 0);
   const [balance, setBalance] = useState({
     totalRevenue: 0,
     totalWithdrawn: 0,
@@ -85,6 +91,13 @@ const WithdrawalsPage = () => {
     setError('');
     setSubmitting(true);
 
+    const amount = parseFloat(formData.amount);
+    if (Number.isNaN(amount) || amount < minWithdrawal) {
+      setError(`Montant minimum : ${minWithdrawal} MAD`);
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const paymentDetails = {
         accountNumber: formData.accountNumber,
@@ -93,7 +106,7 @@ const WithdrawalsPage = () => {
       };
 
       await api.post('/api/withdrawals', {
-        amount: parseFloat(formData.amount),
+        amount,
         type: 'operator_payout',
         paymentMethod: formData.paymentMethod,
         paymentDetails,
@@ -118,8 +131,8 @@ const WithdrawalsPage = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      Approved: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
+      Pending: { color: 'bg-amber-100 text-amber-900', icon: Clock },
+      Approved: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
       Processed: { color: 'bg-primary-100 text-primary-800', icon: CheckCheck },
       Rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
@@ -144,38 +157,41 @@ const WithdrawalsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('withdrawals.title')}</h1>
-        <DashboardNavBar />
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        eyebrow="Overglow Host"
+        variant="operator"
+        title={t('withdrawals.title')}
+        subtitle={`Règles plateforme : min. ${minWithdrawal} MAD · commission ${commission} %${transferFee ? ` · frais ${transferFee} MAD` : ''}`}
+        actions={<DashboardNavBar />}
+      />
 
-      <div className="bg-gradient-to-r from-green-600 to-primary-600 rounded-xl p-6 text-white mb-6">
+      <div className="bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-green-100 text-sm mb-2">{t('withdrawals.available_balance')}</p>
-            <p className="text-4xl font-bold">{balance.availableBalance.toFixed(2)} MAD</p>
+            <p className="text-primary-200 text-sm mb-2">{t('withdrawals.available_balance')}</p>
+            <p className="text-4xl font-bold font-heading">{balance.availableBalance.toFixed(2)} MAD</p>
           </div>
           <DollarSign size={48} className="opacity-20" />
         </div>
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-primary-500/30">
+        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/20">
           <div>
-            <p className="text-green-100 text-xs mb-1">{t('withdrawals.total_revenue')}</p>
+            <p className="text-primary-200 text-xs mb-1">{t('withdrawals.total_revenue')}</p>
             <p className="text-lg font-semibold">{balance.totalRevenue.toFixed(2)} MAD</p>
           </div>
           <div>
-            <p className="text-green-100 text-xs mb-1">{t('withdrawals.total_withdrawn')}</p>
+            <p className="text-primary-200 text-xs mb-1">{t('withdrawals.total_withdrawn')}</p>
             <p className="text-lg font-semibold">{balance.totalWithdrawn.toFixed(2)} MAD</p>
           </div>
           <div>
-            <p className="text-green-100 text-xs mb-1">{t('withdrawals.pending_count')}</p>
+            <p className="text-primary-200 text-xs mb-1">{t('withdrawals.pending_count')}</p>
             <p className="text-lg font-semibold">{balance.pendingWithdrawals}</p>
           </div>
         </div>
       </div>
 
       {balance.availableBalance > 0 && (
-        <div className="mb-6">
+        <div>
           {!showForm ? (
             <button
               onClick={() => setShowForm(true)}
@@ -204,16 +220,17 @@ const WithdrawalsPage = () => {
                     id="withdrawal-amount"
                     name="withdrawal-amount"
                     step="0.01"
-                    min="0.01"
+                    min={minWithdrawal}
                     max={balance.availableBalance}
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500"
                     required
                     aria-required="true"
                     aria-label={t('withdrawals.amount_aria')}
                     autoComplete="off"
                   />
+                  <p className="text-xs text-slate-500 mt-1">Minimum plateforme : {minWithdrawal} MAD</p>
                 </div>
 
                 <div>

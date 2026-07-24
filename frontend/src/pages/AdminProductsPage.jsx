@@ -5,6 +5,7 @@ import api from '../config/axios';
 import { Package, MapPin, CheckCircle, XCircle, Clock, Eye, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { formatImageUrl } from '../utils/formatImage';
 import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
@@ -117,8 +118,8 @@ const AdminProductsPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       Published: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
-      'Pending Review': { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      Draft: { color: 'bg-gray-100 text-gray-800', icon: Package },
+      'Pending Review': { color: 'bg-amber-100 text-amber-900', icon: Clock },
+      Draft: { color: 'bg-slate-100 text-slate-800', icon: Package },
     };
     const badge = badges[status] || badges.Draft;
     const Icon = badge.icon;
@@ -144,28 +145,26 @@ const AdminProductsPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('admin.products.title')}</h1>
-        <p className="text-sm text-gray-500">
-          {pagination.total} {t('admin.products.count_label', 'produits')}
-        </p>
-      </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <CockpitPageHero
+        title={t('admin.products.title')}
+        subtitle={`${pagination.total} ${t('admin.products.count_label', 'produits')} — validation, publication et assignation.`}
+      />
 
-      <form onSubmit={handleSearchSubmit} className="flex flex-wrap gap-2 mb-4">
+      <form onSubmit={handleSearchSubmit} className="flex flex-wrap gap-2">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('admin.products.search_placeholder', 'Titre, ville, catégorie…')}
-          className="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg"
+          className="flex-1 min-w-[200px] px-4 py-2 border border-slate-200 rounded-xl bg-white"
         />
-        <button type="submit" className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold">
+        <button type="submit" className="px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700">
           {t('admin.common.search', 'Rechercher')}
         </button>
       </form>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2">
         {[
           { value: 'all', label: t('admin.products.filter_all') },
           { value: 'Pending Review', label: t('admin.products.filter_pending') },
@@ -179,10 +178,10 @@ const AdminProductsPage = () => {
               setFilter(opt.value);
               setPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${
+            className={`px-3 py-1.5 rounded-xl text-sm font-semibold border ${
               filter === opt.value
                 ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-gray-700 border-gray-300'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-primary-400'
             }`}
           >
             {opt.label}
@@ -262,7 +261,7 @@ const AdminProductsPage = () => {
                         setShowAssignModal(true);
                         fetchOperators();
                       }}
-                      className="flex-1 min-w-[100px] px-3 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold hover:bg-blue-200 transition"
+                      className="flex-1 min-w-[100px] px-3 py-2 bg-secondary-500/15 text-amber-900 rounded-lg font-semibold hover:bg-secondary-500/25 transition"
                     >
                       {t('admin.products.assign')}
                     </button>

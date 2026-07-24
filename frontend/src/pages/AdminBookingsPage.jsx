@@ -17,6 +17,7 @@ import AdminModal from '../components/AdminModal';
 import AdvancedFilters from '../components/AdvancedFilters';
 import DataTable from '../components/DataTable';
 import EmptyState from '../components/EmptyState';
+import CockpitPageHero from '../components/CockpitPageHero';
 
 const STATUS_OPTIONS = [
   { value: 'Pending', label: 'En attente' },
@@ -30,13 +31,13 @@ const statusBadgeClass = (status) => {
     case 'Confirmed':
       return 'bg-primary-100 text-primary-800';
     case 'Pending':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-amber-100 text-amber-900';
     case 'Cancelled':
       return 'bg-red-100 text-red-800';
     case 'PENDING_PAYMENT':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-secondary-500/15 text-amber-950';
     default:
-      return 'bg-gray-100 text-gray-700';
+      return 'bg-slate-100 text-slate-700';
   }
 };
 
@@ -233,40 +234,55 @@ const AdminBookingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-slate-50 min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="hidden md:block text-3xl font-heading font-bold text-gray-900">Réservations</h1>
-          <p className="text-gray-600 mt-1">Gestion et suivi des réservations plateforme</p>
-        </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          disabled={!bookings.length}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-800 font-semibold hover:border-primary-600 hover:text-primary-700 disabled:opacity-50"
-        >
-          <Download size={16} />
-          Export CSV
-        </button>
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        title="Réservations"
+        subtitle="Gestion et suivi des réservations plateforme."
+        actions={(
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!bookings.length}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/30 bg-white/10 text-white font-semibold hover:bg-white/20 disabled:opacity-50"
+          >
+            <Download size={16} />
+            Export CSV
+          </button>
+        )}
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Users size={16} /> Total</div>
-          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.total}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <span className="p-1.5 rounded-lg bg-primary-100 text-primary-700"><Users size={16} /></span>
+            Total
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900 font-heading">{stats.total}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><CalendarDays size={16} /> Ce mois</div>
-          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
+        <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800"><CalendarDays size={16} /></span>
+            Ce mois
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900 font-heading">{stats.thisMonth}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Banknote size={16} /> Revenu</div>
-          <p className="text-xl md:text-2xl font-bold text-gray-900 break-words">{formatMAD(stats.revenue)}</p>
+        <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <span className="p-1.5 rounded-lg bg-primary-100 text-primary-700"><Banknote size={16} /></span>
+            Revenu
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900 font-heading break-words">{formatMAD(stats.revenue)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Percent size={16} /> Annulation</div>
-          <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.cancellationRate}%</p>
+        <div className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
+          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <span className="p-1.5 rounded-lg bg-slate-100 text-slate-700"><Percent size={16} /></span>
+            Annulation
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-slate-900 font-heading">{stats.cancellationRate}%</p>
         </div>
       </div>
 

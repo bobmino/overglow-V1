@@ -5,9 +5,11 @@ import { Calendar, Clock, Users, Mail, ExternalLink, MessageSquare, ArrowRightCi
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
 import InternalNoteModal from '../components/InternalNoteModal';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../utils/logger.js';
+import { formatMoneyMad } from '../utils/formatMoneyMad.js';
 
 const getDateLocale = (language) => {
   const locale = language?.slice(0, 2) || 'fr';
@@ -100,10 +102,18 @@ const OperatorBookingsPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Confirmed': return 'bg-primary-100 text-primary-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Confirmed':
+      case 'CONFIRMED':
+        return 'bg-primary-100 text-primary-800';
+      case 'Pending':
+      case 'PENDING':
+      case 'PENDING_PAYMENT':
+        return 'bg-amber-100 text-amber-900';
+      case 'Cancelled':
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-slate-100 text-slate-800';
     }
   };
 
@@ -125,39 +135,41 @@ const OperatorBookingsPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="h-32 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 bg-primary-100/50 rounded-3xl" />
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="h-32 bg-slate-200/80 rounded-xl" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('operator.bookings.title')}</h1>
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        eyebrow="Overglow Host"
+        variant="operator"
+        title={t('operator.bookings.title')}
+        subtitle="Réservations clients sur vos offres — confirmation et suivi."
+      />
 
       {!Array.isArray(bookings) || bookings.length === 0 ? (
         <EmptyState
           variant="bookings"
-          className="bg-gray-50 rounded-xl"
+          className="bg-slate-50 rounded-xl"
           title={t('operator.bookings.empty_title')}
           subtitle={t('operator.bookings.empty_desc')}
         />
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (
-            <div key={booking._id} className="bg-white rounded-xl border border-gray-200 p-6">
+            <div key={booking._id} className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">
                     {booking.schedule?.product?.title}
                   </h3>
-                  <div className="flex items-center text-gray-600 text-sm">
+                  <div className="flex items-center text-slate-600 text-sm">
                     <Mail size={14} className="me-1" />
                     {booking.user?.email}
                   </div>
@@ -181,7 +193,7 @@ const OperatorBookingsPage = () => {
                     {getPaymentStatusLabel(booking.paymentStatus)}
                   </span>
                   {booking.isHandled && (
-                    <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1">
+                    <span className="px-2 py-1 rounded-full text-xs font-bold bg-primary-100 text-primary-800 flex items-center gap-1">
                       <CheckCircle size={12} />
                       {t('operator.bookings.handled')}
                     </span>
@@ -220,7 +232,7 @@ const OperatorBookingsPage = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">{t('operator.bookings.revenue')}</p>
-                  <p className="text-xl font-bold text-primary-700">€{booking.totalAmount.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-primary-700">{formatMoneyMad(booking.totalAmount, { decimals: 2 })}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">{t('operator.bookings.estimated_payout')}</p>
@@ -233,7 +245,7 @@ const OperatorBookingsPage = () => {
               <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
                 <a
                   href={`mailto:${booking.user?.email}`}
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold"
+                  className="inline-flex items-center gap-2 text-primary-700 hover:text-primary-800 font-semibold"
                 >
                   <Mail size={16} />
                   {t('operator.bookings.contact')}
