@@ -251,7 +251,7 @@ const AdminOperatorsPage = () => {
         <button
           onClick={() => setFilter('Under Review')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Under Review' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            filter === 'Under Review' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           {t('admin.operators.filter_under_review')}
@@ -297,7 +297,7 @@ const AdminOperatorsPage = () => {
                   <button
                     type="button"
                     onClick={() => openDetailModal(operator)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2"
                   >
                     <Eye size={16} />
                     {t('admin.common.view_details')}

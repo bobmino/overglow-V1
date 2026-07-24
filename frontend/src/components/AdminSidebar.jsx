@@ -238,8 +238,8 @@ const AdminSidebar = ({
       <aside
         style={{ width: drawerWidth }}
         className={`
-          fixed top-0 left-0 z-50 h-full bg-slate-900 text-slate-100
-          flex flex-col border-r border-slate-800
+          fixed top-0 left-0 z-50 h-full bg-primary-950 text-slate-100
+          flex flex-col border-r border-primary-900
           transition-all duration-300 ease-in-out
           max-md:max-w-[280px]
           md:translate-x-0
@@ -249,11 +249,11 @@ const AdminSidebar = ({
           variant === 'operator' ? t('admin.nav.aria_operator') : t('admin.nav.aria_admin')
         }
       >
-        <div className="flex items-center justify-between h-14 px-3 border-b border-slate-800/80 shrink-0 bg-gradient-to-r from-slate-900 to-emerald-950/40">
+        <div className="flex items-center justify-between h-14 px-3 border-b border-primary-900/80 shrink-0 bg-gradient-to-r from-primary-950 to-primary-900">
           {!collapsed && (
             <span className="font-heading font-bold text-sm tracking-wide text-white truncate">
               Overglow
-              <span className="ms-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400/90">
+              <span className="ms-1.5 text-[10px] font-semibold uppercase tracking-wider text-secondary-500">
                 {variant === 'operator' ? 'Host' : 'Cockpit'}
               </span>
             </span>
@@ -262,7 +262,7 @@ const AdminSidebar = ({
             <button
               type="button"
               onClick={onCloseMobile}
-              className="md:hidden p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="md:hidden p-2 rounded-lg text-slate-300 hover:bg-primary-900 hover:text-white"
               aria-label={t('admin.nav.close_menu')}
             >
               <X size={18} />
@@ -270,7 +270,7 @@ const AdminSidebar = ({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="hidden md:inline-flex p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="hidden md:inline-flex p-2 rounded-lg text-slate-300 hover:bg-primary-900 hover:text-white"
               aria-label={collapsed ? t('admin.nav.expand') : t('admin.nav.collapse')}
             >
               {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -282,7 +282,7 @@ const AdminSidebar = ({
           {sections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary-400/70">
                   {section.label}
                 </p>
               )}
@@ -302,8 +302,8 @@ const AdminSidebar = ({
                           transition-colors relative
                           ${
                             active && !item.externalShell
-                              ? 'bg-primary-600/20 text-primary-300 border-s-2 border-primary-500'
-                              : 'text-slate-300 hover:bg-slate-800 hover:text-white border-s-2 border-transparent'
+                              ? 'bg-primary-600/25 text-secondary-500 border-s-2 border-secondary-500'
+                              : 'text-slate-300 hover:bg-primary-900 hover:text-white border-s-2 border-transparent'
                           }
                           ${collapsed ? 'justify-center px-2' : ''}
                         `}
@@ -313,14 +313,14 @@ const AdminSidebar = ({
                           <>
                             <span className="truncate flex-1">{item.label}</span>
                             {typeof item.badge === 'number' && item.badge > 0 && (
-                              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary-600 text-[10px] font-bold text-white flex items-center justify-center">
+                              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-secondary-600 text-[10px] font-bold text-white flex items-center justify-center">
                                 {item.badge > 99 ? '99+' : item.badge}
                               </span>
                             )}
                           </>
                         )}
                         {collapsed && typeof item.badge === 'number' && item.badge > 0 && (
-                          <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-primary-500" />
+                          <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-secondary-500" />
                         )}
                       </LinkComp>
                     </li>
@@ -331,9 +331,9 @@ const AdminSidebar = ({
           ))}
         </nav>
 
-        <div className="shrink-0 border-t border-slate-800 p-2 space-y-1">
+        <div className="shrink-0 border-t border-primary-900 p-2 space-y-1">
           {!collapsed && user?.name && (
-            <p className="px-3 py-1 text-[11px] text-slate-500 truncate">{user.name}</p>
+            <p className="px-3 py-1 text-[11px] text-primary-400/80 truncate">{user.name}</p>
           )}
           <button
             type="button"

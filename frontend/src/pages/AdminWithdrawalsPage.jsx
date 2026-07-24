@@ -87,7 +87,7 @@ const AdminWithdrawalsPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      Approved: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
+      Approved: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
       Processed: { color: 'bg-primary-100 text-primary-800', icon: CheckCheck },
       Rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
@@ -148,7 +148,7 @@ const AdminWithdrawalsPage = () => {
         <button
           onClick={() => setFilter('Approved')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'Approved' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            filter === 'Approved' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           {t('admin.withdrawals.filter_approved')}
@@ -219,8 +219,8 @@ const AdminWithdrawalsPage = () => {
                     {getStatusBadge(withdrawal.status)}
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       withdrawal.type === 'operator_payout'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-purple-100 text-purple-800'
+                        ? 'bg-primary-100 text-primary-800'
+                        : 'bg-amber-100 text-amber-900'
                     }`}>
                       {withdrawal.type === 'operator_payout' ? t('admin.withdrawals.type_operator') : t('admin.withdrawals.type_refund')}
                     </span>

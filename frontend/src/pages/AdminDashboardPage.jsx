@@ -25,6 +25,7 @@ import {
   UserPlus,
   CalendarPlus,
   Wallet,
+  Sparkles,
 } from 'lucide-react';
 import api from '../config/axios';
 import ScrollToTopButton from '../components/ScrollToTopButton';
@@ -81,19 +82,20 @@ const TrendBadge = ({ value }) => {
   );
 };
 
-const KpiCard = ({ icon, label, value, trend, color }) => {
+const KpiCard = ({ icon, label, value, trend, tone }) => {
   const Icon = icon;
   return (
-  <div className="bg-white rounded-xl border border-gray-200 p-5">
-    <div className="flex items-start justify-between mb-3">
-      <div className={`p-2.5 rounded-lg ${color}`}>
-        <Icon size={20} className="text-white" />
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:border-primary-200 transition">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500 opacity-80" />
+      <div className="flex items-start justify-between mb-3">
+        <div className={`p-2.5 rounded-xl ${tone}`}>
+          <Icon size={20} className="text-white" />
+        </div>
+        <TrendBadge value={trend} />
       </div>
-      <TrendBadge value={trend} />
+      <p className="text-sm text-slate-500 mb-1">{label}</p>
+      <p className="text-2xl font-bold text-slate-900 font-heading tracking-tight">{value}</p>
     </div>
-    <p className="text-sm text-gray-500 mb-1">{label}</p>
-    <p className="text-2xl font-bold text-gray-900 font-heading">{value}</p>
-  </div>
   );
 };
 
@@ -142,7 +144,7 @@ const AdminDashboardPage = () => {
         value: formatMoney(current.revenue),
         trend: trendPct(current.revenue, previous.revenue),
         icon: Banknote,
-        color: 'bg-primary-600',
+        tone: 'bg-primary-600',
       },
       {
         key: 'bookings',
@@ -150,7 +152,7 @@ const AdminDashboardPage = () => {
         value: formatNum(current.bookings),
         trend: trendPct(current.bookings, previous.bookings),
         icon: CalendarDays,
-        color: 'bg-orange-600',
+        tone: 'bg-secondary-600',
       },
       {
         key: 'users',
@@ -158,7 +160,7 @@ const AdminDashboardPage = () => {
         value: formatNum(current.users),
         trend: trendPct(current.users, previous.users),
         icon: Users,
-        color: 'bg-blue-600',
+        tone: 'bg-primary-800',
       },
       {
         key: 'conversion',
@@ -166,7 +168,7 @@ const AdminDashboardPage = () => {
         value: `${current.conversion ?? 0} %`,
         trend: trendPct(current.conversion, previous.conversion),
         icon: Percent,
-        color: 'bg-violet-600',
+        tone: 'bg-slate-700',
       },
     ];
   }, [data]);
@@ -178,74 +180,83 @@ const AdminDashboardPage = () => {
       label: 'opérateurs à approuver',
       to: '/admin/approval-requests',
       icon: Handshake,
-      color: 'bg-orange-50 text-orange-800 border-orange-200',
+      color: 'bg-amber-50 text-amber-900 border-amber-200',
     },
     {
       count: pending.products || 0,
       label: 'produits en attente',
       to: '/admin/products?status=Pending%20Review',
       icon: Package,
-      color: 'bg-yellow-50 text-yellow-800 border-yellow-200',
+      color: 'bg-primary-50 text-primary-800 border-primary-200',
     },
     {
       count: pending.payments || 0,
       label: 'paiements',
       to: '/admin/pending-payments',
       icon: CreditCard,
-      color: 'bg-amber-50 text-amber-800 border-amber-200',
+      color: 'bg-secondary-500/10 text-amber-900 border-amber-200',
     },
     {
       count: pending.approvals || 0,
       label: 'demandes d’approbation',
       to: '/admin/approval-requests',
       icon: Building2,
-      color: 'bg-blue-50 text-blue-800 border-blue-200',
+      color: 'bg-slate-50 text-slate-800 border-slate-200',
     },
   ].filter((p) => p.count > 0);
 
   if (loading && !data) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 bg-gray-200 rounded-xl w-64" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 bg-gray-200 rounded-xl" />
-            ))}
-          </div>
-          <div className="h-64 bg-gray-200 rounded-xl" />
+      <div className="animate-pulse space-y-4">
+        <div className="h-36 bg-primary-100/60 rounded-3xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-slate-200/80 rounded-2xl" />
+          ))}
         </div>
+        <div className="h-64 bg-slate-200/80 rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-slate-900">Tableau de bord</h1>
-          <p className="text-muted mt-1">Centre de commande plateforme</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {PERIODS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setPeriod(p.id)}
-              className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition ${
-                period === p.id
-                  ? 'bg-primary-600 text-white border-primary-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-primary-500'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white px-6 py-8 md:px-10 md:py-10 shadow-lg">
+        <div className="absolute -end-16 -top-16 w-56 h-56 rounded-full bg-secondary-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -start-10 -bottom-20 w-64 h-64 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.22em] text-primary-200/90 mb-2 flex items-center gap-2">
+              <Sparkles size={14} className="text-secondary-500" />
+              Overglow Cockpit
+            </p>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
+              Centre de commande
+            </h1>
+            <p className="text-primary-100/90 text-sm mt-2 max-w-xl">
+              Pilotage live : revenus, file d’attente et activité — même langage visuel que le store.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {PERIODS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPeriod(p.id)}
+                className={`px-3.5 py-2 rounded-full text-sm font-semibold border transition ${
+                  period === p.id
+                    ? 'bg-white text-primary-900 border-white shadow-sm'
+                    : 'bg-white/10 text-white border-white/25 hover:bg-white/20'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Row 1 — KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis?.map((k) => (
           <KpiCard
             key={k.key}
@@ -253,18 +264,17 @@ const AdminDashboardPage = () => {
             label={k.label}
             value={k.value}
             trend={k.trend}
-            color={k.color}
+            tone={k.tone}
           />
         ))}
       </div>
 
-      {/* Row 2 — Pending actions */}
-      <div className="surface-card p-5 mb-6">
-        <h2 className="text-sm font-heading font-bold uppercase tracking-wider text-muted mb-3">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <h2 className="text-xs font-heading font-bold uppercase tracking-wider text-slate-500 mb-3">
           Actions en attente
         </h2>
         {pendingPills.length === 0 ? (
-          <p className="text-sm text-gray-500">Rien en attente — belle journée.</p>
+          <p className="text-sm text-slate-500">Rien en attente — belle journée.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {pendingPills.map((p) => {
@@ -273,7 +283,7 @@ const AdminDashboardPage = () => {
                 <Link
                   key={p.to + p.label}
                   to={p.to}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-semibold hover:shadow-sm transition ${p.color}`}
+                  className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold hover:shadow-sm transition ${p.color}`}
                 >
                   <Icon size={16} />
                   <span>
@@ -286,58 +296,57 @@ const AdminDashboardPage = () => {
         )}
       </div>
 
-      {/* Row 3 — Chart + Top products */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
-        <div className="lg:col-span-3 surface-card p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-heading font-bold text-slate-900 mb-4">Revenus (MAD)</h2>
           <div className="h-72 min-h-[18rem] w-full min-w-0">
             {Array.isArray(data?.revenueChart) && data.revenueChart.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
-              <LineChart data={data.revenueChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip
-                  formatter={(v) => formatMoney(v)}
-                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="current"
-                  name="Période actuelle"
-                  stroke="#059669"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="previous"
-                  name="Période précédente"
-                  stroke="#94a3b8"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
+                <LineChart data={data.revenueChart}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(v) => formatMoney(v)}
+                    contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="current"
+                    name="Période actuelle"
+                    stroke="#059669"
+                    strokeWidth={2.5}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="previous"
+                    name="Période précédente"
+                    stroke="#94a3b8"
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-gray-500">
+              <div className="h-full flex items-center justify-center text-sm text-slate-500">
                 Aucune donnée de revenus pour cette période.
               </div>
             )}
           </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-lg font-heading font-bold text-gray-900 mb-4">Top 5 produits</h2>
+        <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-heading font-bold text-slate-900 mb-4">Top 5 produits</h2>
           {!data?.topProducts?.length ? (
-            <p className="text-sm text-gray-500">Aucune vente sur cette période.</p>
+            <p className="text-sm text-slate-500">Aucune vente sur cette période.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-100">
+                  <tr className="text-left text-slate-500 border-b border-slate-100">
                     <th className="pb-2 font-semibold">Produit</th>
                     <th className="pb-2 font-semibold">Rés.</th>
                     <th className="pb-2 font-semibold">Revenu</th>
@@ -345,12 +354,14 @@ const AdminDashboardPage = () => {
                 </thead>
                 <tbody>
                   {data.topProducts.map((p) => (
-                    <tr key={String(p.id)} className="border-b border-gray-50">
-                      <td className="py-2.5 pr-2 max-w-[140px] truncate font-medium text-gray-900">
+                    <tr key={String(p.id)} className="border-b border-slate-50">
+                      <td className="py-2.5 pr-2 max-w-[140px] truncate font-medium text-slate-900">
                         {p.name}
                       </td>
-                      <td className="py-2.5">{formatNum(p.bookings)}</td>
-                      <td className="py-2.5 whitespace-nowrap">{formatMoney(p.revenue)}</td>
+                      <td className="py-2.5 text-slate-700">{formatNum(p.bookings)}</td>
+                      <td className="py-2.5 whitespace-nowrap font-semibold text-primary-700">
+                        {formatMoney(p.revenue)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -360,10 +371,9 @@ const AdminDashboardPage = () => {
         </div>
       </div>
 
-      {/* Row 4 — Activity */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-heading font-bold text-gray-900">Activité récente</h2>
+          <h2 className="text-lg font-heading font-bold text-slate-900">Activité récente</h2>
           <Link
             to="/admin/bookings"
             className="text-sm font-semibold text-primary-700 inline-flex items-center gap-1 hover:text-primary-800"
@@ -371,21 +381,21 @@ const AdminDashboardPage = () => {
             Voir tout <ArrowRight size={14} />
           </Link>
         </div>
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {(data?.recentActivity || []).slice(0, 8).map((item, idx) => {
             const Icon = activityIcon(item.type);
             return (
               <li key={`${item.type}-${idx}-${item.timestamp}`}>
                 <Link
                   to={item.link || '/admin/dashboard'}
-                  className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary-50/60 transition"
                 >
-                  <span className="mt-0.5 w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                  <span className="mt-0.5 w-9 h-9 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
                     <Icon size={16} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-gray-900">{item.description}</span>
-                    <span className="block text-xs text-gray-500 mt-0.5">
+                    <span className="block text-sm text-slate-900">{item.description}</span>
+                    <span className="block text-xs text-slate-500 mt-0.5">
                       {relativeTimeFr(item.timestamp)}
                     </span>
                   </span>
@@ -394,7 +404,7 @@ const AdminDashboardPage = () => {
             );
           })}
           {!data?.recentActivity?.length && (
-            <li className="text-sm text-gray-500">Aucune activité récente.</li>
+            <li className="text-sm text-slate-500">Aucune activité récente.</li>
           )}
         </ul>
       </div>

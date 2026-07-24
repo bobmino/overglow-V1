@@ -15,21 +15,21 @@ const TripStackBanner = ({ currentStore = null }) => {
       to: '/explore',
       label: t('stores.trip_stack.explore', 'Explorer'),
       hint: t('stores.trip_stack.explore_hint', 'Tours & activités authentiques'),
-      className: 'from-primary-800 to-teal-700',
+      className: 'from-primary-900 to-primary-700',
     },
     {
       key: 'stays',
       to: '/stays',
       label: t('stores.trip_stack.stays', 'Logements de luxe'),
       hint: t('stores.trip_stack.stays_hint', 'Riads, villas & adresses d’exception'),
-      className: 'from-amber-800 to-orange-700',
+      className: 'from-amber-800 to-secondary-600',
     },
     {
       key: 'extras',
       to: '/extras',
       label: t('stores.trip_stack.extras', 'Extras & services'),
       hint: t('stores.trip_stack.extras_hint', 'Transferts, guides & conciergerie'),
-      className: 'from-slate-800 to-slate-700',
+      className: 'from-slate-900 to-primary-900',
     },
   ];
 

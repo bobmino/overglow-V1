@@ -36,15 +36,16 @@ const StatCard = ({ icon, label, value, color }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-xl border border-gray-200 p-6"
+      className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md hover:border-primary-200 transition"
     >
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
       <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-lg ${color}`}>
+        <div className={`p-3 rounded-xl ${color}`}>
           <Icon size={24} className="text-white" />
         </div>
       </div>
-      <p className="text-gray-600 text-sm mb-1">{label}</p>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+      <p className="text-slate-500 text-sm mb-1">{label}</p>
+      <p className="text-3xl font-bold text-slate-900 font-heading">{value}</p>
     </Motion.div>
   );
 };
@@ -140,21 +141,22 @@ const OperatorDashboardPage = () => {
 
   return (
     <div className="space-y-8">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white px-6 py-8 md:px-10 md:py-10">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/90 mb-2">Overglow Host</p>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white px-6 py-8 md:px-10 md:py-10">
+        <div className="absolute -end-16 -top-16 w-56 h-56 rounded-full bg-secondary-500/20 blur-3xl pointer-events-none" />
+        <p className="relative text-xs uppercase tracking-[0.2em] text-primary-200/90 mb-2">Overglow Host</p>
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold font-heading">
               {t('operator.dashboard.title')}
             </h1>
             {pendingCount > 0 && (
-              <p className="text-amber-200 text-sm font-semibold mt-2">
+              <p className="text-secondary-500 text-sm font-semibold mt-2">
                 {pendingCount === 1
                   ? t('operator.dashboard.pending_bookings', { count: pendingCount })
                   : t('operator.dashboard.pending_bookings_plural', { count: pendingCount })}
               </p>
             )}
-            <p className="text-emerald-50/90 text-sm mt-2 max-w-xl">
+            <p className="text-primary-100/90 text-sm mt-2 max-w-xl">
               {t(
                 'operator.dashboard.cockpit_hint',
                 'Pilotez offres, réservations clients et vos voyages personnels depuis un seul cockpit.'
@@ -171,7 +173,7 @@ const OperatorDashboardPage = () => {
             </Link>
             <Link
               to="/operator/products/new"
-              className="inline-flex items-center justify-center gap-2 bg-white text-primary-900 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-50 transition"
+              className="inline-flex items-center justify-center gap-2 bg-white text-primary-900 px-4 py-2.5 rounded-xl font-bold hover:bg-primary-50 transition"
             >
               <Plus size={18} />
               {t('operator.dashboard.create_product')}
@@ -209,19 +211,19 @@ const OperatorDashboardPage = () => {
           icon={Package}
           label={t('operator.dashboard.total_sales')}
           value={`${Number(stats.totalSales || 0).toFixed(2)} MAD`}
-          color="bg-blue-600"
+          color="bg-primary-600"
         />
         <StatCard
           icon={Calendar}
           label={t('operator.dashboard.confirmed_bookings')}
           value={stats.confirmedBookings}
-          color="bg-purple-600"
+          color="bg-secondary-600"
         />
         <StatCard
           icon={Users}
           label={t('operator.dashboard.top_experiences')}
           value={stats.topExperiences?.length || 0}
-          color="bg-primary-600"
+          color="bg-primary-800"
         />
       </div>
 

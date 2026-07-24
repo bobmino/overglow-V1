@@ -291,7 +291,7 @@ const AdminReviewsPage = () => {
                               type="button"
                               disabled={busyId === r._id || !replyText.trim()}
                               onClick={() => sendReply(r._id)}
-                              className="px-3 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                              className="px-3 py-1.5 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-50"
                             >
                               Publier
                             </button>
@@ -394,7 +394,7 @@ const AdminReviewsPage = () => {
                         type="button"
                         disabled={busyId === r._id || !replyText.trim()}
                         onClick={() => sendReply(r._id)}
-                        className="min-h-11 px-3 bg-blue-600 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
+                        className="min-h-11 px-3 bg-primary-600 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
                       >
                         Publier
                       </button>

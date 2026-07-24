@@ -237,7 +237,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/40 to-slate-100">
       <AdminSidebar
         variant={variant}
         collapsed={collapsed}

@@ -35,7 +35,7 @@ const PERIODS = [
   { id: 'thisMonth', label: 'Ce mois' },
 ];
 
-const PIE_COLORS = ['#059669', '#2563eb', '#d97706', '#64748b', '#7c3aed'];
+const PIE_COLORS = ['#059669', '#047857', '#f59e0b', '#64748b', '#064e3b'];
 
 const formatMoney = (n, currency = 'MAD') =>
   `${Math.round(Number(n) || 0)
@@ -129,21 +129,21 @@ const AdminFinancePage = () => {
         label: `Commissions (${stats.commissionPercent ?? 15} %)`,
         value: formatMoney(k.commissions),
         icon: Percent,
-        color: 'bg-violet-600',
+        color: 'bg-primary-800',
       },
       {
         key: 'processed',
         label: 'Retraits traités',
         value: formatMoney(k.withdrawalsProcessedAmount),
         icon: Wallet,
-        color: 'bg-blue-600',
+        color: 'bg-slate-700',
       },
       {
         key: 'pending',
         label: 'Retraits en attente',
         value: `${k.withdrawalsPending?.count || 0} · ${formatMoney(k.withdrawalsPending?.amount)}`,
         icon: Clock,
-        color: 'bg-amber-600',
+        color: 'bg-secondary-600',
       },
     ];
   }, [stats]);
@@ -165,47 +165,57 @@ const AdminFinancePage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-slate-50 min-h-screen">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-heading flex items-center gap-2">
-            <Landmark className="text-primary-600" size={28} />
-            Finances
-          </h1>
-          <p className="text-gray-600 mt-1">Vue d’ensemble revenus, commissions et retraits</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {PERIODS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => {
-                setPeriod(p.id);
-                setFilters((f) => ({ ...f, page: 1 }));
-              }}
-              className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition ${
-                period === p.id
-                  ? 'bg-primary-600 text-white border-primary-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-primary-500'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white px-6 py-8 md:px-10">
+        <div className="absolute -end-12 -top-12 w-48 h-48 rounded-full bg-secondary-500/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-2">Finances</p>
+            <h1 className="text-3xl md:text-4xl font-bold font-heading flex items-center gap-2">
+              <Landmark size={28} className="text-secondary-500" />
+              Cockpit financier
+            </h1>
+            <p className="text-primary-100/90 text-sm mt-2 max-w-xl">
+              Revenus, commissions et retraits — lecture claire, actions rapides.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {PERIODS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setPeriod(p.id);
+                  setFilters((f) => ({ ...f, page: 1 }));
+                }}
+                className={`px-3.5 py-2 rounded-full text-sm font-semibold border transition ${
+                  period === p.id
+                    ? 'bg-white text-primary-900 border-white'
+                    : 'bg-white/10 text-white border-white/25 hover:bg-white/20'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Row 1 — KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis?.map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.key} className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className={`inline-flex p-2.5 rounded-lg ${k.color} mb-3`}>
+            <div
+              key={k.key}
+              className="relative overflow-hidden bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-600 to-secondary-500" />
+              <div className={`inline-flex p-2.5 rounded-xl ${k.color} mb-3`}>
                 <Icon size={20} className="text-white" />
               </div>
-              <p className="text-sm text-gray-500 mb-1">{k.label}</p>
-              <p className="text-xl font-bold text-gray-900 font-heading">{k.value}</p>
+              <p className="text-sm text-slate-500 mb-1">{k.label}</p>
+              <p className="text-xl font-bold text-slate-900 font-heading">{k.value}</p>
             </div>
           );
         })}

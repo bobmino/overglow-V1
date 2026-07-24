@@ -340,9 +340,31 @@ const DashboardPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      {(user?.role === 'Opérateur' || user?.role === 'Admin') && (
+        <div className="mb-6 rounded-2xl border border-primary-200 bg-gradient-to-r from-primary-50 to-amber-50 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-primary-700 font-bold mb-1">Mode voyageur</p>
+            <p className="text-sm text-slate-700">
+              Vos réservations personnelles en tant que client Overglow — distinctes de votre activité Host.
+            </p>
+          </div>
+          {user?.role === 'Opérateur' && (
+            <Link
+              to="/operator/dashboard"
+              className="inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-xl bg-primary-700 text-white text-sm font-bold hover:bg-primary-800 transition"
+            >
+              <Building2 size={16} />
+              Retour Host
+            </Link>
+          )}
+        </div>
+      )}
       <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.page_title')}</h1>
-        <div className="flex gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 font-heading">{t('dashboard.page_title')}</h1>
+          <p className="text-slate-500 text-sm mt-1">Historique et gestion de vos voyages</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
           {user?.role === 'Client' && (
             <button
               onClick={handleUpgradeToOperator}
@@ -355,7 +377,7 @@ const DashboardPage = () => {
           )}
           <Link
             to="/loyalty"
-            className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition flex items-center gap-2"
+            className="px-4 py-2 bg-secondary-600 text-white rounded-lg font-semibold hover:bg-amber-600 transition flex items-center gap-2"
           >
             <Award size={18} />
             {t('dashboard.loyalty_program')}

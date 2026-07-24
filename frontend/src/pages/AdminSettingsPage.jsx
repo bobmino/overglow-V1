@@ -227,14 +227,17 @@ const AdminSettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-800 text-white px-6 py-8 md:px-8">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/90 mb-2">Overglow Cockpit</p>
-        <h1 className="text-3xl font-heading font-bold">Paramètres plateforme</h1>
-        <p className="text-emerald-50/90 mt-2 max-w-2xl text-sm md:text-base">
-          Une logique simple : <strong>Général</strong> = comportement site · <strong>Finances</strong> = commission &amp; retraits ·{' '}
-          <strong>Paiements</strong> = Stripe/PayPal/CMI/virement · <strong>Notifications</strong> = alertes admin ·{' '}
-          <strong>Emails</strong> = digests. Tout est lu/écrit depuis la base (collection Settings).
-        </p>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white px-6 py-8 md:px-8">
+        <div className="absolute -end-12 -top-12 w-48 h-48 rounded-full bg-secondary-500/20 blur-3xl pointer-events-none" />
+        <div className="relative">
+          <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-2">Overglow Cockpit</p>
+          <h1 className="text-3xl font-heading font-bold">Paramètres plateforme</h1>
+          <p className="text-primary-100/90 mt-2 max-w-2xl text-sm md:text-base">
+            Une logique simple : <strong>Général</strong> = comportement site · <strong>Finances</strong> = commission &amp; retraits ·{' '}
+            <strong>Paiements</strong> = Stripe/PayPal/CMI/virement · <strong>Notifications</strong> = alertes admin ·{' '}
+            <strong>Emails</strong> = digests. Tout est lu/écrit depuis la base (collection Settings).
+          </p>
+        </div>
       </div>
 
       {/* Tabs: horizontal mobile, vertical desktop */}
