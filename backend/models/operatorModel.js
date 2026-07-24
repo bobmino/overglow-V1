@@ -25,7 +25,7 @@ const operatorSchema = mongoose.Schema({
     city: { type: String },
     address: { type: String },
     postalCode: { type: String },
-    country: { type: String, default: 'France' },
+    country: { type: String, default: 'Maroc' },
     coordinates: {
       lat: { type: Number },
       lng: { type: Number },
@@ -41,7 +41,7 @@ const operatorSchema = mongoose.Schema({
     street: { type: String },
     city: { type: String },
     postalCode: { type: String },
-    country: { type: String, default: 'France' },
+    country: { type: String, default: 'Maroc' },
     coordinates: {
       lat: { type: Number },
       lng: { type: Number },
@@ -70,29 +70,90 @@ const operatorSchema = mongoose.Schema({
   companyInfo: {
     companyName: { type: String }, // Nom de la société
     registrationNumber: { type: String }, // RC (Registre du Commerce)
-    kbis: { type: String }, // Numéro KABIS
-    siret: { type: String }, // Numéro SIRET
-    vatNumber: { type: String }, // Numéro TVA
-    legalForm: { type: String }, // Forme juridique (SARL, SAS, etc.)
-    capital: { type: Number }, // Capital social
-    headquarters: { type: String }, // Siège social
+    kbis: { type: String }, // legacy
+    siret: { type: String }, // legacy FR
+    vatNumber: { type: String },
+    legalForm: { type: String }, // SARL, SARL AU, SA…
+    capital: { type: Number },
+    headquarters: { type: String },
+    ice: { type: String }, // Identifiant Commun de l'Entreprise (15)
+    rcCity: { type: String },
+    ifNumber: { type: String }, // Identifiant fiscal
+    taxId: { type: String }, // Taxe professionnelle / patente
   },
   
   // Pour personne physique avec statut
   individualWithStatusInfo: {
     firstName: { type: String },
     lastName: { type: String },
-    status: { type: String }, // Auto-entrepreneur, Micro-entreprise, etc.
-    siret: { type: String },
-    apeCode: { type: String }, // Code APE
-    taxStatus: { type: String }, // Régime fiscal
+    status: { type: String }, // Auto-entrepreneur, etc.
+    siret: { type: String }, // legacy
+    apeCode: { type: String },
+    taxStatus: { type: String },
+    ice: { type: String },
+    cnieNumber: { type: String },
+    ifNumber: { type: String },
+    taxId: { type: String },
   },
   
   // Pour personne physique sans statut
   individualWithoutStatusInfo: {
     firstName: { type: String },
     lastName: { type: String },
-    idNumber: { type: String }, // Numéro de pièce d'identité
+    idNumber: { type: String },
+    cnieNumber: { type: String },
+  },
+
+  /** Secteurs d'activité réglementés (matrice compliance) */
+  activitySectors: {
+    type: [String],
+    default: [],
+  },
+
+  /** Identité légale / champs sectoriels (CIN, agréments, etc.) */
+  legalIdentity: {
+    ice: { type: String, trim: true },
+    rcNumber: { type: String, trim: true },
+    rcCity: { type: String, trim: true },
+    ifNumber: { type: String, trim: true },
+    taxId: { type: String, trim: true },
+    cnieNumber: { type: String, trim: true },
+    drivingLicenseNumber: { type: String, trim: true },
+    confidencePermitNumber: { type: String, trim: true },
+    agreementNumber: { type: String, trim: true },
+    transportAgreementNumber: { type: String, trim: true },
+    rentalAgreementNumber: { type: String, trim: true },
+    exploitationAuthNumber: { type: String, trim: true },
+    classificationCategory: { type: String, trim: true },
+    propertyAddress: { type: String, trim: true },
+    guideLicenseNumber: { type: String, trim: true },
+    guideLanguages: { type: String, trim: true },
+    agencyLicenseNumber: { type: String, trim: true },
+    agencyLicenseType: { type: String, trim: true },
+    vehiclePlate: { type: String, trim: true },
+    taxiCategory: { type: String, trim: true },
+  },
+
+  complianceDocuments: [{
+    type: { type: String, required: true },
+    fileUrl: { type: String },
+    number: { type: String },
+    issuedAt: { type: Date },
+    expiresAt: { type: Date },
+    status: {
+      type: String,
+      enum: ['missing', 'uploaded', 'in_review', 'verified', 'rejected'],
+      default: 'missing',
+    },
+    rejectionReason: { type: String },
+    reviewedAt: { type: Date },
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  }],
+
+  complianceStatus: {
+    type: String,
+    enum: ['draft', 'submitted', 'in_review', 'needs_changes', 'verified'],
+    default: 'draft',
   },
   
   // Statut et workflow

@@ -9,6 +9,7 @@ import {
   saveAddress,
   saveExperiences,
   savePrivateInfo,
+  getComplianceRequirements,
   submitWizard,
   getWizardData,
 } from '../controllers/operatorWizardController.js';
@@ -21,6 +22,7 @@ router.use(authorize('Opérateur'));
 
 router.get('/status', getWizardStatus);
 router.get('/data', getWizardData);
+router.get('/compliance/requirements', getComplianceRequirements);
 
 router.put(
   '/provider-type',

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 const REASSURANCE_TAG_IDS = [
   { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-primary-100 text-primary-700' },
   { id: 'confirmation-immediate', labelKey: 'filters.tag_instant', color: 'bg-blue-100 text-blue-700' },
-  { id: 'bestseller', labelKey: 'filters.tag_bestseller', color: 'bg-amber-100 text-amber-700' },
 ];
 
 const CANCELLATION_TYPES = [
@@ -123,7 +122,7 @@ const FilterSidebar = ({
     <div
       className={
         compact
-          ? 'bg-transparent p-2'
+          ? 'bg-transparent p-0'
           : 'bg-white rounded-2xl border border-slate-200 p-6 shadow-sm'
       }
     >
@@ -201,9 +200,9 @@ const FilterSidebar = ({
                 const isActive =
                   Array.isArray(selectedTaxonomy) && selectedTaxonomy.includes(opt.slug);
                 return (
-                  <label key={opt.slug} className="flex items-center space-x-3 cursor-pointer group">
+                  <label key={opt.slug} className="flex items-center gap-3 cursor-pointer group">
                     <div
-                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
                         isActive
                           ? 'bg-primary-600 border-primary-600'
                           : 'border-slate-300 bg-white group-hover:border-primary-500'
@@ -217,7 +216,7 @@ const FilterSidebar = ({
                       onChange={() => handleTaxonomyToggle(opt.slug)}
                       className="hidden"
                     />
-                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors flex-1">
+                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors flex-1 min-w-0">
                       {opt.parentLabel ? `${opt.parentLabel} · ` : ''}
                       {opt.label}
                     </span>
@@ -244,9 +243,9 @@ const FilterSidebar = ({
                 const isActive =
                   Array.isArray(selectedCategories) && selectedCategories.includes(categoryName);
                 return (
-                  <label key={categoryName} className="flex items-center space-x-3 cursor-pointer group">
+                  <label key={categoryName} className="flex items-center gap-3 cursor-pointer group">
                     <div
-                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
                         isActive
                           ? 'bg-primary-600 border-primary-600'
                           : 'border-slate-300 bg-white group-hover:border-primary-500'
@@ -279,9 +278,9 @@ const FilterSidebar = ({
             {REASSURANCE_TAG_IDS.map((tag) => {
               const isActive = filters.tags?.includes(tag.id);
               return (
-                <label key={tag.id} className="flex items-center space-x-3 cursor-pointer group">
+                <label key={tag.id} className="flex items-center gap-3 cursor-pointer group">
                   <div
-                    className={`flex items-center justify-center w-5 h-5 rounded border ${
+                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
                       isActive
                         ? 'bg-primary-600 border-primary-600'
                         : 'border-slate-300 bg-white group-hover:border-primary-500'
@@ -295,7 +294,7 @@ const FilterSidebar = ({
                     onChange={() => handleTagToggle(tag.id)}
                     className="hidden"
                   />
-                  <span className={`text-sm font-medium px-2 py-0.5 rounded-md ${tag.color}`}>
+                  <span className={`text-sm font-medium px-2.5 py-1 rounded-md ${tag.color}`}>
                     {t(tag.labelKey)}
                   </span>
                 </label>
@@ -323,10 +322,10 @@ const FilterSidebar = ({
                       cancellationType: isActive ? null : opt.id,
                     }))
                   }
-                  className="flex items-center space-x-3 cursor-pointer group w-full text-start"
+                  className="flex items-center gap-3 cursor-pointer group w-full text-start"
                 >
                   <div
-                    className={`flex items-center justify-center w-5 h-5 rounded-full border ${
+                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded-full border ${
                       isActive
                         ? 'border-4 border-primary-600'
                         : 'border-slate-300 group-hover:border-primary-500'
@@ -346,22 +345,22 @@ const FilterSidebar = ({
           <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
             {t('catalog.price_mad')}
           </h3>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <input
               type="number"
               placeholder={t('catalog.min_price')}
               value={localMinPrice}
               onChange={(e) => setLocalMinPrice(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary-500"
+              className="w-full min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary-500"
               min="0"
             />
-            <span className="text-slate-400 font-medium">-</span>
+            <span className="text-slate-400 font-medium shrink-0">-</span>
             <input
               type="number"
               placeholder={t('catalog.max_price')}
               value={localMaxPrice}
               onChange={(e) => setLocalMaxPrice(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary-500"
+              className="w-full min-w-0 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary-500"
               min="0"
             />
           </div>
@@ -375,7 +374,7 @@ const FilterSidebar = ({
             {[5, 4, 3].map((rating) => {
               const isActive = filters.minRating === rating;
               return (
-                <label key={rating} className="flex items-center space-x-3 cursor-pointer group">
+                <label key={rating} className="flex items-center gap-3 cursor-pointer group">
                   <input
                     type="radio"
                     name="rating"
@@ -389,7 +388,7 @@ const FilterSidebar = ({
                     className="hidden"
                   />
                   <div
-                    className={`flex items-center justify-center w-5 h-5 rounded-full border ${
+                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded-full border ${
                       isActive
                         ? 'border-4 border-primary-600'
                         : 'border-slate-300 group-hover:border-primary-500'
@@ -423,9 +422,9 @@ const FilterSidebar = ({
               ].map((pt) => {
                 const isActive = filters.propertyType === pt.id;
                 return (
-                  <label key={pt.id} className="flex items-center space-x-3 cursor-pointer group">
+                  <label key={pt.id} className="flex items-center gap-3 cursor-pointer group">
                     <div
-                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
                         isActive
                           ? 'bg-primary-600 border-primary-600'
                           : 'border-slate-300 bg-white group-hover:border-primary-500'
@@ -461,9 +460,9 @@ const FilterSidebar = ({
               ].map((am) => {
                 const isActive = !!filters[am.id];
                 return (
-                  <label key={am.id} className="flex items-center space-x-3 cursor-pointer group">
+                  <label key={am.id} className="flex items-center gap-3 cursor-pointer group">
                     <div
-                      className={`flex items-center justify-center w-5 h-5 rounded border ${
+                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
                         isActive
                           ? 'bg-primary-600 border-primary-600'
                           : 'border-slate-300 bg-white group-hover:border-primary-500'

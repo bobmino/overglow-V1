@@ -22,6 +22,7 @@ const ImmersiveCollectionCarousel = ({
   browseMode = 'byTaxonomyParent',
   storeKey = 'explore',
   onSelect,
+  title,
 }) => {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -87,11 +88,12 @@ const ImmersiveCollectionCarousel = ({
     <section className="mb-12">
       <div className="flex items-center justify-between gap-3 mb-4">
         <h2 className="text-xl md:text-2xl font-heading font-bold text-slate-900">
-          {storeKey === 'stays'
-            ? t('stores.immersive.stays_title', 'Séjours : types d’hébergement')
-            : storeKey === 'extras'
-              ? t('stores.immersive.extras_title', 'Extras : destinations phares')
-              : t('stores.immersive.explore_title', 'Maroc : destinations incontournables')}
+          {title
+            || (storeKey === 'stays'
+              ? t('stores.immersive.stays_title', 'Séjours : types d’hébergement')
+              : storeKey === 'extras'
+                ? t('stores.immersive.extras_title', 'Extras : destinations phares')
+                : t('stores.immersive.explore_title', 'Maroc : destinations incontournables'))}
         </h2>
         <div className="flex items-center gap-2">
           <button

@@ -4,6 +4,7 @@ import {
   getOperators,
   updateOperator,
   updateOperatorStatus,
+  updateOperatorComplianceDoc,
   getProducts,
   updateProductStatus,
   assignProductToOperator,
@@ -69,6 +70,12 @@ router.get('/analytics', protect, authorize('Admin'), getAnalytics);
 router.get('/operators', protect, authorize('Admin'), getOperators);
 router.put('/operators/:id', protect, authorize('Admin'), updateOperator);
 router.put('/operators/:id/status', protect, authorize('Admin'), updateOperatorStatus);
+router.put(
+  '/operators/:id/compliance-docs/:docType',
+  protect,
+  authorize('Admin'),
+  updateOperatorComplianceDoc
+);
 router.get('/products', protect, authorize('Admin'), getProducts);
 router.put('/products/:id/status', protect, authorize('Admin'), updateProductStatus);
 router.post('/products/:id/assign', protect, authorize('Admin'), assignProductToOperator);

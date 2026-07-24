@@ -168,12 +168,12 @@ router.post(
 );
 
 /**
- * [TASK-9] Document upload — Admin only (pdf/doc/docx, 10MB).
+ * [TASK-9] Document upload — Opérateur / Admin (pdf/doc/docx, 10MB).
  */
 router.post(
   '/document',
   protect,
-  authorize('Admin'),
+  authorize('Admin', 'Opérateur'),
   strictLimiter,
   uploadDocument.single('document'),
   async (req, res) => {

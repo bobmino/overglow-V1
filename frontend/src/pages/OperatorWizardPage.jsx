@@ -7,6 +7,7 @@ import { logger } from '../utils/logger.js';
 import { useToast } from '../context/ToastContext';
 import TaxonomyMultiSelect from '../components/TaxonomyMultiSelect';
 import LanguagesMultiSelect from '../components/LanguagesMultiSelect';
+import OperatorCompliancePanel from '../components/OperatorCompliancePanel';
 
 /** Étapes stables (hors render) — évite remount / perte de focus des inputs */
 const WIZARD_STEPS = [
@@ -62,6 +63,9 @@ const OperatorWizardPage = () => {
     companyInfo: {},
     individualWithStatusInfo: {},
     individualWithoutStatusInfo: {},
+    activitySectors: [],
+    legalIdentity: {},
+    complianceDocuments: [],
   });
 
   const setField = useCallback((key, value) => {
@@ -102,6 +106,11 @@ const OperatorWizardPage = () => {
             companyInfo: data.companyInfo || {},
             individualWithStatusInfo: data.individualWithStatusInfo || {},
             individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
+            activitySectors: Array.isArray(data.activitySectors) ? data.activitySectors : [],
+            legalIdentity: data.legalIdentity || {},
+            complianceDocuments: Array.isArray(data.complianceDocuments)
+              ? data.complianceDocuments
+              : [],
           });
 
           if (data.isFormCompleted) {
@@ -179,6 +188,9 @@ const OperatorWizardPage = () => {
             companyInfo: formData.companyInfo,
             individualWithStatusInfo: formData.individualWithStatusInfo,
             individualWithoutStatusInfo: formData.individualWithoutStatusInfo,
+            activitySectors: formData.activitySectors || [],
+            legalIdentity: formData.legalIdentity || {},
+            complianceDocuments: formData.complianceDocuments || [],
           });
           break;
       default:
@@ -274,6 +286,11 @@ const OperatorWizardPage = () => {
         companyInfo: data.companyInfo || {},
         individualWithStatusInfo: data.individualWithStatusInfo || {},
         individualWithoutStatusInfo: data.individualWithoutStatusInfo || {},
+        activitySectors: Array.isArray(data.activitySectors) ? data.activitySectors : [],
+        legalIdentity: data.legalIdentity || {},
+        complianceDocuments: Array.isArray(data.complianceDocuments)
+          ? data.complianceDocuments
+          : [],
       });
     }).catch(() => {});
   };
@@ -624,7 +641,9 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.rc_number_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_rc', 'N° RC (Registre du Commerce)')}
+                  </label>
                   <input
                     type="text"
                     value={formData.companyInfo.registrationNumber || ''}
@@ -634,31 +653,36 @@ const OperatorWizardPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.kbis_number_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_ice', 'ICE (15 chiffres)')}
+                  </label>
                   <input
                     type="text"
-                    value={formData.companyInfo.kbis || ''}
-                    onChange={(e) => setNestedField('companyInfo', 'kbis', e.target.value)}
+                    value={formData.companyInfo.ice || ''}
+                    onChange={(e) => setNestedField('companyInfo', 'ice', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.siret_number_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_rc_city', 'Ville du RC')}
+                  </label>
                   <input
                     type="text"
-                    value={formData.companyInfo.siret || ''}
-                    onChange={(e) => setNestedField('companyInfo', 'siret', e.target.value)}
+                    value={formData.companyInfo.rcCity || ''}
+                    onChange={(e) => setNestedField('companyInfo', 'rcCity', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.vat_number_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_if', 'Identifiant fiscal (IF)')}
+                  </label>
                   <input
                     type="text"
-                    value={formData.companyInfo.vatNumber || ''}
-                    onChange={(e) => setNestedField('companyInfo', 'vatNumber', e.target.value)}
+                    value={formData.companyInfo.ifNumber || ''}
+                    onChange={(e) => setNestedField('companyInfo', 'ifNumber', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -671,11 +695,10 @@ const OperatorWizardPage = () => {
                     required
                   >
                     <option value="">{t('operator.common.select')}</option>
-                    <option value="SARL">{t('operator.wizard.legal_form_sarl')}</option>
-                    <option value="SAS">{t('operator.wizard.legal_form_sas')}</option>
-                    <option value="SA">{t('operator.wizard.legal_form_sa')}</option>
-                    <option value="EURL">{t('operator.wizard.legal_form_eurl')}</option>
-                    <option value="SNC">{t('operator.wizard.legal_form_snc')}</option>
+                    <option value="SARL">SARL</option>
+                    <option value="SARL AU">SARL AU</option>
+                    <option value="SA">SA</option>
+                    <option value="SNC">SNC</option>
                     <option value="Autre">{t('operator.wizard.legal_form_other')}</option>
                   </select>
                 </div>
@@ -734,36 +757,30 @@ const OperatorWizardPage = () => {
                   >
                     <option value="">{t('operator.common.select')}</option>
                     <option value="auto-entrepreneur">{t('operator.wizard.status_auto_entrepreneur')}</option>
-                    <option value="micro-entreprise">{t('operator.wizard.status_micro_enterprise')}</option>
                     <option value="profession-liberale">{t('operator.wizard.status_profession_liberale')}</option>
                     <option value="autre">{t('operator.wizard.status_other')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.siret_number_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_cnie', 'N° CNIE')}
+                  </label>
                   <input
                     type="text"
-                    value={formData.individualWithStatusInfo.siret || ''}
-                    onChange={(e) => setNestedField('individualWithStatusInfo', 'siret', e.target.value)}
+                    value={formData.individualWithStatusInfo.cnieNumber || ''}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'cnieNumber', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.ape_code_label')}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_ice', 'ICE')}
+                  </label>
                   <input
                     type="text"
-                    value={formData.individualWithStatusInfo.apeCode || ''}
-                    onChange={(e) => setNestedField('individualWithStatusInfo', 'apeCode', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.tax_regime_label')}</label>
-                  <input
-                    type="text"
-                    value={formData.individualWithStatusInfo.taxStatus || ''}
-                    onChange={(e) => setNestedField('individualWithStatusInfo', 'taxStatus', e.target.value)}
+                    value={formData.individualWithStatusInfo.ice || ''}
+                    onChange={(e) => setNestedField('individualWithStatusInfo', 'ice', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -801,19 +818,34 @@ const OperatorWizardPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="wizard-id-number" className="block text-sm font-semibold text-gray-700 mb-2">{t('operator.wizard.id_number_label')}</label>
+                  <label htmlFor="wizard-id-number" className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('compliance.field_cnie', 'N° CNIE')}
+                  </label>
                   <input
                     type="text"
                     id="wizard-id-number"
                     name="wizard-id-number"
-                    value={formData.individualWithoutStatusInfo.idNumber || ''}
-                    onChange={(e) => setNestedField('individualWithoutStatusInfo', 'idNumber', e.target.value)}
+                    value={formData.individualWithoutStatusInfo.cnieNumber || formData.individualWithoutStatusInfo.idNumber || ''}
+                    onChange={(e) => {
+                      setNestedField('individualWithoutStatusInfo', 'cnieNumber', e.target.value);
+                      setNestedField('individualWithoutStatusInfo', 'idNumber', e.target.value);
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     required
                   />
                 </div>
               </div>
             )}
+
+            <OperatorCompliancePanel
+              providerType={formData.providerType}
+              activitySectors={formData.activitySectors}
+              legalIdentity={formData.legalIdentity}
+              complianceDocuments={formData.complianceDocuments}
+              onSectorsChange={(sectors) => setField('activitySectors', sectors)}
+              onLegalIdentityChange={(identity) => setField('legalIdentity', identity)}
+              onDocumentsChange={(docs) => setField('complianceDocuments', docs)}
+            />
           </div>
         );
 

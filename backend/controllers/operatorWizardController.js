@@ -2,6 +2,11 @@ import Operator from '../models/operatorModel.js';
 import { validationResult } from 'express-validator';
 import { sanitizeBody } from '../utils/sanitizeBody.js';
 import { logger } from '../utils/logger.js';
+import {
+  ACTIVITY_SECTORS,
+  resolveRequirements,
+  mapProviderTypeToLegalForm,
+} from '../config/operatorComplianceMatrix.js';
 
 const WIZARD_PROVIDER_FIELDS = ['providerType'];
 const WIZARD_PUBLIC_FIELDS = ['publicName', 'description', 'location'];
@@ -12,6 +17,9 @@ const WIZARD_PRIVATE_FIELDS = [
   'companyInfo',
   'individualWithStatusInfo',
   'individualWithoutStatusInfo',
+  'activitySectors',
+  'legalIdentity',
+  'complianceDocuments',
 ];
 
 // @desc    Get operator wizard status
@@ -246,10 +254,14 @@ const savePrivateInfo = async (req, res) => {
       return res.status(404).json({ message: 'Operator profile not found' });
     }
 
-    const { companyInfo, individualWithStatusInfo, individualWithoutStatusInfo } = sanitizeBody(
-      req.body,
-      WIZARD_PRIVATE_FIELDS
-    );
+    const {
+      companyInfo,
+      individualWithStatusInfo,
+      individualWithoutStatusInfo,
+      activitySectors,
+      legalIdentity,
+      complianceDocuments,
+    } = sanitizeBody(req.body, WIZARD_PRIVATE_FIELDS);
 
     // Sauvegarder selon le type de prestataire
     if (operator.providerType === 'company' && companyInfo) {
@@ -260,13 +272,17 @@ const savePrivateInfo = async (req, res) => {
           : Number(capitalRaw);
       operator.companyInfo = {
         companyName: companyInfo.companyName,
-        registrationNumber: companyInfo.registrationNumber,
+        registrationNumber: companyInfo.registrationNumber || companyInfo.rcNumber,
         kbis: companyInfo.kbis,
         siret: companyInfo.siret,
         vatNumber: companyInfo.vatNumber,
         legalForm: companyInfo.legalForm,
         capital: Number.isFinite(capitalNum) ? capitalNum : undefined,
         headquarters: companyInfo.headquarters,
+        ice: companyInfo.ice,
+        rcCity: companyInfo.rcCity,
+        ifNumber: companyInfo.ifNumber,
+        taxId: companyInfo.taxId,
       };
     } else if (operator.providerType === 'individual_with_status' && individualWithStatusInfo) {
       operator.individualWithStatusInfo = {
@@ -276,13 +292,62 @@ const savePrivateInfo = async (req, res) => {
         siret: individualWithStatusInfo.siret,
         apeCode: individualWithStatusInfo.apeCode,
         taxStatus: individualWithStatusInfo.taxStatus,
+        ice: individualWithStatusInfo.ice,
+        cnieNumber: individualWithStatusInfo.cnieNumber,
+        ifNumber: individualWithStatusInfo.ifNumber,
+        taxId: individualWithStatusInfo.taxId,
       };
     } else if (operator.providerType === 'individual_without_status' && individualWithoutStatusInfo) {
       operator.individualWithoutStatusInfo = {
         firstName: individualWithoutStatusInfo.firstName,
         lastName: individualWithoutStatusInfo.lastName,
-        idNumber: individualWithoutStatusInfo.idNumber,
+        idNumber: individualWithoutStatusInfo.idNumber || individualWithoutStatusInfo.cnieNumber,
+        cnieNumber: individualWithoutStatusInfo.cnieNumber || individualWithoutStatusInfo.idNumber,
       };
+    }
+
+    if (Array.isArray(activitySectors)) {
+      operator.activitySectors = activitySectors.map(String).filter(Boolean);
+    }
+
+    if (legalIdentity && typeof legalIdentity === 'object') {
+      operator.legalIdentity = {
+        ...(operator.legalIdentity?.toObject?.() || operator.legalIdentity || {}),
+        ...Object.fromEntries(
+          Object.entries(legalIdentity).map(([k, v]) => [
+            k,
+            v === null || v === undefined ? undefined : String(v).trim(),
+          ])
+        ),
+      };
+    }
+
+    if (Array.isArray(complianceDocuments)) {
+      const existing = Array.isArray(operator.complianceDocuments)
+        ? operator.complianceDocuments
+        : [];
+      const byType = new Map(existing.map((d) => [d.type, d]));
+      complianceDocuments.forEach((doc) => {
+        if (!doc?.type) return;
+        const prev = byType.get(doc.type)?.toObject?.() || byType.get(doc.type) || {};
+        const nextStatus = doc.fileUrl
+          ? (doc.status && doc.status !== 'missing' ? doc.status : 'uploaded')
+          : 'missing';
+        byType.set(doc.type, {
+          ...prev,
+          type: doc.type,
+          fileUrl: doc.fileUrl || prev.fileUrl || '',
+          number: doc.number !== undefined ? doc.number : prev.number,
+          issuedAt: doc.issuedAt || prev.issuedAt,
+          expiresAt: doc.expiresAt || prev.expiresAt,
+          status: nextStatus,
+        });
+      });
+      operator.complianceDocuments = [...byType.values()];
+    }
+
+    if (operator.activitySectors?.length || operator.complianceDocuments?.length) {
+      operator.complianceStatus = 'submitted';
     }
 
     if (!operator.completedSteps.includes('privateInfo')) {
@@ -294,6 +359,36 @@ const savePrivateInfo = async (req, res) => {
   } catch (error) {
     logger.error('Save private info error:', error);
     res.status(500).json({ message: 'Failed to save private information' });
+  }
+};
+
+// @desc    Compliance requirements for selected sectors
+// @route   GET /api/operator/wizard/compliance/requirements
+// @access  Private/Operator
+const getComplianceRequirements = async (req, res) => {
+  try {
+    const operator = await Operator.findOne({ user: req.user._id }).select('providerType activitySectors');
+    const sectorsParam = req.query.sectors;
+    let sectors = [];
+    if (typeof sectorsParam === 'string' && sectorsParam.trim()) {
+      sectors = sectorsParam.split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (Array.isArray(operator?.activitySectors)) {
+      sectors = operator.activitySectors;
+    }
+
+    const requirements = resolveRequirements({
+      providerType: operator?.providerType || req.query.providerType,
+      sectors,
+    });
+
+    res.json({
+      sectorsCatalog: ACTIVITY_SECTORS,
+      legalForm: mapProviderTypeToLegalForm(operator?.providerType || req.query.providerType),
+      requirements,
+    });
+  } catch (error) {
+    logger.error('Get compliance requirements error:', error);
+    res.status(500).json({ message: 'Failed to resolve compliance requirements' });
   }
 };
 
@@ -321,6 +416,11 @@ const submitWizard = async (req, res) => {
     // Marquer le formulaire comme complété et passer en "Under Review"
     operator.isFormCompleted = true;
     operator.status = 'Under Review';
+    if (operator.complianceStatus === 'draft' || !operator.complianceStatus) {
+      operator.complianceStatus = 'in_review';
+    } else if (operator.complianceStatus === 'submitted') {
+      operator.complianceStatus = 'in_review';
+    }
     await operator.save();
 
     res.json({ 
@@ -368,6 +468,7 @@ export {
   saveAddress,
   saveExperiences,
   savePrivateInfo,
+  getComplianceRequirements,
   submitWizard,
   getWizardData,
 };

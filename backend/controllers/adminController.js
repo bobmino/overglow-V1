@@ -466,6 +466,60 @@ const updateOperator = async (req, res) => {
   }
 };
 
+// @desc    Review a compliance document
+// @route   PUT /api/admin/operators/:id/compliance-docs/:docType
+// @access  Private/Admin
+const updateOperatorComplianceDoc = async (req, res) => {
+  try {
+    const operator = await Operator.findById(req.params.id);
+    if (!operator) {
+      return res.status(404).json({ message: 'Operator not found' });
+    }
+
+    const docType = String(req.params.docType || '').trim();
+    const { status, rejectionReason } = req.body;
+    const allowed = ['uploaded', 'in_review', 'verified', 'rejected', 'missing'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid compliance document status' });
+    }
+
+    const docs = Array.isArray(operator.complianceDocuments)
+      ? [...operator.complianceDocuments]
+      : [];
+    const idx = docs.findIndex((d) => d.type === docType);
+    if (idx < 0) {
+      return res.status(404).json({ message: 'Document not found on operator profile' });
+    }
+
+    docs[idx].status = status;
+    docs[idx].reviewedAt = new Date();
+    docs[idx].reviewedBy = req.user._id;
+    docs[idx].rejectionReason =
+      status === 'rejected' ? String(rejectionReason || '').trim() : undefined;
+    operator.complianceDocuments = docs;
+
+    const statuses = docs.map((d) => d.status);
+    if (statuses.length && statuses.every((s) => s === 'verified')) {
+      operator.complianceStatus = 'verified';
+    } else if (statuses.some((s) => s === 'rejected')) {
+      operator.complianceStatus = 'needs_changes';
+    } else if (statuses.some((s) => s === 'uploaded' || s === 'in_review')) {
+      operator.complianceStatus = 'in_review';
+    }
+
+    await saveOperatorSafely(operator);
+
+    const populated = await Operator.findById(operator._id)
+      .populate('user', 'name email')
+      .populate('reviewedBy', 'name');
+
+    res.json(populated);
+  } catch (error) {
+    logger.error('Update operator compliance doc error:', error);
+    res.status(500).json({ message: 'Failed to update compliance document' });
+  }
+};
+
 const updateOperatorStatus = async (req, res) => {
   try {
     const { status, rejectionReason, approvalNotes, autoApproveProducts } = req.body;
@@ -2200,6 +2254,7 @@ export {
   getAdminStats,
   getOperators,
   updateOperator,
+  updateOperatorComplianceDoc,
   updateOperatorStatus, 
   getProducts,
   updateProductStatus, 

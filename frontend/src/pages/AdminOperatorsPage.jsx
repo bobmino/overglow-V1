@@ -128,6 +128,24 @@ const AdminOperatorsPage = () => {
     }
   };
 
+  const handleComplianceDocStatus = async (docType, status) => {
+    if (!selectedOperator?._id) return;
+    try {
+      const { data } = await api.put(
+        `/api/admin/operators/${selectedOperator._id}/compliance-docs/${encodeURIComponent(docType)}`,
+        { status }
+      );
+      setSelectedOperator(data);
+      toast.success(t('admin.operators.compliance_updated', 'Document mis à jour'));
+      fetchOperators();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message
+        || t('admin.operators.compliance_error', 'Échec mise à jour document')
+      );
+    }
+  };
+
   const getStatusBadge = (status) => {
     const badges = {
       Active: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
@@ -566,6 +584,72 @@ const AdminOperatorsPage = () => {
                     </div>
                   )}
                 </>
+              )}
+
+              {(selectedOperator.activitySectors?.length > 0
+                || selectedOperator.complianceDocuments?.length > 0) && (
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {t('admin.operators.compliance_title', 'Compliance Maroc')}
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-3">
+                    {t('admin.operators.compliance_status', 'Statut')}:{' '}
+                    <span className="font-semibold">
+                      {selectedOperator.complianceStatus || 'draft'}
+                    </span>
+                  </p>
+                  {selectedOperator.activitySectors?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {selectedOperator.activitySectors.map((s) => (
+                        <span
+                          key={s}
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-50 text-primary-800"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {(selectedOperator.complianceDocuments || []).map((doc) => (
+                      <div
+                        key={doc.type}
+                        className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900">{doc.type}</p>
+                          <p className="text-xs text-slate-500">{doc.status}</p>
+                          {doc.fileUrl && (
+                            <a
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary-700 font-medium hover:underline"
+                            >
+                              {t('admin.operators.view_document', 'Voir le fichier')}
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleComplianceDocStatus(doc.type, 'verified')}
+                            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary-600 text-white"
+                          >
+                            {t('admin.operators.verify', 'Valider')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleComplianceDocStatus(doc.type, 'rejected')}
+                            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-800"
+                          >
+                            {t('admin.operators.reject_doc', 'Refuser')}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 

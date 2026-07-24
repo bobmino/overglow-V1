@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
@@ -11,6 +11,9 @@ import SEOHead from '../components/SEOHead';
 import LocalizedLink from '../components/LocalizedLink';
 import TravelerReviewsCarousel from '../components/TravelerReviewsCarousel';
 import TripStackBanner from '../components/catalog/TripStackBanner';
+import HomeStorePillars from '../components/catalog/HomeStorePillars';
+import ImmersiveCollectionCarousel from '../components/catalog/ImmersiveCollectionCarousel';
+import { useLocalizedNavigate } from '../hooks/useLocalizedPath';
 import api from '../config/axios';
 import { logger } from '../utils/logger.js';
 import { CURATED_EXTRAS } from '../data/storeCatalog';
@@ -54,6 +57,7 @@ const StoreCta = ({ to, label }) => (
 
 const Home = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const [layout, setLayout] = useState(EMPTY_LAYOUT);
   const [loading, setLoading] = useState(true);
 
@@ -90,6 +94,25 @@ const Home = () => {
       ? layout.premiumServices
       : layout.topServices || [];
 
+  const immersiveExploreProducts = useMemo(() => {
+    const fromDestinations = (layout.topDestinations || []).map((d) => ({
+      city: d.city,
+      price: d.minPrice ?? d.price,
+      images: d.image ? [d.image] : [],
+    }));
+    if (fromDestinations.length >= 3) return fromDestinations;
+    return [...fromDestinations, ...exploreItems];
+  }, [layout.topDestinations, exploreItems]);
+
+  const openExploreFilter = (payload = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(payload).forEach(([k, v]) => {
+      if (v != null && v !== '') params.set(k, String(v));
+    });
+    const qs = params.toString();
+    navigate(qs ? `/explore?${qs}` : '/explore');
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col gap-y-16 overflow-x-hidden">
       <SEOHead
@@ -101,6 +124,7 @@ const Home = () => {
         pathname="/"
       />
       <HeroSection />
+      <HomeStorePillars />
       <Features />
 
       {loading ? (
@@ -111,6 +135,17 @@ const Home = () => {
         </>
       ) : (
         <>
+          {immersiveExploreProducts.length > 0 && (
+            <div className="w-full px-4 md:px-8">
+              <ImmersiveCollectionCarousel
+                products={immersiveExploreProducts}
+                storeKey="explore"
+                title={t('home.immersive_destinations', 'Maroc : destinations incontournables')}
+                onSelect={openExploreFilter}
+              />
+            </div>
+          )}
+
           {layout.topDestinations && layout.topDestinations.length > 0 && (
             <div className="w-full">
               <DynamicCarousel
