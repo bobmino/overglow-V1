@@ -297,30 +297,6 @@ const Home = () => {
           <div className="px-4 md:px-8">
             <TripStackBanner />
           </div>
-
-          {/* Cross-sell CTAs */}
-          <section className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <LocalizedLink
-              to="/explore"
-              className="rounded-2xl bg-gradient-to-br from-primary-800 to-teal-700 text-white p-6 hover:shadow-lg transition"
-            >
-              <p className="text-sm text-primary-100 mb-1">{t('home.cross_after_stay')}</p>
-              <span className="inline-flex items-center gap-2 font-bold">
-                {t('home.cta_explore')}
-                <ArrowRight size={16} />
-              </span>
-            </LocalizedLink>
-            <LocalizedLink
-              to="/extras"
-              className="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 text-white p-6 hover:shadow-lg transition"
-            >
-              <p className="text-sm text-slate-300 mb-1">{t('home.cross_after_tour')}</p>
-              <span className="inline-flex items-center gap-2 font-bold">
-                {t('home.cta_extras')}
-                <ArrowRight size={16} />
-              </span>
-            </LocalizedLink>
-          </section>
         </>
       )}
 

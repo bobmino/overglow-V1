@@ -226,16 +226,21 @@ const AdminSettingsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-slate-50 min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-3xl font-heading font-bold text-gray-900">Paramètres</h1>
-        <p className="text-gray-600 mt-1">Centre de configuration de la plateforme</p>
+    <div className="space-y-6">
+      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-800 text-white px-6 py-8 md:px-8">
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/90 mb-2">Overglow Cockpit</p>
+        <h1 className="text-3xl font-heading font-bold">Paramètres plateforme</h1>
+        <p className="text-emerald-50/90 mt-2 max-w-2xl text-sm md:text-base">
+          Une logique simple : <strong>Général</strong> = comportement site · <strong>Finances</strong> = commission &amp; retraits ·{' '}
+          <strong>Paiements</strong> = Stripe/PayPal/CMI/virement · <strong>Notifications</strong> = alertes admin ·{' '}
+          <strong>Emails</strong> = digests. Tout est lu/écrit depuis la base (collection Settings).
+        </p>
       </div>
 
       {/* Tabs: horizontal mobile, vertical desktop */}
       <div className="flex flex-col md:flex-row gap-6">
-        <nav className="md:w-52 shrink-0">
-          <div className="flex md:flex-col gap-1 overflow-x-auto pb-1 md:pb-0">
+        <nav className="md:w-56 shrink-0">
+          <div className="flex md:flex-col gap-1.5 overflow-x-auto pb-1 md:pb-0">
             {TABS.map(({ id, label, icon }) => {
               const Icon = icon;
               return (
@@ -243,9 +248,9 @@ const AdminSettingsPage = () => {
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+                className={`inline-flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition ${
                   tab === id
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
                     : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-400'
                 }`}
               >
@@ -257,10 +262,11 @@ const AdminSettingsPage = () => {
           </div>
         </nav>
 
-        <div className="flex-1 bg-white rounded-xl border border-gray-200 p-5 md:p-6 space-y-4 min-w-0">
+        <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-6 space-y-4 min-w-0">
           {tab === 'general' && (
             <>
               <h2 className="text-lg font-heading font-bold text-gray-900 mb-2">Général</h2>
+              <p className="text-xs text-slate-500 mb-3">Contrôle le comportement public du site (approbations, langue, devise, maintenance).</p>
               <ToggleRow
                 title="Auto-approbation des produits"
                 help="Publie automatiquement les produits des opérateurs déjà validés."

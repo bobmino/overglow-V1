@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
@@ -26,9 +26,13 @@ import {
   BookOpen,
   ClipboardList,
   Headphones,
+  LogOut,
+  Heart,
+  Compass,
 } from 'lucide-react';
 import api from '../config/axios';
 import { useAuth } from '../context/AuthContext';
+import LocalizedLink from './LocalizedLink';
 
 const SIDEBAR_WIDTH = 260;
 const SIDEBAR_COLLAPSED = 64;
@@ -107,6 +111,23 @@ const getOperatorSections = (t, { formCompleted = false } = {}) => [
     ],
   },
   {
+    label: t('admin.nav.operator_section_traveler', 'Mode voyageur'),
+    items: [
+      {
+        to: '/dashboard',
+        label: t('admin.nav.my_trips', 'Mes réservations perso'),
+        icon: Heart,
+        externalShell: true,
+      },
+      {
+        to: '/explore',
+        label: t('admin.nav.browse_catalog', 'Parcourir le catalogue'),
+        icon: Compass,
+        externalShell: true,
+      },
+    ],
+  },
+  {
     label: t('admin.nav.operator_section_account'),
     items: [
       { to: '/operator/account', label: t('admin.nav.operator_profile', 'Profil'), icon: UserRound },
@@ -140,8 +161,15 @@ const AdminSidebar = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading, logout, user } = useAuth();
   const [formCompleted, setFormCompleted] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    onCloseMobile?.();
+    navigate('/login');
+  };
 
   useEffect(() => {
     if (variant !== 'operator' || authLoading || !isAuthenticated) return undefined;
@@ -221,10 +249,13 @@ const AdminSidebar = ({
           variant === 'operator' ? t('admin.nav.aria_operator') : t('admin.nav.aria_admin')
         }
       >
-        <div className="flex items-center justify-between h-14 px-3 border-b border-slate-800 shrink-0">
+        <div className="flex items-center justify-between h-14 px-3 border-b border-slate-800/80 shrink-0 bg-gradient-to-r from-slate-900 to-emerald-950/40">
           {!collapsed && (
             <span className="font-heading font-bold text-sm tracking-wide text-white truncate">
-              {variant === 'operator' ? t('admin.nav.brand_operator') : t('admin.nav.brand_admin')}
+              Overglow
+              <span className="ms-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400/90">
+                {variant === 'operator' ? 'Host' : 'Cockpit'}
+              </span>
             </span>
           )}
           <div className="flex items-center gap-1 ms-auto">
@@ -259,9 +290,10 @@ const AdminSidebar = ({
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const active = isItemActive(item.to);
+                  const LinkComp = item.externalShell ? LocalizedLink : NavLink;
                   return (
                     <li key={item.to + item.label}>
-                      <NavLink
+                      <LinkComp
                         to={item.to}
                         onClick={onCloseMobile}
                         title={collapsed ? item.label : undefined}
@@ -269,7 +301,7 @@ const AdminSidebar = ({
                           group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
                           transition-colors relative
                           ${
-                            active
+                            active && !item.externalShell
                               ? 'bg-primary-600/20 text-primary-300 border-s-2 border-primary-500'
                               : 'text-slate-300 hover:bg-slate-800 hover:text-white border-s-2 border-transparent'
                           }
@@ -290,7 +322,7 @@ const AdminSidebar = ({
                         {collapsed && typeof item.badge === 'number' && item.badge > 0 && (
                           <span className="absolute top-1 end-1 w-2 h-2 rounded-full bg-primary-500" />
                         )}
-                      </NavLink>
+                      </LinkComp>
                     </li>
                   );
                 })}
@@ -298,6 +330,23 @@ const AdminSidebar = ({
             </div>
           ))}
         </nav>
+
+        <div className="shrink-0 border-t border-slate-800 p-2 space-y-1">
+          {!collapsed && user?.name && (
+            <p className="px-3 py-1 text-[11px] text-slate-500 truncate">{user.name}</p>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            title={t('header.logout')}
+            className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-red-300 hover:bg-red-950/50 hover:text-red-200 transition ${
+              collapsed ? 'justify-center px-2' : ''
+            }`}
+          >
+            <LogOut size={20} className="shrink-0" />
+            {!collapsed && <span>{t('header.logout')}</span>}
+          </button>
+        </div>
       </aside>
     </>
   );

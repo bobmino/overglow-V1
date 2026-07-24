@@ -47,8 +47,8 @@ const HomeStorePillars = () => {
     <section className="px-4 md:px-8">
       <div className="mb-6 md:mb-8 max-w-3xl">
         <p className="text-xs uppercase tracking-[0.2em] text-primary-700 font-semibold mb-2">
-          Overglow Trip
-        </p>
+              Overglow
+            </p>
         <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-slate-900">
           {t('home.pillars_title', 'Composez votre voyage au Maroc')}
         </h2>

@@ -14,6 +14,7 @@ import {
   ArrowRight,
   AlertCircle,
   Info,
+  Heart,
 } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { useToast } from '../context/ToastContext';
@@ -138,50 +139,69 @@ const OperatorDashboardPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-heading">
-            {t('operator.dashboard.title')}
-          </h1>
-          {pendingCount > 0 && (
-            <p className="text-amber-700 text-sm font-semibold mt-1">
-              {pendingCount === 1
-                ? t('operator.dashboard.pending_bookings', { count: pendingCount })
-                : t('operator.dashboard.pending_bookings_plural', { count: pendingCount })}
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white px-6 py-8 md:px-10 md:py-10">
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/90 mb-2">Overglow Host</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold font-heading">
+              {t('operator.dashboard.title')}
+            </h1>
+            {pendingCount > 0 && (
+              <p className="text-amber-200 text-sm font-semibold mt-2">
+                {pendingCount === 1
+                  ? t('operator.dashboard.pending_bookings', { count: pendingCount })
+                  : t('operator.dashboard.pending_bookings_plural', { count: pendingCount })}
+              </p>
+            )}
+            <p className="text-emerald-50/90 text-sm mt-2 max-w-xl">
+              {t(
+                'operator.dashboard.cockpit_hint',
+                'Pilotez offres, réservations clients et vos voyages personnels depuis un seul cockpit.'
+              )}
             </p>
-          )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center justify-center gap-2 bg-white/15 border border-white/25 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-white/25 transition"
+            >
+              <Heart size={18} />
+              {t('admin.nav.my_trips', 'Mes réservations perso')}
+            </Link>
+            <Link
+              to="/operator/products/new"
+              className="inline-flex items-center justify-center gap-2 bg-white text-primary-900 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-50 transition"
+            >
+              <Plus size={18} />
+              {t('operator.dashboard.create_product')}
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+      </div>
+
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
           <Link
             to="/operator/account"
-            className="inline-flex items-center justify-center gap-2 bg-white text-slate-800 border border-slate-200 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-50 transition"
+            className="inline-flex items-center justify-center gap-2 bg-white text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-50 transition"
           >
             <UserRound size={18} />
             {t('operator.dashboard.profile', 'Profil')}
           </Link>
           <Link
             to="/operator/wizard"
-            className="inline-flex items-center justify-center gap-2 bg-white text-primary-800 border border-primary-200 px-4 py-2.5 rounded-lg font-bold hover:bg-primary-50 transition"
+            className="inline-flex items-center justify-center gap-2 bg-white text-primary-800 border border-primary-200 px-4 py-2.5 rounded-xl font-bold hover:bg-primary-50 transition"
           >
             <ClipboardList size={18} />
             {t('operator.dashboard.view_fiche', 'Ma fiche')}
           </Link>
           <Link
             to="/operator/inquiries"
-            className="inline-flex items-center justify-center gap-2 bg-white text-slate-800 border border-slate-200 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-50 transition"
+            className="inline-flex items-center justify-center gap-2 bg-white text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-50 transition"
           >
             <MessageSquare size={18} />
             {t('operator.dashboard.messages', 'Messages')}
           </Link>
-          <Link
-            to="/operator/products/new"
-            className="inline-flex items-center justify-center gap-2 bg-primary-700 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-primary-800 transition"
-          >
-            <Plus size={18} />
-            {t('operator.dashboard.create_product')}
-          </Link>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

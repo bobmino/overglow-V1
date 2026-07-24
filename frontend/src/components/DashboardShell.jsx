@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import AdminSidebar, {
   SIDEBAR_WIDTH,
   SIDEBAR_COLLAPSED,
@@ -126,7 +126,8 @@ const buildBreadcrumbs = (pathname, variant, t) => {
 const DashboardShell = ({ variant = 'admin' }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === '1';
@@ -236,7 +237,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100">
       <AdminSidebar
         variant={variant}
         collapsed={collapsed}
@@ -249,7 +250,7 @@ const DashboardShell = ({ variant = 'admin' }) => {
         reviewsBadge={reviewsBadge}
       />
 
-      <div className="md:hidden sticky top-0 z-40 flex flex-col gap-2 px-3 py-2 bg-surface border-b border-border shadow-sm">
+      <div className="md:hidden sticky top-0 z-40 flex flex-col gap-2 px-3 py-2 bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-sm">
         <div className="flex items-center gap-3 h-11">
           <button
             type="button"
@@ -266,12 +267,23 @@ const DashboardShell = ({ variant = 'admin' }) => {
             </h1>
           </div>
           {!isDesktop && <NotificationBell />}
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            className="p-2.5 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl text-red-600 hover:bg-red-50"
+            aria-label={t('header.logout')}
+          >
+            <LogOut size={20} />
+          </button>
         </div>
         {variant === 'admin' && <AdminGlobalSearch compact />}
       </div>
 
       <div
-        className="hidden md:flex sticky top-0 z-30 items-center gap-4 h-14 px-6 bg-surface/95 backdrop-blur border-b border-border"
+        className="hidden md:flex sticky top-0 z-30 items-center gap-4 h-14 px-6 bg-white/90 backdrop-blur border-b border-slate-200/80"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
         {variant === 'admin' && (
@@ -285,14 +297,30 @@ const DashboardShell = ({ variant = 'admin' }) => {
         <h1 className="text-sm font-heading font-bold text-slate-800 truncate max-w-xs">
           {pageTitle}
         </h1>
+        {user?.name && (
+          <span className="hidden lg:inline text-xs text-slate-500 truncate max-w-[8rem]">
+            {user.name}
+          </span>
+        )}
         {isDesktop && <NotificationBell />}
+        <button
+          type="button"
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
+          className="inline-flex items-center gap-2 min-h-9 px-3 py-1.5 rounded-full border border-red-200 text-red-700 text-xs font-bold hover:bg-red-50"
+        >
+          <LogOut size={14} />
+          {t('header.logout')}
+        </button>
       </div>
 
       <div
-        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)] page-shell"
+        className="transition-all duration-300 ease-in-out min-h-[calc(100vh-3.5rem)]"
         style={{ marginLeft: isDesktop ? contentOffset : 0 }}
       >
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 lg:p-8 max-w-7xl">
           <Outlet />
         </div>
       </div>

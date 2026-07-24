@@ -122,12 +122,12 @@ const Header = () => {
         {isDashboardRoute ? (
           <span className="text-2xl font-heading font-bold text-primary-700 tracking-tight flex items-center gap-2 cursor-default select-none">
             <Globe className="text-secondary-500" size={28} />
-            Overglow-Trip
+            Overglow
           </span>
         ) : (
           <LocalizedLink to="/" className="text-2xl font-heading font-bold text-primary-700 tracking-tight flex items-center gap-2">
             <Globe className="text-secondary-500" size={28} />
-            Overglow-Trip
+            Overglow
           </LocalizedLink>
         )}
 
@@ -224,7 +224,15 @@ const Header = () => {
           </button>
 
           {isAuthenticated ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="hidden lg:inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-full border border-red-200 text-red-700 text-sm font-semibold hover:bg-red-50 transition"
+              >
+                <LogOut size={16} />
+                {t('header.logout')}
+              </button>
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>
                 <button
@@ -503,6 +511,14 @@ const Header = () => {
               <div className="px-3 py-2 text-sm font-bold text-slate-400 uppercase">
                 {user?.name}
               </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center p-3 rounded-xl bg-red-50 text-red-700 font-bold border border-red-100"
+              >
+                <LogOut size={18} className="me-3" />
+                {t('header.logout')}
+              </button>
               <Link 
                 to="/dashboard" 
                 className="flex items-center p-3 rounded-lg hover:bg-slate-50 text-slate-700"

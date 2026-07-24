@@ -2,6 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter as FilterIcon, Check, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+const FilterCheckRow = ({ checked, onChange, children }) => (
+  <label className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-x-3 w-full cursor-pointer group py-0.5">
+    <span className="relative col-start-1 row-start-1 flex items-center justify-center w-5 h-5">
+      <span
+        className={`flex items-center justify-center w-5 h-5 rounded border transition-colors pointer-events-none ${
+          checked
+            ? 'bg-primary-600 border-primary-600'
+            : 'border-slate-300 bg-white group-hover:border-primary-500'
+        }`}
+        aria-hidden
+      >
+        {checked && <Check size={14} className="text-white" />}
+      </span>
+      <input
+        type="checkbox"
+        checked={!!checked}
+        onChange={onChange}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      />
+    </span>
+    <span className="col-start-2 row-start-1 text-sm text-slate-700 group-hover:text-slate-900 min-w-0">
+      {children}
+    </span>
+  </label>
+);
+
+const FilterRadioRow = ({ checked, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="grid grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-x-3 w-full text-start cursor-pointer group py-0.5"
+  >
+    <span
+      className={`col-start-1 row-start-1 flex items-center justify-center w-5 h-5 rounded-full border transition-colors ${
+        checked ? 'border-4 border-primary-600' : 'border-slate-300 group-hover:border-primary-500'
+      }`}
+      aria-hidden
+    />
+    <span className="col-start-2 row-start-1 text-sm text-slate-700 group-hover:text-slate-900 min-w-0">
+      {children}
+    </span>
+  </button>
+);
+
 const REASSURANCE_TAG_IDS = [
   { id: 'annulation-gratuite', labelKey: 'filters.tag_free_cancel', color: 'bg-primary-100 text-primary-700' },
   { id: 'confirmation-immediate', labelKey: 'filters.tag_instant', color: 'bg-blue-100 text-blue-700' },
@@ -200,30 +244,21 @@ const FilterSidebar = ({
                 const isActive =
                   Array.isArray(selectedTaxonomy) && selectedTaxonomy.includes(opt.slug);
                 return (
-                  <label key={opt.slug} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
-                        isActive
-                          ? 'bg-primary-600 border-primary-600'
-                          : 'border-slate-300 bg-white group-hover:border-primary-500'
-                      } transition-colors`}
-                    >
-                      {isActive && <Check size={14} className="text-white" />}
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={() => handleTaxonomyToggle(opt.slug)}
-                      className="hidden"
-                    />
-                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors flex-1 min-w-0">
-                      {opt.parentLabel ? `${opt.parentLabel} · ` : ''}
-                      {opt.label}
+                  <FilterCheckRow
+                    key={opt.slug}
+                    checked={isActive}
+                    onChange={() => handleTaxonomyToggle(opt.slug)}
+                  >
+                    <span className="flex items-center justify-between gap-2 w-full">
+                      <span>
+                        {opt.parentLabel ? `${opt.parentLabel} · ` : ''}
+                        {opt.label}
+                      </span>
+                      {typeof opt.count === 'number' && opt.count > 0 && (
+                        <span className="text-xs text-slate-400 shrink-0">{opt.count}</span>
+                      )}
                     </span>
-                    {typeof opt.count === 'number' && opt.count > 0 && (
-                      <span className="text-xs text-slate-400">{opt.count}</span>
-                    )}
-                  </label>
+                  </FilterCheckRow>
                 );
               })}
             </div>
@@ -243,26 +278,13 @@ const FilterSidebar = ({
                 const isActive =
                   Array.isArray(selectedCategories) && selectedCategories.includes(categoryName);
                 return (
-                  <label key={categoryName} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
-                        isActive
-                          ? 'bg-primary-600 border-primary-600'
-                          : 'border-slate-300 bg-white group-hover:border-primary-500'
-                      } transition-colors`}
-                    >
-                      {isActive && <Check size={14} className="text-white" />}
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={() => handleCategoryToggle(categoryName)}
-                      className="hidden"
-                    />
-                    <span className="text-slate-700 text-sm group-hover:text-slate-900 transition-colors">
-                      {categoryName}
-                    </span>
-                  </label>
+                  <FilterCheckRow
+                    key={categoryName}
+                    checked={isActive}
+                    onChange={() => handleCategoryToggle(categoryName)}
+                  >
+                    {categoryName}
+                  </FilterCheckRow>
                 );
               })}
           </div>
@@ -278,26 +300,15 @@ const FilterSidebar = ({
             {REASSURANCE_TAG_IDS.map((tag) => {
               const isActive = filters.tags?.includes(tag.id);
               return (
-                <label key={tag.id} className="flex items-center gap-3 cursor-pointer group">
-                  <div
-                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
-                      isActive
-                        ? 'bg-primary-600 border-primary-600'
-                        : 'border-slate-300 bg-white group-hover:border-primary-500'
-                    } transition-colors`}
-                  >
-                    {isActive && <Check size={14} className="text-white" />}
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={isActive || false}
-                    onChange={() => handleTagToggle(tag.id)}
-                    className="hidden"
-                  />
-                  <span className={`text-sm font-medium px-2.5 py-1 rounded-md ${tag.color}`}>
+                <FilterCheckRow
+                  key={tag.id}
+                  checked={isActive}
+                  onChange={() => handleTagToggle(tag.id)}
+                >
+                  <span className={`inline-flex font-medium px-2 py-0.5 rounded-md ${tag.color}`}>
                     {t(tag.labelKey)}
                   </span>
-                </label>
+                </FilterCheckRow>
               );
             })}
           </div>
@@ -313,28 +324,18 @@ const FilterSidebar = ({
             {CANCELLATION_TYPES.map((opt) => {
               const isActive = filters.cancellationType === opt.id;
               return (
-                <button
-                  type="button"
+                <FilterRadioRow
                   key={opt.id}
+                  checked={isActive}
                   onClick={() =>
                     setFilters((prev) => ({
                       ...prev,
                       cancellationType: isActive ? null : opt.id,
                     }))
                   }
-                  className="flex items-center gap-3 cursor-pointer group w-full text-start"
                 >
-                  <div
-                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded-full border ${
-                      isActive
-                        ? 'border-4 border-primary-600'
-                        : 'border-slate-300 group-hover:border-primary-500'
-                    }`}
-                  />
-                  <span className="text-slate-700 text-sm group-hover:text-slate-900">
-                    {t(opt.labelKey)}
-                  </span>
-                </button>
+                  {t(opt.labelKey)}
+                </FilterRadioRow>
               );
             })}
           </div>
@@ -374,35 +375,25 @@ const FilterSidebar = ({
             {[5, 4, 3].map((rating) => {
               const isActive = filters.minRating === rating;
               return (
-                <label key={rating} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="rating"
-                    checked={isActive}
-                    onChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        minRating: isActive ? null : rating,
-                      }))
-                    }
-                    className="hidden"
-                  />
-                  <div
-                    className={`shrink-0 flex items-center justify-center w-5 h-5 rounded-full border ${
-                      isActive
-                        ? 'border-4 border-primary-600'
-                        : 'border-slate-300 group-hover:border-primary-500'
-                    }`}
-                  />
-                  <div className="flex items-center space-x-1">
+                <FilterRadioRow
+                  key={rating}
+                  checked={isActive}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      minRating: isActive ? null : rating,
+                    }))
+                  }
+                >
+                  <span className="inline-flex items-center gap-1">
                     {[...Array(rating)].map((_, i) => (
                       <Star key={i} size={14} className="fill-amber-400 text-amber-400" />
                     ))}
-                    <span className="text-slate-600 text-sm ms-1">
+                    <span className="text-slate-600 ms-1">
                       {rating === 5 ? '5.0' : `${rating}.0+`}
                     </span>
-                  </div>
-                </label>
+                  </span>
+                </FilterRadioRow>
               );
             })}
           </div>
@@ -422,29 +413,18 @@ const FilterSidebar = ({
               ].map((pt) => {
                 const isActive = filters.propertyType === pt.id;
                 return (
-                  <label key={pt.id} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
-                        isActive
-                          ? 'bg-primary-600 border-primary-600'
-                          : 'border-slate-300 bg-white group-hover:border-primary-500'
-                      }`}
-                    >
-                      {isActive && <Check size={14} className="text-white" />}
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          propertyType: isActive ? null : pt.id,
-                        }))
-                      }
-                      className="hidden"
-                    />
-                    <span className="text-sm text-slate-700">{t(pt.labelKey)}</span>
-                  </label>
+                  <FilterCheckRow
+                    key={pt.id}
+                    checked={isActive}
+                    onChange={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        propertyType: isActive ? null : pt.id,
+                      }))
+                    }
+                  >
+                    {t(pt.labelKey)}
+                  </FilterCheckRow>
                 );
               })}
             </div>
@@ -460,26 +440,15 @@ const FilterSidebar = ({
               ].map((am) => {
                 const isActive = !!filters[am.id];
                 return (
-                  <label key={am.id} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      className={`shrink-0 flex items-center justify-center w-5 h-5 rounded border ${
-                        isActive
-                          ? 'bg-primary-600 border-primary-600'
-                          : 'border-slate-300 bg-white group-hover:border-primary-500'
-                      }`}
-                    >
-                      {isActive && <Check size={14} className="text-white" />}
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={() =>
-                        setFilters((prev) => ({ ...prev, [am.id]: !prev[am.id] }))
-                      }
-                      className="hidden"
-                    />
-                    <span className="text-sm text-slate-700">{t(am.labelKey)}</span>
-                  </label>
+                  <FilterCheckRow
+                    key={am.id}
+                    checked={isActive}
+                    onChange={() =>
+                      setFilters((prev) => ({ ...prev, [am.id]: !prev[am.id] }))
+                    }
+                  >
+                    {t(am.labelKey)}
+                  </FilterCheckRow>
                 );
               })}
             </div>

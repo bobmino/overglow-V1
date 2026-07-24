@@ -560,7 +560,7 @@ const SearchPage = () => {
         {store && (
           <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-900 via-emerald-800 to-teal-700 text-white px-5 py-6 md:px-8 md:py-8">
             <p className="text-xs uppercase tracking-[0.2em] text-primary-200 mb-1.5">
-              Overglow Trip
+              Overglow
             </p>
             <h1 className="text-2xl md:text-3xl font-heading font-bold mb-1">{pageTitle}</h1>
             {pageSubtitle && (
