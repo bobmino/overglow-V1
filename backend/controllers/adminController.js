@@ -1442,7 +1442,19 @@ const getOperatorsByBadge = async (req, res) => {
           // Don't fail the request if email fails
         }
       }
-  
+
+      try {
+        const { notifyPaymentReceived } = await import('../utils/notificationService.js');
+        const recipientIds = [];
+        const opUserId = booking.operator?.user?._id || booking.operator?.user;
+        if (opUserId) recipientIds.push(opUserId);
+        const admins = await User.find({ role: 'Admin' }).select('_id');
+        admins.forEach((a) => recipientIds.push(a._id));
+        await notifyPaymentReceived(booking, recipientIds);
+      } catch (notifErr) {
+        logger.warn('notifyPaymentReceived after admin confirm failed', { message: notifErr.message });
+      }
+
       // Populate for response
       const updatedBooking = await Booking.findById(booking._id)
         .populate('user', 'name email phone')

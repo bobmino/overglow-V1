@@ -621,6 +621,10 @@ const AdminSettingsPage = () => {
           {tab === 'notifications' && (
             <>
               <h2 className="text-lg font-heading font-bold text-gray-900 mb-2">Notifications</h2>
+              <p className="text-xs text-slate-500 mb-3">
+                Ces interrupteurs pilotent réellement les alertes in-app : inscription (clients + opérateurs),
+                nouvelles réservations, paiements confirmés, demandes de retrait.
+              </p>
               <FieldRow
                 title="Email de support"
                 help="Adresse utilisée pour les réponses et alertes admin."
@@ -640,21 +644,21 @@ const AdminSettingsPage = () => {
               </FieldRow>
               <ToggleRow
                 title="Nouvel utilisateur"
-                help="Alerte admin à chaque inscription."
+                help="Alerte admin à chaque inscription Client, et à chaque inscription Opérateur."
                 checked={Boolean(settings.notifyNewUser)}
                 saving={savingKey === 'notifyNewUser'}
                 onChange={(v) => saveSetting('notifyNewUser', v, 'Notify new user')}
               />
               <ToggleRow
                 title="Nouvelle réservation"
-                help="Alerte à chaque réservation créée."
+                help="Alerte opérateur quand une réservation est créée."
                 checked={Boolean(settings.notifyNewBooking)}
                 saving={savingKey === 'notifyNewBooking'}
                 onChange={(v) => saveSetting('notifyNewBooking', v, 'Notify new booking')}
               />
               <ToggleRow
                 title="Paiement reçu"
-                help="Alerte lorsqu’un paiement est confirmé."
+                help="Alerte opérateur + admins quand un paiement est confirmé (PSP ou validation offline)."
                 checked={Boolean(settings.notifyPaymentReceived)}
                 saving={savingKey === 'notifyPaymentReceived'}
                 onChange={(v) =>
@@ -663,7 +667,7 @@ const AdminSettingsPage = () => {
               />
               <ToggleRow
                 title="Retrait demandé"
-                help="Alerte lorsqu’un opérateur demande un retrait."
+                help="Alerte admin lorsqu’un opérateur demande un retrait."
                 checked={Boolean(settings.notifyWithdrawalRequested)}
                 saving={savingKey === 'notifyWithdrawalRequested'}
                 onChange={(v) =>

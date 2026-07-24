@@ -30,6 +30,7 @@ const notificationSchema = mongoose.Schema({
       'withdrawal_rejected',
       'refund_processed',
       'operator_registered',
+      'user_registered',
       'operator_approved',
       'operator_suspended',
       'onboarding_submitted',
@@ -54,7 +55,7 @@ const notificationSchema = mongoose.Schema({
   relatedEntity: {
     type: {
       type: String,
-      enum: ['Product', 'Booking', 'Review', 'Inquiry', 'Withdrawal', 'Operator', 'OperatorOnboarding', 'BadgeRequest'],
+      enum: ['Product', 'Booking', 'Review', 'Inquiry', 'Withdrawal', 'Operator', 'OperatorOnboarding', 'BadgeRequest', 'User'],
     },
     id: {
       type: mongoose.Schema.Types.ObjectId,

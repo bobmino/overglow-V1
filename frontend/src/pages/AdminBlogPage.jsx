@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../config/axios';
 import { FileText, CheckCircle, Clock, Eye, Plus, Edit, Trash2, X, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import ScrollToTopButton from '../components/ScrollToTopButton';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { useToast } from '../context/ToastContext';
 import { getSiteUrl } from '../utils/siteUrl';
 import { logger } from '../utils/logger.js';
@@ -156,26 +157,35 @@ const AdminBlogPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="h-48 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 bg-primary-100/50 rounded-3xl" />
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="h-40 bg-slate-200/80 rounded-xl" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('admin.blog.title')}</h1>
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        title={t('admin.blog.title')}
+        subtitle="Contenus éditoriaux — publication, liens publics et brouillons."
+        actions={(
+          <Link
+            to="/admin/blog/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-primary-900 font-bold hover:bg-primary-50 transition"
+          >
+            <Plus size={18} />
+            {t('admin.blog.new_article')}
+          </Link>
+        )}
+      />
 
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-3">
         <Link
           to="/admin/blog/new"
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center gap-2"
+          className="px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition flex items-center gap-2 md:hidden"
         >
           <Plus size={18} />
           {t('admin.blog.new_article')}
@@ -361,7 +371,7 @@ const AdminBlogPage = () => {
                     </Link>
                     <Link
                       to={`/admin/blog/${post._id}/edit`}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                      className="px-3 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition flex items-center justify-center gap-2"
                       title={t('admin.blog.edit_article')}
                     >
                       <Edit size={16} />
@@ -478,7 +488,7 @@ const AdminBlogPage = () => {
               </button>
               <Link
                 to={`/admin/blog/${previewPost._id}/edit`}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
                 onClick={() => setPreviewPost(null)}
               >
                 {t('admin.common.edit')}

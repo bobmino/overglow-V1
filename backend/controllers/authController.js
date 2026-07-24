@@ -3,7 +3,7 @@ import User from '../models/userModel.js';
 import Operator from '../models/operatorModel.js';
 import generateToken, { generateAccessToken, generateRefreshToken } from '../../utils/generateToken.js';
 import { validationResult } from 'express-validator';
-import { notifyOperatorRegistered } from '../utils/notificationService.js';
+import { notifyOperatorRegistered, notifyNewUser } from '../utils/notificationService.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 import { randomBytes, createHash } from 'crypto';
@@ -105,6 +105,12 @@ const registerUser = async (req, res) => {
         const adminIds = adminUsers.map(admin => admin._id);
         if (adminIds.length > 0) {
           await notifyOperatorRegistered(operator, adminIds);
+        }
+      } else if (finalRole === 'Client') {
+        const adminUsers = await User.find({ role: 'Admin' });
+        const adminIds = adminUsers.map((admin) => admin._id);
+        if (adminIds.length > 0) {
+          await notifyNewUser(user, adminIds);
         }
       }
 

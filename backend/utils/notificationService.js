@@ -1,5 +1,34 @@
 import Notification from '../models/notificationModel.js';
+import Settings from '../models/settingsModel.js';
 import { logger } from './logger.js';
+
+const settingsCache = { at: 0, data: null };
+const SETTINGS_CACHE_MS = 15_000;
+
+const getMergedSettings = async () => {
+  if (settingsCache.data && Date.now() - settingsCache.at < SETTINGS_CACHE_MS) {
+    return settingsCache.data;
+  }
+  const rows = await Settings.find({}).lean();
+  const merged = { ...Settings.getDefaultSettings() };
+  rows.forEach((s) => {
+    merged[s.key] = s.value;
+  });
+  settingsCache.at = Date.now();
+  settingsCache.data = merged;
+  return merged;
+};
+
+/** Respecte les toggles Admin → Paramètres → Notifications. */
+export const isNotifyEnabled = async (key) => {
+  try {
+    const settings = await getMergedSettings();
+    return settings[key] !== false;
+  } catch (err) {
+    logger.warn('Settings notify flag fallback (default true)', { key, message: err.message });
+    return true;
+  }
+};
 
 /**
  * Create a notification for a user
@@ -41,8 +70,13 @@ export const createNotification = async ({
 
 /**
  * Create notification for new booking (to operator)
+ * Gate: Settings.notifyNewBooking
  */
 export const notifyNewBooking = async (booking, operatorId) => {
+  if (!(await isNotifyEnabled('notifyNewBooking'))) {
+    logger.info('notifyNewBooking skipped (setting off)');
+    return null;
+  }
   return createNotification({
     userId: operatorId,
     type: 'booking_created',
@@ -53,6 +87,62 @@ export const notifyNewBooking = async (booking, operatorId) => {
       id: booking._id,
     },
   });
+};
+
+/**
+ * Admin alert — nouvel utilisateur inscrit (Client).
+ * Gate: Settings.notifyNewUser
+ */
+export const notifyNewUser = async (user, adminIds) => {
+  if (!(await isNotifyEnabled('notifyNewUser'))) {
+    logger.info('notifyNewUser skipped (setting off)');
+    return [];
+  }
+  const notifications = [];
+  for (const adminId of adminIds) {
+    const notif = await createNotification({
+      userId: adminId,
+      type: 'user_registered',
+      title: 'Nouvel utilisateur',
+      message: `${user.name || user.email} vient de s’inscrire (${user.role || 'Client'})`,
+      relatedEntity: {
+        type: 'User',
+        id: user._id,
+      },
+    });
+    if (notif) notifications.push(notif);
+  }
+  return notifications;
+};
+
+/**
+ * Paiement reçu / confirmé — alerte destinataires (opérateur / admins).
+ * Gate: Settings.notifyPaymentReceived
+ */
+export const notifyPaymentReceived = async (booking, recipientUserIds = []) => {
+  if (!(await isNotifyEnabled('notifyPaymentReceived'))) {
+    logger.info('notifyPaymentReceived skipped (setting off)');
+    return [];
+  }
+  const productTitle = booking.schedule?.product?.title || 'une réservation';
+  const amount = booking.totalAmount ?? booking.totalPrice ?? 0;
+  const message = `Paiement confirmé pour « ${productTitle} » — ${Number(amount).toFixed(2)} MAD`;
+  const notifications = [];
+  const uniqueIds = [...new Set((recipientUserIds || []).filter(Boolean).map(String))];
+  for (const userId of uniqueIds) {
+    const notif = await createNotification({
+      userId,
+      type: 'payment_received',
+      title: 'Paiement reçu',
+      message,
+      relatedEntity: {
+        type: 'Booking',
+        id: booking._id,
+      },
+    });
+    if (notif) notifications.push(notif);
+  }
+  return notifications;
 };
 
 /**
@@ -203,6 +293,10 @@ export const notifyReviewApproved = async (review, userId) => {
  * Create notification for withdrawal request (to admin)
  */
 export const notifyWithdrawalRequest = async (withdrawal, adminIds, operatorName = 'un opérateur') => {
+  if (!(await isNotifyEnabled('notifyWithdrawalRequested'))) {
+    logger.info('notifyWithdrawalRequest skipped (setting off)');
+    return [];
+  }
   const notifications = [];
   for (const adminId of adminIds) {
     const notif = await createNotification({
@@ -388,6 +482,10 @@ export const notifyBadgeRequestRejected = async (badgeRequest, operatorUserId, r
 };
 
 export const notifyOperatorRegistered = async (operator, adminIds) => {
+  if (!(await isNotifyEnabled('notifyNewUser'))) {
+    logger.info('notifyOperatorRegistered skipped (notifyNewUser off)');
+    return [];
+  }
   const notifications = [];
   for (const adminId of adminIds) {
     const notif = await createNotification({

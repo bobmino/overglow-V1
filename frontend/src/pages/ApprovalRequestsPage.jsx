@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import EmptyState from '../components/EmptyState';
+import CockpitPageHero from '../components/CockpitPageHero';
 import { logger } from '../utils/logger.js';
 
 const getDateLocale = (language) => {
@@ -63,7 +64,7 @@ const ApprovalRequestsPage = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+      pending: { color: 'bg-amber-100 text-amber-900', icon: Clock },
       approved: { color: 'bg-primary-100 text-primary-800', icon: CheckCircle },
       rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
     };
@@ -116,55 +117,55 @@ const ApprovalRequestsPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="h-32 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-28 bg-primary-100/50 rounded-3xl" />
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="h-32 bg-slate-200/80 rounded-xl" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{t('admin.approvals.title')}</h1>
-      </div>
+    <div className="space-y-6">
+      <CockpitPageHero
+        title={t('admin.approvals.title')}
+        subtitle="File d’attente produits, avis et opérateurs à valider."
+      />
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-wrap gap-3 items-center">
         <div className="flex items-center gap-2">
-          <Filter size={18} className="text-gray-600" />
-          <span className="text-sm font-semibold text-gray-700">{t('admin.common.filter_status')}</span>
+          <Filter size={18} className="text-slate-600" />
+          <span className="text-sm font-semibold text-slate-700">{t('admin.common.filter_status')}</span>
         </div>
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            filter === 'all' ? 'bg-primary-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
           }`}
         >
           {t('admin.approvals.filter_all')}
         </button>
         <button
           onClick={() => setFilter('pending')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            filter === 'pending' ? 'bg-secondary-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
           }`}
         >
           {t('admin.approvals.filter_pending')}
         </button>
         <button
           onClick={() => setFilter('approved')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'approved' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            filter === 'approved' ? 'bg-primary-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
           }`}
         >
           {t('admin.approvals.filter_approved')}
         </button>
         <button
           onClick={() => setFilter('rejected')}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
           }`}
         >
           {t('admin.approvals.filter_rejected')}
@@ -184,7 +185,7 @@ const ApprovalRequestsPage = () => {
             const entityName = getEntityName(request);
 
             return (
-              <div key={request._id} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div key={request._id} className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

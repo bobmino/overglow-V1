@@ -1,7 +1,9 @@
 import Booking from '../models/bookingModel.js';
 import User from '../models/userModel.js';
+import Operator from '../models/operatorModel.js';
 import { logger } from '../utils/logger.js';
 import notificationHub from './notificationHub.js';
+import { notifyPaymentReceived } from '../utils/notificationService.js';
 
 /**
  * Confirm a booking after successful PSP payment or admin offline validation.
@@ -92,6 +94,15 @@ export const validateAndConfirmBookingPayment = async ({
           user,
         });
       }
+
+      const recipientIds = [];
+      if (booking.operator) {
+        const op = await Operator.findById(booking.operator).select('user');
+        if (op?.user) recipientIds.push(op.user);
+      }
+      const admins = await User.find({ role: 'Admin' }).select('_id');
+      admins.forEach((a) => recipientIds.push(a._id));
+      await notifyPaymentReceived(populated || booking, recipientIds);
     } catch (notifyErr) {
       logger.warn('Post-confirm notification failed', { message: notifyErr.message });
     }
